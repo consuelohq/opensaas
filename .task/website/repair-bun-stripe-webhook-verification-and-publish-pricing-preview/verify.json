@@ -1,0 +1,293 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "base": "origin/task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "headSha": "17bbf7924a628be9bef2dcfd9472cf878ac08aad",
+  "changeHash": "1987f643f095ed013b1ba460afab0ece300ac43bb5305b489dc01710cd123c26",
+  "changedFiles": [
+    "packages/dialer-server/src/billing/stripe.ts",
+    "packages/dialer-server/src/commercial/application.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer-server/src/stripe-webhook.test.ts",
+    "packages/dialer-website/scripts/test-pricing-browser.mjs"
+  ],
+  "verifiedAt": "2026-10-30T22:44:19.754Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview.json",
+        ".task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview/current.json",
+        ".task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview/session.json",
+        ".task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview/workpad.md",
+        "packages/dialer-server/src/billing/stripe.ts",
+        "packages/dialer-server/src/commercial/application.ts",
+        "packages/dialer-server/src/runtime/railway.ts",
+        "packages/dialer-server/src/stripe-webhook.test.ts",
+        "packages/dialer-website/scripts/test-pricing-browser.mjs"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/billing/stripe.ts",
+            "packages/dialer-server/src/commercial/application.ts",
+            "packages/dialer-server/src/runtime/railway.ts",
+            "packages/dialer-server/src/stripe-webhook.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-website-package",
+          "critical": true,
+          "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+          "matchedFiles": [
+            "packages/dialer-website/scripts/test-pricing-browser.mjs"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 975,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 834,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1456,
+          "outputTail": " > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 234 pass\n 91 skip\n 0 fail\n 1252 expect() calls\nRan 325 tests across 61 files. [1448.00ms]\n"
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 124,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nChecked 690 installs across 803 packages (no changes) [120.00ms]\n"
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7472,
+          "outputTail": "18:43:26 [vite] Re-optimizing dependencies because vite config has changed\n18:43:26 [types] Generated 393ms\n18:43:26 [check] Getting diagnostics for Astro files in /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-bun-stripe-webhook-verification-and-publish-pricing-preview/packages/dialer-website...\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (53 files): \n- 0 errors\n- 0 warnings\n- 2 hints\n\n18:43:30 [vite] Re-optimizing dependencies because vite config has changed\n18:43:30 [types] Generated 149ms\n18:43:30 [build] output: \"static\"\n18:43:30 [build] mode: \"static\"\n18:43:30 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-bun-stripe-webhook-verification-and-publish-pricing-preview/packages/dialer-website/dist/\n18:43:30 [build] Collecting build info...\n18:43:30 [build] ✓ Completed in 166ms.\n18:43:30 [build] Building static entrypoints...\n18:43:31 [vite] ✓ built in 727ms\n18:43:31 [vite] ✓ built in 499ms\n18:43:31 [build] Rearranging server assets...\n\n generating static routes \n18:43:31   ├─ /404.html (+20ms) \n18:43:31   ├─ /calls/api/integrations/oauth/callback/index.html (+1ms) \n18:43:31   ├─ /contact/index.html (+1ms) \n18:43:31   ├─ /get-started/index.html (+2ms) \n18:43:31   ├─ /how-it-works/index.html (+1ms) \n18:43:31   ├─ /pricing/index.html (+4ms) \n18:43:31   ├─ /privacy/index.html (+1ms) \n18:43:31   ├─ /robots.txt (+1ms) \n18:43:31   ├─ /support/index.html (+1ms) \n18:43:31   ├─ /terms/index.html (+1ms) \n18:43:31   ├─ /index.html (+2ms) \n18:43:31 ✓ Completed in 51ms.\n\n18:43:31 [build] ✓ Completed in 1.31s.\n18:43:31 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`\n18:43:31 [build] 10 page(s) built in 1.48s\n18:43:31 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 77,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [0.12ms]\n(pass) Dialer marketing delivery > preserves the legacy OS feed URL when Dialer owns the root [0.03ms]\n(pass) Dialer marketing delivery > preserves every displaced static OS page through the migration map [0.99ms]\n(pass) Dialer marketing delivery > publishes product-owned sitemaps without authentication or OS URLs [0.31ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.16ms]\n(pass) Dialer marketing delivery > restores the current pricing share image from committed source bytes [31.22ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [0.50ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.27ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.12ms]\n(pass) Dialer marketing delivery > renders four approved launch plans and a plan-specific setup journey [0.24ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.68ms]\n\n 11 pass\n 0 fail\n 78 expect() calls\nRan 11 tests across 1 file. [67.00ms]\n"
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 47872,
+          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"all-plan-setup\",\"plans\":4,\"billingPeriods\":2,\"cases\":8}\n{\"flow\":\"interaction-lifecycle\",\"persistedCycles\":2,\"terminalCleanup\":\"pass\",\"cloudMotion\":\"finite\",\"sectionAnalytics\":\"pass\",\"analyticsExternalRequests\":0}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":73,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

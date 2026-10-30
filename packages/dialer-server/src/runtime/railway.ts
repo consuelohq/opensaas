@@ -47,7 +47,7 @@ import { Effect, Layer } from 'effect';
 import type StripeSdk from 'stripe';
 
 import type { DialerApplicationLayers } from '../application';
-import { createStripeCommercialBilling } from '../billing/stripe';
+import { createStripeCommercialBilling, createStripeCommercialWebhookVerifier } from '../billing/stripe';
 import { createCallOperationsApplication } from '../call-operations/application';
 import { createCommercialApplication } from '../commercial/application';
 import { initializeCommercialPersistence } from '../commercial/persistence';
@@ -547,14 +547,7 @@ export const createRailwayCommercialApplication = async (
             stripe.subscriptions.update(subscriptionId, parameters, options),
         },
         webhooks: {
-          constructEvent: (rawBody, signature, secret) => {
-            const event = stripe.webhooks.constructEvent(
-              rawBody,
-              signature,
-              secret,
-            );
-            return { id: event.id, type: event.type, data: event.data };
-          },
+          constructEvent: createStripeCommercialWebhookVerifier(stripe),
         },
       },
       webhookSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),

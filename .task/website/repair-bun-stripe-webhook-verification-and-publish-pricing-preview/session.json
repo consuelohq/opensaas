@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_b20841c5d22e",
+  "tmuxSession": "opensaas-website-repair-bun-stripe-webhook-verification-and-publi-b20841c5",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "branch": "task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "repoRoot": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-refine-dialer-pricing-layout-and-connect-existing-stripe-checkout",
+  "prNumber": 2714,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2714",
+  "createdAt": "2026-10-30T22:42:56.391Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-bun-stripe-webhook-verification-and-publish-pricing-preview/.task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview/session.json"
+}

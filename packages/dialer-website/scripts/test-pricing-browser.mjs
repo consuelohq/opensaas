@@ -159,7 +159,10 @@ try {
         ),
       [],
     );
-    await page.getByLabel('Annual', { exact: true }).check();
+    await page
+      .locator('[data-billing-control]')
+      .getByText('Annual', { exact: true })
+      .click();
     assert.match(
       await page
         .locator('[data-plan-code="agency"] [data-plan-billing]')
@@ -185,7 +188,10 @@ try {
       /whole rep count/,
     );
     await page.locator('[data-seat-count]').fill('5');
-    await page.getByLabel('Monthly', { exact: true }).check();
+    await page
+      .locator('[data-billing-control]')
+      .getByText('Monthly', { exact: true })
+      .click();
     assert.match(
       await page.locator('[data-team-total]').innerText(),
       /\$745.*month/,
@@ -288,7 +294,10 @@ try {
   });
   const page = await context.newPage();
   await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
-  await page.getByLabel('Annual', { exact: true }).check();
+  await page
+    .locator('[data-billing-control]')
+    .getByText('Annual', { exact: true })
+    .click();
   await page.locator('[data-plan-code="agency"] [data-plan-cta]').click();
   await page.waitForFunction(() =>
     document

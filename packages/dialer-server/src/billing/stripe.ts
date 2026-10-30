@@ -1,4 +1,5 @@
 import { Effect } from 'effect';
+import type StripeSdk from 'stripe';
 
 import { normalizeAsyncError } from '../errors/normalize-async-error';
 
@@ -6,6 +7,22 @@ export type StripeCommercialEvent = {
   id: string;
   type: string;
   data?: unknown;
+};
+
+// Bun selects Stripe's WebCrypto build, which requires asynchronous verification.
+export const createStripeCommercialWebhookVerifier = (
+  client: Pick<StripeSdk, 'webhooks'>,
+) => async (
+  rawBody: string,
+  signature: string,
+  secret: string,
+): Promise<StripeCommercialEvent> => {
+  try {
+    const event = await client.webhooks.constructEventAsync(rawBody, signature, secret);
+    return { id: event.id, type: event.type, data: event.data };
+  } catch (cause: unknown) {
+    throw normalizeAsyncError(cause);
+  }
 };
 
 type StripeSession = { id: string; url: string | null };
@@ -55,7 +72,7 @@ export type StripeCommercialClient = {
       rawBody: string,
       signature: string,
       secret: string,
-    ) => StripeCommercialEvent;
+     ) => StripeCommercialEvent | Promise<StripeCommercialEvent>;
   };
 };
 
