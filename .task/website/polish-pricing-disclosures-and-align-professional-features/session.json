@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_665f81bdd3ac",
+  "tmuxSession": "opensaas-website-polish-pricing-disclosures-and-align-professiona-665f81bd",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/polish-pricing-disclosures-and-align-professional-features",
+  "branch": "task/website/polish-pricing-disclosures-and-align-professional-features",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-pricing-disclosures-and-align-professional-features",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-pricing-disclosures-and-align-professional-features",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2715,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2715",
+  "createdAt": "2026-10-30T23:02:32.776Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-pricing-disclosures-and-align-professional-features/.task/website/polish-pricing-disclosures-and-align-professional-features/session.json"
+}

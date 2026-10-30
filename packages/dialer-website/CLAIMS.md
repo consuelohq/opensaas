@@ -10,7 +10,7 @@ Ko requested launch-ready wording in this isolated pricing draft. These are **ta
 | Paid lines and numbers: 3 / 10 / 30; $3 extra numbers; number packs 10/$28, 50/$125 | Ko specified allowances and $3; discounted bundles are design proposals. Current shared included-number and predictive capacity semantics differ | DEV-1644, DEV-1646 |
 | One rep seat covers inbound + outbound; annual billed at monthly rate ×12 | Explicitly recorded draft assumptions while billing questions remain unanswered; no invented annual savings | DEV-1644; confirm policy before checkout |
 | Minute packs $10/100, $50/600, $100/1,400 | Proposed from current carrier list pricing, no-arbitrage tests and $0.05 per-minute stress scenario; not active Stripe products | DEV-1644; see BILLING-ECONOMICS.md |
-| Predictive dialing, local presence, recordings and transcripts begin at Agency | Ko's requested tier split. Existing SDK algorithms, provider and call-history paths support pieces; commercial enforcement and full workflow must align | DEV-1644 / DEV-1646 |
+| Predictive dialing, local presence and spam protection begin at Professional; recordings/transcripts at Agency | Ko's updated Oct 30 tier split; paid public Professional predictive permission is enabled. Starter and legacy policies remain intact; full number-health workflow proof remains DEV-1646 | DEV-1644 / DEV-1646 |
 | Inbound routing, browser + forwarding phone, callback/voicemail, business hours | Existing inbound server/state/harness work. This website task places no calls and does not establish live acceptance | Existing activation proof + DEV-1644 entitlement mapping |
 | GoHighLevel integration all plans | Existing lead-connector/embedded boundary; DEV-1642/1643 own trial/caller-ID proof | Preserve their ownership; no universal CRM claims |
 | Mercury coaching: uploaded script guidance, live AI suggestions, transcript review | Intended launch add-on; existing transcription is insufficient evidence of a complete coaching workflow | [DEV-1645](https://linear.app/consuelo/issue/DEV-1645) |
@@ -19,7 +19,7 @@ Ko requested launch-ready wording in this isolated pricing draft. These are **ta
 | Enterprise SSO/provisioning and analytics MCP | Explicitly coming soon on the page | Separate future releases; no certification claims |
 | Technology strip | Actual project tools: Twilio, Bun, Hono, PostgreSQL, Redis, Cloudflare, GitHub, Groq | Infrastructure marks, never customer testimonials/endorsements; upstream SVG provenance retained |
 
-Public prices are USD for contiguous US local calling; specialized destinations/number types need a quote. No answer-rate, win-rate, latency or guaranteed spam-label result is invented. No credit-card checkout or automatic charge is implemented by this website task. CTA selections lead to an email setup request.
+Public prices are USD for contiguous US local calling; specialized destinations/number types need a quote. No answer-rate, win-rate, latency or guaranteed spam-label result is invented. Public CTAs use the existing Stripe account and server-owned pay-first checkout. Monthly/annual live unpaid sessions and signed expiry delivery were verified; actual paid purchase-to-GoHighLevel activation remains an explicit follow-up. No automatic usage purchase is performed.
 
 ## Design sources
 

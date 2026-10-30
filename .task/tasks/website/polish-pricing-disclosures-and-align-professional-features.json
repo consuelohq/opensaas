@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/polish-pricing-disclosures-and-align-professional-features",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2715,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2715",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2715",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2715/polish-pricing-disclosures-and-align-professional-features",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2715",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2715/polish-pricing-disclosures-and-align-professional-features",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-pricing-disclosures-and-align-professional-features",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_665f81bdd3ac",
+  "tmuxSession": "opensaas-website-polish-pricing-disclosures-and-align-professiona-665f81bd",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-pricing-disclosures-and-align-professional-features/.task/website/polish-pricing-disclosures-and-align-professional-features/session.json",
+  "createdAt": "2026-10-30T23:02:32.777Z"
+}

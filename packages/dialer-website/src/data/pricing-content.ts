@@ -44,7 +44,8 @@ export const pricingPlans = [
       '3 calling lines & numbers',
       '1,000 minutes per seat / month',
       'Inbound & outbound calling',
-      'Team analytics & number management',
+      'Predictive dialing & local presence',
+      'Spam protection & team analytics',
     ],
   },
   {
@@ -174,7 +175,7 @@ export const comparisonGroups: ComparisonGroup[] = [
         id: 'predictive',
         name: 'Predictive dialing',
         detail: 'Adjust the calling pace as reps and lines become available.',
-        values: [false, false, true, true],
+        values: [false, true, true, true],
         key: true,
       },
       {
@@ -182,7 +183,7 @@ export const comparisonGroups: ComparisonGroup[] = [
         name: 'Local presence',
         detail:
           'Choose an appropriate local caller ID from the numbers assigned to your team.',
-        values: [false, false, true, true],
+        values: [false, true, true, true],
         key: true,
       },
       {
@@ -190,7 +191,7 @@ export const comparisonGroups: ComparisonGroup[] = [
         name: 'Spam protection',
         detail:
           'Monitor number health and manage caller IDs. Carrier labels and answer rates cannot be guaranteed.',
-        values: [false, false, true, true],
+        values: [false, true, true, true],
       },
     ],
   },

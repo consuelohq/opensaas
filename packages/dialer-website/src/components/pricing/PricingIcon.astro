@@ -15,17 +15,27 @@ const paths: Record<string, string> = {
   shield: 'M12 3 4 6v6c0 4 4 7 8 9 4-2 8-5 8-9V6l-8-3Zm-4 9 3 3 5-6',
   code: 'm8 6-6 6 6 6m8-12 6 6-6 6m-3-14-2 16',
   number: 'M8 3 5 21M17 3l-3 18M3 9h18M2 15h18',
-  check: 'm5 12 4 4L19 6',
+  check: 'm4.5 12 5 5L20 6.5',
+  chevron: 'm9 5 7 7-7 7',
+  minus: 'M6 12h12',
 };
 ---
 
 <svg
   class={className}
+  data-icon={name}
   viewBox="0 0 24 24"
   fill="none"
   stroke="currentColor"
-  stroke-width="1.35"
-  stroke-linecap="square"
-  stroke-linejoin="miter"
-  aria-hidden="true"><path d={paths[name] ?? paths.arrow}></path></svg
+  stroke-width={name === 'check' ? '1.6' : name === 'chevron' ? '1.5' : '1.35'}
+  stroke-linecap={['check', 'chevron', 'minus'].includes(name)
+    ? 'round'
+    : 'square'}
+  stroke-linejoin={['check', 'chevron'].includes(name) ? 'round' : 'miter'}
+  aria-hidden="true"
+  ><path
+    d={paths[name] ?? paths.arrow}
+    vector-effect={['check', 'chevron', 'minus'].includes(name)
+      ? 'non-scaling-stroke'
+      : undefined}></path></svg
 >

@@ -507,9 +507,38 @@
   overscroll-behavior-inline: contain;
   scrollbar-color: var(--site-color-brand) var(--site-color-soft);
 }
+.comparison-table {
+  position: relative;
+}
+.comparison-sticky-head {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  overflow: hidden;
+  background: var(--site-color-surface);
+}
 .comparison-scroll:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 4px;
+  outline: none;
+}
+.comparison-table:has(.comparison-scroll:focus-visible)
+  .comparison-column-head
+  > span:first-child {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.pricing-page .comparison-group > summary,
+.pricing-page .feature-explainer summary {
+  -webkit-user-select: none;
+  user-select: none;
+  scroll-margin-top: 4rem;
+}
+.pricing-page .comparison-group > summary:focus-visible,
+.pricing-page .feature-explainer summary:focus-visible {
+  outline: none;
+  background: var(--site-color-panel-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
 }
 .comparison-grid {
   display: grid;
@@ -517,11 +546,11 @@
   min-width: 45rem;
 }
 .comparison-column-head {
-  font-size: var(--site-text-xs);
+  font-size: var(--site-text-sm);
   line-height: 1.4;
   align-items: center;
   border-bottom: 1px solid var(--site-color-line-strong);
-  padding: var(--site-space-5) 0;
+  padding: 0.75rem 0 0.5rem;
 }
 .comparison-column-head > span:not(:first-child) {
   text-align: center;
@@ -623,17 +652,27 @@
   justify-content: center;
   background: var(--site-color-brand);
   color: var(--site-color-on-brand);
-  width: 1.3rem;
-  height: 1.3rem;
+  width: 1.55rem;
+  height: 1.55rem;
   border-radius: 50%;
 }
 .feature-yes svg {
-  width: 1rem;
-  height: 1rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 .feature-no {
-  color: var(--site-color-muted);
-  opacity: 0.6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 50%;
+  background: #ededf0;
+  color: #65656c;
+}
+.feature-no svg {
+  width: 1rem;
+  height: 1rem;
 }
 .feature-value--soon {
   font-size: 0.65rem;

@@ -23,6 +23,7 @@ import {
   publicPriceLookupKey,
 } from './billing/public-checkout-catalog';
 import type { DialerPlanCatalog } from './plans/catalog';
+import { resolveSeatEntitlement } from './plans/entitlements';
 import { createPublicCheckoutRoutes } from './routes/public-checkout';
 
 const suite =
@@ -248,6 +249,7 @@ suite('public checkout with disposable PostgreSQL and simulated Stripe', () => {
         workspaceId: 'new-trial',
       });
       expect(trialCatalog!.plans.single.priceCents).toBe(9900);
+      expect(trialCatalog!.plans.single.predictive).toBe(false);
       expect(trialCatalog!.trial.includedMinutes).toBe(100);
       const trialCommercial = createCommercialApplication({
         database,
@@ -556,7 +558,24 @@ suite('public checkout with disposable PostgreSQL and simulated Stripe', () => {
       }))!;
       expect(professional.plans.single.includedMinutes).toBe(1000);
       expect(professional.plans.single.maxNumbersPerSeat).toBe(3);
-      expect(professional.plans.single.predictive).toBe(false);
+      expect(professional.plans.single.predictive).toBe(true);
+      expect(
+        resolveSeatEntitlement({
+          catalog: professional,
+          planCode: 'single',
+          activeNumberCount: 3,
+          requestedLines: 3,
+          callerIdSelection: { kind: 'automatic' },
+          connectedMinutes: 0,
+        }),
+      ).toMatchObject({
+        predictive: true,
+        effectiveLineCount: 3,
+        recordings: false,
+        transcripts: false,
+        canStartCall: true,
+      });
+      expect(baseCatalog.plans.single.predictive).toBe(false);
       expect(professional.plans.single.parallelDialing).toBe(true);
       expect((await store.get(secondId))!.claimed_workspace_id).toBe(
         'new-professional',

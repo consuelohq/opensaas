@@ -82,13 +82,14 @@ describe('approved launch pricing', () => {
         (p.priceCents - p.numbers * 115 * 1.25) / p.priceCents,
       ).toBeGreaterThan(0.4);
   });
-  it('keeps inbound and outbound separate, local presence above Professional, and upcoming identity/MCP explicit', () => {
+  it('keeps inbound and outbound separate, Professional calling features included, and upcoming identity/MCP explicit', () => {
     const row = (id: string) =>
       comparisonGroups.flatMap((g) => g.rows).find((r) => r.id === id);
     expect(comparisonGroups.some((g) => g.id === 'inbound')).toBe(true);
     expect(comparisonGroups.some((g) => g.id === 'outbound')).toBe(true);
-    expect(row('local-presence')?.values).toEqual([false, false, true, true]);
-    expect(row('predictive')?.values).toEqual([false, false, true, true]);
+    expect(row('local-presence')?.values).toEqual([false, true, true, true]);
+    expect(row('spam')?.values).toEqual([false, true, true, true]);
+    expect(row('predictive')?.values).toEqual([false, true, true, true]);
     expect(row('mcp')?.values[3]).toBe('Coming soon');
     expect(row('sso')?.values[3]).toBe('Coming soon');
     for (const g of comparisonGroups)

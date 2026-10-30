@@ -138,6 +138,7 @@ export const createPublicCheckout = (input: {
         maxNumbersPerSeat: plan.numbers,
         includedMinutes: plan.minutes,
         providerBudgetCents: null,
+        // Unassigned Starter trials reuse single; paid permissions are applied in catalogFor.
         predictive: code !== 'professional',
         recordings: code !== 'professional',
         transcripts: code !== 'professional',
@@ -558,7 +559,7 @@ export const createPublicCheckout = (input: {
           legacy.maxNumbersPerSeat = plan.numbers;
           legacy.includedMinutes = plan.minutes;
           legacy.providerBudgetCents = null;
-          legacy.predictive = code !== 'professional';
+          legacy.predictive = true;
           legacy.recordings = code !== 'professional';
           legacy.transcripts = code !== 'professional';
           legacy.parallelDialing = true;
