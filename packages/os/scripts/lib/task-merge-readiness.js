@@ -200,6 +200,15 @@ function summarizeCheckRuns(checkRuns) {
   const pending = [...extraPending];
   const passed = [];
 
+  // Legacy statuses can resolve before Actions runs are even registered.
+  // A green status (or an unrelated third-party check) cannot certify that
+  // GitHub Actions CI has finished. Only an effective Actions check run can.
+  if (allChecks.some((check) => check?.__typename === 'StatusContext') &&
+      !selected.some((check) => check?.__typename === 'CheckRun' &&
+        check?.checkSuite?.app?.databaseId === GITHUB_ACTIONS_APP_ID)) {
+    pending.push('GitHub Actions check runs have not appeared alongside legacy status contexts');
+  }
+
   for (const check of checks) {
     if (check.status !== 'completed') {
       pending.push(check.name);
