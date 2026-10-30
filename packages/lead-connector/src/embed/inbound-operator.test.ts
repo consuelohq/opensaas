@@ -118,12 +118,12 @@ describe('inbound operator state', () => {
       },
     });
     const html = renderInboundOperatorPanel(connecting);
-    expect(html).toContain('Inbound operator');
-    expect(html).toContain('Ready for inbound');
-    expect(html).toContain('Accept');
+    expect(html).toContain('Incoming calls');
+    expect(html).not.toContain('On a call');
+    expect(html).not.toContain('data-action="inbound-accept"');
     expect(html).toContain('Connecting');
-    expect(html).toContain('Waiting callers');
-    expect(html).toContain('Reconnect state');
+    expect(html).toContain('Queue details');
+    expect(html).toContain('Joining the caller');
     expect(html).not.toContain('Save inbound configuration');
     expect(html).not.toContain('data-form="inbound-configuration"');
     expect(html).toContain('data-assignment-id="assignment-1"');
@@ -148,7 +148,7 @@ describe('inbound operator state', () => {
       },
     );
     const html = renderInboundOperatorPanel(state);
-    expect(html).toContain('Go ready');
+    expect(html).toContain('Start receiving calls');
     expect(html).not.toContain('data-action="inbound-readiness" disabled');
   });
 
@@ -179,17 +179,30 @@ describe('inbound operator state', () => {
   test('blocks Go ready with no healthy devices but permits declining unanswerable fenced offers', () => {
     const absent = reduceInboundOperatorState(
       createInitialInboundOperatorState(),
-      { type: 'SNAPSHOT_LOADED', snapshot: {
-        ...snapshot,
-        rep: { ...snapshot.rep, ready: false, assignment: null,
-          capacityPhase: null, endpoints: snapshot.rep.endpoints.map((endpoint) =>
-            ({ ...endpoint, healthy: false, active: false })) },
-      } },
+      {
+        type: 'SNAPSHOT_LOADED',
+        snapshot: {
+          ...snapshot,
+          rep: {
+            ...snapshot.rep,
+            ready: false,
+            assignment: null,
+            capacityPhase: null,
+            endpoints: snapshot.rep.endpoints.map((endpoint) => ({
+              ...endpoint,
+              healthy: false,
+              active: false,
+            })),
+          },
+        },
+      },
     );
     const html = renderInboundOperatorPanel(absent);
     expect(html).toMatch(/data-action="inbound-readiness"[^>]*disabled/);
     expect(html).toMatch(/data-action="inbound-accept"[^>]*disabled/);
-    expect(html).toMatch(/data-action="inbound-decline"[^>]*data-generation="7"[^>]*>Decline/);
+    expect(html).toMatch(
+      /data-action="inbound-decline"[^>]*data-generation="7"[^>]*>Decline/,
+    );
     expect(html).not.toMatch(/data-action="inbound-decline"[^>]*disabled/);
   });
 });

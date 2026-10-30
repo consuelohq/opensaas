@@ -32,6 +32,7 @@ export const createLeadConnectorEmbedController = (input: {
   api: LeadConnectorEmbedApi;
   voice: LeadConnectorAgentVoice;
   surface?: 'admin' | 'overlay';
+  inboundObserver?: boolean;
   initialState?: LeadConnectorEmbedState;
   inboundOperatorApi?: InboundOperatorApi;
 }) => {
@@ -49,7 +50,8 @@ export const createLeadConnectorEmbedController = (input: {
   let inboundRefresh: Promise<void> | null = null;
   let inboundHeartbeat: Promise<void> | null = null;
   let browserVoicePrepared = false;
-  let pendingInboundAcceptance: { key: string; attemptId: string } | null = null;
+  let pendingInboundAcceptance: { key: string; attemptId: string } | null =
+    null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -75,7 +77,9 @@ export const createLeadConnectorEmbedController = (input: {
     return state.inboundOperator;
   };
 
-  const inboundEndpointKind = (endpointId: string): 'browser' | 'phone' | null =>
+  const inboundEndpointKind = (
+    endpointId: string,
+  ): 'browser' | 'phone' | null =>
     state.inboundOperator.rep.endpoints.find(
       (endpoint) => endpoint.endpointId === endpointId,
     )?.kind ?? null;
@@ -151,13 +155,15 @@ export const createLeadConnectorEmbedController = (input: {
       input.voice.rejectIncoming();
       // Never renew the previous page's device. Preserve healthy active phones.
       const phones = snapshot.rep.endpoints.filter(
-        (endpoint) => endpoint.kind === 'phone' && endpoint.active && endpoint.healthy,
+        (endpoint) =>
+          endpoint.kind === 'phone' && endpoint.active && endpoint.healthy,
       );
       const recovered = await runInbound(() =>
         input.inboundOperatorApi!.setReadiness({
           ready: phones.length > 0,
           endpoints: phones.map((endpoint) => ({
-            endpointId: endpoint.endpointId, kind: endpoint.kind,
+            endpointId: endpoint.endpointId,
+            kind: endpoint.kind,
           })),
         }),
       );
@@ -166,9 +172,12 @@ export const createLeadConnectorEmbedController = (input: {
         return;
       }
     } catch (cause: unknown) {
-      error = cause instanceof Error
-        ? cause
-        : new Error('Browser recovery rejected with a non-Error cause', { cause });
+      error =
+        cause instanceof Error
+          ? cause
+          : new Error('Browser recovery rejected with a non-Error cause', {
+              cause,
+            });
     } finally {
       browserVoicePrepared = false;
     }
@@ -185,6 +194,10 @@ export const createLeadConnectorEmbedController = (input: {
     snapshot: InboundOperatorSnapshot,
     eventType: 'SNAPSHOT_LOADED' | 'RECONNECTED',
   ): Promise<void> => {
+    if (input.inboundObserver) {
+      dispatchInbound({ type: eventType, snapshot });
+      return;
+    }
     if (activeReadyBrowser(snapshot) && !browserVoicePrepared) {
       try {
         await input.voice.prepare();
@@ -528,9 +541,35 @@ export const createLeadConnectorEmbedController = (input: {
     refreshResources,
     loadCallOperations,
     loadCommercial,
+    loadAdministration: async (): Promise<string | null> => {
+      if (!state.sessionToken)
+        return 'Reconnect your session to open settings.';
+      try {
+        const dashboard = await input.api.getCommercialDashboard();
+        dispatch({ type: 'COMMERCIAL_DASHBOARD_LOADED', dashboard });
+        return null;
+      } catch (error: unknown) {
+        return error instanceof Error
+          ? error.message
+          : 'Settings could not be loaded.';
+      }
+    },
+    endInboundCall: async (): Promise<void> => {
+      const assignment = state.inboundOperator.rep.assignment;
+      if (
+        input.inboundObserver ||
+        assignment?.phase !== 'connected' ||
+        inboundEndpointKind(assignment.endpointId ?? '') !== 'browser'
+      )
+        return;
+      input.voice.disconnect();
+      // Carrier facts, not this button, decide completion and capacity release.
+      await loadInboundOperator();
+    },
     loadInboundOperator,
     heartbeatInbound: (): Promise<void> => {
       if (
+        input.inboundObserver ||
         !input.inboundOperatorApi ||
         !state.sessionToken ||
         !state.inboundOperator.rep.ready ||
@@ -548,7 +587,9 @@ export const createLeadConnectorEmbedController = (input: {
               browserVoicePrepared = true;
             } catch (error: unknown) {
               await recoverInboundBrowser(
-                state.inboundOperator, error, 'SNAPSHOT_LOADED',
+                state.inboundOperator,
+                error,
+                'SNAPSHOT_LOADED',
               );
               return;
             }
@@ -556,7 +597,8 @@ export const createLeadConnectorEmbedController = (input: {
           const snapshot = await runInbound(() =>
             input.inboundOperatorApi!.heartbeat(),
           );
-          if (snapshot) await projectInboundSnapshot(snapshot, 'SNAPSHOT_LOADED');
+          if (snapshot)
+            await projectInboundSnapshot(snapshot, 'SNAPSHOT_LOADED');
         } finally {
           inboundHeartbeat = null;
         }
@@ -779,6 +821,31 @@ export const createLeadConnectorEmbedController = (input: {
       );
       if (saved)
         dispatchInbound({ type: 'CONFIGURATION_SAVED', configuration: saved });
+    },
+    claimPurchase: async (code: string): Promise<string | null> => {
+      const match =
+        /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.([A-Za-z0-9_-]{43})$/i.exec(
+          code.trim(),
+        );
+      if (!match)
+        return 'Paste the complete setup code from your checkout confirmation.';
+      try {
+        await input.api.claimCommercialPurchase({
+          purchaseId: match[1]!,
+          claimToken: match[2]!,
+        });
+        const [caller, dashboard] = await Promise.all([
+          input.api.getCommercialCallerContext(),
+          input.api.getCommercialDashboard(),
+        ]);
+        dispatch({ type: 'COMMERCIAL_CALLER_LOADED', caller });
+        dispatch({ type: 'COMMERCIAL_DASHBOARD_LOADED', dashboard });
+        return null;
+      } catch (error: unknown) {
+        return error instanceof Error
+          ? error.message
+          : 'The purchase could not be connected. Try again.';
+      }
     },
     createCheckout: async (quantities: {
       single: number;

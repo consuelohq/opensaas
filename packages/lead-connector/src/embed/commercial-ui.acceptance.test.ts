@@ -8,38 +8,39 @@ import {
   type LeadConnectorEmbedState,
 } from './state-machine';
 
-const commercialState = (): LeadConnectorEmbedState => ({
-  ...createInitialEmbedState(),
-  phase: 'ready',
-  contacts: [],
-  opportunities: [],
-  pipelines: [
-    {
-      id: 'pipeline-one',
-      name: 'Sales',
-      stages: [
-        { id: 'stage-one', name: 'New', position: 0 },
-        { id: 'stage-two', name: 'Qualified', position: 1 },
-      ],
+const commercialState = (): LeadConnectorEmbedState =>
+  ({
+    ...createInitialEmbedState(),
+    phase: 'ready',
+    contacts: [],
+    opportunities: [],
+    pipelines: [
+      {
+        id: 'pipeline-one',
+        name: 'Sales',
+        stages: [
+          { id: 'stage-one', name: 'New', position: 0 },
+          { id: 'stage-two', name: 'Qualified', position: 1 },
+        ],
+      },
+    ],
+    selectedQueue: {
+      pipelineId: 'pipeline-one',
+      pipelineName: 'Sales',
+      stageId: 'stage-one',
+      stageName: 'New',
+      opportunityTotal: 4,
+      callableTotal: 3,
     },
-  ],
-  selectedQueue: {
-    pipelineId: 'pipeline-one',
-    pipelineName: 'Sales',
-    stageId: 'stage-one',
-    stageName: 'New',
-    opportunityTotal: 4,
-    callableTotal: 3,
-  },
-  setup: {
-    mode: 'queue',
-    callingMode: 'single',
-    requestedFanout: 1,
-    preferLocalPresence: true,
-    callerIdNumber: '+15550100001',
-  },
-  callerIds: ['+15550100001', '+15550100002'],
-} as LeadConnectorEmbedState);
+    setup: {
+      mode: 'queue',
+      callingMode: 'single',
+      requestedFanout: 1,
+      preferLocalPresence: true,
+      callerIdNumber: '+15550100001',
+    },
+    callerIds: ['+15550100001', '+15550100002'],
+  }) as LeadConnectorEmbedState;
 
 const commercialAdminState = (
   subscription: Record<string, unknown> | null,
@@ -107,9 +108,10 @@ const commercialAdminState = (
 });
 
 describe('commercial LeadConnector surfaces', () => {
-  it('keeps calling controls out of admin and exposes commercial management sections', () => {
+  it('opens management sections only from settings', () => {
     const html = renderLeadConnectorEmbed(commercialState(), {
       surface: 'admin',
+      workspace: { screen: 'settings', mode: 'inbound', compact: false },
     });
 
     expect(html).toContain('Plans');
@@ -124,9 +126,11 @@ describe('commercial LeadConnector surfaces', () => {
   it('renders progressive Checkout, subscription-change, invoice, payment, and cancellation billing states', () => {
     const trialHtml = renderLeadConnectorEmbed(commercialAdminState(null), {
       surface: 'admin',
+      workspace: { screen: 'settings', mode: 'inbound', compact: false },
     });
-    expect(trialHtml).toContain('data-form="commercial-billing-checkout"');
-    expect(trialHtml).toContain('Start paid plan');
+    expect(trialHtml).not.toContain('data-form="commercial-billing-checkout"');
+    expect(trialHtml).toContain('data-action="manage-billing"');
+    expect(trialHtml).toContain('Choose a plan');
     expect(trialHtml).not.toContain('data-form="commercial-billing-change"');
 
     const active = commercialAdminState({
@@ -134,7 +138,10 @@ describe('commercial LeadConnector surfaces', () => {
       cancel_at_period_end: false,
       payment_failed_at: null,
     });
-    const activeHtml = renderLeadConnectorEmbed(active, { surface: 'admin' });
+    const activeHtml = renderLeadConnectorEmbed(active, {
+      surface: 'admin',
+      workspace: { screen: 'settings', mode: 'inbound', compact: false },
+    });
     expect(activeHtml).toContain('data-form="commercial-billing-change"');
     const activeDocument = new JSDOM(activeHtml).window.document;
     expect(
@@ -168,7 +175,10 @@ describe('commercial LeadConnector surfaces', () => {
           prorationDate: 1_786_000_000,
         },
       },
-      { surface: 'admin' },
+      {
+        surface: 'admin',
+        workspace: { screen: 'settings', mode: 'inbound', compact: false },
+      },
     );
     expect(previewHtml).toContain('Proration preview');
     expect(previewHtml).toContain('$42.00');
@@ -181,7 +191,10 @@ describe('commercial LeadConnector surfaces', () => {
         cancel_at_period_end: false,
         payment_failed_at: '2026-08-04T00:00:00.000Z',
       }),
-      { surface: 'admin' },
+      {
+        surface: 'admin',
+        workspace: { screen: 'settings', mode: 'inbound', compact: false },
+      },
     );
     expect(recoveryHtml).toContain('Payment recovery');
     expect(recoveryHtml).toContain('3-day grace');
@@ -192,7 +205,10 @@ describe('commercial LeadConnector surfaces', () => {
         cancel_at_period_end: true,
         payment_failed_at: null,
       }),
-      { surface: 'admin' },
+      {
+        surface: 'admin',
+        workspace: { screen: 'settings', mode: 'inbound', compact: false },
+      },
     );
     expect(cancellationHtml).toContain('Cancellation scheduled');
   });
@@ -207,15 +223,21 @@ describe('commercial LeadConnector surfaces', () => {
     expect(document.querySelector('.brand-mark')).toBeNull();
     expect(document.querySelector('.status-pill')).toBeNull();
     expect(document.body.textContent).not.toContain('Consuelo Dialer');
-    expect(document.querySelector('button[data-action="refresh"]')).not.toBeNull();
+    expect(
+      document.querySelector('button[data-action="refresh"]'),
+    ).not.toBeNull();
     expect(
       [...document.querySelectorAll('button')].some(
         (button) => button.textContent?.trim() === 'Refresh CRM',
       ),
     ).toBe(false);
     expect(document.querySelectorAll('select')).toHaveLength(0);
-    expect(document.querySelectorAll('[role="combobox"]').length).toBeGreaterThanOrEqual(2);
-    expect(document.querySelectorAll('[role="listbox"]').length).toBeGreaterThanOrEqual(2);
+    expect(
+      document.querySelectorAll('[role="combobox"]').length,
+    ).toBeGreaterThanOrEqual(2);
+    expect(
+      document.querySelectorAll('[role="listbox"]').length,
+    ).toBeGreaterThanOrEqual(2);
   });
 
   it('renders provider pipeline stages as selectable queue options when they are returned', () => {
@@ -255,7 +277,9 @@ describe('commercial LeadConnector surfaces', () => {
         calls: [],
       },
     };
-    const idleHtml = renderLeadConnectorEmbed(connected, { surface: 'overlay' });
+    const idleHtml = renderLeadConnectorEmbed(connected, {
+      surface: 'overlay',
+    });
 
     expect(idleHtml).toContain('data-form=\"transfer\"');
     expect(idleHtml).toContain('name=\"to\"');
@@ -385,5 +409,68 @@ describe('commercial LeadConnector surfaces', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(dom.window.document.activeElement).toBe(trigger);
     combobox.destroy();
+  });
+  it('uses the authoritative public plan and never offers legacy quantities for a public subscription', () => {
+    const state = commercialAdminState({ status: 'active' });
+    state.commercialDashboard!.publicPurchase = {
+      plan: 'agency',
+      billing: 'annual',
+      seats: 5,
+      mercurySeats: 2,
+      minutePack: 0,
+      numberPack: 10,
+      recurringCents: 894000,
+    };
+    const doc = new JSDOM(
+      renderLeadConnectorEmbed(state, {
+        surface: 'admin',
+        workspace: { screen: 'settings', mode: 'inbound', compact: false },
+      }),
+    ).window.document;
+    expect(
+      doc.querySelector('[data-admin-section="plans"]')?.textContent,
+    ).toContain('Agency');
+    expect(
+      doc.querySelector('[data-form="commercial-billing-change"]'),
+    ).toBeNull();
+    expect(
+      doc.querySelector('[data-form="commercial-billing-checkout"]'),
+    ).toBeNull();
+    expect(
+      doc.querySelector('[data-form="commercial-purchase-claim"]'),
+    ).toBeNull();
+    expect(doc.querySelector('[data-action="manage-billing"]')).not.toBeNull();
+    expect(doc.body.textContent).toContain('$8940.00/year');
+    expect([
+      ...doc.querySelectorAll('.workspace-settings > details'),
+    ]).toHaveLength(4);
+  });
+
+  it('reveals the purchase claim only when the server advertises that contract', () => {
+    const state = commercialAdminState(null);
+    const options = {
+      surface: 'admin' as const,
+      workspace: {
+        screen: 'settings' as const,
+        mode: 'inbound' as const,
+        compact: false,
+      },
+    };
+    expect(renderLeadConnectorEmbed(state, options)).not.toContain(
+      'data-form="commercial-purchase-claim"',
+    );
+    state.commercialDashboard!.publicPurchase = null;
+    const doc = new JSDOM(renderLeadConnectorEmbed(state, options)).window
+      .document;
+    const field = doc.querySelector<HTMLInputElement>(
+      '[data-form="commercial-purchase-claim"] input',
+    );
+    expect(field?.type).toBe('password');
+    expect(field?.autocomplete).toBe('off');
+    expect(
+      doc
+        .querySelector('details[data-disclosure="purchase-claim"]')
+        ?.hasAttribute('open'),
+    ).toBe(false);
   });
 });

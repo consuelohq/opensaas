@@ -267,4 +267,38 @@ describe('LeadConnector embed protocol', () => {
       Array.from({ length: 4 }, () => ['PROTOCOL_VERSION_MISMATCH']),
     );
   });
+  it('accepts presentation and explicit launch only from its pinned parent with a valid version', () => {
+    const fixture = createHost();
+    const onMessage = mock(() => undefined);
+    const origin = LEAD_CONNECTOR_PARENT_ORIGINS[0];
+    const bridge = createLeadConnectorParentBridge(fixture.host, {
+      allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
+      parentOrigin: origin,
+      onMessage,
+    });
+    bridge.start();
+    bridge.requestUserContext();
+    const message = {
+      type: 'consuelo.leadconnector/workspace-presentation',
+      version: 1,
+      compact: true,
+    };
+    fixture.dispatch('https://attacker.test', message);
+    fixture.dispatch(origin, message, {});
+    expect(onMessage).not.toHaveBeenCalled();
+    fixture.dispatch(origin, message);
+    expect(onMessage).toHaveBeenCalledWith({
+      type: 'workspace-presentation',
+      compact: true,
+    });
+    fixture.dispatch(origin, {
+      type: 'consuelo.leadconnector/workspace-launch',
+      version: 1,
+      launch: { id: 'user-action', mode: 'inbound', action: 'open' },
+    });
+    expect(onMessage).toHaveBeenCalledWith({
+      type: 'workspace-launch',
+      launch: { id: 'user-action', mode: 'inbound', action: 'open' },
+    });
+  });
 });

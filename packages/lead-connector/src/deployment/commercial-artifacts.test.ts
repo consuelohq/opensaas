@@ -37,20 +37,30 @@ describe('commercial deployment artifacts', () => {
     expect(build).toContain('build-marker');
   });
 
-  it('centers a responsive modal backdrop while preserving a stable native launcher', () => {
+  it('keeps a responsive modeless calling window and compact session dock with a stable native launcher', () => {
     const css = read(
-      fromPackage('src', 'embed', 'public', 'consuelo-lead-connector-click-to-call.css'),
+      fromPackage(
+        'src',
+        'embed',
+        'public',
+        'consuelo-lead-connector-click-to-call.css',
+      ),
     );
     const javascript = read(
-      fromPackage('src', 'embed', 'public', 'consuelo-lead-connector-click-to-call.js'),
+      fromPackage(
+        'src',
+        'embed',
+        'public',
+        'consuelo-lead-connector-click-to-call.js',
+      ),
     );
 
     expect(css).toContain('position: fixed');
     expect(css).toContain('inset: 0');
-    expect(css).toContain('align-items: center');
-    expect(css).toContain('justify-content: center');
-    expect(css).toContain('84vh');
-    expect(css).toContain('clamp(');
+    expect(css).toContain('pointer-events: none');
+    expect(css).toContain('justify-content: flex-end');
+    expect(css).toContain('100dvh');
+    expect(css).toContain("data-minimized='true'");
     expect(javascript).toContain('consuelo-dialer-launcher');
     expect(javascript).toContain('tb_lists');
     expect(javascript).toContain('view-label');
@@ -67,7 +77,9 @@ describe('commercial deployment artifacts', () => {
       expect(read(fromRepo(path))).not.toContain('packages/metering');
       expect(read(fromRepo(path))).not.toContain('@consuelo/metering');
     }
-    expect(existsSync(fromRepo('packages', 'metering', 'package.json'))).toBe(false);
+    expect(existsSync(fromRepo('packages', 'metering', 'package.json'))).toBe(
+      false,
+    );
     expect(existsSync(fromRepo('scripts', 'run-dev-1024.sh'))).toBe(false);
     expect(read(fromRepo('bun.lock'))).not.toContain('@consuelo/metering');
   });

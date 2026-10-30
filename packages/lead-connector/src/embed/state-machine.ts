@@ -170,12 +170,22 @@ export type EmbedCommercialCallerContext = {
 };
 
 export type EmbedCommercialDashboard = {
+  publicPurchase?: {
+    plan: 'professional' | 'agency' | 'enterprise';
+    billing: 'monthly' | 'annual';
+    seats: number;
+    mercurySeats: number;
+    minutePack: number;
+    numberPack: number;
+    recurringCents: number;
+  } | null;
   workspaceId: string;
   catalog: {
     plans: Record<
       'single' | 'standard' | 'power',
       {
         code: string;
+        name?: string;
         priceCents: number;
         maxNumbersPerSeat: number;
         includedMinutes: number | null;
