@@ -439,6 +439,7 @@ class TraceVirtualListController {
         (candidate) => stableTraceKey(candidate) === key,
       );
     if (!row) return;
+    key = stableTraceKey(row) || key;
     inspectorStore.dispatch({ type: 'select', key, row });
     target.__traceSelectedKey = key;
     target.__traceKeyboardKey = key;
@@ -919,7 +920,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     cell.append(icon, name);
   });
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
-  appendCell(button, 'trxTokens', formatTokenCount(traceTokenUsage(row).total));
+  appendTokenCell(button, row);
   appendCell(
     button,
     'trxBranch',
@@ -979,11 +980,7 @@ function appendChildCells(
     'trxLatency',
     formatDuration(child.durationMs, child.latency),
   );
-  appendCell(
-    button,
-    'trxTokens',
-    formatTokenCount(traceTokenUsage(child).total),
-  );
+  appendTokenCell(button, child);
   appendCell(
     button,
     'trxBranch',
@@ -1010,6 +1007,15 @@ function appendChildCells(
   appendCell(button, 'trxCost', traceCostLabel(child));
 }
 
+function appendTokenCell(button: HTMLElement, row: TraceRecord): void {
+  const usage = traceTokenUsage(row).total;
+  appendCell(button, 'trxTokens', formatTokenCount(usage), (cell) => {
+    setTraceTooltip(cell, usage.value === null
+      ? 'Token count was not recorded for this call. New calls save their payload counters.'
+      : `${usage.value.toLocaleString('en-US')} saved payload tokens`);
+  });
+}
+
 function appendNodeCell(
   row: HTMLElement,
   nodeLabel: string,
@@ -1019,7 +1025,7 @@ function appendNodeCell(
   appendCell(row, 'trxNode', '', (cell) => {
     const name = document.createElement('span');
     name.className = 'trxNodeName';
-    name.textContent = nodeLabel || '—';
+    name.textContent = nodeLabel || 'Not recorded';
     cell.append(name);
     if (routeLabel) {
       const route = document.createElement('small');
@@ -1029,7 +1035,8 @@ function appendNodeCell(
     }
     setTraceTooltip(
       cell,
-      [nodeLabel || nodeId, routeLabel].filter(Boolean).join(' · '),
+      [nodeLabel || nodeId, routeLabel].filter(Boolean).join(' · ') ||
+        'Node identity was not recorded for this call.',
     );
   });
 }
@@ -1066,7 +1073,7 @@ function ensureTraceTableControls(): void {
     panel = document.createElement('aside');
     panel.className = 'trxFilterPanel';
     panel.setAttribute('aria-label', 'Trace filters');
-    panel.innerHTML = `<header class="trxFilterHeader"><div><span>Filters</span><strong>Trace view</strong></div><div class="trxFilterHeaderActions"><button type="button" data-trace-font-toggle aria-label="Use original trace font" aria-pressed="true">Aa</button><button type="button" data-trace-filter-close aria-label="Close filters">×</button></div></header><label class="trxFilterSearch"><span aria-hidden="true"><svg viewBox="0 0 16 16" width="13" height="13"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="m10.2 10.2 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></span><input type="search" data-filter-search placeholder="Search filter values" aria-label="Search filter values"></label><div class="trxFilterContent" data-trace-filter-content></div><footer><button type="button" data-clear-filters>Clear filters</button></footer>`;
+    panel.innerHTML = `<header class="trxFilterHeader"><div><span>Filters</span><strong>Trace view</strong></div><div class="trxFilterHeaderActions"><button type="button" data-trace-font-toggle aria-label="Use original trace font" aria-pressed="true">Aa</button></div></header><label class="trxFilterSearch"><span aria-hidden="true"><svg viewBox="0 0 16 16" width="13" height="13"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="m10.2 10.2 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></span><input type="search" data-filter-search placeholder="Search filter values" aria-label="Search filter values"></label><div class="trxFilterContent" data-trace-filter-content></div><footer><button type="button" data-clear-filters>Clear filters</button><button type="button" data-trace-filter-close aria-label="Close filters">×</button></footer>`;
     pane.append(panel);
   }
   panel.hidden = !filterPanelOpen;

@@ -76,7 +76,7 @@ export function reduceInspectorState(
     case 'select':
       return {
         ...state,
-        selectedKey: event.key,
+        selectedKey: stableTraceKey(event.row) || event.key,
         selectedRow: event.row,
         displayMode:
           state.displayMode === 'workpad' && !isWorkpadTrace(event.row)
@@ -94,12 +94,24 @@ export function reduceInspectorState(
     case 'rows-added': {
       if (!state.selectedKey) return state;
       const refreshed = findSelectedRow(event.rows, state.selectedKey);
-      return refreshed ? { ...state, selectedRow: refreshed } : { ...state };
+      return !refreshed || refreshed === state.selectedRow
+        ? state
+        : {
+            ...state,
+            selectedKey: stableTraceKey(refreshed) || state.selectedKey,
+            selectedRow: refreshed,
+          };
     }
     case 'rows-replaced': {
       if (!state.selectedKey) return state;
       const refreshed = findSelectedRow(event.rows, state.selectedKey);
-      return refreshed ? { ...state, selectedRow: refreshed } : state;
+      return !refreshed || refreshed === state.selectedRow
+        ? state
+        : {
+            ...state,
+            selectedKey: stableTraceKey(refreshed) || state.selectedKey,
+            selectedRow: refreshed,
+          };
     }
     case 'close':
       return {
@@ -171,8 +183,8 @@ export function inspectorSections(row: TraceRecord): InspectorSection[] {
     code: row.code ?? null,
     exitCode: row.exitCode ?? null,
     durationMs: row.durationMs ?? null,
-    inputTokens: row.inputTokens ?? null,
-    outputTokens: row.outputTokens ?? null,
+    inputTokens: traceTokenUsage(row).input.value,
+    outputTokens: traceTokenUsage(row).output.value,
     totalTokens: traceTokenUsage(row).total.value,
     cost: row.cost ?? null,
     metadata: row.metadata ?? null,
@@ -288,11 +300,9 @@ function findSelectedRow(
   selectedKey: string,
 ): TraceRecord | null {
   return (
-    rows.find(
-      (row) =>
-        stableTraceKey(row) === selectedKey ||
-        clean(row.traceId ?? row.trace) === selectedKey,
-    ) ?? null
+    rows.find((row) => stableTraceKey(row) === selectedKey) ??
+    rows.find((row) => clean(row.traceId ?? row.trace) === selectedKey) ??
+    null
   );
 }
 

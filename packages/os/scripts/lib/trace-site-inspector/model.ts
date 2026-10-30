@@ -1,3 +1,4 @@
+import { readRecordedTraceUsage } from '../trace-token-usage';
 import { resolveTraceSessionIdentity } from '../trace-session-identity';
 
 export type TraceRecord = Record<string, unknown>;
@@ -262,52 +263,12 @@ export function branchSummary(
 }
 
 export function traceTokenUsage(row: TraceRecord): TraceTokenUsage {
-  const provenance = asRecord(row.tokenCountsRecorded);
-  const recorded = (value: unknown): number | null => {
-    const parsed = optionalNumber(value);
-    return parsed !== null && parsed >= 0 ? parsed : null;
+  const saved = readRecordedTraceUsage(row);
+  return {
+    input: { value: saved.input, estimated: false },
+    output: { value: saved.output, estimated: false },
+    total: { value: saved.total, estimated: false },
   };
-  const count = (value: unknown, _payload: unknown): TokenCount => {
-    const saved = recorded(value);
-    if (saved !== null) return { value: saved, estimated: false };
-    return { value: null, estimated: false };
-  };
-  const input = count(
-    provenance?.input === false
-      ? undefined
-      : (row.inputTokens ?? row.input_tokens),
-    row.rawResolvedInputJson ??
-      row.rawInputJson ??
-      row.resolvedInputObj ??
-      row.inputObj ??
-      row.input,
-  );
-  const output = count(
-    provenance?.output === false
-      ? undefined
-      : (row.outputTokens ?? row.output_tokens),
-    row.rawResultJson ??
-      row.outputObj ??
-      row.output ??
-      row.summary ??
-      row.rawStderr,
-  );
-  const savedTotal = recorded(
-    provenance?.total === false
-      ? undefined
-      : (row.tokens ?? row.totalTokens ?? row.total_tokens),
-  );
-  const total: TokenCount =
-    savedTotal !== null
-      ? { value: savedTotal, estimated: false }
-      : {
-          value:
-            input.value !== null && output.value !== null
-              ? input.value + output.value
-              : null,
-          estimated: input.estimated || output.estimated,
-        };
-  return { input, output, total };
 }
 
 export function extractTraceError(row: TraceRecord): TraceErrorInsight {
@@ -457,8 +418,7 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
       'child';
     const segment = `${siblingIndex}:${childTool}`;
     const path = parentPath ? `${parentPath}/${segment}` : segment;
-    const nativeKey = stableTraceKey(record);
-    const selectionKey = nativeKey || `${parentKey}::child:${path}`;
+    const selectionKey = `${parentKey}::child:${path}`;
     const status =
       clean(mergedRecord.status) ||
       (mergedRecord.ok === false

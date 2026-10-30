@@ -466,8 +466,8 @@
       "reason": "Same-path workspace and OS copies exist but this path was missing from the committed script-parity baseline."
     },
     "scripts/lib/facade/batch.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "OS batch decoration shares the canonical trace accounting helper with persistence and preserves supplied counters; legacy workspace copy remains independent."
     },
     "scripts/lib/facade/branch-resolver.ts": {
       "status": "changed-needs-review",
@@ -2212,6 +2212,10 @@
     "scripts/lib/trace-site-inspector/tool-presentation.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned semantic trace presentation keeps captured tool inputs and results readable without vendor template changes."
+    },
+    "scripts/lib/trace-token-usage.ts": {
+      "status": "os-only-intentional",
+      "reason": "Shared OS trace usage reader and canonical payload accounting used by persistence and inspection."
     }
   },
   "highRiskScripts": [
