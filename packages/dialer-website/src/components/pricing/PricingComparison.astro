@@ -28,111 +28,144 @@ import PricingIcon from './PricingIcon.astro';
       <button type="button" data-feature-view="all" aria-pressed="true"
         >All features</button
       ><button type="button" data-feature-view="key" aria-pressed="false"
-        >Key features</button>
+        >Key features</button
+      >
     </div><p class="sr-only" data-comparison-status aria-live="polite"></p>
   </div>
   <p class="comparison-scroll-hint">
     On smaller screens, scroll the table to compare plans →
   </p>
-  <div
-    class="comparison-scroll"
-    role="region"
-    aria-label="Plan feature comparison — scroll horizontally"
-    tabindex="0"
-  >
-    <div class="comparison-grid comparison-column-head" aria-hidden="true">
-      <span>Features</span>{pricingPlans.map((p) => <span>{p.name}</span>)}
+  <div class="comparison-table" data-comparison-table>
+    <div
+      class="comparison-sticky-head"
+      data-comparison-sticky-head
+      hidden
+      aria-hidden="true"
+    >
     </div>
-    {
-      comparisonGroups.map((group) => (
-        <details
-          class="comparison-group"
-          data-comparison-group={group.id}
-          open={group.id === 'outbound' || group.id === 'inbound'}
-        >
-          <summary>
-            <>
-              <span>
-                <PricingIcon name={group.icon} />
-                {group.name}
-              </span>
-              <PricingIcon class="disclosure-arrow" />
-            </>
-          </summary>
-          <p class="comparison-group__description">{group.description}</p>
-          <table>
-            <>
-              <caption class="sr-only">{group.name} features by plan</caption>
-              <colgroup>
-                <col class="feature-column" />
-                {pricingPlans.map(() => (
-                  <col />
-                ))}
-              </colgroup>
-              <thead class="sr-only">
-                <tr>
-                  <th scope="col">Feature</th>
-                  {pricingPlans.map((p) => (
-                    <th scope="col">{p.name}</th>
+    <div
+      class="comparison-scroll"
+      role="region"
+      aria-label="Plan feature comparison — scroll horizontally"
+      tabindex="0"
+    >
+      <div class="comparison-grid comparison-column-head" aria-hidden="true">
+        <span>Features</span>{pricingPlans.map((p) => <span>{p.name}</span>)}
+      </div>
+      {
+        comparisonGroups.map((group) => (
+          <details
+            class="comparison-group"
+            data-comparison-group={group.id}
+            open={group.id === 'outbound' || group.id === 'inbound'}
+          >
+            <summary>
+              <>
+                <span>
+                  <PricingIcon name={group.icon} />
+                  {group.name}
+                </span>
+                <PricingIcon name="chevron" class="disclosure-arrow" />
+              </>
+            </summary>
+            <p class="comparison-group__description">{group.description}</p>
+            <table>
+              <>
+                <caption class="sr-only">{group.name} features by plan</caption>
+                <colgroup>
+                  <col class="feature-column" />
+                  {pricingPlans.map(() => (
+                    <col />
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {group.rows.map((row) => (
-                  <tr
-                    data-feature-row={row.id}
-                    data-key-feature={row.key ? 'true' : 'false'}
-                  >
-                    <th scope="row">
-                      <details class="feature-explainer">
-                        <summary>
-                          <PricingIcon class="feature-chevron" />
-                          <span>{row.name}</span>
-                        </summary>
-                        <p>{row.detail}</p>
-                      </details>
-                    </th>
-                    {row.values.map((value) => (
-                      <td>
-                        {value === true ? (
-                          <span class="feature-yes">
-                            <PricingIcon name="check" />
-                            <span class="sr-only">Included</span>
-                          </span>
-                        ) : value === false ? (
-                          <span class="feature-no">
-                            <span aria-hidden="true">—</span>
-                            <span class="sr-only">Not included</span>
-                          </span>
-                        ) : (
-                          <span
-                            class:list={[
-                              'feature-value',
-                              {
-                                'feature-value--soon': value === 'Coming soon',
-                              },
-                            ]}
-                          >
-                            {value}
-                          </span>
-                        )}
-                      </td>
+                </colgroup>
+                <thead class="sr-only">
+                  <tr>
+                    <th scope="col">Feature</th>
+                    {pricingPlans.map((p) => (
+                      <th scope="col">{p.name}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </>
-          </table>
-        </details>
-      ))
-    }
+                </thead>
+                <tbody>
+                  {group.rows.map((row) => (
+                    <tr
+                      data-feature-row={row.id}
+                      data-key-feature={row.key ? 'true' : 'false'}
+                    >
+                      <th scope="row">
+                        <details class="feature-explainer">
+                          <summary>
+                            <PricingIcon
+                              name="chevron"
+                              class="feature-chevron"
+                            />
+                            <span>{row.name}</span>
+                          </summary>
+                          <p>{row.detail}</p>
+                        </details>
+                      </th>
+                      {row.values.map((value) => (
+                        <td>
+                          {value === true ? (
+                            <span class="feature-yes">
+                              <PricingIcon name="check" />
+                              <span class="sr-only">Included</span>
+                            </span>
+                          ) : value === false ? (
+                            <span class="feature-no">
+                              <PricingIcon name="minus" />
+                              <span class="sr-only">Not included</span>
+                            </span>
+                          ) : (
+                            <span
+                              class:list={[
+                                'feature-value',
+                                {
+                                  'feature-value--soon':
+                                    value === 'Coming soon',
+                                },
+                              ]}
+                            >
+                              {value}
+                            </span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </>
+            </table>
+          </details>
+        ))
+      }
+    </div>
   </div>
   <p class="comparison-footnote">
     Features apply to the selected plan. Mercury is an optional add-on. <a
-      href="#pricing-faq">Questions about seats or usage? <PricingIcon /></a>
+      href="#pricing-faq">Questions about seats or usage? <PricingIcon /></a
+    >
   </p>
 </section>
 <script>
+  const scroller = document.querySelector<HTMLElement>('.comparison-scroll');
+  const stickyHead = document.querySelector<HTMLElement>(
+    '[data-comparison-sticky-head]',
+  );
+  const columnHead = scroller?.querySelector<HTMLElement>(
+    '.comparison-column-head',
+  );
+  if (scroller && stickyHead && columnHead) {
+    // Keep the no-JS labels in the table; enhance them into a page-sticky sibling.
+    stickyHead.append(columnHead);
+    stickyHead.hidden = false;
+    const syncColumns = () => {
+      stickyHead.scrollLeft = scroller.scrollLeft;
+    };
+    scroller.addEventListener('scroll', syncColumns, { passive: true });
+    syncColumns();
+  }
+
   const controls = document.querySelector<HTMLElement>(
     '[data-comparison-controls]',
   );

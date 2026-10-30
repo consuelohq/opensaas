@@ -25,7 +25,7 @@ const {
     <h2 id={id + '-title'}>{title}</h2>{
       variant === 'pricing' && (
         <a class="home-faq__more" href="/#faq">
-          More about Consuelo <PricingIcon />
+          See more FAQs <PricingIcon />
         </a>
       )
     }
@@ -41,7 +41,7 @@ const {
           <summary>
             <span>{item.question}</span>
             <span class="home-faq__icon" aria-hidden="true">
-              {variant === 'pricing' ? <PricingIcon /> : '+'}
+              {variant === 'pricing' ? <PricingIcon name="chevron" /> : '+'}
             </span>
           </summary>
           <div class="home-faq__answer">
@@ -154,6 +154,16 @@ const {
     font-weight: 400;
     line-height: 1.05;
     list-style: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .home-faq summary:focus-visible {
+    outline: none;
+    background: var(--site-color-panel-strong);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
   }
 
   .home-faq summary::-webkit-details-marker {
@@ -338,6 +348,8 @@ const {
     align-items: center;
     font-size: var(--site-text-sm);
     color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
   }
   .home-faq__more :global(svg),

@@ -221,6 +221,65 @@ try {
     const detail = page.locator('[data-feature-row="local-presence"] details');
     await detail.locator('summary').click();
     assert.equal(await detail.getAttribute('open'), '');
+    const header = page.locator('[data-comparison-sticky-head]');
+    assert.equal(
+      await header.isVisible(),
+      true,
+      'Comparison labels are sticky-ready',
+    );
+    const tableTop = await page
+      .locator('[data-comparison-table]')
+      .evaluate((el) => el.getBoundingClientRect().top + scrollY);
+    for (const depth of [220, 500]) {
+      await page.evaluate((y) => window.scrollTo(0, y), tableTop + depth);
+      assert.ok(
+        Math.abs((await header.boundingBox()).y) < 2,
+        'Plan headings pin while reading rows',
+      );
+    }
+    await page.locator('.comparison-scroll').evaluate((el) => {
+      el.scrollLeft = Math.min(180, el.scrollWidth - el.clientWidth);
+    });
+    await page.waitForFunction(() => {
+      const body = document.querySelector('.comparison-scroll');
+      const head = document.querySelector('[data-comparison-sticky-head]');
+      return Math.abs(body.scrollLeft - head.scrollLeft) < 1;
+    });
+    const alignment = await page.evaluate(() => {
+      const head = document
+        .querySelector('.comparison-column-head > span:nth-child(3)')
+        .getBoundingClientRect();
+      const cell =
+        document
+          .querySelector('[data-feature-row="lines"] td:nth-of-type(2)')
+          ?.getBoundingClientRect() ??
+        document
+          .querySelector(
+            '[data-comparison-group="outbound"] tbody tr td:nth-of-type(2)',
+          )
+          .getBoundingClientRect();
+      return Math.abs(
+        head.left + head.width / 2 - (cell.left + cell.width / 2),
+      );
+    });
+    assert.ok(alignment < 2, 'Sticky plan names align after horizontal scroll');
+    await page.locator('.comparison-scroll').evaluate((el) => {
+      el.scrollLeft = 0;
+    });
+    await detail
+      .locator('summary')
+      .evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    await page.evaluate(() => getSelection().removeAllRanges());
+    await detail.locator('summary span').dblclick();
+    assert.equal(
+      await page.evaluate(() => getSelection().toString()),
+      '',
+      'Feature heading does not select on double click',
+    );
+    assert.equal(
+      await detail.locator('summary [data-icon="chevron"]').count(),
+      1,
+    );
     const faq = page.locator('#pricing-faq [data-home-faq-item]');
     assert.equal(await faq.count(), 10);
     assert.equal(
@@ -231,6 +290,60 @@ try {
     assert.equal(await faq.nth(0).getAttribute('open'), '');
     await faq.nth(1).locator('summary').click();
     assert.equal(await faq.nth(0).getAttribute('open'), '');
+    await page.evaluate(() => getSelection().removeAllRanges());
+    await faq.first().locator('summary > span').first().dblclick();
+    assert.equal(
+      await page.evaluate(() => getSelection().toString()),
+      '',
+      'FAQ heading does not select on double click',
+    );
+    await page.keyboard.press('Tab');
+    await faq.first().locator('summary').focus();
+    assert.equal(
+      await faq
+        .first()
+        .locator('summary')
+        .evaluate((el) => getComputedStyle(el).outlineStyle),
+      'none',
+    );
+    assert.ok(
+      await faq
+        .first()
+        .locator('summary')
+        .evaluate((el) =>
+          getComputedStyle(el).textDecorationLine.includes('underline'),
+        ),
+      'Keyboard focus stays perceptible',
+    );
+    const wasOpen = await faq.first().evaluate((el) => el.open);
+    await page.keyboard.press('Space');
+    assert.equal(await faq.first().evaluate((el) => el.open), !wasOpen);
+    await page.keyboard.press('Space');
+    const answer = faq.first().locator('.home-faq__answer p').first();
+    await answer.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    const word = await answer.evaluate((el) => {
+      const range = document.createRange();
+      range.setStart(el.firstChild, 0);
+      range.setEnd(el.firstChild, 5);
+      const rect = range.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    });
+    await page.mouse.dblclick(word.x, word.y);
+    assert.ok(
+      (await page.evaluate(() => getSelection().toString())).trim().length > 0,
+      'FAQ answer text remains copyable',
+    );
+    await page.evaluate(() => getSelection().removeAllRanges());
+    const moreFaqs = page.getByRole('link', {
+      name: 'See more FAQs',
+      exact: true,
+    });
+    assert.equal(await moreFaqs.getAttribute('href'), '/#faq');
+    assert.ok(
+      await moreFaqs.evaluate((el) =>
+        getComputedStyle(el).textDecorationLine.includes('underline'),
+      ),
+    );
     if (width === 1440) {
       assert.equal(
         await page
@@ -537,6 +650,34 @@ try {
     () =>
       document.querySelector('[data-logo-track]').getAnimations().length === 0,
   );
+  await page.goto(base + '/#faq', { waitUntil: 'networkidle' });
+  const homeQuestion = page
+    .locator('#faq [data-home-faq-item] summary')
+    .first();
+  await page.evaluate(() => getSelection().removeAllRanges());
+  await homeQuestion.locator('span').first().dblclick();
+  assert.equal(
+    await page.evaluate(() => getSelection().toString()),
+    '',
+    'Home FAQ headings do not select on double click',
+  );
+  await page.keyboard.press('Tab');
+  await homeQuestion.focus();
+  assert.equal(
+    await homeQuestion.evaluate((el) => getComputedStyle(el).outlineStyle),
+    'none',
+  );
+  assert.ok(
+    await homeQuestion.evaluate((el) =>
+      getComputedStyle(el).textDecorationLine.includes('underline'),
+    ),
+  );
+  await page.keyboard.press('Space');
+  assert.equal(
+    await homeQuestion.evaluate((el) => el.parentElement.open),
+    true,
+  );
+  emit({ flow: 'home FAQ pointer and keyboard disclosure', passed: true });
   await context.close();
   const nojs = await browser.newContext({
     javaScriptEnabled: false,
@@ -545,6 +686,12 @@ try {
   const staticPage = await nojs.newPage();
   await staticPage.goto(base + '/pricing', { waitUntil: 'networkidle' });
   assert.equal(await staticPage.locator('[data-plan-code]').count(), 4);
+  assert.equal(
+    await staticPage
+      .locator('.comparison-scroll .comparison-column-head')
+      .isVisible(),
+    true,
+  );
   assert.equal(
     await staticPage.locator('[data-comparison-controls]').isVisible(),
     false,
