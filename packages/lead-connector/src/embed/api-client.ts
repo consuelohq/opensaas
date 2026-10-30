@@ -1,4 +1,9 @@
 import type {
+  CoachingLibrary,
+  CoachingScript,
+  ScriptDraft,
+} from './coaching-scripts.js';
+import type {
   LeadConnectorContact,
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
@@ -81,6 +86,12 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
   };
 
   return {
+    listCoachingScripts: () => request<CoachingLibrary>('/v1/coaching/scripts'),
+    saveCoachingScript: (draft: ScriptDraft) =>
+      request<CoachingScript>(
+        `/v1/coaching/scripts/${encodeURIComponent(draft.id)}`,
+        { method: 'PUT', body: JSON.stringify(draft) },
+      ),
     setSessionToken: (token: string | null) => {
       sessionToken = token;
     },

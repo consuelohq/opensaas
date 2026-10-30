@@ -46,6 +46,20 @@ const commercialAdminState = (
   subscription: Record<string, unknown> | null,
 ): LeadConnectorEmbedState => ({
   ...commercialState(),
+  commercialCaller: {
+    planCode: 'single',
+    trial: !subscription,
+    callerIds: [],
+    connectedMinutes: 42,
+    remainingMinutes: 58,
+    lineOptions: [1],
+    predictive: false,
+    recordings: false,
+    transcripts: false,
+    canStartCall: true,
+    denialCode: null,
+    billing: { state: subscription ? 'active' : 'trial', graceEndsAt: null },
+  },
   commercialDashboard: {
     workspaceId: 'workspace-one',
     catalog: {
@@ -114,103 +128,53 @@ describe('commercial LeadConnector surfaces', () => {
       workspace: { screen: 'settings', mode: 'inbound', compact: false },
     });
 
-    expect(html).toContain('Plans');
+    expect(html).toContain('YOUR PLAN');
     expect(html).toContain('Team');
     expect(html).toContain('Phone numbers');
-    expect(html).toContain('Usage');
-    expect(html).toContain('Billing');
+    expect(html).toContain('Minutes, subscription and invoices');
+    expect(html).toContain('Plan &amp; billing');
     expect(html).not.toContain('Who do you want to call?');
     expect(html).not.toContain('data-action="start-call"');
   });
 
-  it('renders progressive Checkout, subscription-change, invoice, payment, and cancellation billing states', () => {
-    const trialHtml = renderLeadConnectorEmbed(commercialAdminState(null), {
-      surface: 'admin',
-      workspace: { screen: 'settings', mode: 'inbound', compact: false },
-    });
-    expect(trialHtml).not.toContain('data-form="commercial-billing-checkout"');
-    expect(trialHtml).toContain('data-action="manage-billing"');
-    expect(trialHtml).toContain('Choose a plan');
-    expect(trialHtml).not.toContain('data-form="commercial-billing-change"');
-
-    const active = commercialAdminState({
-      status: 'active',
-      cancel_at_period_end: false,
-      payment_failed_at: null,
-    });
-    const activeHtml = renderLeadConnectorEmbed(active, {
-      surface: 'admin',
-      workspace: { screen: 'settings', mode: 'inbound', compact: false },
-    });
-    expect(activeHtml).toContain('data-form="commercial-billing-change"');
-    const activeDocument = new JSDOM(activeHtml).window.document;
+  it('combines authoritative minutes, subscription and invoices with a hosted Stripe action', () => {
+    const options = {
+      surface: 'admin' as const,
+      workspace: {
+        screen: 'billing' as const,
+        mode: 'inbound' as const,
+        compact: false,
+      },
+    };
+    const state = commercialAdminState(null);
+    state.commercialDashboard!.publicPurchase = null;
+    const trial = renderLeadConnectorEmbed(state, options);
+    expect(trial).toContain('Starter');
+    expect(trial).toContain('58');
+    expect(trial).toContain('42 used');
+    expect(trial).toContain('100 included');
+    expect(trial).toContain('Upgrade your plan');
+    expect(trial).toContain('data-action="manage-billing"');
+    expect(trial).not.toContain('commercial-billing-checkout');
+    const active = renderLeadConnectorEmbed(
+      commercialAdminState({ status: 'active' }),
+      options,
+    );
+    expect(active).toContain('Invoices & payment');
+    expect(active).toContain('Open billing portal');
+    expect(active).not.toContain('commercial-billing-change');
     expect(
-      activeDocument
-        .querySelector<HTMLInputElement>('input[name="single"]')
-        ?.getAttribute('value'),
-    ).toBe('2');
+      renderLeadConnectorEmbed(
+        commercialAdminState({ status: 'past_due' }),
+        options,
+      ),
+    ).toContain('Payment needs attention');
     expect(
-      activeDocument
-        .querySelector<HTMLInputElement>('input[name="additionalNumber"]')
-        ?.getAttribute('value'),
-    ).toBe('1');
-    expect(activeHtml).toContain('Upcoming invoice');
-    expect(activeHtml).toContain('$121.98');
-    expect(activeHtml).toContain('1 additional number');
-    expect(activeHtml).toContain('Payment methods, invoices, and cancellation');
-    expect(activeHtml).toContain('data-action="manage-billing"');
-
-    const previewHtml = renderLeadConnectorEmbed(
-      {
-        ...active,
-        commercialBillingPreview: {
-          quantities: {
-            single: 2,
-            standard: 1,
-            power: 0,
-            additionalNumber: 1,
-          },
-          amountDue: 4200,
-          currency: 'usd',
-          prorationDate: 1_786_000_000,
-        },
-      },
-      {
-        surface: 'admin',
-        workspace: { screen: 'settings', mode: 'inbound', compact: false },
-      },
-    );
-    expect(previewHtml).toContain('Proration preview');
-    expect(previewHtml).toContain('$42.00');
-    expect(previewHtml).toContain('data-action="apply-billing-change"');
-    expect(previewHtml).toContain('data-action="cancel-billing-preview"');
-
-    const recoveryHtml = renderLeadConnectorEmbed(
-      commercialAdminState({
-        status: 'past_due',
-        cancel_at_period_end: false,
-        payment_failed_at: '2026-08-04T00:00:00.000Z',
-      }),
-      {
-        surface: 'admin',
-        workspace: { screen: 'settings', mode: 'inbound', compact: false },
-      },
-    );
-    expect(recoveryHtml).toContain('Payment recovery');
-    expect(recoveryHtml).toContain('3-day grace');
-
-    const cancellationHtml = renderLeadConnectorEmbed(
-      commercialAdminState({
-        status: 'active',
-        cancel_at_period_end: true,
-        payment_failed_at: null,
-      }),
-      {
-        surface: 'admin',
-        workspace: { screen: 'settings', mode: 'inbound', compact: false },
-      },
-    );
-    expect(cancellationHtml).toContain('Cancellation scheduled');
+      renderLeadConnectorEmbed(
+        commercialAdminState({ status: 'active', cancel_at_period_end: true }),
+        options,
+      ),
+    ).toContain('Cancels at period end');
   });
 
   it('renders the overlay as a focused calling surface with accessible comboboxes and no promotional header', () => {
@@ -424,12 +388,10 @@ describe('commercial LeadConnector surfaces', () => {
     const doc = new JSDOM(
       renderLeadConnectorEmbed(state, {
         surface: 'admin',
-        workspace: { screen: 'settings', mode: 'inbound', compact: false },
+        workspace: { screen: 'billing', mode: 'inbound', compact: false },
       }),
     ).window.document;
-    expect(
-      doc.querySelector('[data-admin-section="plans"]')?.textContent,
-    ).toContain('Agency');
+    expect(doc.body.textContent).toContain('Agency');
     expect(
       doc.querySelector('[data-form="commercial-billing-change"]'),
     ).toBeNull();
@@ -440,10 +402,8 @@ describe('commercial LeadConnector surfaces', () => {
       doc.querySelector('[data-form="commercial-purchase-claim"]'),
     ).toBeNull();
     expect(doc.querySelector('[data-action="manage-billing"]')).not.toBeNull();
-    expect(doc.body.textContent).toContain('$8940.00/year');
-    expect([
-      ...doc.querySelectorAll('.workspace-settings > details'),
-    ]).toHaveLength(4);
+    expect(doc.body.textContent).toContain('$8,940.00');
+    expect(doc.querySelectorAll('details')).toHaveLength(0);
   });
 
   it('reveals the purchase claim only when the server advertises that contract', () => {
@@ -451,7 +411,7 @@ describe('commercial LeadConnector surfaces', () => {
     const options = {
       surface: 'admin' as const,
       workspace: {
-        screen: 'settings' as const,
+        screen: 'billing' as const,
         mode: 'inbound' as const,
         compact: false,
       },

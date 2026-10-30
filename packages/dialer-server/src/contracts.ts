@@ -241,6 +241,7 @@ export type LeadConnectorServerApplication = {
 };
 
 export type DialerServerDependencies = {
+  coachingScripts?: import('./coaching/scripts').CoachingScripts;
   inbound?: NonNullable<
     Awaited<ReturnType<typeof import('./runtime/inbound').createInboundRuntime>>
   >;
