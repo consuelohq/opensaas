@@ -64,7 +64,7 @@ import InfoPage from '../components/site/InfoPage.astro';
       }).format(cents / 100);
     const label =
       plan.code === 'starter'
-        ? 'Starter — 100 total trial minutes'
+        ? plan.name + ' — ' + plan.includedMinutes.toLocaleString('en-US') + ' total trial minutes'
         : plan.name +
           ' — ' +
           plan.price +

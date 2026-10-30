@@ -15,7 +15,39 @@ started: 2026-10-30
 
 ## files changed
 
+- `packages/dialer-website/.gitignore`
+- `packages/dialer-website/AGENTS.md`
+- `packages/dialer-website/assets/encoded/consuelo-dialer-pricing-og-20261030.png.base64`
+- `packages/dialer-website/BILLING-ECONOMICS.md`
+- `packages/dialer-website/CLAIMS.md`
+- `packages/dialer-website/COMPONENTS.md`
+- `packages/dialer-website/DESIGN.md`
+- `packages/dialer-website/package.json`
+- `packages/dialer-website/public/images/technology/bun.svg`
+- `packages/dialer-website/public/images/technology/cloudflare.svg`
+- `packages/dialer-website/public/images/technology/github.svg`
+- `packages/dialer-website/public/images/technology/hono.svg`
+- `packages/dialer-website/public/images/technology/LICENSE.md`
+- `packages/dialer-website/public/images/technology/postgresql.svg`
+- `packages/dialer-website/public/images/technology/redis.svg`
+- `packages/dialer-website/public/images/technology/SOURCES.md`
+- `packages/dialer-website/public/images/technology/twilio.svg`
+- `packages/dialer-website/scripts/generate-social-card.ts`
+- `packages/dialer-website/scripts/materialize-public-assets.ts`
+- `packages/dialer-website/scripts/test-marketing-browser.mjs`
+- `packages/dialer-website/scripts/test-pricing-browser.mjs`
+- `packages/dialer-website/src/components/home/HomeFaq.astro`
+- `packages/dialer-website/src/components/pricing/PricingAddons.astro`
+- `packages/dialer-website/src/components/pricing/PricingComparison.astro`
 - `packages/dialer-website/src/components/pricing/PricingIcon.astro`
+- `packages/dialer-website/src/components/pricing/PricingTechnology.astro`
+- `packages/dialer-website/src/data/dialer-content.ts`
+- `packages/dialer-website/src/data/pricing-content.ts`
+- `packages/dialer-website/src/pages/get-started.astro`
+- `packages/dialer-website/src/pages/how-it-works.astro`
+- `packages/dialer-website/src/pages/pricing.astro`
+- `packages/dialer-website/src/styles/pricing.css`
+- `packages/dialer-website/tests/marketing-contract.test.ts`
 - `packages/dialer-website/tests/pricing-catalog.test.ts`
 
 ## key decisions
@@ -79,7 +111,39 @@ No test waiver: copy-only changes reviewed visually; interaction/math need tests
 
 ## workspace-owned: files changed
 
+- `packages/dialer-website/.gitignore`
+- `packages/dialer-website/AGENTS.md`
+- `packages/dialer-website/assets/encoded/consuelo-dialer-pricing-og-20261030.png.base64`
+- `packages/dialer-website/BILLING-ECONOMICS.md`
+- `packages/dialer-website/CLAIMS.md`
+- `packages/dialer-website/COMPONENTS.md`
+- `packages/dialer-website/DESIGN.md`
+- `packages/dialer-website/package.json`
+- `packages/dialer-website/public/images/technology/bun.svg`
+- `packages/dialer-website/public/images/technology/cloudflare.svg`
+- `packages/dialer-website/public/images/technology/github.svg`
+- `packages/dialer-website/public/images/technology/hono.svg`
+- `packages/dialer-website/public/images/technology/LICENSE.md`
+- `packages/dialer-website/public/images/technology/postgresql.svg`
+- `packages/dialer-website/public/images/technology/redis.svg`
+- `packages/dialer-website/public/images/technology/SOURCES.md`
+- `packages/dialer-website/public/images/technology/twilio.svg`
+- `packages/dialer-website/scripts/generate-social-card.ts`
+- `packages/dialer-website/scripts/materialize-public-assets.ts`
+- `packages/dialer-website/scripts/test-marketing-browser.mjs`
+- `packages/dialer-website/scripts/test-pricing-browser.mjs`
+- `packages/dialer-website/src/components/home/HomeFaq.astro`
+- `packages/dialer-website/src/components/pricing/PricingAddons.astro`
+- `packages/dialer-website/src/components/pricing/PricingComparison.astro`
 - `packages/dialer-website/src/components/pricing/PricingIcon.astro`
+- `packages/dialer-website/src/components/pricing/PricingTechnology.astro`
+- `packages/dialer-website/src/data/dialer-content.ts`
+- `packages/dialer-website/src/data/pricing-content.ts`
+- `packages/dialer-website/src/pages/get-started.astro`
+- `packages/dialer-website/src/pages/how-it-works.astro`
+- `packages/dialer-website/src/pages/pricing.astro`
+- `packages/dialer-website/src/styles/pricing.css`
+- `packages/dialer-website/tests/marketing-contract.test.ts`
 - `packages/dialer-website/tests/pricing-catalog.test.ts`
 
 ## workspace-owned: activity log
@@ -91,6 +155,9 @@ No test waiver: copy-only changes reviewed visually; interaction/math need tests
 - 2026-10-30 20:07:14 fs.write: `packages/dialer-website/src/components/pricing/PricingIcon.astro`
 - 2026-10-30 20:17:38 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
 - 2026-10-30 20:26:20 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+- 2026-10-30 20:30:11 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+- 2026-10-30 20:54:45 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+- 2026-10-30 20:57:59 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
 
 ## Implementation and focused evidence
 - Focused red confirmed missing minutePacks export on old pricing-content.ts (trace trc_d11e23974dba). Green: 5 tests / 61 assertions; full package tests 19 / 176 assertions.
@@ -121,3 +188,25 @@ No test waiver: copy-only changes reviewed visually; interaction/math need tests
 - Cloudflare auth confirmed; separate consuelo-dialer-website-preview Pages project exists, no Git integration. No custom-domain changes are needed.
 
 - 2026-10-30 20:26:20 append: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+
+## Published preview / promotion pause
+- Pushed exact app SHA cb4b90cb044251e6b029cb5bc3364887b2ca8d2c; local and remote task refs match. Own PR #2707 is explicitly draft.
+- Final sequential receipt /tmp/consuelo-pricing-validation.json is complete/passed: all 20 tests, full 8-size pricing browser, full 8-size marketing browser, 65 internal-link assertions, empty browser stderr.
+- Cloudflare deployment complete (exit0): https://d14d2f77.consuelo-dialer-website-preview.pages.dev/pricing/ . Stable project alias /pricing/ updated. Wrangler's dirty warning comes from task metadata after promotion attempt; app source was pushed and verified.
+- Actual HTTPS pricing/setup/logo/share routes return200; noindex headers/meta confirmed; new share PNG equals reviewed built bytes.
+- task.pr --draft failed with 405 / non-metadata conflicts. Read-only merge-tree identified only get-started.astro and scripts/test-marketing-browser.mjs (common base 7706be452f9bd98c392762178829191d32fddeae). Existing stream uses shared plan catalog + checks every plan; proposed resolution retains that coverage while extending to new plans/annual billing.
+- Senior-engineer skill explicitly pauses code/test conflicts. Asked Ko to approve the concrete combination; do not infer approval from elapsed time. No merge worktree has been started or conflict sides discarded. Existing stream PR #2683 is untouched.
+
+- 2026-10-30 20:30:11 append: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+
+## Approved integration — 2026-10-30
+Ko explicitly approved: “Yes—combine, verify and promote.” Refresh confirmed remote stream at 933cd32a8b4e255310eb7a2b8beadc5ee0a2c5be and task at cb4b90cb044251e6b029cb5bc3364887b2ca8d2c. Only local change is this task's evidence workpad.
+
+Resolution contract: preserve the stream's shared-catalog lookup and all-plan browser coverage, extended for four offers and monthly/annual billing. Retain the new quote arithmetic, validation and setup content. Merge stream into this task without changing another worktree or discarding either side. Product behavior remains the approved pricing contract already covered test-first; integration adds stronger coverage and reruns the same package/browser/full verify gates. No production deployment or billing mutation is authorized by this integration approval.
+
+- 2026-10-30 20:54:45 append: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+
+### Integration test-first extension
+The inherited setup unit test and browser runner assumed three plans and a removed subtitle field. Extend, rather than drop, their coverage to four catalog offers and both billing periods. The focused red run (trc_d1edd2fc181c) exposed a hardcoded Starter name in the new setup script: a catalog fixture named “Starter updated” still rendered “Starter”. Resolve by deriving Starter's name and allowance from the same catalog as paid plans. Keep hostile/unknown-plan checks and add exact quote-call/mailto assertions. All other lifecycle/motion/analytics tests remain intact.
+
+- 2026-10-30 20:57:59 append: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
