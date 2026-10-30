@@ -1,3 +1,4 @@
+import { createCoachingScripts } from '../coaching/scripts';
 import { createLeadConnectorInboundEnrichment } from './inbound-enrichment';
 import { getInboundRuntime } from './inbound';
 import { randomUUID } from 'node:crypto';
@@ -1507,3 +1508,11 @@ export const createInboundApplicationRuntime = (environment: RailwayEnvironment)
   getInboundRuntime(environment, createLeadConnectorInboundEnrichment(
     () => createRailwayLeadConnectorApplicationLayer(environment),
   ));
+
+export const createCoachingScriptsRuntime = async (environment: RailwayEnvironment) => {
+  try {
+    const { database } = await createSharedResources(environment);
+    await migrateDialerDatabase(database);
+    return createCoachingScripts(database);
+  } catch(cause:unknown){throw new Error('Coaching script runtime composition failed',{cause});}
+};

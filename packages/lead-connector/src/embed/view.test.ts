@@ -100,7 +100,7 @@ describe('LeadConnector embed view', () => {
     });
 
     expect(html.indexOf('Active calls')).toBeGreaterThan(-1);
-    expect(html.indexOf('<h2>Call history')).toBeGreaterThan(
+    expect(html.lastIndexOf('<h2>Recent calls')).toBeGreaterThan(
       html.indexOf('Active calls'),
     );
     expect(html).toContain('data-call-session="active-session-1"');
@@ -108,9 +108,9 @@ describe('LeadConnector embed view', () => {
     expect(html.match(/data-call-session="history-session-1"/g)).toHaveLength(
       1,
     );
-    expect(html).toContain('3 attempts');
-    expect(html).toContain('Transcript processing');
-    expect(html).toContain('Transcript ready');
+    expect(html).toContain('2 min');
+    expect(html).toContain('Ada Rep');
+    expect(html).not.toContain('CA-1');
     expect(html).not.toContain('data-action="transfer"');
   });
 
@@ -168,17 +168,17 @@ describe('LeadConnector embed view', () => {
     } as LeadConnectorEmbedState;
     const html = renderLeadConnectorEmbed(state, {
       surface: 'admin',
-      workspace: { screen: 'history', mode: 'inbound', compact: false },
+      workspace: { screen: 'call-detail', mode: 'inbound', compact: false },
     });
     expect(html).toContain('Call transcript');
     expect(html).toContain('Hello there');
-    expect(html).toContain('connected');
-    expect(html).toContain('Original opportunity');
-    expect(html).toContain('Current opportunity');
-    expect(html).toContain('Provider attempts');
-    expect(html).toContain('Transfer events');
+    expect(html).toContain('Connected');
+    expect(html).toContain('At the time of the call');
+    expect(html).toContain('Current');
+    expect(html).not.toContain('Provider attempts');
+    expect(html).toContain('Transfers');
     expect(html).toContain('Warm transfer requested');
-    expect(html).toContain('2026-08-04 16:16 UTC');
+    expect(html).toContain('Aug 4');
     expect(html).not.toContain('providerPayload');
     expect(html).not.toContain('must remain hidden');
     expect(html).not.toContain('data-action="transfer"');
@@ -315,8 +315,8 @@ describe('LeadConnector embed view', () => {
     );
 
     const html = renderLeadConnectorEmbed(state, { surface: 'overlay' });
-    expect(html).toContain('Make your next connection.');
-    expect(html).toContain('Choose a list or call one person.');
+    expect(html).toContain('Outbound calls');
+    expect(html).not.toContain('Choose a list or call one person.');
     expect(html).toContain('data-action="setup-queue"');
     expect(html).toContain('data-action="setup-single"');
     expect(html).toContain('Choose list');

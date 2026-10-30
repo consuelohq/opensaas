@@ -122,3 +122,23 @@ Stripe credentials, Twilio credentials, Groq credentials, database/Redis URLs, e
 Browser architecture and branding tests scan source and built assets. They reject forbidden provider branding, Twenty, Recoil, NestJS, GraphQL, direct telephony dependencies, Node-only imports, server Effect imports, and secret-bearing implementation terms.
 
 No marketplace installation, customer data mutation, or live call is part of this package build.
+
+
+### Calling workspace
+
+The embedded workspace separates calling from Team, Phone numbers, Plan &
+billing, History and Mercury script pages. Its viewport remains steady while
+page content scrolls. Light, dark and system themes are local presentation
+preferences. The plan/minutes footer opens the combined billing page; subscription
+and payment actions use the authenticated hosted-billing API in a separate tab.
+
+Mercury accepts text or Markdown scripts up to 100 KB. Scripts are shared inside
+the verified workspace, and only their author or a workspace admin can edit
+them. Edits carry an expected revision to prevent overwriting another edit.
+The server stores scripts in PostgreSQL via forward-only migration 015.
+Script storage/reference does not enable live AI coaching.
+
+Answering-device choices persist through refresh and navigation. Only configured,
+healthy endpoints are selectable, and the server remains authoritative for
+readiness and active device ownership. A missing browser endpoint is shown as
+unavailable rather than treated as a working browser phone.

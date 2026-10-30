@@ -18,6 +18,19 @@ describe('LeadConnector embed build', () => {
       stderr: 'pipe',
     });
     expect(build.exitCode).toBe(0);
+    expect(readFileSync(join(outputRoot, 'consuelo-logo.svg'))).toEqual(
+      readFileSync(
+        join(packageRoot, '..', 'consuelo-website', 'public', 'logo.svg'),
+      ),
+    );
+    for (const font of ['interface', 'wordmark']) {
+      const bytes = readFileSync(join(outputRoot, 'fonts', font + '.woff2'));
+      expect(bytes.subarray(0, 4).toString()).toBe('wOF2');
+      expect(bytes.byteLength).toBeGreaterThan(10000);
+    }
+    expect(
+      readFileSync(join(outputRoot, 'fonts', 'inter-LICENSE.txt'), 'utf8'),
+    ).toContain('SIL OPEN FONT LICENSE');
 
     const html = readFileSync(join(outputRoot, 'index.html'), 'utf8');
     const cssVersion = digestPrefix(join(outputRoot, 'main.css'));

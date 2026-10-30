@@ -67,6 +67,29 @@ cpSync(
   join(outputDirectory, 'consuelo-lead-connector-click-to-call.css'),
 );
 
+const publicRoot = join(packageRoot, 'src', 'embed', 'public');
+cpSync(
+  join(publicRoot, 'consuelo-logo.svg'),
+  join(outputDirectory, 'consuelo-logo.svg'),
+);
+mkdirSync(join(outputDirectory, 'fonts'), { recursive: true });
+const decodeFont = Buffer.from;
+for (const font of ['interface', 'wordmark']) {
+  const encoded = readFileSync(
+    join(publicRoot, 'fonts', font + '.woff2.base64'),
+    'utf8',
+  ).trim();
+  writeFileSync(
+    join(outputDirectory, 'fonts', font + '.woff2'),
+    decodeFont(encoded, 'base64'),
+  );
+}
+for (const license of ['inter-LICENSE.txt', 'bodoni-moda-LICENSE.txt'])
+  cpSync(
+    join(publicRoot, 'fonts', license),
+    join(outputDirectory, 'fonts', license),
+  );
+
 const clickToCallSource = readFileSync(
   join(
     packageRoot,

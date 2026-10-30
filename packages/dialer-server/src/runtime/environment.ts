@@ -28,6 +28,9 @@ import { createTwilioSignatureVerifier } from './twilio-signature';
 export type DialerServerEnvironment = Record<string, string | undefined>;
 
 type RuntimeModule = {
+  createCoachingScriptsRuntime?: (
+    environment: DialerServerEnvironment,
+  ) => Promise<NonNullable<DialerServerDependencies['coachingScripts']>>;
   createInboundApplicationRuntime?: typeof import('./inbound').createInboundRuntime;
   createDialerApplicationLayers: (
     environment: DialerServerEnvironment,
@@ -107,6 +110,8 @@ export async function loadDialerServerRuntime(
       );
     const inbound =
       await imported.createInboundApplicationRuntime?.(environment);
+    const coachingScripts =
+      await imported.createCoachingScriptsRuntime?.(environment);
     const callOperations = imported.createCallOperationsApplicationRuntime
       ? await imported.createCallOperationsApplicationRuntime(environment)
       : undefined;
@@ -170,6 +175,7 @@ export async function loadDialerServerRuntime(
       hostname: environment.HOST?.trim() || '0.0.0.0',
       port: Number(environment.PORT || '3000'),
       dependencies: {
+        coachingScripts,
         inbound,
         application: callOperations
           ? createCallHistoryDialerApplication(

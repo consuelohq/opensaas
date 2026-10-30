@@ -102,4 +102,49 @@ describe('snapshot redraws', () => {
     expect(document.activeElement).toBe(root.querySelector('[role=combobox]'));
     document.defaultView!.close();
   });
+  it('keeps a phone selection through consecutive loading/loaded refreshes without changing checkbox defaults', () => {
+    const document = new JSDOM('<main id="root"></main>').window.document;
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const html =
+      '<input type="checkbox" data-field="inbound-endpoint" data-endpoint-id="phone">';
+    replaceWorkspace(root, html);
+    root.querySelector<HTMLInputElement>('input')!.checked = true;
+    for (let n = 0; n < 4; n++) {
+      replaceWorkspace(root, html);
+      expect(root.querySelector<HTMLInputElement>('input')!.checked).toBe(true);
+      expect(root.querySelector<HTMLInputElement>('input')!.defaultValue).toBe(
+        '',
+      );
+    }
+    document.defaultView!.close();
+  });
+});
+
+it('preserves the current page scroll during polling and resets it for navigation', () => {
+  const document = new JSDOM('<div id="app"></div>').window.document;
+  const root = document.querySelector<HTMLElement>('#app')!;
+  const markup = (screen: string) =>
+    '<main data-workspace data-workspace-screen="' +
+    screen +
+    '"><div class="workspace-content"><p>Content</p></div></main>';
+  replaceWorkspace(root, markup('billing'));
+  root.querySelector<HTMLElement>('.workspace-content')!.scrollTop = 180;
+  replaceWorkspace(root, markup('billing'));
+  expect(root.querySelector<HTMLElement>('.workspace-content')!.scrollTop).toBe(
+    180,
+  );
+  replaceWorkspace(root, markup('settings'));
+  expect(root.querySelector<HTMLElement>('.workspace-content')!.scrollTop).toBe(
+    0,
+  );
+});
+
+it('never restores a browser file-picker value during a snapshot redraw',()=>{
+ const document=new JSDOM('<div id="app"></div>').window.document;
+ const root=document.querySelector<HTMLElement>('#app')!;
+ const markup='<form data-form="coaching-script"><input type="file" data-field="script-file" /></form>';
+ replaceWorkspace(root,markup);
+ Object.defineProperty(root.querySelector('input')!,'value',{value:'C:\\fakepath\\playbook.md',configurable:true});
+ expect(()=>replaceWorkspace(root,markup)).not.toThrow();
+ expect(root.querySelector<HTMLInputElement>('input')!.value).toBe('');
 });
