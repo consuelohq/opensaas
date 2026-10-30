@@ -504,6 +504,13 @@ root.addEventListener('submit', (event) => {
     void controller.initiateTransfer({ type, to });
     return;
   }
+  if(form.dataset.form === 'commercial-purchase-claim'){
+    const code=String(data.get('setupCode')??'').trim();
+    const field=form.querySelector<HTMLInputElement>('input[name="setupCode"]');
+    if(field)field.value='';
+    void controller.claimPurchase(code);
+    return;
+  }
   if (form.dataset.form === 'commercial-billing-checkout') {
     const quantities = billingQuantitiesFromFormData(data);
     void openHostedBilling(() => controller.createCheckout(quantities));

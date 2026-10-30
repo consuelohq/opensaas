@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/refine-dialer-pricing-layout-and-connect-existing-stripe-checkout",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2710,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2710",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-refine-dialer-pricing-layout-and-connect-existing-stripe-checkout",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d7a98df5be09",
+  "tmuxSession": "opensaas-website-refine-dialer-pricing-layout-and-connect-existin-d7a98df5",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-refine-dialer-pricing-layout-and-connect-existing-stripe-checkout/.task/session.json",
+  "createdAt": "2026-10-30T21:04:59.342Z"
+}

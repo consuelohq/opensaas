@@ -136,6 +136,8 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         '/v1/commercial/billing/checkout',
         { method: 'POST', body: JSON.stringify(input) },
       ),
+    claimCommercialPurchase: (input:{purchaseId:string;claimToken:string}) =>
+      request<{claimed:boolean;workspaceId:string;purchaseId:string}>('/v1/commercial/billing/claim',{method:'POST',body:JSON.stringify(input)}),
     createCommercialBillingPortal: () =>
       request<{ id: string; url: string }>(
         '/v1/commercial/billing/portal',

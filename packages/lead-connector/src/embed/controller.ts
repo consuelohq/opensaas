@@ -780,6 +780,11 @@ export const createLeadConnectorEmbedController = (input: {
       if (saved)
         dispatchInbound({ type: 'CONFIGURATION_SAVED', configuration: saved });
     },
+    claimPurchase: async (code:string):Promise<void> => {
+      const separator=code.indexOf('.');
+      const result=await run(()=>input.api.claimCommercialPurchase({purchaseId:code.slice(0,separator),claimToken:code.slice(separator+1)}));
+      if(result)await loadCommercial();
+    },
     createCheckout: async (quantities: {
       single: number;
       standard: number;
