@@ -346,6 +346,185 @@ describe('commercial application billing and inventory authority', () => {
     ).rejects.toThrow('ASSIGNED_SEAT_QUANTITY');
   });
 
+
+  it('provisions the first trial number without a paid seat and preserves trial limits', async () => {
+    const numbers: Array<{
+      workspace_id: string;
+      user_id: string | null;
+      phone_number: string;
+      status: string;
+      slot_type: string | null;
+    }> = [];
+    const query = mock(async (sql: string, parameters: readonly unknown[] = []) => {
+      if (sql.includes('FROM dialer_workspace_subscriptions')) return { rows: [] };
+      if (sql.includes('FROM dialer_workspace_subscription_items')) return { rows: [] };
+      if (sql.includes('SELECT plan_code')) return { rows: [] };
+      if (sql.includes('AS seat_count')) {
+        return { rows: [{ seat_count: 0, number_count: numbers.length }] };
+      }
+      if (sql.includes('COUNT(*)::integer AS quantity')) {
+        return { rows: [{ quantity: numbers.length }] };
+      }
+      if (sql.includes('SELECT workspace_id, user_id, phone_number, status')) {
+        return { rows: numbers };
+      }
+      if (sql.includes('UPDATE dialer_phone_numbers AS target')) {
+        const number = numbers.find((item) => item.phone_number === parameters[2]);
+        if (!number) return { rows: [], rowCount: 0 };
+        number.user_id = String(parameters[1]);
+        number.slot_type = 'included';
+        return { rows: [number], rowCount: 1 };
+      }
+      if (sql.includes('FROM dialer_phone_numbers') && sql.includes('user_id = $2')) {
+        return { rows: numbers.filter((number) => number.user_id === parameters[1]) };
+      }
+      if (sql.includes('FROM dialer_usage_events')) {
+        return { rows: [{ connected_minutes: 0 }] };
+      }
+      throw new Error('Unexpected trial query: ' + sql);
+    });
+    const billing = createBilling();
+    const provision = mock(async (request: { workspaceId: string; phoneNumber: string }) => {
+      numbers.push({
+        workspace_id: request.workspaceId,
+        phone_number: request.phoneNumber,
+        user_id: null,
+        slot_type: null,
+        status: 'active',
+      });
+      return { phoneNumber: request.phoneNumber, providerNumberId: 'PN_trial' };
+    });
+    const application = createCommercialApplication({
+      database: { query },
+      catalog,
+      billing,
+      billingReturnUrl: 'https://app.test/admin',
+      numbers: {
+        searchAvailable: async () => [],
+        provision,
+        release: async () => ({ released: true as const }),
+      },
+    });
+
+    await expect(
+      Effect.runPromise(application.provisionNumber(admin('workspace-one'), {
+        userId: 'payer-one',
+        phoneNumber: '+15550100001',
+      })),
+    ).resolves.toMatchObject({ provisioned: true });
+    expect(numbers).toEqual([{
+      workspace_id: 'workspace-one',
+      user_id: 'payer-one',
+      phone_number: '+15550100001',
+      status: 'active',
+      slot_type: 'included',
+    }]);
+    await expect(
+      Effect.runPromise(application.callerContext(admin('workspace-one'))),
+    ).resolves.toMatchObject({
+      trial: true,
+      planCode: catalog.trial.planCode,
+      callerIds: ['+15550100001'],
+      remainingMinutes: 500,
+      canStartCall: true,
+    });
+    await expect(
+      Effect.runPromise(application.provisionNumber(admin('workspace-one'), {
+        userId: 'payer-one',
+        phoneNumber: '+15550100002',
+      })),
+    ).rejects.toThrow('NUMBER_INVENTORY_EXHAUSTED');
+    expect(provision).toHaveBeenCalledTimes(1);
+    expect(billing.createCheckoutSession).not.toHaveBeenCalled();
+    expect(billing.reconcileSubscription).not.toHaveBeenCalled();
+  });
+
+  for (const authority of ['confirmed-inventory', 'subscription'] as const) {
+    it(`rejects an unassigned paid number target with ${authority} before purchase`, async () => {
+      const query = mock(async (sql: string) => {
+        if (sql.includes('FROM dialer_workspace_subscriptions')) {
+          return { rows: authority === 'subscription' ? [{
+            status: 'active',
+            payment_failed_at: null,
+            cancel_at_period_end: false,
+          }] : [] };
+        }
+        if (sql.includes('FROM dialer_workspace_subscription_items')) {
+          return { rows: authority === 'confirmed-inventory'
+            ? [{ item_code: 'standard', quantity: 1 }] : [] };
+        }
+        if (sql.includes('COUNT(*)::integer AS quantity')) {
+          return { rows: [{ quantity: 0 }] };
+        }
+        if (sql.includes('SELECT plan_code') ||
+            sql.includes('SELECT workspace_id, user_id, phone_number, status')) {
+          return { rows: [] };
+        }
+        throw new Error('Unexpected paid assignment query: ' + sql);
+      });
+      const provision = mock(async () => ({
+        phoneNumber: '+15550100001',
+        providerNumberId: 'PN_must_not_be_created',
+      }));
+      const application = createCommercialApplication({
+        database: { query },
+        catalog,
+        billing: createBilling(),
+        billingReturnUrl: 'https://app.test/admin',
+        numbers: {
+          searchAvailable: async () => [],
+          provision,
+          release: async () => ({ released: true as const }),
+        },
+      });
+      await expect(
+        Effect.runPromise(application.provisionNumber(admin('workspace-one'), {
+          userId: 'user-without-seat',
+          phoneNumber: '+15550100001',
+        })),
+      ).rejects.toThrow('SEAT_NOT_ASSIGNED');
+      expect(provision).not.toHaveBeenCalled();
+    });
+  }
+
+
+  it('does not reinterpret a malformed active seat plan as a trial', async () => {
+    const query = mock(async (sql: string) => {
+      if (sql.includes('FROM dialer_workspace_subscriptions')) return { rows: [] };
+      if (sql.includes('FROM dialer_workspace_subscription_items')) return { rows: [] };
+      if (sql.includes('COUNT(*)::integer AS quantity')) {
+        return { rows: [{ quantity: 0 }] };
+      }
+      if (sql.includes('SELECT plan_code')) return { rows: [{ plan_code: 'retired' }] };
+      if (sql.includes('SELECT workspace_id, user_id, phone_number, status')) {
+        return { rows: [] };
+      }
+      throw new Error('Unexpected malformed-seat query: ' + sql);
+    });
+    const provision = mock(async () => ({
+      phoneNumber: '+15550100001',
+      providerNumberId: 'PN_must_not_be_created',
+    }));
+    const application = createCommercialApplication({
+      database: { query },
+      catalog,
+      billing: createBilling(),
+      billingReturnUrl: 'https://app.test/admin',
+      numbers: {
+        searchAvailable: async () => [],
+        provision,
+        release: async () => ({ released: true as const }),
+      },
+    });
+    await expect(
+      Effect.runPromise(application.provisionNumber(admin('workspace-one'), {
+        userId: 'payer-one',
+        phoneNumber: '+15550100001',
+      })),
+    ).rejects.toThrow('INVALID_PLAN_CODE');
+    expect(provision).not.toHaveBeenCalled();
+  });
+
   it('rejects number purchase before the provider boundary when confirmed line inventory is exhausted', async () => {
     const query = mock(async (sql: string) => {
       if (

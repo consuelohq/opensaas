@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1642-wet-stone-trial-caller-id-and-customer-acceptance",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2701,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2701",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1642-wet-stone-trial-caller-id-and-customer-acceptance",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_bc321ba3c7d1",
+  "tmuxSession": "opensaas-dialer-dev-1642-wet-stone-trial-caller-id-and-customer--bc321ba3",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1642-wet-stone-trial-caller-id-and-customer-acceptance/.task/session.json",
+  "createdAt": "2026-10-30T02:26:05.134Z"
+}
