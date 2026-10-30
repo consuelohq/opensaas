@@ -1,0 +1,126 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness",
+  "base": "origin/task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness",
+  "headSha": "ec157d3a43729a286a880760f12a6275a7f6dc6c",
+  "changeHash": "0ecbe1a34bc89a55ccd6b9eba6b619a9cedef19b42f5533a49ff06b6df86b9b1",
+  "changedFiles": [
+    "packages/workspace/tests/task-merge-readiness.test.ts"
+  ],
+  "verifiedAt": "2026-10-30T20:17:08.118Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness/current.json",
+        ".task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness/workpad.md",
+        ".task/tasks/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness.json",
+        "packages/workspace/tests/task-merge-readiness.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-task-merge-agent-boundary",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing PR merge readiness must stay bounded, fail closed on unreadable or failed GitHub checks, and keep deployment polling behind an explicit operator path.",
+          "matchedFiles": [
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace task merge agent-boundary contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ],
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true
+        },
+        {
+          "name": "workspace task merge GitHub transport contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts"
+          ],
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace task merge agent-boundary contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 424,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-isolated-main-integration-exact-head-and-check-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-merge-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:17:07\n\u001b[2m   Duration \u001b[22m 172ms\u001b[2m (transform 69ms, setup 0ms, import 90ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace task merge GitHub transport contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 358,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-isolated-main-integration-exact-head-and-check-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/github.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 60\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/github.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 95\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:17:07\n\u001b[2m   Duration \u001b[22m 180ms\u001b[2m (transform 39ms, setup 0ms, import 51ms, tests 155ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
