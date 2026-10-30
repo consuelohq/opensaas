@@ -3,6 +3,7 @@ import DefaultHead from '@astrojs/starlight/components/Head.astro';
 ---
 
 <DefaultHead />
+{import.meta.env.PUBLIC_DOCS_PREVIEW === '1' && <meta name="robots" content="noindex,nofollow" />}
 <meta property="og:image" content={new URL("/dialer-docs-social.png", Astro.site ?? Astro.url).href} />
 <meta property="og:image:alt" content="Consuelo Dialer Docs — set up calling and keep your team connected." />
 <meta property="og:image:width" content="1200" />

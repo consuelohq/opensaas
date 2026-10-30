@@ -1,0 +1,16 @@
+{
+  "area": "trace-site-makeover",
+  "stream": "stream/trace-site-makeover",
+  "taskBranch": "task/trace-site-makeover/fix-batch-trace-interaction-and-finish-reading-polish",
+  "baseBranch": "stream/trace-site-makeover",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2679,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2679",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-fix-batch-trace-interaction-and-finish-reading-polish",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9f942745a601",
+  "tmuxSession": "opensaas-trace-site-makeover-fix-batch-trace-interaction-and-finish-reading-p-9f942745",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-fix-batch-trace-interaction-and-finish-reading-polish/.task/session.json",
+  "createdAt": "2026-10-29T18:35:21.322Z"
+}

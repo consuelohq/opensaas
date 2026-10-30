@@ -159,8 +159,10 @@ const isHome = Astro.url.pathname === '/';
     textarea.remove();
   }
 
-  document.querySelectorAll('.page-actions').forEach((actions) => {
-    if (!(actions instanceof HTMLElement)) return;
+  const boundPageActions = new WeakSet<HTMLElement>();
+  const setupPageActions = () => document.querySelectorAll('.page-actions').forEach((actions) => {
+    if (!(actions instanceof HTMLElement) || boundPageActions.has(actions)) return;
+    boundPageActions.add(actions);
     const markdownHref = actions.dataset.markdownHref;
     const details = actions.querySelector('details');
     const status = actions.querySelector('.action-status');
@@ -211,20 +213,23 @@ const isHome = Astro.url.pathname === '/';
       }
     });
 
-    document.addEventListener('click', (event) => {
-      if (
-        details instanceof HTMLDetailsElement &&
-        event.target instanceof Node &&
-        !actions.contains(event.target)
-      ) {
-        details.open = false;
-      }
-    });
-
     actions.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && details instanceof HTMLDetailsElement) {
         details.open = false;
         details.querySelector('summary')?.focus();
+      }
+    });
+  });
+
+  // Starlight may replace PageTitle without re-executing this bundled script.
+  // Bind newly swapped elements once while retaining existing listeners.
+  setupPageActions();
+  document.addEventListener('astro:page-load', setupPageActions);
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Node)) return;
+    document.querySelectorAll('.page-actions details').forEach((details) => {
+      if (details instanceof HTMLDetailsElement && !details.closest('.page-actions')?.contains(event.target)) {
+        details.open = false;
       }
     });
   });

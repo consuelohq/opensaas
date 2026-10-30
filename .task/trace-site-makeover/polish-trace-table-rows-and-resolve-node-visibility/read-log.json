@@ -1,0 +1,21 @@
+{
+  "files": [
+    ".task/trace-site-makeover/polish-trace-table-rows-and-resolve-node-visibility/workpad.md",
+    "packages/documentation/README.md",
+    "packages/documentation/src/content/docs/observe/traces.mdx",
+    "packages/os/assets/vendor/observability-traces-v38/inspector.css",
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/facade/logger.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-site-inspector/browser.ts",
+    "packages/os/scripts/lib/trace-site-inspector/model.ts",
+    "packages/os/scripts/lib/trace-site-inspector/table-formatters.ts",
+    "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/trace-site-table-polish.browser.test.ts"
+  ],
+  "updatedAt": "2026-10-29T20:12:48.621Z"
+}

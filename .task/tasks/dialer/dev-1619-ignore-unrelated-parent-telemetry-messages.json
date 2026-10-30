@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1619-ignore-unrelated-parent-telemetry-messages",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2699,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2699",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1619-ignore-unrelated-parent-telemetry-messages",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e9a17235d1ae",
+  "tmuxSession": "opensaas-dialer-dev-1619-ignore-unrelated-parent-telemetry-messa-e9a17235",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1619-ignore-unrelated-parent-telemetry-messages/.task/session.json",
+  "createdAt": "2026-10-30T02:01:25.423Z"
+}

@@ -1,0 +1,189 @@
+---
+import { comparisonGroups, pricingPlans } from '../../data/pricing-content';
+import PricingIcon from './PricingIcon.astro';
+---
+
+<section
+  class="pricing-comparison"
+  id="compare"
+  aria-labelledby="compare-heading"
+>
+  <div class="comparison-intro">
+    <div>
+      <p class="pricing-eyebrow">THE DETAILS</p><h2 id="compare-heading">
+        Compare all features
+      </h2>
+    </div><p>
+      Find what matters for your team.<br />Open any feature for the details.
+    </p>
+  </div>
+  <div class="comparison-controls" data-comparison-controls hidden>
+    <label
+      >Calling focus<select data-calling-focus
+        ><option value="all">Inbound & outbound</option><option value="outbound"
+          >Outbound</option
+        ><option value="inbound">Inbound</option></select
+      ></label
+    ><div class="feature-switch" role="group" aria-label="Feature detail level">
+      <button type="button" data-feature-view="all" aria-pressed="true"
+        >All features</button
+      ><button type="button" data-feature-view="key" aria-pressed="false"
+        >Key features</button>
+    </div><p class="sr-only" data-comparison-status aria-live="polite"></p>
+  </div>
+  <p class="comparison-scroll-hint">
+    On smaller screens, scroll the table to compare plans →
+  </p>
+  <div
+    class="comparison-scroll"
+    role="region"
+    aria-label="Plan feature comparison — scroll horizontally"
+    tabindex="0"
+  >
+    <div class="comparison-grid comparison-column-head" aria-hidden="true">
+      <span>Features</span>{pricingPlans.map((p) => <span>{p.name}</span>)}
+    </div>
+    {
+      comparisonGroups.map((group) => (
+        <details
+          class="comparison-group"
+          data-comparison-group={group.id}
+          open={group.id === 'outbound' || group.id === 'inbound'}
+        >
+          <summary>
+            <>
+              <span>
+                <PricingIcon name={group.icon} />
+                {group.name}
+              </span>
+              <PricingIcon class="disclosure-arrow" />
+            </>
+          </summary>
+          <p class="comparison-group__description">{group.description}</p>
+          <table>
+            <>
+              <caption class="sr-only">{group.name} features by plan</caption>
+              <colgroup>
+                <col class="feature-column" />
+                {pricingPlans.map(() => (
+                  <col />
+                ))}
+              </colgroup>
+              <thead class="sr-only">
+                <tr>
+                  <th scope="col">Feature</th>
+                  {pricingPlans.map((p) => (
+                    <th scope="col">{p.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {group.rows.map((row) => (
+                  <tr
+                    data-feature-row={row.id}
+                    data-key-feature={row.key ? 'true' : 'false'}
+                  >
+                    <th scope="row">
+                      <details class="feature-explainer">
+                        <summary>
+                          <PricingIcon class="feature-chevron" />
+                          <span>{row.name}</span>
+                        </summary>
+                        <p>{row.detail}</p>
+                      </details>
+                    </th>
+                    {row.values.map((value) => (
+                      <td>
+                        {value === true ? (
+                          <span class="feature-yes">
+                            <PricingIcon name="check" />
+                            <span class="sr-only">Included</span>
+                          </span>
+                        ) : value === false ? (
+                          <span class="feature-no">
+                            <span aria-hidden="true">—</span>
+                            <span class="sr-only">Not included</span>
+                          </span>
+                        ) : (
+                          <span
+                            class:list={[
+                              'feature-value',
+                              {
+                                'feature-value--soon': value === 'Coming soon',
+                              },
+                            ]}
+                          >
+                            {value}
+                          </span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </>
+          </table>
+        </details>
+      ))
+    }
+  </div>
+  <p class="comparison-footnote">
+    Features apply to the selected plan. Mercury is an optional add-on. <a
+      href="#pricing-faq">Questions about seats or usage? <PricingIcon /></a>
+  </p>
+</section>
+<script>
+  const controls = document.querySelector<HTMLElement>(
+    '[data-comparison-controls]',
+  );
+  const focus = document.querySelector<HTMLSelectElement>(
+    '[data-calling-focus]',
+  );
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[data-feature-view]'),
+  );
+  const groups = Array.from(
+    document.querySelectorAll<HTMLDetailsElement>('[data-comparison-group]'),
+  );
+  const status = document.querySelector<HTMLElement>(
+    '[data-comparison-status]',
+  );
+  let view = 'all';
+  const apply = () => {
+    const motion = focus?.value ?? 'all';
+    let visible = 0;
+    groups.forEach((group) => {
+      const id = group.dataset.comparisonGroup;
+      group.hidden =
+        (id === 'inbound' || id === 'outbound') &&
+        motion !== 'all' &&
+        id !== motion;
+      group
+        .querySelectorAll<HTMLElement>('[data-feature-row]')
+        .forEach((row) => {
+          row.hidden = view === 'key' && row.dataset.keyFeature !== 'true';
+          if (!group.hidden && !row.hidden) visible++;
+        });
+    });
+    buttons.forEach((button) =>
+      button.setAttribute(
+        'aria-pressed',
+        String(button.dataset.featureView === view),
+      ),
+    );
+    if (status)
+      status.textContent =
+        visible +
+        ' matching features. ' +
+        (motion === 'all' ? 'Inbound and outbound.' : motion + ' calling.');
+  };
+  if (controls) controls.hidden = false;
+  focus?.addEventListener('change', apply);
+  buttons.forEach((button) =>
+    button.addEventListener('click', () => {
+      view = button.dataset.featureView ?? 'all';
+      apply();
+    }),
+  );
+  apply();
+</script>

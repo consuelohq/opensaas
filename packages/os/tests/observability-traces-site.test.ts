@@ -269,7 +269,7 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(source).not.toContain('packages/workspace');
     expect(source).toContain('const compactLayout = availableWidth <= 760;');
     expect(source).toContain(
-      "open && !compactLayout\n      ? `${Math.floor(tableWidth)}px 8px minmax(420px, ${inspectorWidth}px)`",
+      "open && !compactLayout\n      ? `${Math.floor(tableWidth)}px 0px minmax(420px, ${inspectorWidth}px)`",
     );
     expect(runtime).not.toContain('packages/workspace/scripts/trace-site-inspector');
     expect(packageJson).toContain('\"@tanstack/virtual-core\"');

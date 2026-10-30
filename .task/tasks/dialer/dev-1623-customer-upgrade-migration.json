@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1623-customer-upgrade-migration",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2681,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2681",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1623-customer-upgrade-migration",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a9d8d1fbba5d",
+  "tmuxSession": "opensaas-dialer-dev-1623-customer-upgrade-migration-a9d8d1fb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1623-customer-upgrade-migration/.task/session.json",
+  "createdAt": "2026-10-29T18:42:56.008Z"
+}

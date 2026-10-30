@@ -74,21 +74,33 @@ describe('Dialer website interaction lifecycle', () => {
   const script = source('src/pages/get-started.astro').match(/<script>([\s\S]*?)<\/script>/)?.[1];
   expect(script).toBeTruthy();
   const catalog = pricingPlans.map(plan => ({ ...plan, name: plan.name + ' updated', price: '$271' }));
-  for (const plan of catalog) {
-   const selected = { textContent: 'Tell us how your team calls today.' };
-   const request = { href: 'mailto:support@consuelohq.com?subject=Set%20up%20Consuelo%20Dialer' };
-   new Function('pricingPlans', 'location', 'document', compile(script!))(catalog,
-    { search: new URL(plan.href, 'https://example.test').search },
-    { querySelector: (selector: string) => selector === '[data-selected-plan]' ? selected : request });
-   expect(selected.textContent).toContain(plan.name + ' — ' + plan.price + ' ' + plan.subtitle.toLowerCase());
-   expect(new URL(request.href).searchParams.get('subject')).toContain(plan.name + ' — ' + plan.price);
+  for (const billing of ['monthly', 'annual']) {
+   for (const plan of catalog) {
+    const selected = { textContent: 'Tell us how your team calls today.' };
+    const request = { href: 'mailto:support@consuelohq.com?subject=Set%20up%20Consuelo%20Dialer' };
+    const quoteCalls: unknown[] = [];
+    const quote = (code:string, period:string, seats:number) => {
+     quoteCalls.push([code,period,seats]);
+     return {totalCents:code==='starter'?0:period==='annual'?325200:27100};
+    };
+    new Function('pricingPlans', 'quotePlan', 'location', 'document', compile(script!))(catalog, quote,
+     { search: '?'+new URLSearchParams({plan:plan.code,billing}) },
+     { querySelector: (selector: string) => selector === '[data-selected-plan]' ? selected : request });
+    const label = plan.code === 'starter'
+     ? plan.name + ' — 100 total trial minutes'
+     : plan.name + ' — $271 per seat / month' + (billing==='annual'?' ($3,252 per seat billed annually)':' (billed monthly)');
+    expect(selected.textContent).toContain(label);
+    expect(new URL(request.href).searchParams.get('subject')).toBe('Set up Consuelo Dialer — '+label);
+    expect(quoteCalls).toEqual([[plan.code,billing,1]]);
+   }
   }
   for (const search of ['', '?plan=__proto__', '?plan=toString', '?plan=%3Cimg%3E', '?plan=unknown']) {
    const selected = { textContent: 'Tell us how your team calls today.' };
    const request = { href: 'mailto:support@consuelohq.com?subject=Set%20up%20Consuelo%20Dialer' };
-   new Function('pricingPlans', 'location', 'document', compile(script!))(catalog, { search }, {
-    querySelector: (selector: string) => selector === '[data-selected-plan]' ? selected : request,
-   });
+   new Function('pricingPlans', 'quotePlan', 'location', 'document', compile(script!))(catalog,
+    ()=>{throw new Error('Unknown plan must not be quoted');}, { search }, {
+     querySelector: (selector: string) => selector === '[data-selected-plan]' ? selected : request,
+    });
    expect(selected.textContent).toStartWith('Tell us');
    expect(new URL(request.href).searchParams.get('subject')).toBe('Set up Consuelo Dialer');
   }

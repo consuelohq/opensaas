@@ -1,5 +1,7 @@
 import { redactJson } from '../redaction';
+import { measureTracePayloadUsage } from '../trace-token-usage';
 import { currentTraceRoutingContext } from '../trace-routing-context';
+import { loadNodeYamlConfig, resolveConsueloHomeLayout } from '../consuelo-home';
 import { recordToolTraceSafely, type TraceEnvironment } from '../trace-persistence';
 import type { ToolCapabilities } from './types';
 
@@ -72,6 +74,28 @@ export function logToolExecution(entry: {
     });
   }
 
+  const usage = measureTracePayloadUsage(entry.input, entry.result, {
+    inputTokens: entry.inputTokens, outputTokens: entry.outputTokens, totalTokens: entry.totalTokens,
+  });
+  let routing = currentTraceRoutingContext();
+  // CLI-backed calls can cross a process boundary without AsyncLocalStorage.
+  // The installed identity still proves which node executed this facade call.
+  if (!routing?.resolvedNodeId) {
+    try {
+      const layout = resolveConsueloHomeLayout(
+        entry.env?.CONSUELO_HOME ?? entry.env?.CONSUELO_OS_HOME,
+      );
+      const { node } = loadNodeYamlConfig(layout.nodeConfigPath);
+      routing = {
+        ...routing,
+        resolvedNodeId: node.id,
+        resolvedNodeName: node.name,
+        routeSource: routing?.routeSource ?? 'local',
+      };
+    } catch {
+      // Calls before provisioning or with an unreadable identity remain unknown.
+    }
+  }
   recordToolTraceSafely({
     traceId: entry.traceId,
     mcpTraceId: entry.mcpTraceId,
@@ -91,9 +115,9 @@ export function logToolExecution(entry: {
     resolvedInput: entry.resolvedInput,
     result: entry.result,
     stderr: entry.stderr,
-    inputTokens: entry.inputTokens,
-    outputTokens: entry.outputTokens,
-    totalTokens: entry.totalTokens,
-    routing: currentTraceRoutingContext(),
+    inputTokens: usage.input ?? undefined,
+    outputTokens: usage.output ?? undefined,
+    totalTokens: usage.total ?? undefined,
+    routing,
   }, { env: entry.env });
 }

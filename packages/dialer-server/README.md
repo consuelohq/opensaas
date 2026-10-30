@@ -100,6 +100,43 @@ The Worker sets an explicit `frame-ancestors` allowlist for the provider-owned a
 
 ## Local Postgres/Redis benchmark lab
 
+## Existing database upgrade contract
+
+The standalone server records ordered migrations in
+`consuelo_dialer_schema_migrations`. On fresh installations migration 001
+creates LeadConnector persistence. For databases that had already applied 001
+before the company-credential schema was introduced, **migration
+`20261029_014_lead_connector_company_credentials`** reruns the idempotent
+LeadConnector initializer and creates the missing
+`consuelo_lead_connector_company_credentials` table. No earlier migration ID
+or migration ledger timestamp is changed.
+
+This migration is additive and **forward-only**: it has no supported down
+migration, since dropping the table would destroy stored OAuth credentials.
+An installation where an operator manually created the table and recovered
+credentials can adopt 014 safely; the initializer uses `IF NOT EXISTS` and
+does not overwrite existing rows. A restart skips already-applied 014.
+Do not delete the ledger entry or drop the table in customer environments.
+If a deployment must be rolled back, retain the upgraded database schema
+and its credentials, and restore the application version compatible with
+that schema; use a reviewed backup/restore plan for any irreversible
+database rollback.
+
+Focused regression tests:
+
+```bash
+bun test packages/dialer-server/src/database/migrations.test.ts
+CONSUELO_RUN_LEAD_CONNECTOR_UPGRADE_POSTGRES=1 bun test packages/dialer-server/src/database/migrations.postgres.integration.test.ts
+```
+
+The opt-in PostgreSQL suite starts a disposable loopback PostgreSQL 16+
+cluster, reconstructs an old applied-ledger/missing-table state, tests
+recovered ciphertext and signed embed bootstrap using synthetic credentials,
+and tears down its files and process. It reads no production database URL or
+provider keys.
+
+## Local Postgres/Redis benchmark lab
+
 The dialer has a provider-free local lab for predictive-model development. It starts disposable PostgreSQL and Redis processes on isolated loopback ports, runs the real dialer database migrations, seeds deterministic synthetic histories, runs the benchmark scenarios, then shuts both services down and removes their temporary data directories. It does not read Railway, Twilio, LeadConnector, or other production credentials.
 
 Requirements:

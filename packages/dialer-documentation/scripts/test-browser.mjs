@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, webkit } from 'playwright';
-import { launchDocumentationBrowser, stopDocumentationServer } from './lib/documentation-browser-test.mjs';
+import { launchDocumentationBrowser, startDocumentationPreviewServer, stopDocumentationServer } from './lib/documentation-browser-test.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const port = Number(process.env.DOCS_TEST_PORT ?? 4397);
@@ -13,9 +12,7 @@ const origin = 'http://127.0.0.1:' + port;
 const evidence = process.env.DOCS_EVIDENCE_DIR ?? resolve(tmpdir(), 'consuelo-dialer-docs-' + process.pid);
 mkdirSync(evidence, { recursive: true });
 assert.ok(existsSync(resolve(root, 'dist/client/index.html')), 'Build before browser checks');
-const server = spawn('node', [resolve(root, 'node_modules/astro/bin/astro.mjs'), 'preview', '--host', '127.0.0.1', '--port', String(port)], {
-  cwd: root, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'],
-});
+const server = await startDocumentationPreviewServer({ port });
 let output = '';
 server.stdout.on('data', (chunk) => { output = (output + chunk).slice(-10000); });
 server.stderr.on('data', (chunk) => { output = (output + chunk).slice(-10000); });
@@ -36,6 +33,13 @@ try {
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(origin, { waitUntil: 'networkidle' });
   assert.match(await page.title(), /Consuelo Dialer/);
+  if (process.env.DOCS_SITE_URL) {
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), process.env.DOCS_SITE_URL.replace(/\/$/, '') + '/');
+    assert.equal(await page.locator('meta[property="og:image"]').getAttribute('content'), process.env.DOCS_SITE_URL.replace(/\/$/, '') + '/dialer-docs-social.png');
+    const sitemap = await context.request.get(origin + '/sitemap-0.xml');
+    assert.match(await sitemap.text(), new RegExp(process.env.DOCS_SITE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  if (process.env.PUBLIC_DOCS_PREVIEW === '1') assert.equal(await page.locator('meta[name=robots]').getAttribute('content'), 'noindex,nofollow');
   assert.equal(await page.locator('main h1').count(), 1);
   assert.equal(await page.locator('#starlight__sidebar .global-sidebar-desktop a.global-section-link').count(), 8);
   assert.equal(await page.getByRole('link', { name: 'Consuelo Dialer docs', exact: true }).getAttribute('href'), '/');
@@ -61,6 +65,13 @@ try {
   }
   await header.getByRole('button', { name: 'Use system appearance', exact: true }).click();
   assert.equal(await page.evaluate(() => localStorage.getItem('starlight-theme')), null);
+  await header.getByRole('button', { name: 'Use light appearance', exact: true }).click();
+  assert.equal(
+    await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--docs-muted').trim()),
+    '#6b625c',
+    'The rendered light theme must use the WCAG-tested muted text color',
+  );
+  await header.getByRole('button', { name: 'Use system appearance', exact: true }).click();
 
   // Production Pagefind results must use the new content, not the inherited OS index.
   await page.getByRole('button', { name: /Search/ }).first().click();
@@ -81,6 +92,43 @@ try {
   assert.equal(await page.getByRole('link', { name: /View as Markdown/ }).getAttribute('href'), '/outbound/local-presence.md');
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.page-actions details').getAttribute('open'), null);
+
+  // Navigate to another docs page, then emulate Starlight swapping in a new page-actions
+  // element before astro:page-load. The initializer must bind exactly once per element.
+  await page.locator('#starlight__sidebar a[href="/outbound/queues/"]').first().click();
+  await page.waitForURL(origin + '/outbound/queues/');
+  const queuesMarkdown = await (await context.request.get(origin + '/outbound/queues.md')).text();
+  const queueHeading = queuesMarkdown.match(/^# .+/)?.[0];
+  assert.ok(queueHeading, 'Queues page must have a Markdown heading');
+  await page.evaluate(() => {
+    const originalActions = document.querySelector('.page-actions');
+    if (!originalActions) throw new Error('Missing page actions after docs navigation');
+    const newActions = originalActions.cloneNode(true);
+    originalActions.replaceWith(newActions);
+    for (const link of newActions.querySelectorAll('a[data-page-action]')) {
+      link.addEventListener('click', (event) => event.preventDefault(), { capture: true });
+    }
+    const nativeFetch = window.fetch.bind(window);
+    window.__docsPageCopyRequests = 0;
+    window.fetch = (...args) => {
+      if (String(args[0]).endsWith('/outbound/queues.md')) window.__docsPageCopyRequests++;
+      return nativeFetch(...args);
+    };
+    document.dispatchEvent(new Event('astro:page-load'));
+    document.dispatchEvent(new Event('astro:page-load'));
+  });
+  await page.getByRole('button', { name: 'Copy page', exact: true }).first().click();
+  await page.waitForFunction(() => document.querySelector('.page-actions')?.getAttribute('data-copy-state') === 'success');
+  assert.ok((await page.evaluate(() => navigator.clipboard.readText())).startsWith(queueHeading), 'Copy after navigation returns new page Markdown');
+  assert.equal(await page.evaluate(() => window.__docsPageCopyRequests), 1, 'Repeated page-load events do not double-bind actions');
+  for (const [action, label] of [['chatgpt', 'ChatGPT'], ['claude', 'Claude']]) {
+    await page.getByLabel('More page actions', { exact: true }).click();
+    await page.locator(`[data-page-action="${action}"]`).click();
+    await page.waitForFunction((name) => document.querySelector('.page-actions .action-status')?.textContent?.includes('paste it into ' + name), label);
+    assert.ok((await page.evaluate(() => navigator.clipboard.readText())).startsWith(queueHeading), label + ' action copies new page Markdown');
+  }
+  assert.equal(await page.evaluate(() => window.__docsPageCopyRequests), 3, 'Each copy-before-open action fetches Markdown exactly once');
+  await page.goto(origin + '/outbound/local-presence/', { waitUntil: 'networkidle' });
 
   const viewports = [
     ['phone-small', 320, 568], ['phone', 390, 844], ['landscape-small', 568, 320],
@@ -131,8 +179,9 @@ try {
     const md = await context.request.get(origin + '/' + slug + '.md');
     assert.equal(md.status(), 200, slug + ' Markdown');
   }
-  const absent = await context.request.get(origin + '/start/install-consuelo-os/');
-  assert.equal(absent.status(), 404, 'An inherited OS page must not resolve');
+  const legacy = await context.request.get(origin + '/start/install-consuelo-os/', { maxRedirects: 0 });
+  assert.equal(legacy.status(), 301, 'Legacy OS routes retain the shipped permanent redirect');
+  assert.equal(legacy.headers().location, 'https://os.consuelohq.com/docs/start/install-consuelo-os/');
   const badTranslation = await context.request.get(origin + '/api/docs/translate?path=%2Fmissing%2F&lang=es');
   assert.equal(badTranslation.status(), 404, 'Unknown source cannot translate');
 
@@ -140,7 +189,8 @@ try {
   let translatedPath;
   await spanish.route('**/api/docs/translate?**', async (route) => {
     translatedPath = new URL(route.request().url()).searchParams.get('path');
-    await route.fulfill({ json: { ok: true, cached: false, provider: 'passthrough', sourceLanguage: 'en', targetLanguage: 'es', route: '/start/', title: 'Guía para empezar', segments: ['Traducción de prueba.'] } });
+    const language = new URL(route.request().url()).searchParams.get('lang');
+    await route.fulfill({ json: { ok: true, cached: false, provider: 'passthrough', sourceLanguage: 'en', targetLanguage: language, route: '/start/', title: language === 'ar' ? 'دليل البدء' : 'Guía para empezar', segments: [language === 'ar' ? 'ابدأ الاتصال؛ الفريق جاهز.' : 'Traducción de prueba.'] } });
   });
   const translatedPage = await spanish.newPage();
   await translatedPage.goto(origin + '/start/', { waitUntil: 'networkidle' });
@@ -148,6 +198,17 @@ try {
   assert.equal(translatedPath, '/start/');
   assert.equal(await translatedPage.locator('html').getAttribute('lang'), 'es');
   assert.match(await translatedPage.locator('[data-docs-runtime-translation-panel]').textContent(), /Guía para empezar/);
+  assert.equal(await translatedPage.locator('[data-docs-runtime-translation-panel]').getAttribute('dir'), 'ltr');
+  await translatedPage.evaluate(() => {
+    Object.defineProperty(navigator, 'languages', { configurable: true, value: ['ar'] });
+    document.dispatchEvent(new Event('astro:page-load'));
+  });
+  await translatedPage.waitForFunction(() => document.querySelector('[data-docs-runtime-translation-panel]')?.getAttribute('dir') === 'rtl');
+  assert.match(await translatedPage.locator('[data-docs-runtime-translation-panel]').textContent(), /ابدأ الاتصال؛ الفريق جاهز\./);
+  assert.equal(await translatedPage.locator('[data-docs-runtime-translation-panel]').evaluate((element) => getComputedStyle(element).textAlign), 'start');
+  await translatedPage.evaluate(() => { Object.defineProperty(navigator, 'languages', { configurable: true, value: ['en-US'] }); document.dispatchEvent(new Event('astro:page-load')); });
+  await translatedPage.locator('[data-docs-runtime-translation-panel]').waitFor({ state: 'detached' });
+  assert.equal(await translatedPage.locator('html').getAttribute('lang'), 'en');
   await spanish.close();
 
   // Safari/WebKit receives the same responsive layout if the engine is installed.

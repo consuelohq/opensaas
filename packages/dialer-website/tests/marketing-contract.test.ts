@@ -55,6 +55,16 @@ describe('Dialer marketing delivery', () => {
     }
   });
 
+  it('restores the current pricing share image from committed source bytes', async () => {
+    const sharp = (await import('sharp')).default;
+    const name = 'consuelo-dialer-pricing-og-20261030.png';
+    const bytes = readFileSync(resolve(root, 'dist', name));
+    const encoded = readFileSync(resolve(root, 'assets/encoded', name + '.base64'), 'utf8');
+    expect(bytes.equals(Buffer.from(encoded.trim(), 'base64'))).toBe(true);
+    const metadata = await sharp(bytes).metadata();
+    expect([metadata.width, metadata.height]).toEqual([1200, 630]);
+    expect(page('pricing')).toContain(name);
+  });
   it('ships decodable generated application icons', async () => {
     const sharp = (await import('sharp')).default;
     for (const [name, size] of [['favicon-32x32.png', 32], ['apple-touch-icon.png', 180]] as const) {
@@ -83,13 +93,13 @@ describe('Dialer marketing delivery', () => {
     expect(html).not.toContain('curl -');
     expect(html).not.toContain('CONSUELO OS');
   });
-  it('renders exactly three monthly plans and a plan-specific setup journey', () => {
+  it('renders four approved launch plans and a plan-specific setup journey', () => {
     const html = page('pricing');
-    expect((html.match(/data-plan-code=/g) ?? []).length).toBe(3);
-    for (const code of ['single', 'standard', 'power']) {
+    expect((html.match(/data-plan-code=/g) ?? []).length).toBe(4);
+    for (const code of ['starter', 'professional', 'agency', 'enterprise']) {
       expect(html).toContain(`/get-started?plan=${code}`);
     }
-    for (const amount of ['$59', '$99', '$159']) expect(html).toContain(amount);
+    for (const amount of ['$99', '$149', '$199']) expect(html).toContain(amount);
     expect(html).not.toContain('SUBSCRIBE');
     expect(page('get-started')).toContain('data-selected-plan');
   });

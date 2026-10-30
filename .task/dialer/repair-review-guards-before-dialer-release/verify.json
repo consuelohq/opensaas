@@ -1,0 +1,319 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/repair-review-guards-before-dialer-release",
+  "base": "origin/stream/dialer",
+  "headSha": "8679d6052b5c026d0701d483f37b9b15da6a7010",
+  "changeHash": "9fc1a7a47b7a0e77b2378f7570d42a5f648fa5e140c0c7b18afd46d344c629b6",
+  "changedFiles": [
+    "packages/dialer-documentation/scripts/deploy-preview.mjs",
+    "packages/dialer-documentation/scripts/lib/preview-deploy.mjs",
+    "packages/dialer-documentation/src/lib/translation/text.ts",
+    "packages/dialer-documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-10-29T21:13:12.678Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/repair-review-guards-before-dialer-release/workpad.md",
+        ".task/tasks/dialer/repair-review-guards-before-dialer-release.json",
+        "packages/dialer-documentation/scripts/deploy-preview.mjs",
+        "packages/dialer-documentation/scripts/lib/preview-deploy.mjs",
+        "packages/dialer-documentation/src/lib/translation/text.ts",
+        "packages/dialer-documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-documentation-package",
+          "critical": true,
+          "reason": "Dialer docs changes must preserve isolated deployment, curated navigation, valid internal links, server-only translation, and rendered browser actions after a locked install and build.",
+          "matchedFiles": [
+            "packages/dialer-documentation/scripts/deploy-preview.mjs",
+            "packages/dialer-documentation/scripts/lib/preview-deploy.mjs",
+            "packages/dialer-documentation/src/lib/translation/text.ts",
+            "packages/dialer-documentation/tests/foundation.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:dialer-documentation:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/dialer-documentation.",
+          "matchedFiles": [
+            "packages/dialer-documentation/scripts/deploy-preview.mjs",
+            "packages/dialer-documentation/scripts/lib/preview-deploy.mjs",
+            "packages/dialer-documentation/src/lib/translation/text.ts",
+            "packages/dialer-documentation/tests/foundation.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer documentation locked dependencies",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-documentation",
+            "--frozen-lockfile"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-documentation/tests"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation links and metadata",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "validate"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation translation contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:translation"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation preview build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "build"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation preview lifecycle cleanup",
+          "command": [
+            "bun",
+            "packages/dialer-documentation/scripts/test-preview-lifecycle.mjs"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation rendered browser interactions",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:browser"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-documentation test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "dialer-documentation",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:dialer-documentation:test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer documentation locked dependencies",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-documentation",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3268,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\n+ playwright@1.61.1\n+ @astrojs/cloudflare@14.1.0\n+ @astrojs/starlight@0.41.2\n+ astro@7.0.5\n+ gsap@3.15.0\n+ sharp@0.34.5\n\n390 packages installed [3.26s]\n"
+        },
+        {
+          "name": "dialer documentation contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-documentation/tests"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 267,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-documentation/tests/foundation.test.ts:\n(pass) documentation foundation > normalizes emphasis and code spans while retaining SDK punctuation [0.59ms]\n(pass) documentation foundation > preserves emphasis markers inside inline code identifiers and patterns [0.03ms]\n(pass) documentation foundation > requires an isolated preview origin before build or deploy [0.43ms]\n(pass) documentation foundation > forces the isolated Wrangler configuration for both preview child commands [218.97ms]\n\npackages/dialer-documentation/tests/markdown.test.ts:\n(pass) keeps integrator code examples while removing presentation imports from Markdown [0.43ms]\n(pass) exports Starlight note and warning directives as safe Markdown callouts outside code fences [0.08ms]\n(pass) keeps migrated OS Markdown destinations on the OS origin and mounted index [0.03ms]\n(pass) keeps retired Dialer guide bookmarks in curated Dialer documentation [0.80ms]\n\npackages/dialer-documentation/tests/accessibility-ci.test.ts:\n(pass) keeps ordinary light-theme muted text above WCAG AA 4.5:1 [0.18ms]\n(pass) runs the critical docs browser gate after dependency setup and build [0.55ms]\n\npackages/dialer-documentation/tests/package.test.ts:\n(pass) standalone Dialer documentation > has independent package and deployment identities without production bindings [0.30ms]\n(pass) standalone Dialer documentation > connects every Dialer sidebar, footer and breadcrumb to authored content [1.04ms]\n(pass) standalone Dialer documentation > keeps OS onboarding out of public pages and preserves honest feature boundaries [1.16ms]\n\npackages/dialer-documentation/tests/links.test.ts:\n(pass) resolves relative Markdown and HTML destinations against the source page route [0.13ms]\n(pass) preserves root-route, local query/fragment and external URL behavior [0.03ms]\n\n 15 pass\n 0 fail\n 119 expect() calls\nRan 15 tests across 5 files. [261.00ms]\n"
+        },
+        {
+          "name": "dialer documentation links and metadata",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "validate"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 28,
+          "outputTail": "Validated 31 Dialer pages, all sidebar/footer destinations and internal content links.\n$ bun scripts/validate-documentation.mjs\n"
+        },
+        {
+          "name": "dialer documentation translation contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:translation"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 26,
+          "outputTail": "{\n  \"ok\": true\n}\n$ bun scripts/test-translation.mjs\n"
+        },
+        {
+          "name": "dialer documentation preview build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7554,
+          "outputTail": "ted, response body was empty)\n17:12:40   ├─ /user-guide/workflows/overview/index.html (+0ms) (file not created, response body was empty)\n17:12:40   ├─ /user-guide/workflows/overview.md/index.html (+0ms) (file not created, response body was empty)\n17:12:40   ├─ /workflows/branch-graph/index.html (+0ms) (file not created, response body was empty)\n17:12:40   ├─ /workflows/branch-graph.md/index.html (+0ms) (file not created, response body was empty)\n17:12:40   ├─ /workflows/index.html (+0ms) (file not created, response body was empty)\n17:12:40   ├─ /workflows.md/index.html (+0ms) (file not created, response body was empty)\n17:12:40   ├─ /404.md (+5ms) \n17:12:40   ├─ /analytics/history.md (+1ms) \n17:12:40   ├─ /analytics.md (+0ms) \n17:12:40   ├─ /analytics/transcripts.md (+0ms) \n17:12:40   ├─ /billing.md (+1ms) \n17:12:40   ├─ /billing/plans.md (+0ms) \n17:12:40   ├─ /inbound/callbacks.md (+0ms) \n17:12:40   ├─ /inbound.md (+1ms) \n17:12:40   ├─ /inbound/readiness.md (+0ms) \n17:12:40   ├─ /inbound/routing.md (+0ms) \n17:12:40   ├─ /inbound/voicemail.md (+0ms) \n17:12:40   ├─ /index.md (+1ms) \n17:12:40   ├─ /outbound.md (+0ms) \n17:12:40   ├─ /outbound/local-presence.md (+0ms) \n17:12:40   ├─ /outbound/queues.md (+0ms) \n17:12:40   ├─ /outbound/wrap-up.md (+0ms) \n17:12:40   ├─ /reference/configuration.md (+0ms) \n17:12:40   ├─ /reference/glossary.md (+0ms) \n17:12:40   ├─ /reference/http-api.md (+0ms) \n17:12:40   ├─ /reference.md (+0ms) \n17:12:40   ├─ /reference/sdk.md (+0ms) \n17:12:40   ├─ /start/availability.md (+0ms) \n17:12:40   ├─ /start/concepts.md (+0ms) \n17:12:40   ├─ /start/first-call.md (+0ms) \n17:12:40   ├─ /start.md (+0ms) \n17:12:40   ├─ /start/install.md (+0ms) \n17:12:40   ├─ /team/devices.md (+0ms) \n17:12:40   ├─ /team.md (+0ms) \n17:12:40   ├─ /troubleshooting/audio.md (+0ms) \n17:12:40   ├─ /troubleshooting/connection.md (+0ms) \n17:12:40   ├─ /troubleshooting.md (+0ms) \n17:12:40   ├─ /analytics/index.html (+3ms) \n17:12:40   ├─ /analytics/history/index.html (+2ms) \n17:12:40   ├─ /analytics/transcripts/index.html (+2ms) \n17:12:40   ├─ /billing/index.html (+2ms) \n17:12:40   ├─ /billing/plans/index.html (+2ms) \n17:12:40   ├─ /inbound/index.html (+2ms) \n17:12:40   ├─ /inbound/callbacks/index.html (+2ms) \n17:12:40   ├─ /inbound/readiness/index.html (+2ms) \n17:12:40   ├─ /inbound/routing/index.html (+2ms) \n17:12:40   ├─ /inbound/voicemail/index.html (+2ms) \n17:12:40   ├─ /index.html (+2ms) \n17:12:40   ├─ /outbound/index.html (+2ms) \n17:12:40   ├─ /outbound/local-presence/index.html (+1ms) \n17:12:40   ├─ /outbound/queues/index.html (+1ms) \n17:12:40   ├─ /outbound/wrap-up/index.html (+1ms) \n17:12:40   ├─ /reference/index.html (+1ms) \n17:12:40   ├─ /reference/configuration/index.html (+2ms) \n17:12:40   ├─ /reference/glossary/index.html (+1ms) \n17:12:40   ├─ /reference/http-api/index.html (+1ms) \n17:12:40   ├─ /reference/sdk/index.html (+1ms) \n17:12:40   ├─ /start/index.html (+1ms) \n17:12:40   ├─ /start/availability/index.html (+1ms) \n17:12:40   ├─ /start/concepts/index.html (+1ms) \n17:12:40   ├─ /start/first-call/index.html (+1ms) \n17:12:40   ├─ /start/install/index.html (+1ms) \n17:12:40   ├─ /team/index.html (+1ms) \n17:12:40   ├─ /team/devices/index.html (+1ms) \n17:12:40   ├─ /troubleshooting/index.html (+1ms) \n17:12:40   ├─ /troubleshooting/audio/index.html (+3ms) \n17:12:40   ├─ /troubleshooting/connection/index.html (+2ms) \n17:12:40 ✓ Completed in 147ms.\n\n17:12:40 [build] Rearranging server assets...\n17:12:40 [build] ✓ Completed in 1.46s.\n17:12:40 [@astrojs/cloudflare] Injected immutable Cache-Control for /_astro/* into _headers.\n17:12:40 [starlight:pagefind] Building search index with Pagefind...\n17:12:41 [starlight:pagefind] Found 31 HTML files.\n17:12:41 [starlight:pagefind] Finished building search index in 1.05s.\n17:12:41 [@astrojs/sitemap] `sitemap-index.xml` created at `dist/client`\n17:12:41 [build] Server built in 3.50s\n17:12:41 [build] Complete!\n$ bun run generate:social-card && astro build\n$ bun scripts/generate-social-card.mjs\n"
+        },
+        {
+          "name": "dialer documentation preview lifecycle cleanup",
+          "command": [
+            "bun",
+            "packages/dialer-documentation/scripts/test-preview-lifecycle.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3827,
+          "outputTail": "Preview pass/failure cleanup and occupied-port isolation passed.\n"
+        },
+        {
+          "name": "dialer documentation rendered browser interactions",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:browser"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 25402,
+          "outputTail": "WebKit short-landscape passed.\n{\"ok\":true,\"pages\":30,\"viewports\":7,\"evidence\":\"/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-dialer-docs-96317\",\"checks\":[\"search\",\"themes\",\"clipboard\",\"Markdown\",\"menus\",\"all routes\",\"translation boundary\"]}\n$ bun scripts/test-browser.mjs\n"
+        },
+        {
+          "name": "dialer-documentation test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "dialer-documentation",
+            "--coverage=false"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:dialer-documentation:test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2263,
+          "outputTail": "\n> nx run dialer-documentation:test --coverage=false\n\n> bun run test\r\n\r\n\u001b[0m\u001b[1mbun test \u001b[0m\u001b[2mv1.3.14 (0d9b296a)\u001b[0m\n\n\n\n NX   Successfully ran target test for project dialer-documentation\n\n\n\u001b[0m\u001b[2m\u001b[35m$\u001b[0m \u001b[2m\u001b[1mbun test tests\u001b[0m\n\u001b[0m\ntests/foundation.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mdocumentation foundation\u001b[2m >\u001b[0m\u001b[1m normalizes emphasis and code spans while retaining SDK punctuation\u001b[0m \u001b[0m\u001b[2m[1.32ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mdocumentation foundation\u001b[2m >\u001b[0m\u001b[1m preserves emphasis markers inside inline code identifiers and patterns\u001b[0m \u001b[0m\u001b[2m[0.04ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mdocumentation foundation\u001b[2m >\u001b[0m\u001b[1m requires an isolated preview origin before build or deploy\u001b[0m \u001b[0m\u001b[2m[2.77ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mdocumentation foundation\u001b[2m >\u001b[0m\u001b[1m forces the isolated Wrangler configuration for both preview child commands\u001b[0m \u001b[0m\u001b[2m[\u001b[1m638.60ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/markdown.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps integrator code examples while removing presentation imports from Markdown\u001b[0m \u001b[0m\u001b[2m[1.03ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m exports Starlight note and warning directives as safe Markdown callouts outside code fences\u001b[0m \u001b[0m\u001b[2m[0.08ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps migrated OS Markdown destinations on the OS origin and mounted index\u001b[0m \u001b[0m\u001b[2m[0.03ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps retired Dialer guide bookmarks in curated Dialer documentation\u001b[0m \u001b[0m\u001b[2m[1.91ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/accessibility-ci.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps ordinary light-theme muted text above WCAG AA 4.5:1\u001b[0m \u001b[0m\u001b[2m[0.40ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m runs the critical docs browser gate after dependency setup and build\u001b[0m \u001b[0m\u001b[2m[0.55ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/package.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m has independent package and deployment identities without production bindings\u001b[0m \u001b[0m\u001b[2m[0.42ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m connects every Dialer sidebar, footer and breadcrumb to authored content\u001b[0m \u001b[0m\u001b[2m[1.39ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m keeps OS onboarding out of public pages and preserves honest feature boundaries\u001b[0m \u001b[0m\u001b[2m[5.89ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/links.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m resolves relative Markdown and HTML destinations against the source page route\u001b[0m \u001b[0m\u001b[2m[0.19ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m preserves root-route, local query/fragment and external URL behavior\u001b[0m \u001b[0m\u001b[2m[0.04ms\u001b[0m\u001b[2m]\u001b[0m\n\n\u001b[0m\u001b[32m 15 pass\u001b[0m\n\u001b[0m\u001b[2m 0 fail\u001b[0m\n 119 expect() calls\nRan 15 tests across 5 files. \u001b[0m\u001b[2m[\u001b[1m779.00ms\u001b[0m\u001b[2m]\u001b[0m\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

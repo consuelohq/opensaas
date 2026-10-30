@@ -73,6 +73,7 @@ try {
   const box=await close.boundingBox();
   assert.ok(box && box.y>=0 && box.y+box.height<=height+1,'Footer CTA clipped at '+width+'x'+height);
   await close.click();
+  await page.waitForURL(url => /^\/get-started\/?$/.test(url.pathname));
   const destination = new URL(page.url()).pathname;
   assert.ok(destination === '/get-started' || destination === '/get-started/', 'Setup CTA reaches the setup page');
   assert.deepEqual(errors,[],'Browser errors at '+width+'x'+height);
@@ -84,20 +85,38 @@ try {
  const context=await browser.newContext({viewport:{width:1440,height:960},reducedMotion:'reduce'});
  const page=await context.newPage();
  await page.goto(base+'/pricing',{waitUntil:'networkidle'});
- assert.equal(await page.locator('[data-plan-code]').count(),3);
+ assert.equal(await page.locator('[data-plan-code]').count(),4);
  const cards = await page.locator('[data-plan-code]').evaluateAll(elements => elements.map(el => ({
-  code: el.dataset.planCode, href: el.getAttribute('href'), name: el.querySelector('.pricing-plan__label').textContent,
-  price: el.querySelector('.pricing-plan__price').textContent, subtitle: el.querySelector('.pricing-plan__subtitle').textContent,
+  code: el.dataset.planCode,
+  name: el.querySelector('h2').textContent.trim(),
+  price: el.querySelector('.plan-column__price strong').textContent.trim(),
+  monthlyCents: Number(el.querySelector('[data-plan-billing]').dataset.monthlyCents),
  })));
- for (const card of cards) {
-  await page.goto(base + '/pricing', {waitUntil:'networkidle'});
-  await page.locator('[data-plan-code="' + card.code + '"]').click();
-  const label = card.name + ' — ' + card.price + ' ' + card.subtitle.toLowerCase();
-  await page.waitForFunction(label => document.querySelector('[data-selected-plan]').textContent.includes(label), label);
-  const mailto = new URL(await page.locator('[data-setup-request]').getAttribute('href'));
-  assert.equal(mailto.protocol, 'mailto:');
-  assert.equal(mailto.searchParams.get('subject'), 'Set up Consuelo Dialer — ' + label);
+ assert.deepEqual(cards.map(card => card.code), ['starter','professional','agency','enterprise']);
+ let setupCases = 0;
+ for (const billing of ['monthly','annual']) {
+  for (const card of cards) {
+   await page.goto(base + '/pricing', {waitUntil:'networkidle'});
+   await page.locator('input[name="billing"][value="' + billing + '"]').check();
+   const choose = page.locator('[data-plan-code="' + card.code + '"] [data-plan-cta]');
+   const destination = new URL(await choose.getAttribute('href'),base);
+   assert.equal(destination.searchParams.get('plan'),card.code);
+   assert.equal(destination.searchParams.get('billing'),billing);
+   await choose.click();
+   const annualAmount = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(card.monthlyCents * 12 / 100);
+   const label = card.code === 'starter'
+    ? 'Starter — 100 total trial minutes'
+    : card.name + ' — ' + card.price + ' per seat / month'
+      + (billing === 'annual' ? ' (' + annualAmount + ' per seat billed annually)' : ' (billed monthly)');
+   await page.waitForFunction(label => document.querySelector('[data-selected-plan]').textContent.includes(label), label);
+   const mailto = new URL(await page.locator('[data-setup-request]').getAttribute('href'));
+   assert.equal(mailto.protocol, 'mailto:');
+   assert.equal(mailto.pathname, 'support@consuelohq.com');
+   assert.equal(mailto.searchParams.get('subject'), 'Set up Consuelo Dialer — ' + label);
+   setupCases++;
+  }
  }
+ emit({flow:'all-plan-setup',plans:cards.length,billingPeriods:2,cases:setupCases});
  for (const bad of ['__proto__','<img src=x onerror=alert(1)>']) {
   await page.goto(base+'/get-started?plan='+encodeURIComponent(bad),{waitUntil:'networkidle'});
   assert.match(await page.locator('[data-selected-plan]').innerText(),/^Tell us/);

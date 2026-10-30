@@ -1,333 +1,266 @@
 ---
-import SiteHeader from '../components/site/SiteHeader.astro'
-import { pricingAccountLink, pricingHero, pricingPlans } from '../data/pricing-content'
-import MarketingLayout from '../layouts/MarketingLayout.astro'
-
-const description = pricingHero.subtitle
+import SiteHeader from '../components/site/SiteHeader.astro';
+import HomeFaq from '../components/home/HomeFaq.astro';
+import PricingIcon from '../components/pricing/PricingIcon.astro';
+import PricingAddons from '../components/pricing/PricingAddons.astro';
+import PricingComparison from '../components/pricing/PricingComparison.astro';
+import PricingTechnology from '../components/pricing/PricingTechnology.astro';
+import {
+  pricingHero,
+  pricingPlans,
+  pricingFaqItems,
+} from '../data/pricing-content';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import '../styles/pricing.css';
 ---
 
-<MarketingLayout title="Pricing" description={description} canonicalPath="/pricing" image="/consuelo-dialer-pricing-og-20261028.png" imageAlt="Consuelo Dialer pricing — Single, Standard and Power." imageWidth={1200} imageHeight={630}>
-	<SiteHeader pageSections={[]} />
-
-	<main class="pricing-page" aria-labelledby="pricing-heading">
-		<section class="pricing-page__hero" aria-describedby="pricing-subtitle">
-			<h1 id="pricing-heading" class="pricing-page__title">{pricingHero.title}</h1>
-			<p id="pricing-subtitle" class="pricing-page__subtitle">{pricingHero.subtitle}</p>
-		</section>
-
-		<section class="pricing-page__panel" aria-label="Consuelo Dialer pricing plans">
-			<div class="pricing-page__account" aria-label="Already have an account?">
-				<span>{pricingAccountLink.prompt}</span>
-				<a href={pricingAccountLink.href}>{pricingAccountLink.label}</a>
-			</div>
-
-			<div class="pricing-page__cards">
-				{
-					pricingPlans.map((plan) => (
-						<a class="pricing-plan" data-plan-code={plan.code} href={plan.href} aria-label={`Choose ${plan.name} plan`}>
-							<header class="pricing-plan__header">
-								<div class="pricing-plan__label-row">
-									<p class="pricing-plan__label">{plan.name}</p>
-									
-								</div>
-								<p class="pricing-plan__price">{plan.price}</p>
-								<p class="pricing-plan__subtitle">{plan.subtitle}</p>
-							</header>
-
-                            <div class="pricing-plan__image dialer-line-limit"><strong>{plan.lines}</strong><span>UP TO {plan.lines === 1 ? 'ONE LINE' : `${plan.lines} LINES`}</span></div>
-							<ul class="pricing-plan__bullets">
-								{plan.bullets.map((bullet) => (
-									<li>{bullet}</li>
-								))}
-							</ul>
-
-							<span class="pricing-plan__cta" aria-hidden="true">
-								<span class="pricing-plan__cta-default">GET STARTED</span>
-								<span class="pricing-plan__cta-active">REQUEST SETUP</span>
-							</span>
-						</a>
-					))
-				}
-			</div>
-		</section>
-<p class="dialer-pricing-note">Monthly USD pricing per seat. One number is included; additional numbers are $1.99/month each, within plan limits. Active numbers and caller ID selection determine available lines. Recording and transcription require workspace enablement. Setup and availability are confirmed during onboarding.</p>
-	</main>
+<MarketingLayout
+  title="Pricing"
+  description={pricingHero.subtitle}
+  canonicalPath="/pricing"
+  image="/consuelo-dialer-pricing-og-20261030.png"
+  imageAlt="Consuelo Dialer plans — Starter, Professional, Agency and Enterprise."
+  imageWidth={1200}
+  imageHeight={630}
+>
+  <SiteHeader pageSections={[]} />
+  <main class="pricing-page" id="pricing" aria-labelledby="pricing-heading">
+    <div class="pricing-frame">
+      <section class="pricing-plans" aria-labelledby="pricing-heading">
+        <a class="pricing-mercury-note" href="#addons"
+          ><PricingIcon name="mercury" /><span
+            >Meet Mercury coaching. Your playbook, in the conversation.</span
+          ><PricingIcon /></a
+        >
+        <div class="pricing-intro">
+          <div>
+            <p class="pricing-eyebrow">CONSUELO / PRICING</p><h1
+              id="pricing-heading"
+            >
+              More conversations.<br />Room to grow.
+            </h1><p class="pricing-lede">{pricingHero.subtitle}</p>
+          </div>
+          <a class="pricing-jump" href="#compare"
+            >Compare all features <PricingIcon /></a
+          >
+        </div>
+        <div class="pricing-toolbar">
+          <div
+            class="pricing-products"
+            aria-label="One seat, both calling motions"
+          >
+            <span><PricingIcon name="outbound" />Consuelo Outbound</span><span
+              ><PricingIcon name="inbound" />Consuelo Inbound</span
+            ><span><PricingIcon name="analytics" />Analytics</span>
+          </div>
+          <fieldset class="billing-control" data-billing-control hidden>
+            <legend class="sr-only">Billing period</legend><label
+              ><input
+                type="radio"
+                name="billing"
+                value="monthly"
+                checked
+              /><span>Monthly</span></label
+            ><label
+              ><input type="radio" name="billing" value="annual" /><span
+                >Annual</span
+              ></label>
+          </fieldset>
+        </div>
+        <div class="plan-columns">
+          {
+            pricingPlans.map((plan) => (
+              <article
+                class:list={[
+                  'plan-column',
+                  { 'plan-column--agency': plan.code === 'agency' },
+                ]}
+                data-plan-code={plan.code}
+              >
+                <div class="plan-column__heading">
+                  <h2>{plan.name}</h2>
+                  {plan.code === 'agency' && (
+                    <span class="plan-kicker">FOR AGENCIES</span>
+                  )}
+                </div>
+                <p class="plan-column__description">{plan.description}</p>
+                <div class="plan-column__price">
+                  <strong>
+                    {plan.monthlyCents === 0 ? 'Free' : plan.price}
+                  </strong>
+                  {plan.monthlyCents > 0 && <span>/ seat / month</span>}
+                </div>
+                <p
+                  class="plan-billing"
+                  data-plan-billing
+                  data-monthly-cents={plan.monthlyCents}
+                >
+                  {plan.monthlyCents === 0
+                    ? '100 minutes to try Consuelo'
+                    : 'Billed monthly · USD'}
+                </p>
+                <a
+                  class:list={[
+                    'pricing-button',
+                    { 'pricing-button--solid': plan.code === 'agency' },
+                  ]}
+                  data-plan-cta
+                  href={plan.href}
+                >
+                  {plan.action}
+                  <PricingIcon />
+                </a>
+                <p class="plan-features-label">
+                  {plan.code === 'starter'
+                    ? 'A simple first step'
+                    : 'What you get'}
+                </p>
+                <ul class="plan-bullets">
+                  {plan.bullets.map((bullet) => (
+                    <li>
+                      <PricingIcon name="check" />
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))
+          }
+        </div>
+        <div class="pricing-fineprint">
+          <p>
+            One rep. Inbound and outbound. Every plan includes GoHighLevel and
+            support.
+          </p><p>
+            Paid minutes renew monthly per seat. Contiguous US local calling.
+            Taxes extra. <a href="#pricing-faq"
+              >How billing works <PricingIcon /></a>
+          </p>
+        </div>
+        <div class="team-planner" data-team-planner hidden>
+          <div>
+            <p class="pricing-eyebrow">BUYING FOR YOUR TEAM?</p><p>
+              See the seat cost before you start.
+            </p>
+          </div>
+          <div class="team-planner__inputs">
+            <label
+              >Plan<select data-team-plan
+                >{
+                  pricingPlans
+                    .filter((p) => p.monthlyCents > 0)
+                    .map((p) => (
+                      <option value={p.code} selected={p.code === 'agency'}>
+                        {p.name}
+                      </option>
+                    ))
+                }</select
+              ></label
+            ><label
+              >Reps<input
+                data-seat-count
+                type="number"
+                min="1"
+                max="1000"
+                step="1"
+                value="5"
+                inputmode="numeric"
+              /></label>
+          </div>
+          <output data-team-total aria-live="polite"
+            >$745 / month for 5 reps</output
+          >
+        </div>
+      </section>
+      <PricingAddons />
+      <PricingComparison />
+      <HomeFaq
+        title="Pricing FAQs"
+        id="pricing-faq"
+        items={pricingFaqItems}
+        variant="pricing"
+      />
+    </div>
+    <PricingTechnology />
+    <section class="pricing-close" aria-labelledby="pricing-close-title">
+      <p class="pricing-eyebrow">YOUR NEXT CALLING DAY</p><h2
+        id="pricing-close-title"
+      >
+        Give your team<br />more room to sell.
+      </h2><a class="pricing-button" href="/get-started"
+        >Get started <PricingIcon /></a
+      ><a class="pricing-close__contact" href="/contact"
+        >Plan it with us <PricingIcon /></a>
+    </section>
+  </main>
 </MarketingLayout>
-
-<style>
-	.pricing-page {
-		min-height: calc(100vh - 9.15rem);
-		padding: clamp(8.75rem, 12vw, 11rem) var(--site-frame-inset) clamp(3rem, 7vw, 6rem);
-		background: var(--site-color-paper);
-		color: var(--site-color-on-brand);
-	}
-
-	.pricing-page__hero {
-		display: grid;
-		justify-items: center;
-		gap: 0.45rem;
-		margin: 0 auto clamp(3.75rem, 7vw, 5.75rem);
-		text-align: center;
-	}
-
-	.pricing-page__title {
-		margin: 0;
-		color: var(--site-color-on-brand);
-		font-family: var(--site-font-display);
-		font-size: clamp(3.9rem, 7.2vw, 5.85rem);
-		font-weight: 400;
-		line-height: 0.88;
-		letter-spacing: -0.055em;
-		text-transform: uppercase;
-	}
-
-	.pricing-page__subtitle {
-		margin: 0;
-		max-width: 38rem;
-		color: var(--site-color-muted-on-brand);
-		font-family: var(--site-font-body);
-		font-size: clamp(1.05rem, 1.9vw, 1.42rem);
-		font-weight: 400;
-		line-height: 1.32;
-		text-wrap: balance;
-	}
-
-	.pricing-page__panel {
-		width: min(100%, 92rem);
-		margin: 0 auto;
-		background: var(--site-color-surface);
-		color: var(--site-color-ink);
-		padding: clamp(1.25rem, 2.5vw, 2.25rem) clamp(1.15rem, 2.75vw, 2.6rem) clamp(1.65rem, 3vw, 2.75rem);
-	}
-
-	.pricing-page__account {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: 0.55rem;
-		min-height: 1.75rem;
-		margin-bottom: clamp(1rem, 2vw, 1.55rem);
-		color: var(--site-color-muted);
-		font-family: var(--site-font-body);
-		font-size: clamp(0.78rem, 0.9vw, 0.9rem);
-	}
-
-	.pricing-page__account a {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		border: 1px solid var(--site-color-ink);
-		color: var(--site-color-ink);
-		padding: 0.28rem 0.58rem;
-		font-family: var(--site-font-mono);
-		font-size: 0.68rem;
-		font-weight: 700;
-		letter-spacing: 0.16em;
-		line-height: 1;
-		text-decoration: none;
-		text-transform: uppercase;
-	}
-
-	.pricing-page__cards {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: clamp(0.5rem, 1vw, 0.85rem);
-	}
-
-	.pricing-plan {
-		display: grid;
-		grid-template-rows: auto auto 1fr auto;
-		align-content: start;
-		gap: clamp(0.9rem, 1.35vw, 1.2rem);
-		min-height: clamp(31rem, 36vw, 39rem);
-		background: color-mix(in srgb, var(--site-color-paper) 8%, var(--site-color-surface));
-		color: var(--site-color-ink);
-		padding: clamp(0.8rem, 1.35vw, 1.1rem);
-		text-decoration: none;
-		transition: background var(--site-motion-fast), color var(--site-motion-fast);
-	}
-
-	.pricing-plan:hover,
-	.pricing-plan:focus-visible {
-		background: var(--site-color-brand);
-		color: white;
-	}
-
-	.pricing-plan:focus-visible {
-		outline: 2px solid white;
-		outline-offset: 3px;
-	}
-
-	.pricing-plan__header {
-		display: grid;
-		gap: 0.6rem;
-	}
-
-	.pricing-plan__label-row {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 0.7rem;
-		min-height: 1.15rem;
-	}
-
-	.pricing-plan__label,
-	.pricing-plan__badge,
-	.pricing-plan__subtitle,
-	.pricing-plan__bullets {
-		font-family: var(--site-font-mono);
-		text-transform: uppercase;
-	}
-
-	.pricing-plan__label,
-	.pricing-plan__badge {
-		margin: 0;
-		border: 1px solid currentColor;
-		padding: 0.2rem 0.38rem;
-		font-size: 0.67rem;
-		font-weight: 650;
-		letter-spacing: 0.12em;
-		line-height: 1;
-	}
-
-	.pricing-plan__label {
-		background: var(--site-color-ink);
-		color: white;
-	}
-
-	.pricing-plan:hover .pricing-plan__label,
-	.pricing-plan:focus-visible .pricing-plan__label {
-		background: white;
-		color: var(--site-color-paper);
-	}
-
-	.pricing-plan__badge {
-		white-space: nowrap;
-	}
-
-	.pricing-plan__price {
-		margin: 0;
-		font-family: var(--site-font-display);
-		font-size: clamp(3.2rem, 4.5vw, 4.6rem);
-		font-weight: 400;
-		line-height: 0.88;
-		letter-spacing: -0.065em;
-	}
-
-	.pricing-plan__subtitle {
-		margin: -0.34rem 0 0;
-		font-size: 0.72rem;
-		font-weight: 620;
-		letter-spacing: 0.13em;
-	}
-
-	.pricing-plan__image {
-		aspect-ratio: 16 / 10;
-		margin: 0;
-		overflow: hidden;
-		background: var(--site-color-surface);
-	}
-
-	.pricing-plan__art {
-		display: block;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.pricing-plan__bullets {
-		display: grid;
-		align-content: start;
-		gap: 0.48rem;
-		margin: 0;
-		padding: 0 0 0 1.05rem;
-		font-size: clamp(0.68rem, 0.86vw, 0.75rem);
-		font-weight: 570;
-		letter-spacing: 0.09em;
-		line-height: 1.36;
-	}
-
-	.pricing-plan__bullets li::marker {
-		font-size: 0.8em;
-	}
-
-	.pricing-plan__cta {
-		justify-self: end;
-		border: 1px solid currentColor;
-		padding: 0.42rem 0.72rem;
-		font: 650 0.68rem/1 var(--site-font-mono);
-		letter-spacing: 0.13em;
-		text-transform: uppercase;
-	}
-
-	.pricing-plan__cta-active {
-		display: none;
-	}
-
-	.pricing-plan:hover .pricing-plan__cta-default,
-	.pricing-plan:focus-visible .pricing-plan__cta-default {
-		display: none;
-	}
-
-	.pricing-plan:hover .pricing-plan__cta-active,
-	.pricing-plan:focus-visible .pricing-plan__cta-active {
-		display: inline;
-	}
-
-	.pricing-plan:hover .pricing-plan__cta,
-	.pricing-plan:focus-visible .pricing-plan__cta {
-		background: transparent;
-		border-color: transparent;
-		color: white;
-	}
-
-	@media (max-width: 1060px) {
-		.pricing-page__cards {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (max-width: 640px) {
-		.pricing-page {
-			min-height: auto;
-			padding-inline: var(--site-space-4);
-		}
-
-		.pricing-page__hero {
-			margin-bottom: var(--site-space-6);
-		}
-
-		.pricing-page__title {
-			font-size: clamp(3rem, 16vw, 4rem);
-		}
-
-		.pricing-page__panel {
-			padding: var(--site-space-4);
-		}
-
-		.pricing-page__account {
-			align-items: flex-end;
-			justify-content: flex-start;
-			flex-direction: column;
-			gap: 0.5rem;
-			margin-bottom: var(--site-space-4);
-			text-align: left;
-		}
-
-		.pricing-page__cards {
-			grid-template-columns: 1fr;
-		}
-
-		.pricing-plan {
-			min-height: 34rem;
-		}
-
-	}
-</style>
-
-<style>
-.dialer-line-limit { display: grid; place-content: center; justify-items: center; gap: var(--site-space-3); color: var(--site-color-ink); }
-.dialer-line-limit strong { font: 400 var(--site-text-4xl)/var(--site-leading-tight) var(--site-font-display); }
-.dialer-line-limit span { font: 650 var(--site-text-xs)/var(--site-leading-body) var(--site-font-mono); }
-.dialer-pricing-note { width: min(100%,var(--site-container-max)); margin: var(--site-space-6) auto 0; color: var(--site-color-muted-on-brand); font-size: var(--site-text-sm); text-align: center; }
-</style>
+<script>
+  import { pricingPlans, quotePlan } from '../data/pricing-content';
+  const currency = (cents: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
+  const seats = document.querySelector<HTMLInputElement>('[data-seat-count]');
+  const plan = document.querySelector<HTMLSelectElement>('[data-team-plan]');
+  const output = document.querySelector<HTMLOutputElement>('[data-team-total]');
+  const currentBilling = () =>
+    document.querySelector<HTMLInputElement>('input[name="billing"]:checked')
+      ?.value === 'annual'
+      ? 'annual'
+      : 'monthly';
+  const updateTeam = () => {
+    if (!seats || !plan || !output) return;
+    const count = seats.valueAsNumber;
+    if (!Number.isInteger(count) || count < 1 || count > 1000) {
+      seats.setAttribute('aria-invalid', 'true');
+      output.textContent = 'Enter a whole rep count from 1 to 1,000.';
+      return;
+    }
+    seats.removeAttribute('aria-invalid');
+    const quote = quotePlan(plan.value, currentBilling(), count);
+    output.textContent =
+      currency(quote.totalCents) +
+      (quote.months === 12 ? ' / year' : ' / month') +
+      ' for ' +
+      count +
+      (count === 1 ? ' rep' : ' reps');
+  };
+  const updateBilling = () => {
+    const billing = currentBilling();
+    document
+      .querySelectorAll<HTMLElement>('[data-plan-billing]')
+      .forEach((el) => {
+        const cents = Number(el.dataset.monthlyCents);
+        if (cents > 0)
+          el.textContent =
+            billing === 'annual'
+              ? currency(cents * 12) + ' / seat billed annually'
+              : 'Billed monthly · USD';
+      });
+    document
+      .querySelectorAll<HTMLAnchorElement>('[data-plan-cta]')
+      .forEach((link) => {
+        const code =
+          link.closest<HTMLElement>('[data-plan-code]')?.dataset.planCode;
+        if (pricingPlans.some((p) => p.code === code))
+          link.href =
+            '/get-started?' +
+            new URLSearchParams({ plan: code!, billing }).toString();
+      });
+    updateTeam();
+  };
+  document
+    .querySelectorAll('[data-billing-control] input')
+    .forEach((input) => input.addEventListener('change', updateBilling));
+  seats?.addEventListener('input', updateTeam);
+  plan?.addEventListener('change', updateTeam);
+  document
+    .querySelector<HTMLElement>('[data-billing-control]')
+    ?.removeAttribute('hidden');
+  document
+    .querySelector<HTMLElement>('[data-team-planner]')
+    ?.removeAttribute('hidden');
+  updateBilling();
+</script>

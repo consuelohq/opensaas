@@ -1,0 +1,218 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/dev-1634-docs-transformations-on-stream-base",
+  "base": "origin/task/dialer/dev-1634-docs-transformations-on-stream-base",
+  "headSha": "2cc2695cc87c8e891fc8a15f948c7924319d5fd9",
+  "changeHash": "9fb7b0921cee1a84a46d3bdf451de2438cc776e4fa3e26c6bc9bb07b7dcd0d7f",
+  "changedFiles": [
+    "packages/dialer-documentation/scripts/lib/docs-links.mjs",
+    "packages/dialer-documentation/scripts/test-translation.mjs",
+    "packages/dialer-documentation/scripts/validate-documentation.mjs",
+    "packages/dialer-documentation/src/lib/markdown-pages.ts",
+    "packages/dialer-documentation/src/lib/translation/provider.ts",
+    "packages/dialer-documentation/src/lib/translation/text.ts",
+    "packages/dialer-documentation/tests/links.test.ts",
+    "packages/dialer-documentation/tests/markdown.test.ts"
+  ],
+  "verifiedAt": "2026-10-29T20:06:04.789Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/dev-1634-docs-transformations-on-stream-base/read-log.json",
+        ".task/dialer/dev-1634-docs-transformations-on-stream-base/workpad.md",
+        ".task/tasks/dialer/dev-1634-docs-transformations-on-stream-base.json",
+        "packages/dialer-documentation/scripts/lib/docs-links.mjs",
+        "packages/dialer-documentation/scripts/test-translation.mjs",
+        "packages/dialer-documentation/scripts/validate-documentation.mjs",
+        "packages/dialer-documentation/src/lib/markdown-pages.ts",
+        "packages/dialer-documentation/src/lib/translation/provider.ts",
+        "packages/dialer-documentation/src/lib/translation/text.ts",
+        "packages/dialer-documentation/tests/links.test.ts",
+        "packages/dialer-documentation/tests/markdown.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-documentation-package",
+          "critical": true,
+          "reason": "Dialer docs changes must preserve isolated deployment, curated navigation, valid internal links and server-only translation behavior.",
+          "matchedFiles": [
+            "packages/dialer-documentation/scripts/lib/docs-links.mjs",
+            "packages/dialer-documentation/scripts/test-translation.mjs",
+            "packages/dialer-documentation/scripts/validate-documentation.mjs",
+            "packages/dialer-documentation/src/lib/markdown-pages.ts",
+            "packages/dialer-documentation/src/lib/translation/provider.ts",
+            "packages/dialer-documentation/src/lib/translation/text.ts",
+            "packages/dialer-documentation/tests/links.test.ts",
+            "packages/dialer-documentation/tests/markdown.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:dialer-documentation:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/dialer-documentation.",
+          "matchedFiles": [
+            "packages/dialer-documentation/scripts/lib/docs-links.mjs",
+            "packages/dialer-documentation/scripts/test-translation.mjs",
+            "packages/dialer-documentation/scripts/validate-documentation.mjs",
+            "packages/dialer-documentation/src/lib/markdown-pages.ts",
+            "packages/dialer-documentation/src/lib/translation/provider.ts",
+            "packages/dialer-documentation/src/lib/translation/text.ts",
+            "packages/dialer-documentation/tests/links.test.ts",
+            "packages/dialer-documentation/tests/markdown.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer documentation contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-documentation/tests"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation links and metadata",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "validate"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation translation contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:translation"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-documentation test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "dialer-documentation",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:dialer-documentation:test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer documentation contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-documentation/tests"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 114,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-documentation/tests/foundation.test.ts:\n(pass) documentation foundation > normalizes emphasis and code spans while retaining SDK punctuation [2.25ms]\n(pass) documentation foundation > requires an isolated preview origin before build or deploy [1.85ms]\n\npackages/dialer-documentation/tests/markdown.test.ts:\n(pass) keeps integrator code examples while removing presentation imports from Markdown [1.44ms]\n(pass) exports Starlight note and warning directives as safe Markdown callouts outside code fences [0.13ms]\n(pass) keeps migrated OS Markdown destinations on the OS origin and mounted index [0.03ms]\n(pass) keeps retired Dialer guide bookmarks in curated Dialer documentation [1.61ms]\n\npackages/dialer-documentation/tests/package.test.ts:\n(pass) standalone Dialer documentation > has independent package and deployment identities without production bindings [0.60ms]\n(pass) standalone Dialer documentation > connects every Dialer sidebar, footer and breadcrumb to authored content [3.29ms]\n(pass) standalone Dialer documentation > keeps OS onboarding out of public pages and preserves honest feature boundaries [7.81ms]\n\npackages/dialer-documentation/tests/links.test.ts:\n(pass) resolves relative Markdown and HTML destinations against the source page route [0.72ms]\n(pass) preserves root-route, local query/fragment and external URL behavior [0.09ms]\n\n 11 pass\n 0 fail\n 103 expect() calls\nRan 11 tests across 4 files. [105.00ms]\n"
+        },
+        {
+          "name": "dialer documentation links and metadata",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "validate"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 51,
+          "outputTail": "Validated 31 Dialer pages, all sidebar/footer destinations and internal content links.\n$ bun scripts/validate-documentation.mjs\n"
+        },
+        {
+          "name": "dialer documentation translation contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:translation"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 68,
+          "outputTail": "{\n  \"ok\": true\n}\n$ bun scripts/test-translation.mjs\n"
+        },
+        {
+          "name": "dialer-documentation test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "dialer-documentation",
+            "--coverage=false"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:dialer-documentation:test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2018,
+          "outputTail": "\n> nx run dialer-documentation:test --coverage=false\n\n> bun run test\r\n\r\n\u001b[0m\u001b[1mbun test \u001b[0m\u001b[2mv1.3.14 (0d9b296a)\u001b[0m\n\n\n\n NX   Successfully ran target test for project dialer-documentation\n\n\n\u001b[0m\u001b[2m\u001b[35m$\u001b[0m \u001b[2m\u001b[1mbun test tests\u001b[0m\n\u001b[0m\ntests/foundation.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mdocumentation foundation\u001b[2m >\u001b[0m\u001b[1m normalizes emphasis and code spans while retaining SDK punctuation\u001b[0m \u001b[0m\u001b[2m[0.69ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mdocumentation foundation\u001b[2m >\u001b[0m\u001b[1m requires an isolated preview origin before build or deploy\u001b[0m \u001b[0m\u001b[2m[2.63ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/markdown.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps integrator code examples while removing presentation imports from Markdown\u001b[0m \u001b[0m\u001b[2m[1.01ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m exports Starlight note and warning directives as safe Markdown callouts outside code fences\u001b[0m \u001b[0m\u001b[2m[0.21ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps migrated OS Markdown destinations on the OS origin and mounted index\u001b[0m \u001b[0m\u001b[2m[0.03ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps retired Dialer guide bookmarks in curated Dialer documentation\u001b[0m \u001b[0m\u001b[2m[\u001b[1m30.93ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/package.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m has independent package and deployment identities without production bindings\u001b[0m \u001b[0m\u001b[2m[0.56ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m connects every Dialer sidebar, footer and breadcrumb to authored content\u001b[0m \u001b[0m\u001b[2m[4.88ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m keeps OS onboarding out of public pages and preserves honest feature boundaries\u001b[0m \u001b[0m\u001b[2m[2.69ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/links.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m resolves relative Markdown and HTML destinations against the source page route\u001b[0m \u001b[0m\u001b[2m[0.58ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m preserves root-route, local query/fragment and external URL behavior\u001b[0m \u001b[0m\u001b[2m[0.09ms\u001b[0m\u001b[2m]\u001b[0m\n\n\u001b[0m\u001b[32m 11 pass\u001b[0m\n\u001b[0m\u001b[2m 0 fail\u001b[0m\n 103 expect() calls\nRan 11 tests across 4 files. \u001b[0m\u001b[2m[\u001b[1m269.00ms\u001b[0m\u001b[2m]\u001b[0m\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
