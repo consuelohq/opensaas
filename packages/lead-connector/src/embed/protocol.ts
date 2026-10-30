@@ -112,7 +112,12 @@ export const createLeadConnectorParentBridge = (
       options.onMessage({ type: 'bootstrap', encryptedData });
       return;
     }
-    if (typeof data.type !== 'string') return;
+    // Other host integrations share this channel, including session replay.
+    if (
+      data.type !== 'consuelo.leadconnector/handshake' &&
+      data.type !== 'consuelo.leadconnector/click-to-call'
+    )
+      return;
     if (data.version !== LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION) {
       options.onProtocolError?.('PROTOCOL_VERSION_MISMATCH');
       return;
