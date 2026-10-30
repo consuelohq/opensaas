@@ -440,7 +440,7 @@ export const pricingFaqItems = [
   {
     question: 'What if we use all our minutes?',
     answer:
-      'Add a minute pack: $10 for 100 minutes, $50 for 600, or $100 for 1,400. You can request more than one pack. Larger packs give you more minutes for the same spend. Contact us for higher-volume calling.',
+      'Add a minute pack: $10 for 100 minutes, $50 for 600, or $100 for 1,400. Select a pack with your plan at checkout. Larger packs give you more minutes for the same spend. Contact us for higher-volume calling.',
   },
   {
     question: 'Can we use inbound and outbound together?',
@@ -450,7 +450,7 @@ export const pricingFaqItems = [
   {
     question: 'What is included in Mercury coaching?',
     answer:
-      'Mercury is an optional coaching add-on. Script mode brings up the relevant part of your uploaded playbook. AI mode suggests what to say based on the conversation. Reps and leaders can also upload transcripts for review. Contact us to size the add-on for your team.',
+      'Mercury is an optional coaching add-on at $25 per rep per month. Script mode brings up the relevant part of your uploaded playbook. AI mode suggests what to say based on the conversation. Reps and leaders can also upload transcripts for review. Add Mercury to your selected seats at checkout.',
   },
   {
     question: 'How do monthly and annual billing work?',

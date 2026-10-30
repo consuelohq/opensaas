@@ -5,18 +5,14 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
 import PricingAddons from '../components/pricing/PricingAddons.astro';
 import PricingComparison from '../components/pricing/PricingComparison.astro';
 import PricingTechnology from '../components/pricing/PricingTechnology.astro';
-import {
-  pricingHero,
-  pricingPlans,
-  pricingFaqItems,
-} from '../data/pricing-content';
+import { pricingPlans, pricingFaqItems } from '../data/pricing-content';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
 import '../styles/pricing.css';
 ---
 
 <MarketingLayout
   title="Pricing"
-  description={pricingHero.subtitle}
+  description="Choose your calling plan. Inbound, outbound and analytics, with room for your whole team."
   canonicalPath="/pricing"
   image="/consuelo-dialer-pricing-og-20261030.png"
   imageAlt="Consuelo Dialer plans — Starter, Professional, Agency and Enterprise."
@@ -38,7 +34,7 @@ import '../styles/pricing.css';
               id="pricing-heading"
             >
               More conversations.<br />Room to grow.
-            </h1><p class="pricing-lede">{pricingHero.subtitle}</p>
+            </h1>
           </div>
           <a class="pricing-jump" href="#compare"
             >Compare all features <PricingIcon /></a
@@ -64,7 +60,8 @@ import '../styles/pricing.css';
             ><label
               ><input type="radio" name="billing" value="annual" /><span
                 >Annual</span
-              ></label>
+              ></label
+            >
           </fieldset>
         </div>
         <div class="plan-columns">
@@ -83,22 +80,53 @@ import '../styles/pricing.css';
                     <span class="plan-kicker">FOR AGENCIES</span>
                   )}
                 </div>
-                <p class="plan-column__description">{plan.description}</p>
-                <div class="plan-column__price">
-                  <strong>
-                    {plan.monthlyCents === 0 ? 'Free' : plan.price}
-                  </strong>
-                  {plan.monthlyCents > 0 && <span>/ seat / month</span>}
+                <div class="plan-seat">
+                  <div class="plan-seat__row">
+                    <span>
+                      {plan.monthlyCents === 0 ? 'Try it out' : 'Rep seat'}
+                    </span>
+                    <div class="plan-column__price">
+                      <strong>
+                        {plan.monthlyCents === 0 ? 'Free' : plan.price}
+                      </strong>
+                      {plan.monthlyCents > 0 && <span>/mo</span>}
+                    </div>
+                  </div>
+                  <div
+                    class="plan-seat__products"
+                    aria-label="Includes inbound, outbound and analytics"
+                  >
+                    <span title="Outbound">
+                      <PricingIcon name="outbound" />
+                    </span>
+                    <span title="Inbound">
+                      <PricingIcon name="inbound" />
+                    </span>
+                    <span title="Analytics">
+                      <PricingIcon name="analytics" />
+                    </span>
+                    {plan.code !== 'starter' &&
+                      plan.code !== 'professional' && (
+                        <span title="Predictive dialing">
+                          <PricingIcon name="connect" />
+                        </span>
+                      )}
+                  </div>
+                  <p class="plan-seat__usage">
+                    {plan.includedMinutes.toLocaleString('en-US')} connected
+                    minutes
+                    {plan.monthlyCents > 0 ? ' / rep / month' : ' to try'}
+                  </p>
+                  <p
+                    class="plan-billing"
+                    data-plan-billing
+                    data-monthly-cents={plan.monthlyCents}
+                  >
+                    {plan.monthlyCents === 0
+                      ? 'No subscription required'
+                      : 'Per rep · billed monthly · USD'}
+                  </p>
                 </div>
-                <p
-                  class="plan-billing"
-                  data-plan-billing
-                  data-monthly-cents={plan.monthlyCents}
-                >
-                  {plan.monthlyCents === 0
-                    ? '100 minutes to try Consuelo'
-                    : 'Billed monthly · USD'}
-                </p>
                 <a
                   class:list={[
                     'pricing-button',
@@ -107,9 +135,10 @@ import '../styles/pricing.css';
                   data-plan-cta
                   href={plan.href}
                 >
-                  {plan.action}
+                  {plan.monthlyCents > 0 ? 'Select plan' : plan.action}
                   <PricingIcon />
                 </a>
+                <p class="plan-column__description">{plan.description}</p>
                 <p class="plan-features-label">
                   {plan.code === 'starter'
                     ? 'A simple first step'
@@ -134,7 +163,8 @@ import '../styles/pricing.css';
           </p><p>
             Paid minutes renew monthly per seat. Contiguous US local calling.
             Taxes extra. <a href="#pricing-faq"
-              >How billing works <PricingIcon /></a>
+              >How billing works <PricingIcon /></a
+            >
           </p>
         </div>
         <div class="team-planner" data-team-planner hidden>
@@ -165,10 +195,17 @@ import '../styles/pricing.css';
                 step="1"
                 value="5"
                 inputmode="numeric"
-              /></label>
+              /></label
+            >
           </div>
           <output data-team-total aria-live="polite"
             >$745 / month for 5 reps</output
+          >
+          <a
+            class="pricing-button pricing-button--solid"
+            data-team-checkout
+            href="/get-started?plan=agency&seats=5&billing=monthly"
+            >Checkout for your team <PricingIcon /></a
           >
         </div>
       </section>
@@ -180,8 +217,8 @@ import '../styles/pricing.css';
         items={pricingFaqItems}
         variant="pricing"
       />
+      <PricingTechnology />
     </div>
-    <PricingTechnology />
     <section class="pricing-close" aria-labelledby="pricing-close-title">
       <p class="pricing-eyebrow">YOUR NEXT CALLING DAY</p><h2
         id="pricing-close-title"
@@ -190,7 +227,8 @@ import '../styles/pricing.css';
       </h2><a class="pricing-button" href="/get-started"
         >Get started <PricingIcon /></a
       ><a class="pricing-close__contact" href="/contact"
-        >Plan it with us <PricingIcon /></a>
+        >Plan it with us <PricingIcon /></a
+      >
     </section>
   </main>
 </MarketingLayout>
@@ -212,14 +250,28 @@ import '../styles/pricing.css';
       : 'monthly';
   const updateTeam = () => {
     if (!seats || !plan || !output) return;
+    const checkout = document.querySelector<HTMLAnchorElement>(
+      '[data-team-checkout]',
+    );
     const count = seats.valueAsNumber;
     if (!Number.isInteger(count) || count < 1 || count > 1000) {
       seats.setAttribute('aria-invalid', 'true');
       output.textContent = 'Enter a whole rep count from 1 to 1,000.';
+      checkout?.setAttribute('aria-disabled', 'true');
+      checkout?.removeAttribute('href');
       return;
     }
     seats.removeAttribute('aria-invalid');
     const quote = quotePlan(plan.value, currentBilling(), count);
+    checkout?.removeAttribute('aria-disabled');
+    if (checkout)
+      checkout.href =
+        '/get-started?' +
+        new URLSearchParams({
+          plan: plan.value,
+          billing: currentBilling(),
+          seats: String(count),
+        });
     output.textContent =
       currency(quote.totalCents) +
       (quote.months === 12 ? ' / year' : ' / month') +

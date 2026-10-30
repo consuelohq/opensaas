@@ -1,3 +1,4 @@
+import type { PublicCheckout } from '../billing/public-checkout';
 import { Effect, Schedule } from 'effect';
 
 import {
@@ -112,9 +113,7 @@ const subscriptionReference = (object: CommercialRecord): string => {
 };
 
 const billingPeriod = (now: Date) => {
-  const start = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
-  );
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const end = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
   );
@@ -197,6 +196,8 @@ export const createCommercialApplication = (input: {
   numbers?: CommercialNumberProvider;
   usage?: CommercialUsageProvider;
   now?: () => Date;
+  publicCheckout?: PublicCheckout;
+  publicBillingPortalConfigurationId?: string;
 }): CommercialApplication => {
   const persistence = createCommercialPersistence(input.database);
   const now = input.now ?? (() => new Date());
@@ -238,7 +239,9 @@ export const createCommercialApplication = (input: {
         'SELECT provider_customer_id FROM dialer_billing_accounts WHERE payer_user_id = $1',
         [payerId],
       );
-      const existingId = stringValue(record(existing.rows[0]).provider_customer_id);
+      const existingId = stringValue(
+        record(existing.rows[0]).provider_customer_id,
+      );
       if (existingId) return existingId;
 
       const created = await Effect.runPromise(
@@ -248,7 +251,9 @@ export const createCommercialApplication = (input: {
         'INSERT INTO dialer_billing_accounts (payer_user_id, provider_customer_id) VALUES ($1, $2) ON CONFLICT (payer_user_id) DO UPDATE SET updated_at = now() RETURNING provider_customer_id',
         [payerId, created.id],
       );
-      const resolvedId = stringValue(record(saved.rows[0]).provider_customer_id);
+      const resolvedId = stringValue(
+        record(saved.rows[0]).provider_customer_id,
+      );
       if (!resolvedId) throw new Error('BILLING_CUSTOMER_NOT_PERSISTED');
       return resolvedId;
     } catch (cause: unknown) {
@@ -278,7 +283,8 @@ export const createCommercialApplication = (input: {
           additionalNumberQuantity = quantity;
         }
       }
-      const paidSeatQuantity = purchased.single + purchased.standard + purchased.power;
+      const paidSeatQuantity =
+        purchased.single + purchased.standard + purchased.power;
       if (paidSeatQuantity === 0) {
         purchased[input.catalog.trial.planCode] = input.catalog.trial.maxSeats;
       }
@@ -561,7 +567,10 @@ export const createCommercialApplication = (input: {
       const maximumLines = Math.min(
         entitlement.maxNumbers,
         callerIds.length,
-        entitlement.predictive ? callerIds.length : 1,
+        (input.catalog.plans[currentPlan].parallelDialing ??
+          entitlement.predictive)
+          ? callerIds.length
+          : 1,
       );
       const canStartCall =
         billing.canStartCalls &&
@@ -581,7 +590,10 @@ export const createCommercialApplication = (input: {
                 input.catalog.plans[currentPlan].includedMinutes! -
                   connectedMinutes,
               ),
-        lineOptions: Array.from({ length: maximumLines }, (_, index) => index + 1),
+        lineOptions: Array.from(
+          { length: maximumLines },
+          (_, index) => index + 1,
+        ),
         predictive: entitlement.predictive,
         recordings: entitlement.recordings,
         transcripts: entitlement.transcripts,
@@ -638,7 +650,7 @@ export const createCommercialApplication = (input: {
     }
   };
 
-  return {
+  const application: CommercialApplication = {
     catalog: () => Effect.succeed(toSafeDialerPlanCatalog(input.catalog)),
     createCheckout: (identity, body) =>
       effectQuery(async () => {
@@ -646,10 +658,14 @@ export const createCommercialApplication = (input: {
           requireAdmin(identity, 'billing.manage');
           const billing = requireBilling();
           const quantities = billingQuantities(body);
-          const subscription = await getWorkspaceSubscription(identity.workspaceId);
+          const subscription = await getWorkspaceSubscription(
+            identity.workspaceId,
+          );
           if (
             subscription.subscriptionId &&
-            !['canceled', 'incomplete_expired'].includes(subscription.status ?? '')
+            !['canceled', 'incomplete_expired'].includes(
+              subscription.status ?? '',
+            )
           ) {
             throw new Error('SUBSCRIPTION_ALREADY_EXISTS');
           }
@@ -676,7 +692,9 @@ export const createCommercialApplication = (input: {
       effectQuery(async () => {
         try {
           requireAdmin(identity, 'billing.manage');
-          const subscription = await getWorkspaceSubscription(identity.workspaceId);
+          const subscription = await getWorkspaceSubscription(
+            identity.workspaceId,
+          );
           if (!subscription.customerId) {
             throw new Error('BILLING_CUSTOMER_NOT_FOUND');
           }
@@ -694,7 +712,9 @@ export const createCommercialApplication = (input: {
       effectQuery(async () => {
         try {
           requireAdmin(identity, 'billing.manage');
-          const subscription = await getWorkspaceSubscription(identity.workspaceId);
+          const subscription = await getWorkspaceSubscription(
+            identity.workspaceId,
+          );
           if (!subscription.customerId || !subscription.subscriptionId) {
             throw new Error('BILLING_SUBSCRIPTION_NOT_FOUND');
           }
@@ -720,7 +740,9 @@ export const createCommercialApplication = (input: {
       effectQuery(async () => {
         try {
           requireAdmin(identity, 'billing.manage');
-          const subscription = await getWorkspaceSubscription(identity.workspaceId);
+          const subscription = await getWorkspaceSubscription(
+            identity.workspaceId,
+          );
           if (!subscription.subscriptionId) {
             throw new Error('BILLING_SUBSCRIPTION_NOT_FOUND');
           }
@@ -789,42 +811,42 @@ export const createCommercialApplication = (input: {
           requireAdmin(identity, 'seats.manage');
           const [subscription, subscriptionItems, seats, numbers, usage] =
             await Promise.all([
-            input.database.query(
-              `SELECT status, payment_failed_at, cancel_at_period_end,
+              input.database.query(
+                `SELECT status, payment_failed_at, cancel_at_period_end,
                       provider_customer_id, provider_subscription_id
                FROM dialer_workspace_subscriptions
                WHERE workspace_id = $1`,
-              [identity.workspaceId],
-            ),
-            input.database.query(
-              `SELECT item_code, provider_price_id, quantity
+                [identity.workspaceId],
+              ),
+              input.database.query(
+                `SELECT item_code, provider_price_id, quantity
                FROM dialer_workspace_subscription_items
                WHERE workspace_id = $1
                ORDER BY item_code`,
-              [identity.workspaceId],
-            ),
-            input.database.query(
-              `SELECT user_id, plan_code, status
+                [identity.workspaceId],
+              ),
+              input.database.query(
+                `SELECT user_id, plan_code, status
                FROM dialer_team_seats
                WHERE workspace_id = $1
                ORDER BY user_id`,
-              [identity.workspaceId],
-            ),
-            input.database.query(
-              `SELECT phone_number, user_id, status
+                [identity.workspaceId],
+              ),
+              input.database.query(
+                `SELECT phone_number, user_id, status
                FROM dialer_phone_numbers
                WHERE workspace_id = $1
                ORDER BY phone_number`,
-              [identity.workspaceId],
-            ),
-            input.database.query(
-              `SELECT COALESCE(SUM(quantity), 0)::integer AS connected_minutes,
+                [identity.workspaceId],
+              ),
+              input.database.query(
+                `SELECT COALESCE(SUM(quantity), 0)::integer AS connected_minutes,
                       COALESCE(SUM(provider_cost_micros), 0)::bigint AS provider_cost_micros
                FROM dialer_usage_events
                WHERE workspace_id = $1`,
-              [identity.workspaceId],
-            ),
-          ]);
+                [identity.workspaceId],
+              ),
+            ]);
           const subscriptionRow = record(subscription.rows[0]);
           const customerId = stringValue(subscriptionRow.provider_customer_id);
           const subscriptionId = stringValue(
@@ -845,7 +867,8 @@ export const createCommercialApplication = (input: {
                 }),
               );
             } catch {
-              billingSummaryError = 'Upcoming invoice is temporarily unavailable';
+              billingSummaryError =
+                'Upcoming invoice is temporarily unavailable';
             }
           }
           return {
@@ -994,16 +1017,14 @@ export const createCommercialApplication = (input: {
             throw new Error('NUMBER_SLOT_NOT_FOUND');
           }
 
-          let addOnAdjustment:
-            | {
-                subscriptionId: string;
-                items: Array<{
-                  code: DialerPlanCode | 'additional-number';
-                  priceId: string;
-                  quantity: number;
-                }>;
-              }
-            | null = null;
+          let addOnAdjustment: {
+            subscriptionId: string;
+            items: Array<{
+              code: DialerPlanCode | 'additional-number';
+              priceId: string;
+              quantity: number;
+            }>;
+          } | null = null;
           if (slotType === 'additional') {
             const [subscription, itemResult] = await Promise.all([
               getWorkspaceSubscription(identity.workspaceId),
@@ -1026,9 +1047,12 @@ export const createCommercialApplication = (input: {
                 const quantity = nonNegativeQuantity(item.quantity);
                 if (
                   !priceId ||
-                  !['single', 'standard', 'power', 'additional-number'].includes(
-                    code,
-                  )
+                  ![
+                    'single',
+                    'standard',
+                    'power',
+                    'additional-number',
+                  ].includes(code)
                 ) {
                   throw new Error('INVALID_CONFIRMED_SUBSCRIPTION_ITEM');
                 }
@@ -1036,12 +1060,15 @@ export const createCommercialApplication = (input: {
                   code: code as DialerPlanCode | 'additional-number',
                   priceId,
                   quantity:
-                    code === 'additional-number' ? Math.max(0, quantity - 1) : quantity,
+                    code === 'additional-number'
+                      ? Math.max(0, quantity - 1)
+                      : quantity,
                 };
               })
               .filter((item) => item.quantity > 0);
             const confirmedAddOn = itemResult.rows.find(
-              (row) => stringValue(record(row).item_code) === 'additional-number',
+              (row) =>
+                stringValue(record(row).item_code) === 'additional-number',
             );
             if (nonNegativeQuantity(record(confirmedAddOn).quantity) < 1) {
               throw new Error('ADDITIONAL_NUMBER_INVENTORY_MISSING');
@@ -1088,11 +1115,16 @@ export const createCommercialApplication = (input: {
         } catch (cause: unknown) {
           throw new Error('INVALID_STRIPE_SIGNATURE', { cause });
         }
+        if (
+          input.publicCheckout &&
+          (await input.publicCheckout.webhook(event))
+        ) {
+          return { received: true as const, duplicate: false };
+        }
         const object = record(record(event.data).object);
-        const providerSubscriptionId =
-          stringValue(object.id).startsWith('sub_')
-            ? stringValue(object.id)
-            : subscriptionReference(object);
+        const providerSubscriptionId = stringValue(object.id).startsWith('sub_')
+          ? stringValue(object.id)
+          : subscriptionReference(object);
         const workspaceId =
           metadataWorkspaceId(object) ||
           (providerSubscriptionId
@@ -1111,13 +1143,13 @@ export const createCommercialApplication = (input: {
 
         try {
           if (event.type.startsWith('customer.subscription.')) {
-          const deleted = event.type === 'customer.subscription.deleted';
-          const status = deleted
-            ? 'canceled'
-            : stringValue(object.status) || 'unknown';
-          const customerId = stringValue(object.customer) || null;
-          await input.database.query(
-            `INSERT INTO dialer_workspace_subscriptions (
+            const deleted = event.type === 'customer.subscription.deleted';
+            const status = deleted
+              ? 'canceled'
+              : stringValue(object.status) || 'unknown';
+            const customerId = stringValue(object.customer) || null;
+            await input.database.query(
+              `INSERT INTO dialer_workspace_subscriptions (
                workspace_id, provider_customer_id, provider_subscription_id,
                status, cancel_at_period_end
              ) VALUES ($1, $2, $3, $4, $5)
@@ -1127,62 +1159,62 @@ export const createCommercialApplication = (input: {
                  status = EXCLUDED.status,
                  cancel_at_period_end = EXCLUDED.cancel_at_period_end,
                  updated_at = now()`,
-            [
-              workspaceId,
-              customerId,
-              providerSubscriptionId,
-              status,
-              booleanValue(object.cancel_at_period_end),
-            ],
-          );
-          const payerId = metadataPayerId(object);
-          if (payerId && customerId) {
-            await input.database.query(
-              `INSERT INTO dialer_billing_accounts (
+              [
+                workspaceId,
+                customerId,
+                providerSubscriptionId,
+                status,
+                booleanValue(object.cancel_at_period_end),
+              ],
+            );
+            const payerId = metadataPayerId(object);
+            if (payerId && customerId) {
+              await input.database.query(
+                `INSERT INTO dialer_billing_accounts (
                  payer_user_id, provider_customer_id
                ) VALUES ($1, $2)
                ON CONFLICT (payer_user_id) DO UPDATE
                SET updated_at = now()`,
-              [payerId, customerId],
-            );
-          }
-          await input.database.query(
-            `DELETE FROM dialer_workspace_subscription_items
-             WHERE workspace_id = $1`,
-            [workspaceId],
-          );
-          if (!deleted) {
-            const providerItems = record(object.items).data;
-            if (!Array.isArray(providerItems)) {
-              throw new Error('STRIPE_SUBSCRIPTION_ITEMS_REQUIRED');
+                [payerId, customerId],
+              );
             }
-            for (const candidate of providerItems) {
-              const item = record(candidate);
-              const providerItemId = stringValue(item.id);
-              const priceId = stringValue(record(item.price).id);
-              const quantity = nonNegativeQuantity(item.quantity);
-              if (!providerItemId || !priceId) {
-                throw new Error('INVALID_STRIPE_SUBSCRIPTION_ITEM');
+            await input.database.query(
+              `DELETE FROM dialer_workspace_subscription_items
+             WHERE workspace_id = $1`,
+              [workspaceId],
+            );
+            if (!deleted) {
+              const providerItems = record(object.items).data;
+              if (!Array.isArray(providerItems)) {
+                throw new Error('STRIPE_SUBSCRIPTION_ITEMS_REQUIRED');
               }
-              await input.database.query(
-                `INSERT INTO dialer_workspace_subscription_items (
+              for (const candidate of providerItems) {
+                const item = record(candidate);
+                const providerItemId = stringValue(item.id);
+                const priceId = stringValue(record(item.price).id);
+                const quantity = nonNegativeQuantity(item.quantity);
+                if (!providerItemId || !priceId) {
+                  throw new Error('INVALID_STRIPE_SUBSCRIPTION_ITEM');
+                }
+                await input.database.query(
+                  `INSERT INTO dialer_workspace_subscription_items (
                    workspace_id, item_code, provider_item_id,
                    provider_price_id, quantity
                  ) VALUES ($1, $2, $3, $4, $5)`,
-                [
-                  workspaceId,
-                  itemCodeForPrice(input.catalog, priceId),
-                  providerItemId,
-                  priceId,
-                  quantity,
-                ],
-              );
+                  [
+                    workspaceId,
+                    itemCodeForPrice(input.catalog, priceId),
+                    providerItemId,
+                    priceId,
+                    quantity,
+                  ],
+                );
+              }
             }
           }
-          }
           if (event.type === 'invoice.payment_failed') {
-          await input.database.query(
-            `INSERT INTO dialer_workspace_subscriptions (
+            await input.database.query(
+              `INSERT INTO dialer_workspace_subscriptions (
                workspace_id, provider_customer_id, provider_subscription_id,
                status, payment_failed_at
              ) VALUES ($1, $2, $3, 'payment_failed', $4)
@@ -1200,21 +1232,21 @@ export const createCommercialApplication = (input: {
                    EXCLUDED.payment_failed_at
                  ),
                  updated_at = now()`,
-            [
-              workspaceId,
-              stringValue(object.customer) || null,
-              providerSubscriptionId || null,
-              now().toISOString(),
-            ],
-          );
+              [
+                workspaceId,
+                stringValue(object.customer) || null,
+                providerSubscriptionId || null,
+                now().toISOString(),
+              ],
+            );
           }
           if (event.type === 'invoice.paid') {
-          await input.database.query(
-            `UPDATE dialer_workspace_subscriptions
+            await input.database.query(
+              `UPDATE dialer_workspace_subscriptions
              SET payment_failed_at = NULL, updated_at = now()
              WHERE workspace_id = $1`,
-            [workspaceId],
-          );
+              [workspaceId],
+            );
           }
           await Effect.runPromise(
             persistence.completeProviderEvent(providerEvent),
@@ -1375,5 +1407,135 @@ export const createCommercialApplication = (input: {
           throw normalizeAsyncError(cause);
         }
       }),
+  };
+  if (!input.publicCheckout) return application;
+  const publicCheckout = input.publicCheckout;
+  const scoped = async (
+    identity: CommercialIdentity,
+    releasePackNumber = false,
+  ) => {
+    try {
+      const catalog = await publicCheckout.catalogFor(identity);
+      return catalog
+        ? createCommercialApplication({
+            ...input,
+            catalog,
+            publicCheckout: undefined,
+            billing: input.billing
+              ? {
+                  ...input.billing,
+                  reconcileSubscription: () =>
+                    releasePackNumber
+                      ? Effect.void
+                      : Effect.fail(
+                          new Error('PUBLIC_PLAN_USE_BILLING_PORTAL'),
+                        ),
+                }
+              : undefined,
+          })
+        : application;
+    } catch (cause: unknown) {
+      throw normalizeAsyncError(cause);
+    }
+  };
+  const scopedAction =
+    (
+      key:
+        | 'dashboard'
+        | 'callerContext'
+        | 'authorizeCall'
+        | 'updateTeam'
+        | 'assignNumber'
+        | 'searchNumbers'
+        | 'provisionNumber'
+        | 'releaseNumber',
+    ) =>
+    (identity: CommercialIdentity, body?: unknown) =>
+      effectQuery(async () => {
+        try {
+          const target = await scoped(identity, key === 'releaseNumber');
+          return Effect.runPromise(
+            (
+              target[key] as (
+                identity: CommercialIdentity,
+                body: unknown,
+              ) => Effect.Effect<unknown, unknown>
+            )(identity, body),
+          );
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      });
+  const legacyBilling =
+    (key: 'createCheckout' | 'previewBillingChange' | 'applyBillingChange') =>
+    (identity: CommercialIdentity, body: unknown) =>
+      effectQuery(async () => {
+        try {
+          if (await publicCheckout.isClaimed(identity.workspaceId))
+            throw new Error('PUBLIC_PLAN_USE_BILLING_PORTAL');
+          return Effect.runPromise(application[key](identity, body));
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      });
+  return {
+    ...application,
+    publicCheckout,
+    claimCheckout: (identity, body) =>
+      effectQuery(() => publicCheckout.claim(identity, body)),
+    dashboard: (identity) =>
+      effectQuery(async () => {
+        try {
+          const result = await Effect.runPromise(
+            scopedAction('dashboard')(identity),
+          );
+          return {
+            ...record(result),
+            publicPurchase: await publicCheckout.summaryFor(
+              identity.workspaceId,
+            ),
+          };
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      }),
+    createBillingPortal: (identity, body) =>
+      effectQuery(async () => {
+        try {
+          if (!(await publicCheckout.isClaimed(identity.workspaceId)))
+            return Effect.runPromise(
+              application.createBillingPortal(identity, body),
+            );
+          requireAdmin(identity, 'billing.manage');
+          if (!input.publicBillingPortalConfigurationId)
+            throw new Error('BILLING_PORTAL_UNAVAILABLE');
+          const subscription = await getWorkspaceSubscription(
+            identity.workspaceId,
+          );
+          if (!subscription.customerId)
+            throw new Error('BILLING_CUSTOMER_NOT_FOUND');
+          return Effect.runPromise(
+            requireBilling().createPortalSession({
+              customerId: subscription.customerId,
+              returnUrl: requireBillingReturnUrl(),
+              configurationId: input.publicBillingPortalConfigurationId,
+            }),
+          );
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      }),
+    callerContext: scopedAction('callerContext'),
+    authorizeCall: scopedAction(
+      'authorizeCall',
+    ) as CommercialApplication['authorizeCall'],
+    updateTeam: scopedAction('updateTeam'),
+    assignNumber: scopedAction('assignNumber'),
+    searchNumbers: scopedAction('searchNumbers'),
+    provisionNumber: scopedAction('provisionNumber'),
+    releaseNumber: scopedAction('releaseNumber'),
+    createCheckout: legacyBilling('createCheckout'),
+    previewBillingChange: legacyBilling('previewBillingChange'),
+    applyBillingChange: legacyBilling('applyBillingChange'),
   };
 };

@@ -8,6 +8,7 @@ export type DialerPlanDefinition = {
   includedMinutes: number | null;
   providerBudgetCents: number | null;
   predictive: boolean;
+  parallelDialing?: boolean;
   recordings: boolean;
   transcripts: boolean;
 };
@@ -85,7 +86,9 @@ export const loadDialerPlanCatalog = (
       'STRIPE_PRICE_ADDITIONAL_NUMBER_MONTHLY',
     ),
   };
-  if (new Set(Object.values(priceIds)).size !== Object.values(priceIds).length) {
+  if (
+    new Set(Object.values(priceIds)).size !== Object.values(priceIds).length
+  ) {
     throw new Error('Commercial Stripe price IDs must be unique');
   }
 

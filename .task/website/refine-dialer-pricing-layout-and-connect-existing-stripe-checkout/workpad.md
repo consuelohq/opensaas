@@ -7,7 +7,7 @@ started: 2026-10-30
 
 ## acceptance criteria
 
-- [ ] Define explicit task acceptance criteria before coding.
+- [x] Define explicit task acceptance criteria before coding; recorded in Scope / acceptance criteria and Test-first contract below.
 
 ## plan
 
@@ -62,9 +62,9 @@ bun run task:finish
 ## Plan / checklist
 - [x] Previous integration completed and promoted: #2707 merged into draft stream review #2683; final live pricing/marketing smoke passes including eight plan/billing selections.
 - [x] New managed task tsk_d7a98df5be09, task PR #2710, from stream/website.
-- [ ] Audit existing Stripe/checkout and current provider configuration; discover only genuine missing information.
-- [ ] Source verified logo wordmarks and record provenance.
-- [ ] Define focused red UI/checkout contracts, implement, validate build/browser and provider-safe checkout behavior.
+- [x] Audit existing Stripe/checkout and current provider configuration; discover only genuine missing information.
+- [x] Source verified logo wordmarks and record provenance.
+- [x] Define focused red UI/checkout contracts, implement, validate build/browser and provider-safe checkout behavior.
 - [ ] Publish into existing stream review, update isolated preview, verify actual HTTPS.
 
 ## Test-first contract
@@ -97,3 +97,11 @@ Test-first checkout contract: server chooses prices/quantities from an owned cat
 - 2026-10-30 22:02:38 `review.run`: passed — OK
 Deployment tool gap: deployment.environment set failed with exit 1 and empty diagnostics for this explicitly scoped service. Reconciled names/values privately through code.call and used the current Railway variable set CLI with explicit project/environment/service and --skip-deploys. Only the three public checkout/portal/return-URL settings changed; credentials were not printed or changed.
 - 2026-10-30 22:03:32 `verify`: passed — OK
+- 2026-10-30 22:06:40 `verify`: passed — OK
+- 2026-10-30 22:11:22 `verify`: passed — OK
+
+## Release progress
+- Existing Stripe account now contains the exact new catalog and dedicated launch portal configuration; older prices/subscribers were not edited. No payment submitted.
+- Authenticated GHL claim hooks published separately as f2230af753ecea227d97905e87aed945c1a234e9 for the concurrent presentation owner (tsk_5385a75d6dc3 / PR2711). Contract and patch are in /tmp/consuelo-billing-ui-contract.json and /tmp/consuelo-billing-ui-hooks.patch. This task will not deploy competing edge presentation assets.
+- Full verify passed all eight registered suites and DB guard. Focused disposable-Postgres proof passed 48 assertions. Additional inspection found that purchase claim must share the existing owner/admin authorization policy; adding an owner regression before final publication.
+- Real webhook still targets the retired workers.dev host (404). After verified backend deployment, move that existing endpoint to calls.consuelohq.com/v1/webhooks/stripe while keeping its signing secret and existing events, and add checkout completion/expiry events. The billing return URL has been staged to the canonical calls domain without triggering deployment.

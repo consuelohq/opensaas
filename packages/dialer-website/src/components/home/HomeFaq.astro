@@ -30,10 +30,14 @@ const {
       )
     }
   </div>
-  <div class="home-faq__list" data-home-faq-list>
+  <div
+    class="home-faq__list"
+    data-home-faq-list
+    data-faq-independent={variant === 'pricing' || undefined}
+  >
     {
       items.map((item) => (
-        <details data-home-faq-item>
+        <details data-home-faq-item open={variant === 'pricing'}>
           <summary>
             <span>{item.question}</span>
             <span class="home-faq__icon" aria-hidden="true">
@@ -81,6 +85,7 @@ const {
   document
     .querySelectorAll<HTMLElement>('[data-home-faq-list]')
     .forEach((list) => {
+      if (list.hasAttribute('data-faq-independent')) return;
       const items = Array.from(
         list.querySelectorAll<HTMLDetailsElement>('[data-home-faq-item]'),
       );
