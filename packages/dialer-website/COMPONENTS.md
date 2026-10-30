@@ -29,3 +29,10 @@ This package keeps first-party Consuelo Dialer website implementation separate f
 - Some existing CSS selectors still use the `launch-` prefix as a compatibility namespace. Rename those only when the full selector set and all consuming components are updated together.
 
 The clone contains only the public Dialer route dependency tree. OS installer, assistant rotator, blog, and inherited starter-kit components remain in the original OS package.
+
+## Pricing
+- src/data/pricing-content.ts owns draft plan/pack values, comparison groups, FAQ copy and bounded quote arithmetic.
+- src/pages/pricing.astro composes the page; src/components/pricing owns add-ons, comparisons, original SVG symbols and technology strip.
+- HomeFaq accepts typed items/title/id/variant and is reused by homepage and pricing.
+- src/styles/pricing.css owns the pricing layout and composes shared tokens.
+- Tests: bun test tests; bun run test:pricing-browser (built dist required).

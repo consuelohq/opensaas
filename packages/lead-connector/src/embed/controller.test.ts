@@ -240,6 +240,7 @@ const createApi = () =>
       id: 'cs_checkout_one',
       url: 'https://checkout.stripe.test/session-one',
     })),
+    claimCommercialPurchase: mock(async () => ({claimed:true,workspaceId:'workspace-1',purchaseId:'purchase-1'})),
     createCommercialBillingPortal: mock(async () => ({
       id: 'bps_portal_one',
       url: 'https://billing.stripe.test/session-one',
@@ -1103,6 +1104,17 @@ describe('LeadConnector embed controller', () => {
       selectedTargets: [],
     });
     expect(api.createEmbedSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('claims a website purchase through the authenticated API and refreshes entitlements without retaining the setup secret',async()=>{
+    const api=createApi();
+    const controller=createLeadConnectorEmbedController({api,voice:createVoice(),surface:'admin'});
+    await controller.authenticate('opaque-parent-ciphertext');
+    const token='a'.repeat(43),id='eecbb747-12d8-4f07-9326-ce833ce9499c';
+    await controller.claimPurchase(id+'.'+token);
+    expect(api.claimCommercialPurchase).toHaveBeenCalledWith({purchaseId:id,claimToken:token});
+    expect(api.getCommercialDashboard).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(controller.getState())).not.toContain(token);
   });
 
   it('opens server-owned billing sessions and drives a real warm transfer lifecycle', async () => {

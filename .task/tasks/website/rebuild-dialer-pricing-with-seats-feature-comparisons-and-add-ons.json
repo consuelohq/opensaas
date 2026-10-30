@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2707,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2707",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_40a9f51608b3",
+  "tmuxSession": "opensaas-website-rebuild-dialer-pricing-with-seats-feature-compar-40a9f516",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/.task/session.json",
+  "createdAt": "2026-10-30T20:02:53.692Z"
+}

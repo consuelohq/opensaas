@@ -58,6 +58,7 @@ try {
   for (const link of docsLinks) assert.equal(await link.getAttribute('href'), 'https://docs.consuelohq.com/');
   assert.equal(await page.locator('.product-story__chapter').count(),5);
   const clouds = await page.locator('.cloud-field img').count();
+  assert.equal(await page.locator('.cloud-field__cloud').evaluateAll(elements => elements.flatMap(el => el.getAnimations()).length), 0, 'Reduced motion disables decorative cloud animation');
   const badImages = await page.locator('img').evaluateAll(images=>images.filter(i=>!i.complete||i.naturalWidth===0).map(i=>i.getAttribute('src')));
   assert.deepEqual(badImages,[],'Missing image at '+width+'x'+height);
   const faq=page.locator('[data-home-faq-item]');
@@ -72,6 +73,7 @@ try {
   const box=await close.boundingBox();
   assert.ok(box && box.y>=0 && box.y+box.height<=height+1,'Footer CTA clipped at '+width+'x'+height);
   await close.click();
+  await page.waitForURL(url => /^\/get-started\/?$/.test(url.pathname));
   const destination = new URL(page.url()).pathname;
   assert.ok(destination === '/get-started' || destination === '/get-started/', 'Setup CTA reaches the setup page');
   assert.deepEqual(errors,[],'Browser errors at '+width+'x'+height);
@@ -83,14 +85,41 @@ try {
  const context=await browser.newContext({viewport:{width:1440,height:960},reducedMotion:'reduce'});
  const page=await context.newPage();
  await page.goto(base+'/pricing',{waitUntil:'networkidle'});
- assert.equal(await page.locator('[data-plan-code]').count(),3);
- await page.locator('[data-plan-code="standard"]').click();
- await page.waitForFunction(()=>document.querySelector('[data-selected-plan]').textContent.includes('Standard'));
- assert.match(await page.locator('[data-selected-plan]').innerText(),/\$99/);
- assert.match(await page.locator('[data-setup-request]').getAttribute('href'),/^mailto:support@consuelohq.com\?/);
+ assert.equal(await page.locator('[data-plan-code]').count(),4);
+ const cards = await page.locator('[data-plan-code]').evaluateAll(elements => elements.map(el => ({
+  code: el.dataset.planCode,
+  name: el.querySelector('h2').textContent.trim(),
+  price: el.querySelector('.plan-column__price strong').textContent.trim(),
+  monthlyCents: Number(el.querySelector('[data-plan-billing]').dataset.monthlyCents),
+ })));
+ assert.deepEqual(cards.map(card => card.code), ['starter','professional','agency','enterprise']);
+ let setupCases = 0;
+ for (const billing of ['monthly','annual']) {
+  for (const card of cards) {
+   await page.goto(base + '/pricing', {waitUntil:'networkidle'});
+   await page.locator('input[name="billing"][value="' + billing + '"]').check();
+   const choose = page.locator('[data-plan-code="' + card.code + '"] [data-plan-cta]');
+   const destination = new URL(await choose.getAttribute('href'),base);
+   assert.equal(destination.searchParams.get('plan'),card.code);
+   assert.equal(destination.searchParams.get('billing'),billing);
+   await choose.click();
+   const annualAmount = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(card.monthlyCents * 12 / 100);
+   const label = card.code === 'starter'
+    ? 'Starter — 100 total trial minutes'
+    : card.name + ' — ' + card.price + ' per rep / month'
+      + (billing === 'annual' ? ' (' + annualAmount + ' per rep billed annually)' : ' (billed monthly)');
+   await page.waitForFunction(label => document.querySelector('[data-selected-plan]').textContent.includes(label), label);
+   assert.equal(await page.locator('[data-checkout-plan]').inputValue(),card.code);
+   assert.equal(await page.locator('[data-checkout-billing]').inputValue(),billing);
+   assert.equal(await page.locator('[data-checkout-seats]').inputValue(),'1');
+   assert.equal(await page.locator('a[href^="mailto:"]').count(),0);
+   setupCases++;
+  }
+ }
+ emit({flow:'all-plan-setup',plans:cards.length,billingPeriods:2,cases:setupCases});
  for (const bad of ['__proto__','<img src=x onerror=alert(1)>']) {
   await page.goto(base+'/get-started?plan='+encodeURIComponent(bad),{waitUntil:'networkidle'});
-  assert.match(await page.locator('[data-selected-plan]').innerText(),/^Tell us/);
+  assert.match(await page.locator('[data-selected-plan]').innerText(),/^Professional/);
   assert.equal(await page.locator('img[src="x"]').count(),0);
  }
  const paths=['/','/pricing','/get-started','/how-it-works','/contact','/privacy','/terms','/support'];
@@ -123,8 +152,34 @@ try {
  const motion=await browser.newContext({viewport:{width:667,height:375},reducedMotion:'no-preference'});
  const motionPage=await motion.newPage();
  await motionPage.goto(base+'/',{waitUntil:'networkidle'});
+ await motionPage.waitForFunction(() => document.documentElement.classList.contains('lenis'));
+ await motionPage.evaluate(() => window.scrollTo(0, 600));
+ await motionPage.waitForFunction(() => scrollY >= 599);
+ const restoredScroll = await motionPage.evaluate(() => {
+  const before = scrollY;
+  for (let pass = 0; pass < 2; pass++) {
+   dispatchEvent(new PageTransitionEvent('pagehide', {persisted:true}));
+   dispatchEvent(new PageTransitionEvent('pageshow', {persisted:true}));
+  }
+  return {before, after:scrollY, lenis:document.documentElement.classList.contains('lenis')};
+ });
+ assert.equal(restoredScroll.lenis, true, 'BFCache pagehide retains Lenis');
+ assert.ok(Math.abs(restoredScroll.before - restoredScroll.after) <= 1, 'BFCache pageshow preserves scroll position');
+ await motionPage.mouse.wheel(0, 450);
+ await motionPage.waitForFunction(before => scrollY > before + 100, restoredScroll.after);
+ await motionPage.waitForFunction(() => !document.documentElement.classList.contains('lenis-scrolling'));
+ const cloudMotion = await motionPage.locator('.cloud-field__cloud').evaluateAll(elements => {
+  const animations = elements.flatMap(el => el.getAnimations());
+  const finite = animations.every(animation => Number.isFinite(animation.effect.getComputedTiming().endTime));
+  animations.forEach(animation => animation.finish());
+  return {count:animations.length, finite, finished:animations.every(animation => animation.playState === 'finished'), hints:elements.map(el => getComputedStyle(el).willChange)};
+ });
+ assert.ok(cloudMotion.count > 0 && cloudMotion.finite && cloudMotion.finished, 'Decorative clouds finish');
+ assert.ok(cloudMotion.hints.every(value => value === 'auto'), 'Clouds release permanent compositor hints');
  await motionPage.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
  await motionPage.waitForFunction(()=>!document.querySelector('[data-cloud-reveal]').hasAttribute('inert'));
+ await motionPage.evaluate(() => dispatchEvent(new PageTransitionEvent('pagehide', {persisted:false})));
+ assert.equal(await motionPage.evaluate(() => document.documentElement.classList.contains('lenis')), false, 'Terminal pagehide destroys Lenis');
  await motion.close();
  const fragmentContext = await browser.newContext({viewport:{width:1440,height:960},reducedMotion:'no-preference'});
  const fragmentPage = await fragmentContext.newPage();
@@ -137,6 +192,46 @@ try {
   }, undefined, {timeout:5000});
  }
  await fragmentContext.close();
+
+ // Run the real enabled-key head script against a local parsed-body fixture.
+ const analyticsScript = readFileSync(join(root, 'src/layouts/MarketingLayout.astro'), 'utf8')
+  .match(/<script define:vars=\{\{ posthogKey, posthogHost \}\}>([\s\S]*?)<\/script>/)[1];
+ const analytics = await browser.newContext({viewport:{width:667,height:375}});
+ const analyticsPage = await analytics.newPage();
+ const analyticsErrors = [];
+ analyticsPage.on('pageerror', error => analyticsErrors.push(error.message));
+ let externalRequests = 0;
+ await analyticsPage.addInitScript(() => {
+  window.fixtureCaptures = [];
+  window.fixtureObserverCount = 0;
+  window.posthog = {__SV:1,init() {},capture:(event, properties) => window.fixtureCaptures.push({event,properties})};
+  const NativeObserver = window.IntersectionObserver;
+  window.IntersectionObserver = class extends NativeObserver {
+   constructor(...args) { super(...args); window.fixtureObserverCount++; }
+  };
+ });
+ await analyticsPage.route('**/*', route => {
+  if (route.request().url() === base + '/analytics-fixture') {
+   return route.fulfill({contentType:'text/html', body:'<!doctype html><html><head><script>var posthogKey="fixture-only-key",posthogHost="https://analytics.invalid";window.fixtureInitialReadyState=document.readyState;' + analyticsScript + '</script></head><body style="margin:0"><section id="first" style="height:200px">First</section><div style="height:800px"></div><section data-section="last" style="height:200px">Last</section></body></html>'});
+  }
+  externalRequests++;
+  return route.abort();
+ });
+ await analyticsPage.goto(base + '/analytics-fixture', {waitUntil:'load'});
+ await analyticsPage.waitForFunction(() => window.fixtureCaptures.some(c => c.event === 'section_viewed' && c.properties.section === 'first'));
+ assert.equal(await analyticsPage.evaluate(() => window.fixtureInitialReadyState), 'loading', 'Fixture runs in head before body exists');
+ await analyticsPage.evaluate(analyticsScript);
+ await analyticsPage.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+ await analyticsPage.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+ await analyticsPage.waitForFunction(() => window.fixtureCaptures.some(c => c.event === 'section_viewed' && c.properties.section === 'last'));
+ await analyticsPage.evaluate(() => window.scrollTo(0, 0));
+ const sectionCaptures = await analyticsPage.evaluate(() => window.fixtureCaptures.filter(c => c.event === 'section_viewed'));
+ assert.deepEqual(sectionCaptures.map(c => c.properties.section).sort(), ['first','last']);
+ assert.equal(await analyticsPage.evaluate(() => window.fixtureObserverCount), 1, 'Only one section observer is registered');
+ assert.deepEqual(analyticsErrors, []);
+ assert.equal(externalRequests, 0, 'Analytics fixture sends no external traffic');
+ await analytics.close();
+ emit({flow:'interaction-lifecycle',persistedCycles:2,terminalCleanup:'pass',cloudMotion:'finite',sectionAnalytics:'pass',analyticsExternalRequests:externalRequests});
  emit({flow:'pricing-to-setup',querySafety:'pass',internalLinks:linkCount,motion:'pass',artifacts:artifactRoot});
 } finally {
  emit({cleanup:'closing browser'});

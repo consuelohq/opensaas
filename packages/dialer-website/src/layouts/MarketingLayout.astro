@@ -129,10 +129,13 @@ const landingFontFaces = `
           }
         });
         // custom tracking — section visibility
-        if (window.IntersectionObserver) {
+        function observeSections() {
+          if (!window.IntersectionObserver || window.__consueloSectionObserver) return;
+          var viewedSections = new WeakSet();
           var obs = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
-              if (entry.isIntersecting) {
+              if (entry.isIntersecting && !viewedSections.has(entry.target)) {
+                viewedSections.add(entry.target);
                 posthog.capture('section_viewed', {
                   section: entry.target.getAttribute('data-section') || entry.target.id,
                   page: window.location.pathname
@@ -141,7 +144,13 @@ const landingFontFaces = `
               }
             });
           }, { threshold: 0.3 });
+          window.__consueloSectionObserver = obs;
           document.querySelectorAll('[data-section], section[id]').forEach(function(el) { obs.observe(el); });
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', observeSections, { once: true });
+        } else {
+          observeSections();
         }
       </script>
     )}

@@ -21,7 +21,9 @@ export const resolveSeatEntitlement = (input: {
       ? Math.min(input.activeNumberCount > 0 ? 1 : 0, input.requestedLines)
       : Math.min(
           Math.max(0, input.requestedLines),
-          plan.predictive ? input.activeNumberCount : 1,
+          (plan.parallelDialing ?? plan.predictive)
+            ? input.activeNumberCount
+            : 1,
         );
   const noNumber = input.activeNumberCount <= 0 || effectiveLineCount <= 0;
 
