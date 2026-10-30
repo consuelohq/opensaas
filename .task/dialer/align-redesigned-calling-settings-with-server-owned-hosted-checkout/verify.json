@@ -1,0 +1,95 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout",
+  "base": "origin/stream/dialer",
+  "headSha": "81d756ad49314cb196d01b9de1b4504812d66204",
+  "changeHash": "5582c056ceb7c980e1b654ba15dd81bea4446f00d3979baf626ec6d927564d4f",
+  "changedFiles": [
+    "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+    "packages/lead-connector/src/embed/state-machine.ts",
+    "packages/lead-connector/src/embed/view.ts"
+  ],
+  "verifiedAt": "2026-10-30T22:31:48.288Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout/current.json",
+        ".task/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout/session.json",
+        ".task/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout/workpad.md",
+        ".task/tasks/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout.json",
+        "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+        "packages/lead-connector/src/embed/state-machine.ts",
+        "packages/lead-connector/src/embed/view.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+            "packages/lead-connector/src/embed/state-machine.ts",
+            "packages/lead-connector/src/embed/view.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 831,
+          "outputTail": "rep-first calling workspace > keeps the minimized live session usable without exposing setup and management forms [1.29ms]\n(pass) rep-first calling workspace > keeps advanced outbound options closed and requires an explicit start [3.18ms]\n\npackages/lead-connector/src/embed/inbound-operator.test.ts:\n(pass) inbound operator state > projects an authoritative snapshot without inventing capacity [0.04ms]\n(pass) inbound operator state > stale acceptance keeps the offer actionable and reports the server reason [0.03ms]\n(pass) inbound operator state > renders endpoint readiness, truthful connecting state, queue visibility, and recovery controls [0.06ms]\n(pass) inbound operator state > allows an offline unowned rep to go ready [0.04ms]\n(pass) inbound operator state > prefers a healthy browser endpoint over an eligible phone endpoint for offer acceptance [0.08ms]\n(pass) inbound operator state > blocks Go ready with no healthy devices but permits declining unanswerable fenced offers [0.17ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.24ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.07ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.28ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.11ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.36ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.07ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.14ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.12ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.08ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.15ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [136.15ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.12ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.45ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.11ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.07ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.09ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.50ms]\n\n 197 pass\n 0 fail\n 1497 expect() calls\nRan 197 tests across 33 files. [823.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
