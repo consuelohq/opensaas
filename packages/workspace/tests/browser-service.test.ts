@@ -200,6 +200,38 @@ describe('browser persistent headed handoff', () => {
   });
 
   it.each([
+    ['explicit --cdp port', ['--cdp', '9222', 'get', 'title']],
+    ['explicit --cdp= URL', ['--cdp=http://127.0.0.1:9222', 'get', 'title']],
+    ['explicit connect', ['connect', '9222']],
+  ])('should attach to an existing browser for %s without any profile/session lookup', async (_label, args) => {
+    const testContext = context();
+    await Effect.runPromise(runBrowserCommandEffect({ args }, testContext.value));
+    expect(testContext.calls.map((call) => call.args)).toEqual([args]);
+    expect(testContext.calls.flatMap((call) => call.args)).not.toContain('--profile');
+  });
+
+  it('should retry CDP attachment after a failed helper without creating a new profile owner', async () => {
+    const requests: BrowserProcessRequest[] = [];
+    const explicitArgs = ['--session', 'consuelo-recovery', '--cdp', '9222', 'get', 'title'];
+    const testContext = context().value;
+    let attempt = 0;
+    testContext.process.run = (request: BrowserProcessRequest) => Effect.sync(() => {
+      requests.push(request);
+      attempt += 1;
+      return attempt === 1
+        ? { ...successfulResult(), stderr: 'helper exited', exitCode: 2 }
+        : successfulResult('Recovered tab');
+    });
+
+    const first = await Effect.runPromise(runBrowserCommandEffect({ args: explicitArgs }, testContext));
+    const second = await Effect.runPromise(runBrowserCommandEffect({ args: explicitArgs }, testContext));
+    expect(first.exitCode).toBe(2);
+    expect(second).toMatchObject({ exitCode: 0, stdout: 'Recovered tab' });
+    expect(requests.map((request) => request.args)).toEqual([explicitArgs, explicitArgs]);
+    expect(requests.flatMap((request) => request.args)).not.toContain('--profile');
+  });
+
+  it.each([
     ['runtime missing', { stdout: '', stderr: 'missing', exitCode: 1, timedOut: false, runtimeMissing: true }, 'BROWSER_RUNTIME_MISSING'],
     ['timeout', { stdout: '', stderr: '', exitCode: 124, timedOut: true, runtimeMissing: false }, 'BROWSER_TIMEOUT'],
   ] as const)('should propagate a typed %s failure when browser status cannot run', async (_label, result, code) => {
@@ -304,6 +336,7 @@ describe('browser persistent headed handoff', () => {
     const repoRoot = join(import.meta.dirname, '..', '..', '..');
     const files = [
       'scripts/browser.js',
+      'scripts/chrome-stderr-safe.sh',
       'scripts/lib/browser/cli.ts',
       'scripts/lib/browser/config.ts',
       'scripts/lib/browser/errors.ts',

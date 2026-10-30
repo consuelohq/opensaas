@@ -51,7 +51,10 @@ export function runBrowserCommandEffect(
   input: { args: string[]; useProfile?: boolean; timeoutMs?: number },
   context: BrowserContext,
 ) {
-  const hasExplicitRouting = input.args.includes('--profile') || input.args.includes('--session');
+  const hasExplicitRouting = input.args.includes('--profile')
+    || input.args.includes('--session')
+    || input.args.some((arg) => arg === '--cdp' || arg.startsWith('--cdp='))
+    || input.args[0] === 'connect';
   if (input.useProfile === false || hasExplicitRouting) {
     return context.process.run({ args: input.args, timeoutMs: input.timeoutMs });
   }

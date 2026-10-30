@@ -54,6 +54,11 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
+    "scripts/chrome-stderr-safe.sh": {
+      "status": "same",
+      "reason": "Byte-identical OS/workspace Chrome executable shim, installed with execute permission to avoid native Chrome stderr-pipe deadlocks while preserving CDP descriptors.",
+      "risk": "high"
+    },
     "scripts/ci-plan.ts": {
       "status": "os-only-intentional",
       "reason": "Canonical Consuelo CI planning helper is OS-owned after the Bun/CI cutover and intentionally has no workspace-script counterpart."

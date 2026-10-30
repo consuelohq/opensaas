@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1628-browser-stderr-and-cdp-stream-aligned-integration",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2705,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2705",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1628-browser-stderr-and-cdp-stream-aligned-integration",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f90d963df4ff",
+  "tmuxSession": "opensaas-os-dev-1628-browser-stderr-and-cdp-stream-aligned-i-f90d963d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1628-browser-stderr-and-cdp-stream-aligned-integration/.task/session.json",
+  "createdAt": "2026-10-30T19:37:12.094Z"
+}

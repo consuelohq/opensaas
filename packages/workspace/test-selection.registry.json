@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 714,
-    "mappedTestCount": 631,
+    "testFileCount": 716,
+    "mappedTestCount": 633,
     "unmappedTestCount": 83,
     "ruleCount": 83,
     "explicitRuleCount": 70,
@@ -11,8 +11,8 @@
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 328,
-      "packages/workspace/tests": 66,
+      "packages/os/tests": 329,
+      "packages/workspace/tests": 67,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -99,7 +99,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 650,
+      "test": 652,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -507,28 +507,32 @@
       "id": "os-browser-headed-handoff",
       "source": [
         "packages/os/scripts/lib/browser/**",
+        "packages/os/scripts/chrome-stderr-safe.sh",
         "packages/os/tests/browser-service.test.ts",
+        "packages/os/tests/browser-process.test.ts",
         "packages/workspace/scripts/lib/browser/**",
-        "packages/workspace/tests/browser-service.test.ts"
+        "packages/workspace/scripts/chrome-stderr-safe.sh",
+        "packages/workspace/tests/browser-service.test.ts",
+        "packages/workspace/tests/browser-process.test.ts"
       ],
       "tests": [
         {
-          "name": "OS headed browser handoff contracts",
+          "name": "OS browser process and CDP handoff contracts",
           "command": [
             "bun",
             "x",
             "vitest",
             "run",
             "packages/os/tests/browser-service.test.ts",
+            "packages/os/tests/browser-process.test.ts",
             "packages/workspace/tests/browser-service.test.ts",
-            "-t",
-            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+            "packages/workspace/tests/browser-process.test.ts"
           ]
         }
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
+      "reason": "Browser stderr backpressure, explicit CDP attach, helper cleanup, persistent-profile handoff and OS/workspace parity require the focused browser suites without selecting the broad package tests.",
       "origin": "explicit"
     },
     {
@@ -4514,6 +4518,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/browser-process.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/browser-service.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6506,6 +6515,11 @@
     {
       "path": "packages/workspace/tests/audit/audit.test.ts",
       "group": "packages/workspace/tests/audit",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/browser-process.test.ts",
+      "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
