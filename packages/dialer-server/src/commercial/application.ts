@@ -415,7 +415,19 @@ export const createCommercialApplication = (input: {
           [workspaceId],
         ),
       ]);
-      const assignedPlan = planCode(record(seatResult.rows[0]).plan_code);
+      const trialAssignment = seatResult.rows.length === 0;
+      if (trialAssignment) {
+        const [inventory, billing] = await Promise.all([
+          loadConfirmedInventory(workspaceId),
+          loadBillingAccess(workspaceId),
+        ]);
+        if (inventory.paid || billing.state !== 'trial') {
+          throw new Error('SEAT_NOT_ASSIGNED');
+        }
+      }
+      const assignedPlan = trialAssignment
+        ? input.catalog.trial.planCode
+        : planCode(record(seatResult.rows[0]).plan_code);
       const existingAssignments = numberResult.rows.map((row) => {
         const current = record(row);
         return {
@@ -431,7 +443,12 @@ export const createCommercialApplication = (input: {
       validateNumberAssignment({
         workspaceId,
         seatUserId: userId,
-        planMaximum: input.catalog.plans[assignedPlan].maxNumbersPerSeat,
+        planMaximum: trialAssignment
+          ? Math.min(
+              input.catalog.plans[assignedPlan].maxNumbersPerSeat,
+              input.catalog.trial.maxNumbers,
+            )
+          : input.catalog.plans[assignedPlan].maxNumbersPerSeat,
         existingAssignments,
         phoneNumber,
       });
