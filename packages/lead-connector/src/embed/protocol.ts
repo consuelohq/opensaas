@@ -1,3 +1,7 @@
+import {
+  readWorkspaceLaunch,
+  type WorkspaceLaunch,
+} from './workspace-launch.js';
 export const LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION = 1 as const;
 
 export const LEAD_CONNECTOR_PARENT_ORIGINS = [
@@ -22,6 +26,8 @@ export type LeadConnectorClickToCallTarget = {
 };
 
 export type LeadConnectorEmbedMessage =
+  | { type: 'workspace-presentation'; compact: boolean }
+  | { type: 'workspace-launch'; launch: WorkspaceLaunch }
   | { type: 'bootstrap'; encryptedData: string }
   | { type: 'handshake'; bootstrapToken: string }
   | {
@@ -115,11 +121,28 @@ export const createLeadConnectorParentBridge = (
     // Other host integrations share this channel, including session replay.
     if (
       data.type !== 'consuelo.leadconnector/handshake' &&
-      data.type !== 'consuelo.leadconnector/click-to-call'
+      data.type !== 'consuelo.leadconnector/click-to-call' &&
+      data.type !== 'consuelo.leadconnector/workspace-presentation' &&
+      data.type !== 'consuelo.leadconnector/workspace-launch'
     )
       return;
     if (data.version !== LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION) {
       options.onProtocolError?.('PROTOCOL_VERSION_MISMATCH');
+      return;
+    }
+    if (data.type === 'consuelo.leadconnector/workspace-presentation') {
+      if (event.origin === activeOrigin && typeof data.compact === 'boolean')
+        options.onMessage({
+          type: 'workspace-presentation',
+          compact: data.compact,
+        });
+      return;
+    }
+    if (data.type === 'consuelo.leadconnector/workspace-launch') {
+      if (event.origin !== activeOrigin) return;
+      const launch = readWorkspaceLaunch(data.launch);
+      if (launch) options.onMessage({ type: 'workspace-launch', launch });
+      else options.onProtocolError?.('INVALID_MESSAGE');
       return;
     }
     if (data.type === 'consuelo.leadconnector/handshake') {
@@ -189,6 +212,40 @@ export const createLeadConnectorParentBridge = (
         configuredParentOrigin,
       );
     },
+    sendWorkspaceHeight: (height: number) =>
+      post({
+        type: 'consuelo.leadconnector/workspace-height',
+        version: LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION,
+        height,
+      }),
+    sendWorkspaceStatus: (value: {
+      active: boolean;
+      mode: 'inbound' | 'outbound';
+      status: string;
+    }) =>
+      post({
+        type: 'consuelo.leadconnector/session-status',
+        version: LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION,
+        ...value,
+      }),
+    requestPresentation: (compact: boolean) =>
+      post({
+        type: 'consuelo.leadconnector/presentation-request',
+        version: LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION,
+        compact,
+      }),
+    openWorkspace: (launch: WorkspaceLaunch) =>
+      post({
+        type: 'consuelo.leadconnector/open-workspace',
+        version: LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION,
+        launch,
+      }),
+    acknowledgeLaunch: (id: string) =>
+      post({
+        type: 'consuelo.leadconnector/launch-accepted',
+        version: LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION,
+        id,
+      }),
     sendReady: () =>
       post({
         type: 'consuelo.leadconnector/ready',

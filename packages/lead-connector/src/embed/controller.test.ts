@@ -3,6 +3,7 @@ import { describe, expect, it, mock } from 'bun:test';
 import type { LeadConnectorEmbedApi } from './api-client';
 import { EmbedSessionExpiredError } from './api-client';
 import { createLeadConnectorEmbedController } from './controller';
+import { createInitialEmbedState } from './state-machine';
 import { normalizeClickToCallTarget } from './protocol';
 import type {
   InboundOperatorApi,
@@ -17,7 +18,6 @@ const createVoice = () => ({
   disconnect: mock(() => undefined),
 });
 
-
 const createInboundSnapshot = (
   phase: InboundOperatorSnapshot['rep']['capacityPhase'] = 'offering',
 ): InboundOperatorSnapshot => ({
@@ -27,7 +27,12 @@ const createInboundSnapshot = (
     ready: true,
     presence: 'online',
     endpoints: [
-      { endpointId: 'browser', kind: 'browser', healthy: true, label: 'Browser' },
+      {
+        endpointId: 'browser',
+        kind: 'browser',
+        healthy: true,
+        label: 'Browser',
+      },
       { endpointId: 'phone', kind: 'phone', healthy: true, label: 'Phone' },
     ],
     capacityPhase: phase,
@@ -233,12 +238,19 @@ const createApi = () =>
     })),
     updateCommercialTeam: mock(async () => ({ updated: true as const })),
     searchCommercialNumbers: mock(async () => ({ numbers: [] })),
-    provisionCommercialNumber: mock(async () => ({ provisioned: true as const })),
+    provisionCommercialNumber: mock(async () => ({
+      provisioned: true as const,
+    })),
     assignCommercialNumber: mock(async () => ({ assigned: true as const })),
     releaseCommercialNumber: mock(async () => ({ released: true as const })),
     createCommercialCheckout: mock(async () => ({
       id: 'cs_checkout_one',
       url: 'https://checkout.stripe.test/session-one',
+    })),
+    claimCommercialPurchase: mock(async () => ({
+      claimed: true,
+      workspaceId: 'workspace-1',
+      purchaseId: 'purchase-1',
     })),
     createCommercialBillingPortal: mock(async () => ({
       id: 'bps_portal_one',
@@ -325,23 +337,102 @@ const createApi = () =>
   }) satisfies LeadConnectorEmbedApi;
 
 describe('LeadConnector embed controller', () => {
+  it('lets the native settings page observe readiness without registering a competing browser device or renewing its lease', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    const restored = createInboundSnapshot(null);
+    restored.rep.endpoints = [
+      {
+        endpointId: 'browser',
+        kind: 'browser',
+        healthy: true,
+        active: true,
+        label: 'Browser',
+      },
+    ];
+    inboundOperatorApi.getSnapshot = mock(async () => restored);
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+      surface: 'admin',
+      inboundObserver: true,
+    });
+    await controller.authenticate('opaque-parent-context');
+    await controller.heartbeatInbound();
+    expect(controller.getState().inboundOperator.rep.ready).toBe(true);
+    expect(voice.prepare).not.toHaveBeenCalled();
+    expect(voice.rejectIncoming).not.toHaveBeenCalled();
+    expect(inboundOperatorApi.setReadiness).not.toHaveBeenCalled();
+    expect(inboundOperatorApi.heartbeat).not.toHaveBeenCalled();
+  });
+
+  it('ends only an explicitly connected inbound browser leg and keeps capacity owned until carrier facts change', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    const connected = createInboundSnapshot('connected');
+    connected.rep.endpoints[0]!.active = true;
+    inboundOperatorApi.getSnapshot = mock(async () => connected);
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('preview-context');
+    await controller.endInboundCall();
+    expect(voice.disconnect).toHaveBeenCalledTimes(1);
+    expect(controller.getState().inboundOperator.rep.assignment?.phase).toBe(
+      'connected',
+    );
+    expect(inboundOperatorApi.setReadiness).not.toHaveBeenCalled();
+    expect(inboundOperatorApi.finishWrapUp).not.toHaveBeenCalled();
+  });
+
+  it('does not replace a live call with a settings permission failure', async () => {
+    const api = createApi();
+    api.getCommercialDashboard = mock(async () => {
+      throw new Error('Administrator access required');
+    });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+      initialState: {
+        ...createInitialEmbedState(),
+        phase: 'connected',
+        sessionToken: 'preview-session',
+      },
+    });
+    expect(await controller.loadAdministration()).toBe(
+      'Administrator access required',
+    );
+    expect(controller.getState().phase).toBe('connected');
+  });
   it('re-registers a restored ready browser endpoint before claiming readiness', async () => {
     const inboundOperatorApi = createInboundApi();
     const voice = createVoice();
     const restored = createInboundSnapshot(null);
-    restored.rep.endpoints = [{
-      endpointId: 'browser', kind: 'browser', healthy: true,
-      active: true, label: 'Browser',
-    }];
+    restored.rep.endpoints = [
+      {
+        endpointId: 'browser',
+        kind: 'browser',
+        healthy: true,
+        active: true,
+        label: 'Browser',
+      },
+    ];
     inboundOperatorApi.getSnapshot = mock(async () => restored);
     let registered = false;
-    voice.prepare = mock(async () => { registered = true; });
+    voice.prepare = mock(async () => {
+      registered = true;
+    });
     inboundOperatorApi.heartbeat = mock(async () => {
       expect(registered).toBe(true);
       return restored;
     });
     const controller = createLeadConnectorEmbedController({
-      api: createApi(), voice, inboundOperatorApi,
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
     });
     const projected: boolean[] = [];
     controller.subscribe((state) => {
@@ -361,22 +452,35 @@ describe('LeadConnector embed controller', () => {
     const inboundOperatorApi = createInboundApi();
     const voice = createVoice();
     const restored = createInboundSnapshot(null);
-    restored.rep.endpoints = [{
-      endpointId: 'browser', kind: 'browser', healthy: true,
-      active: true, label: 'Browser',
-    }];
+    restored.rep.endpoints = [
+      {
+        endpointId: 'browser',
+        kind: 'browser',
+        healthy: true,
+        active: true,
+        label: 'Browser',
+      },
+    ];
     inboundOperatorApi.getSnapshot = mock(async () => restored);
     inboundOperatorApi.setReadiness = mock(async (value) => {
       expect(value).toEqual({ ready: false, endpoints: [] });
       return {
         ...restored,
-        rep: { ...restored.rep, ready: false, presence: 'away' as const,
-          endpoints: [{ ...restored.rep.endpoints[0]!, active: false }] },
+        rep: {
+          ...restored.rep,
+          ready: false,
+          presence: 'away' as const,
+          endpoints: [{ ...restored.rep.endpoints[0]!, active: false }],
+        },
       };
     });
-    voice.prepare = mock(async () => { throw new Error('Device registration failed'); });
+    voice.prepare = mock(async () => {
+      throw new Error('Device registration failed');
+    });
     const controller = createLeadConnectorEmbedController({
-      api: createApi(), voice, inboundOperatorApi,
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
     });
     await controller.authenticate('opaque-parent-ciphertext');
     expect(inboundOperatorApi.setReadiness).toHaveBeenCalledTimes(1);
@@ -460,9 +564,9 @@ describe('LeadConnector embed controller', () => {
     expect(controller.getState().inboundOperator.rep.assignment?.phase).toBe(
       'connecting',
     );
-    expect(controller.getState().inboundOperator.rep.assignment?.phase).not.toBe(
-      'connected',
-    );
+    expect(
+      controller.getState().inboundOperator.rep.assignment?.phase,
+    ).not.toBe('connected');
   });
 
   it('reuses one acceptance attempt id when the first response is lost', async () => {
@@ -602,7 +706,9 @@ describe('LeadConnector embed controller', () => {
     });
     await controller.authenticate('opaque-parent-ciphertext');
     voice.rejectIncoming.mockClear();
-    inboundOperatorApi.getSnapshot = mock(async () => createInboundSnapshot(null));
+    inboundOperatorApi.getSnapshot = mock(async () =>
+      createInboundSnapshot(null),
+    );
 
     await controller.loadInboundOperator();
 
@@ -1044,8 +1150,7 @@ describe('LeadConnector embed controller', () => {
     api.listContacts = mock(
       () =>
         new Promise((resolve) => {
-          release = () =>
-            resolve({ contacts: [], total: 0, nextCursor: null });
+          release = () => resolve({ contacts: [], total: 0, nextCursor: null });
         }),
     );
     const first = controller.refreshResources();
@@ -1103,6 +1208,52 @@ describe('LeadConnector embed controller', () => {
       selectedTargets: [],
     });
     expect(api.createEmbedSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects malformed purchase codes and preserves a live call when a claim is denied', async () => {
+    const api = createApi();
+    api.claimCommercialPurchase = mock(async () => {
+      throw new Error('Purchase is not paid yet');
+    });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+      initialState: {
+        ...createInitialEmbedState(),
+        phase: 'connected',
+        sessionToken: 'preview-session',
+      },
+    });
+    expect(await controller.claimPurchase('incomplete')).toContain(
+      'complete setup code',
+    );
+    expect(api.claimCommercialPurchase).not.toHaveBeenCalled();
+    expect(
+      await controller.claimPurchase(
+        'eecbb747-12d8-4f07-9326-ce833ce9499c.' + 'a'.repeat(43),
+      ),
+    ).toBe('Purchase is not paid yet');
+    expect(controller.getState().phase).toBe('connected');
+    expect(JSON.stringify(controller.getState())).not.toContain('a'.repeat(43));
+  });
+
+  it('claims a website purchase through the authenticated API and refreshes entitlements without retaining the setup secret', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+      surface: 'admin',
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    const token = 'a'.repeat(43),
+      id = 'eecbb747-12d8-4f07-9326-ce833ce9499c';
+    await controller.claimPurchase(id + '.' + token);
+    expect(api.claimCommercialPurchase).toHaveBeenCalledWith({
+      purchaseId: id,
+      claimToken: token,
+    });
+    expect(api.getCommercialDashboard).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(controller.getState())).not.toContain(token);
   });
 
   it('opens server-owned billing sessions and drives a real warm transfer lifecycle', async () => {

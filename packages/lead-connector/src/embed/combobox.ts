@@ -4,6 +4,7 @@ export type ComboboxInput = {
   root: HTMLElement;
   options: ComboboxOption[];
   value: string | null;
+  activeValue?: string;
   onChange: (value: string) => void;
 };
 
@@ -25,7 +26,9 @@ export const createCombobox = (input: ComboboxInput) => {
   let open = trigger.getAttribute('aria-expanded') === 'true';
   let activeIndex = Math.max(
     0,
-    options.findIndex((option) => option.value === value),
+    options.findIndex(
+      (option) => option.value === (input.activeValue ?? value),
+    ),
   );
 
   const render = (): void => {

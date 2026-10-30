@@ -11,6 +11,16 @@ import {
   normalizeClickToCallTarget,
 } from './protocol.js';
 import { resolveLeadConnectorSurface } from './surface.js';
+import {
+  sessionPresentation,
+  activeCallingMode,
+  type CallingWorkspace,
+} from './calling-workspace.js';
+import {
+  replaceWorkspace,
+  createInteractionRenderer,
+} from './workspace-dom.js';
+import type { WorkspaceLaunch } from './workspace-launch.js';
 import { renderLeadConnectorEmbed } from './view.js';
 
 import { normalizeAsyncError } from '../errors/normalize-async-error';
@@ -34,7 +44,93 @@ const controller = createLeadConnectorEmbedController({
   voice,
   surface,
   inboundOperatorApi,
+  inboundObserver: surface === 'admin',
 });
+let workspace: CallingWorkspace = {
+  screen: 'calling',
+  mode: surface === 'admin' ? 'inbound' : 'outbound',
+  compact: false,
+};
+let managementError: string | null = null;
+let pendingLaunch: WorkspaceLaunch | null = null;
+const consumedLaunches = new Set<string>();
+const applyLaunch = async (): Promise<void> => {
+  try {
+    const launch = pendingLaunch;
+    const state = controller.getState();
+    if (!launch || !state.sessionToken || state.phase === 'authenticating')
+      return;
+    pendingLaunch = null;
+    if (consumedLaunches.has(launch.id)) {
+      bridge.acknowledgeLaunch(launch.id);
+      return;
+    }
+    consumedLaunches.add(launch.id);
+    bridge.acknowledgeLaunch(launch.id); // Accepted locally; never replay an uncertain external effect.
+    workspace = {
+      screen: 'calling',
+      mode: activeCallingMode(state) ?? launch.mode,
+      compact: false,
+    };
+    render();
+    if (launch.action === 'open') return;
+    if (launch.action === 'inbound-readiness') {
+      await controller.loadInboundOperator();
+      if (!controller.getState().inboundOperator.rep.assignment)
+        await controller.setInboundReadiness({
+          ready: launch.ready === true,
+          endpoints: launch.endpoints ?? [],
+        });
+    } else if (launch.action === 'inbound-hang-up')
+      await controller.endInboundCall();
+    else if (launch.action === 'inbound-reconnect')
+      await controller.reconnectInbound();
+    else if (
+      launch.action === 'inbound-accept' &&
+      launch.assignmentId &&
+      launch.endpointId &&
+      launch.generation !== undefined
+    )
+      await controller.acceptInboundOffer({
+        assignmentId: launch.assignmentId,
+        endpointId: launch.endpointId,
+        generation: launch.generation,
+      });
+    else if (
+      launch.action === 'inbound-decline' &&
+      launch.assignmentId &&
+      launch.generation !== undefined
+    )
+      await controller.declineInboundOffer({
+        assignmentId: launch.assignmentId,
+        generation: launch.generation,
+        reason: 'rep_declined',
+      });
+    else if (launch.action === 'start-configured' && launch.setup) {
+      if (
+        sessionPresentation(controller.getState(), 'outbound').active ||
+        controller.getState().inboundOperator.rep.assignment !== null
+      )
+        return;
+      controller.updateSetup(launch.setup);
+      if (launch.queue) await controller.selectQueue(launch.queue);
+      else {
+        for (const target of controller.getState().selectedTargets)
+          controller.removeTarget(target.dedupeKey);
+        for (const target of launch.targets ?? [])
+          controller.selectTarget(target);
+      }
+      await controller.startConfiguredCall();
+    }
+  } catch (error: unknown) {
+    managementError =
+      error instanceof Error
+        ? error.message
+        : 'The calling window could not complete that action. Check your call status before retrying.';
+    render();
+  }
+};
+
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let inboundRefreshTimer: ReturnType<typeof setInterval> | null = null;
 let inboundHeartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -72,12 +168,25 @@ const bridge = createLeadConnectorParentBridge(window, {
   allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
   parentOrigin,
   onMessage: (message) => {
+    if (message.type === 'workspace-presentation') {
+      if (surface !== 'overlay') return;
+      workspace.compact = message.compact;
+      render();
+      return;
+    }
+    if (message.type === 'workspace-launch') {
+      if (surface !== 'overlay') return;
+      pendingLaunch = message.launch;
+      void applyLaunch();
+      return;
+    }
     if (message.type === 'bootstrap') {
       completeBootstrap();
       void controller.authenticate(message.encryptedData).then(() => {
         const phase = controller.getState().phase;
         if (phase === 'ready' || phase === 'target-selected') {
           bridge.sendReady();
+          void applyLaunch();
         }
       });
       return;
@@ -88,10 +197,19 @@ const bridge = createLeadConnectorParentBridge(window, {
         const phase = controller.getState().phase;
         if (phase === 'ready' || phase === 'target-selected') {
           bridge.sendReady();
+          void applyLaunch();
         }
       });
       return;
     }
+    workspace = { screen: 'calling', mode: 'outbound', compact: false };
+    controller.updateSetup({
+      mode: 'single',
+      callingMode: 'single',
+      requestedFanout: 1,
+    });
+    for (const target of controller.getState().selectedTargets)
+      controller.removeTarget(target.dedupeKey);
     controller.selectTarget(message.target);
     if (message.autoDial) void controller.startCall('single');
   },
@@ -101,8 +219,6 @@ const bridge = createLeadConnectorParentBridge(window, {
 const stopRefresh = (): void => {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = null;
-  if (inboundRefreshTimer) clearInterval(inboundRefreshTimer);
-  inboundRefreshTimer = null;
 };
 
 const updateRefresh = (): void => {
@@ -119,22 +235,31 @@ const updateRefresh = (): void => {
   } else if (!active) {
     stopRefresh();
   }
-  if (state.activeSessionId && active) bridge.sendBusy(state.activeSessionId);
+  if (surface === 'overlay') {
+    const inbound = sessionPresentation(state, 'inbound');
+    const outbound = sessionPresentation(state, 'outbound');
+    const current = inbound.active ? inbound : outbound;
+    bridge.sendWorkspaceStatus({
+      active: inbound.active || outbound.active,
+      mode: inbound.active ? 'inbound' : 'outbound',
+      status: current.status,
+    });
+  }
   if (state.activeSessionId && state.phase === 'completed') {
     bridge.sendCompleted(state.activeSessionId);
   }
-  if (surface === 'admin' && state.sessionToken && !inboundRefreshTimer) {
+  if (state.sessionToken && !inboundRefreshTimer) {
     inboundRefreshTimer = setInterval(
       () => void controller.loadInboundOperator(),
       5000,
     );
   }
-  if ((!state.sessionToken || surface !== 'admin') && inboundRefreshTimer) {
+  if (!state.sessionToken && inboundRefreshTimer) {
     clearInterval(inboundRefreshTimer);
     inboundRefreshTimer = null;
   }
   // Keep this timer independent of stopRefresh(), which runs on idle redraws.
-  if (surface === 'admin' && state.sessionToken && !inboundHeartbeatTimer) {
+  if (surface === 'overlay' && state.sessionToken && !inboundHeartbeatTimer) {
     inboundHeartbeatTimer = setInterval(() => {
       const operator = controller.getState().inboundOperator;
       if (operator.rep.ready && !operator.pendingAction) {
@@ -142,7 +267,7 @@ const updateRefresh = (): void => {
       }
     }, 30_000);
   }
-  if ((!state.sessionToken || surface !== 'admin') && inboundHeartbeatTimer) {
+  if ((!state.sessionToken || surface !== 'overlay') && inboundHeartbeatTimer) {
     clearInterval(inboundHeartbeatTimer);
     inboundHeartbeatTimer = null;
   }
@@ -163,6 +288,7 @@ const mountComboboxes = (): void => {
       root: comboboxRoot,
       options,
       value: comboboxRoot.dataset.comboboxValue || null,
+      activeValue: comboboxRoot.dataset.activeValue,
       onChange: (value) => {
         if (field === 'queue') {
           const [pipelineId, stageId] = value.split(':');
@@ -193,11 +319,38 @@ const mountComboboxes = (): void => {
   }
 };
 
-controller.subscribe((state) => {
-  root.innerHTML = renderLeadConnectorEmbed(state, { surface });
+const reportHeight = (): void => {
+  if (surface === 'overlay' && !workspace.compact && root.firstElementChild)
+    bridge.sendWorkspaceHeight(
+      Math.ceil(root.firstElementChild.getBoundingClientRect().height),
+    );
+};
+const heightObserver = new ResizeObserver(reportHeight);
+const paint = (): void => {
+  const state = controller.getState();
+  const callMode = activeCallingMode(state);
+  if (callMode) workspace.mode = callMode;
+  if (state.inboundOperator.offers.length) workspace.screen = 'calling';
+  replaceWorkspace(
+    root,
+    renderLeadConnectorEmbed(state, { surface, workspace }),
+  );
+  if (managementError && !workspace.compact) {
+    const notice = document.createElement('p');
+    notice.className = 'notice notice--error';
+    notice.setAttribute('role', 'alert');
+    notice.textContent = managementError;
+    root.querySelector('.workspace-content')?.prepend(notice);
+  }
   mountComboboxes();
+  heightObserver.disconnect();
+  if (root.firstElementChild) heightObserver.observe(root.firstElementChild);
+  reportHeight();
   updateRefresh();
-});
+};
+const interactionRenderer = createInteractionRenderer(root, paint);
+const render = interactionRenderer.render;
+controller.subscribe(render);
 
 const openHostedBilling = async (
   operation: () => Promise<string | null>,
@@ -211,7 +364,18 @@ const openHostedBilling = async (
       return;
     }
     if (popup) popup.location.href = url;
-    else window.location.assign(url);
+    else {
+      const notice = document.createElement('p');
+      notice.className = 'notice';
+      notice.setAttribute('role', 'status');
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'Open secure billing in a new tab';
+      notice.append(link);
+      root.append(notice);
+    }
   } catch (cause: unknown) {
     throw normalizeAsyncError(cause);
   }
@@ -247,7 +411,96 @@ const readElement = (target: EventTarget | null): HTMLElement | null =>
 root.addEventListener('click', (event) => {
   const actionElement = readElement(event.target);
   const action = actionElement?.dataset.action;
-  if (!actionElement || !action) return;
+  if (
+    !actionElement ||
+    !action ||
+    (actionElement instanceof HTMLButtonElement && actionElement.disabled)
+  )
+    return;
+  if (action.startsWith('workspace-')) {
+    if (action === 'workspace-minimize' || action === 'workspace-expand') {
+      if (surface === 'admin')
+        bridge.openWorkspace({
+          id: crypto.randomUUID(),
+          mode: workspace.mode,
+          action: 'open',
+        });
+      else bridge.requestPresentation(action === 'workspace-minimize');
+      return;
+    }
+    workspace.compact = false;
+    if (action === 'workspace-inbound' || action === 'workspace-outbound') {
+      workspace.screen = 'calling';
+      workspace.mode = action === 'workspace-inbound' ? 'inbound' : 'outbound';
+    }
+    if (action === 'workspace-settings') {
+      workspace.screen = 'settings';
+      managementError = null;
+      void controller.loadAdministration().then((error) => {
+        managementError = error;
+        render();
+      });
+    }
+    if (action === 'workspace-history') workspace.screen = 'history';
+    if (action === 'workspace-calling') workspace.screen = 'calling';
+    render();
+    return;
+  }
+  if (
+    surface === 'admin' &&
+    [
+      'inbound-readiness',
+      'inbound-accept',
+      'inbound-decline',
+      'inbound-reconnect',
+      'inbound-hang-up',
+      'start-configured',
+      'start-single',
+      'start-parallel',
+    ].includes(action)
+  ) {
+    const state = controller.getState();
+    const launch: WorkspaceLaunch = {
+      id: crypto.randomUUID(),
+      mode: action.startsWith('inbound-') ? 'inbound' : 'outbound',
+      action: action.startsWith('start-')
+        ? 'start-configured'
+        : (action as WorkspaceLaunch['action']),
+    };
+    if (action === 'inbound-readiness') {
+      launch.ready = actionElement.dataset.ready === 'true';
+      launch.endpoints = [
+        ...root.querySelectorAll<HTMLInputElement>(
+          '[data-field="inbound-endpoint"]',
+        ),
+      ]
+        .filter(
+          (e) =>
+            (e.checked && !e.disabled) ||
+            (e.checked && state.inboundOperator.rep.ready),
+        )
+        .map((e) => ({
+          endpointId: e.dataset.endpointId!,
+          kind: e.dataset.endpointKind === 'phone' ? 'phone' : 'browser',
+        }));
+    }
+    if (action === 'inbound-accept' || action === 'inbound-decline') {
+      launch.assignmentId = actionElement.dataset.assignmentId;
+      launch.generation = Number(actionElement.dataset.generation);
+      launch.endpointId = actionElement.dataset.endpointId;
+    }
+    if (launch.action === 'start-configured') {
+      launch.setup = state.setup;
+      launch.targets = state.selectedTargets.slice(0, 3);
+      if (state.selectedQueue)
+        launch.queue = {
+          pipelineId: state.selectedQueue.pipelineId,
+          stageId: state.selectedQueue.stageId,
+        };
+    }
+    bridge.openWorkspace(launch);
+    return;
+  }
   if (action === 'retry') {
     controller.retry();
     bootstrapTimer = setTimeout(failBootstrap, 5000);
@@ -275,7 +528,11 @@ root.addEventListener('click', (event) => {
     const target = field
       ? normalizeClickToCallTarget({ phone: field.value })
       : null;
-    if (target) controller.selectTarget(target);
+    if (target) {
+      for (const previous of controller.getState().selectedTargets)
+        controller.removeTarget(previous.dedupeKey);
+      controller.selectTarget(target);
+    }
   }
   if (action === 'start-single') void controller.startCall('single');
   if (action === 'start-parallel') void controller.startCall('predictive');
@@ -312,6 +569,7 @@ root.addEventListener('click', (event) => {
   if (action === 'load-more-history') {
     void controller.loadMoreCallHistory();
   }
+  if (action === 'inbound-hang-up') void controller.endInboundCall();
   if (action === 'inbound-reconnect') {
     void controller.reconnectInbound();
   }
@@ -389,7 +647,11 @@ root.addEventListener('click', (event) => {
       contactId,
       name: contact ? resolveLeadConnectorContactName(contact) : null,
     });
-    if (target) controller.selectTarget(target);
+    if (target) {
+      for (const previous of controller.getState().selectedTargets)
+        controller.removeTarget(previous.dedupeKey);
+      controller.selectTarget(target);
+    }
   }
   if (action === 'select-opportunity') {
     const opportunityId = actionElement.dataset.opportunityId;
@@ -406,7 +668,11 @@ root.addEventListener('click', (event) => {
       name: resolveLeadConnectorContactName(contact),
       opportunityId: opportunity.id,
     });
-    if (target) controller.selectTarget(target);
+    if (target) {
+      for (const previous of controller.getState().selectedTargets)
+        controller.removeTarget(previous.dedupeKey);
+      controller.selectTarget(target);
+    }
   }
 });
 
@@ -504,6 +770,28 @@ root.addEventListener('submit', (event) => {
     void controller.initiateTransfer({ type, to });
     return;
   }
+  if (form.dataset.form === 'commercial-purchase-claim') {
+    const code = String(data.get('setupCode') ?? '').trim();
+    const field = form.querySelector<HTMLInputElement>(
+      'input[name="setupCode"]',
+    );
+    if (field) field.value = '';
+    managementError = null;
+    void controller.claimPurchase(code).then(async (error) => {
+      try {
+        managementError = error;
+        if (!error) managementError = await controller.loadAdministration();
+        render();
+      } catch (cause: unknown) {
+        managementError =
+          cause instanceof Error
+            ? cause.message
+            : 'Billing settings could not be refreshed.';
+        render();
+      }
+    });
+    return;
+  }
   if (form.dataset.form === 'commercial-billing-checkout') {
     const quantities = billingQuantitiesFromFormData(data);
     void openHostedBilling(() => controller.createCheckout(quantities));
@@ -580,7 +868,11 @@ bridge.requestUserContext();
 window.addEventListener('beforeunload', () => {
   completeBootstrap();
   stopRefresh();
+  if (inboundRefreshTimer) clearInterval(inboundRefreshTimer);
+  if (inboundHeartbeatTimer) clearInterval(inboundHeartbeatTimer);
   idleRefreshScheduler.stop();
+  interactionRenderer.dispose();
+  heightObserver.disconnect();
   voice.disconnect();
   bridge.stop();
 });

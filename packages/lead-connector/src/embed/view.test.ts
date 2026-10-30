@@ -94,10 +94,13 @@ describe('LeadConnector embed view', () => {
       selectedCallDetail: null,
       selectedCallTranscript: [],
     } as LeadConnectorEmbedState;
-    const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
+    const html = renderLeadConnectorEmbed(state, {
+      surface: 'admin',
+      workspace: { screen: 'history', mode: 'inbound', compact: false },
+    });
 
     expect(html.indexOf('Active calls')).toBeGreaterThan(-1);
-    expect(html.indexOf('Call history')).toBeGreaterThan(
+    expect(html.indexOf('<h2>Call history')).toBeGreaterThan(
       html.indexOf('Active calls'),
     );
     expect(html).toContain('data-call-session="active-session-1"');
@@ -163,7 +166,10 @@ describe('LeadConnector embed view', () => {
         },
       ],
     } as LeadConnectorEmbedState;
-    const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
+    const html = renderLeadConnectorEmbed(state, {
+      surface: 'admin',
+      workspace: { screen: 'history', mode: 'inbound', compact: false },
+    });
     expect(html).toContain('Call transcript');
     expect(html).toContain('Hello there');
     expect(html).toContain('connected');
@@ -186,7 +192,7 @@ describe('LeadConnector embed view', () => {
     expect(resolveLeadConnectorSurface('/overlay/session')).toBe('overlay');
     expect(resolveLeadConnectorSurface('/call/sales')).toBe('customer');
   });
-  it('renders the sidebar route as a commercial administration workspace', () => {
+  it('opens the sidebar to calling while keeping administration out of the rep’s way', () => {
     const state = reduceEmbedState(
       reduceEmbedState(createInitialEmbedState(), {
         type: 'AUTHENTICATED',
@@ -231,14 +237,11 @@ describe('LeadConnector embed view', () => {
     const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
 
     expect(html).toContain('data-surface="admin"');
-    expect(html).toContain('Plans');
-    expect(html).toContain('Team');
-    expect(html).toContain('Phone numbers');
-    expect(html).toContain('Usage');
-    expect(html).toContain('Billing');
-    expect(html).toContain('Active calls');
-    expect(html).toContain('Call history');
-    expect(html).not.toContain('Who do you want to call?');
+    expect(html).toContain('data-action="workspace-settings"');
+    expect(html).toContain('Start receiving calls');
+    expect(html).not.toContain('data-admin-section="plans"');
+    expect(html).not.toContain('data-form="commercial-seat"');
+    expect(html).not.toContain('data-form="commercial-billing-checkout"');
     expect(html).not.toContain('will appear here');
     expect(html).not.toContain('will be added');
   });
@@ -312,17 +315,17 @@ describe('LeadConnector embed view', () => {
     );
 
     const html = renderLeadConnectorEmbed(state, { surface: 'overlay' });
-    expect(html).toContain('Who do you want to call?');
-    expect(html).toContain('Choose a list or dial a single number.');
+    expect(html).toContain('Make your next connection.');
+    expect(html).toContain('Choose a list or call one person.');
     expect(html).toContain('data-action="setup-queue"');
     expect(html).toContain('data-action="setup-single"');
     expect(html).toContain('Choose list');
-    expect(html).toContain('Single dial');
+    expect(html).toContain('One person');
     expect(html).toContain('Marketing Pipeline');
     expect(html).toContain('New Lead');
     expect(html).toContain('Hot Lead');
     expect(html).toContain('Prefer local presence calling');
-    expect(html).toContain('Predictive Dialer (recommended)');
+    expect(html).toContain('Predictive dialing');
     expect(html).toContain('Single (one call at a time)');
     expect(html).toContain('Number of lines');
     expect(html).not.toContain('Choose someone to call');
@@ -330,20 +333,20 @@ describe('LeadConnector embed view', () => {
     expect(html).not.toContain('AI coaching');
   });
 
-  it('renders only target confirmation and next actions before a call starts', () => {
+  it('keeps the selected contact in the form before an explicit start', () => {
     const html = renderLeadConnectorEmbed(selectedState(), {
       surface: 'overlay',
     });
     expect(html).toContain('data-surface="overlay"');
     expect(html).toContain('Test Contact');
-    expect(html).toContain('data-action="start-single"');
+    expect(html).toContain('data-action="start-configured"');
     expect(html).not.toContain('data-action="start-parallel"');
     expect(html).not.toContain('Contacts and opportunities');
     expect(html).not.toContain('data-form="disposition"');
     expect(html).not.toContain('Pause queue');
   });
 
-  it('offers multiline dialing only after multiple targets are selected', () => {
+  it('keeps selected targets visible without starting calls', () => {
     const state = selectEmbedTarget(selectedState(), {
       phone: '+15550100124',
       contactId: 'contact-2',
@@ -352,8 +355,9 @@ describe('LeadConnector embed view', () => {
       dedupeKey: 'contact-2:+15550100124',
     });
     const html = renderLeadConnectorEmbed(state, { surface: 'overlay' });
-    expect(html).toContain('2 people selected');
-    expect(html).toContain('data-action="start-parallel"');
+    expect(html).toContain('Second Contact');
+    expect(html).toContain('Test Contact');
+    expect(html).toContain('data-action="start-configured"');
     expect(html).not.toContain('data-action="start-single"');
   });
 
@@ -374,14 +378,13 @@ describe('LeadConnector embed view', () => {
     const html = renderLeadConnectorEmbed(connectedState(), {
       surface: 'overlay',
     });
-    expect(html).toContain('Connected');
-    expect(html).toContain('Winner');
+    expect(html).toContain('On a call');
+    expect(html).toContain('Speaking with');
     expect(html).toContain('2 other lines ended');
     expect(html).toContain('data-action="hang-up"');
     expect(html).not.toContain('data-action="start-single"');
     expect(html).not.toContain('data-form="disposition"');
   });
-
 
   it('returns a no-winner batch to the dialer without requiring a disposition', () => {
     let state = reduceEmbedState(createInitialEmbedState(), {
