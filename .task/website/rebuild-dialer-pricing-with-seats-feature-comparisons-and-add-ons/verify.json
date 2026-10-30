@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons",
   "base": "origin/main",
-  "headSha": "21f8e2da1ea069fde17025cbeb98715267c00647",
-  "changeHash": "856321fb72e968c6c65f2c4e612de59d9479abb1b639a78e47d3d321367262ab",
+  "headSha": "75f74d6e56965e511c2938f78ddff32d5030b6d5",
+  "changeHash": "d4ab498db5b1f8fb14a2042c472d1be09bfb3990e0ae209cea751341be574821",
   "changedFiles": [
     "packages/dialer-website/.gitignore",
     "packages/dialer-website/AGENTS.md",
@@ -33,16 +33,20 @@
     "packages/dialer-website/src/components/pricing/PricingComparison.astro",
     "packages/dialer-website/src/components/pricing/PricingIcon.astro",
     "packages/dialer-website/src/components/pricing/PricingTechnology.astro",
+    "packages/dialer-website/src/components/visuals/CloudField.astro",
     "packages/dialer-website/src/data/dialer-content.ts",
     "packages/dialer-website/src/data/pricing-content.ts",
+    "packages/dialer-website/src/layouts/MarketingLayout.astro",
+    "packages/dialer-website/src/lib/site-smooth-scroll.ts",
     "packages/dialer-website/src/pages/get-started.astro",
     "packages/dialer-website/src/pages/how-it-works.astro",
     "packages/dialer-website/src/pages/pricing.astro",
     "packages/dialer-website/src/styles/pricing.css",
+    "packages/dialer-website/tests/interaction-lifecycle.test.ts",
     "packages/dialer-website/tests/marketing-contract.test.ts",
     "packages/dialer-website/tests/pricing-catalog.test.ts"
   ],
-  "verifiedAt": "2026-10-30T20:24:19.197Z",
+  "verifiedAt": "2026-10-30T20:59:32.253Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -56,7 +60,12 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
+        ".task/tasks/website/dev-1636-fix-dialer-website-lifecycle-and-analytics-followups.json",
         ".task/tasks/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons.json",
+        ".task/website/dev-1636-fix-dialer-website-lifecycle-and-analytics-followups/evidence-log.json",
+        ".task/website/dev-1636-fix-dialer-website-lifecycle-and-analytics-followups/read-log.json",
+        ".task/website/dev-1636-fix-dialer-website-lifecycle-and-analytics-followups/verify.json",
+        ".task/website/dev-1636-fix-dialer-website-lifecycle-and-analytics-followups/workpad.md",
         ".task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/verify.json",
         ".task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md",
         "packages/dialer-website/.gitignore",
@@ -85,12 +94,16 @@
         "packages/dialer-website/src/components/pricing/PricingComparison.astro",
         "packages/dialer-website/src/components/pricing/PricingIcon.astro",
         "packages/dialer-website/src/components/pricing/PricingTechnology.astro",
+        "packages/dialer-website/src/components/visuals/CloudField.astro",
         "packages/dialer-website/src/data/dialer-content.ts",
         "packages/dialer-website/src/data/pricing-content.ts",
+        "packages/dialer-website/src/layouts/MarketingLayout.astro",
+        "packages/dialer-website/src/lib/site-smooth-scroll.ts",
         "packages/dialer-website/src/pages/get-started.astro",
         "packages/dialer-website/src/pages/how-it-works.astro",
         "packages/dialer-website/src/pages/pricing.astro",
         "packages/dialer-website/src/styles/pricing.css",
+        "packages/dialer-website/tests/interaction-lifecycle.test.ts",
         "packages/dialer-website/tests/marketing-contract.test.ts",
         "packages/dialer-website/tests/pricing-catalog.test.ts"
       ],
@@ -126,12 +139,16 @@
             "packages/dialer-website/src/components/pricing/PricingComparison.astro",
             "packages/dialer-website/src/components/pricing/PricingIcon.astro",
             "packages/dialer-website/src/components/pricing/PricingTechnology.astro",
+            "packages/dialer-website/src/components/visuals/CloudField.astro",
             "packages/dialer-website/src/data/dialer-content.ts",
             "packages/dialer-website/src/data/pricing-content.ts",
+            "packages/dialer-website/src/layouts/MarketingLayout.astro",
+            "packages/dialer-website/src/lib/site-smooth-scroll.ts",
             "packages/dialer-website/src/pages/get-started.astro",
             "packages/dialer-website/src/pages/how-it-works.astro",
             "packages/dialer-website/src/pages/pricing.astro",
             "packages/dialer-website/src/styles/pricing.css",
+            "packages/dialer-website/tests/interaction-lifecycle.test.ts",
             "packages/dialer-website/tests/marketing-contract.test.ts",
             "packages/dialer-website/tests/pricing-catalog.test.ts"
           ],
@@ -209,8 +226,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 185,
-          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nChecked 690 installs across 803 packages (no changes) [181.00ms]\n"
+          "durationMs": 125,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nChecked 690 installs across 803 packages (no changes) [120.00ms]\n"
         },
         {
           "name": "Dialer website build",
@@ -228,8 +245,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 6389,
-          "outputTail": "16:23:26 [vite] Re-optimizing dependencies because vite config has changed\n16:23:27 [types] Generated 392ms\n16:23:27 [check] Getting diagnostics for Astro files in /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/packages/dialer-website...\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (49 files): \n- 0 errors\n- 0 warnings\n- 2 hints\n\n16:23:30 [vite] Re-optimizing dependencies because vite config has changed\n16:23:30 [types] Generated 151ms\n16:23:30 [build] output: \"static\"\n16:23:30 [build] mode: \"static\"\n16:23:30 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/packages/dialer-website/dist/\n16:23:30 [build] Collecting build info...\n16:23:30 [build] ✓ Completed in 166ms.\n16:23:30 [build] Building static entrypoints...\n16:23:31 [vite] ✓ built in 705ms\n16:23:31 [vite] ✓ built in 378ms\n16:23:31 [build] Rearranging server assets...\n\n generating static routes \n16:23:31   ├─ /404.html (+18ms) \n16:23:31   ├─ /calls/api/integrations/oauth/callback/index.html (+1ms) \n16:23:31   ├─ /contact/index.html (+1ms) \n16:23:31   ├─ /get-started/index.html (+1ms) \n16:23:31   ├─ /how-it-works/index.html (+1ms) \n16:23:31   ├─ /pricing/index.html (+4ms) \n16:23:31   ├─ /privacy/index.html (+1ms) \n16:23:31   ├─ /robots.txt (+0ms) \n16:23:31   ├─ /support/index.html (+1ms) \n16:23:31   ├─ /terms/index.html (+1ms) \n16:23:31   ├─ /index.html (+1ms) \n16:23:31 ✓ Completed in 47ms.\n\n16:23:31 [build] ✓ Completed in 1.16s.\n16:23:31 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`\n16:23:31 [build] 10 page(s) built in 1.33s\n16:23:31 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
+          "durationMs": 5711,
+          "outputTail": "16:58:35 [vite] Re-optimizing dependencies because vite config has changed\n16:58:35 [types] Generated 275ms\n16:58:35 [check] Getting diagnostics for Astro files in /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/packages/dialer-website...\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (50 files): \n- 0 errors\n- 0 warnings\n- 2 hints\n\n16:58:38 [vite] Re-optimizing dependencies because vite config has changed\n16:58:38 [types] Generated 151ms\n16:58:38 [build] output: \"static\"\n16:58:38 [build] mode: \"static\"\n16:58:38 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/packages/dialer-website/dist/\n16:58:38 [build] Collecting build info...\n16:58:38 [build] ✓ Completed in 167ms.\n16:58:38 [build] Building static entrypoints...\n16:58:39 [vite] ✓ built in 692ms\n16:58:39 [vite] ✓ built in 380ms\n16:58:39 [build] Rearranging server assets...\n\n generating static routes \n16:58:39   ├─ /404.html (+17ms) \n16:58:39   ├─ /calls/api/integrations/oauth/callback/index.html (+1ms) \n16:58:39   ├─ /contact/index.html (+2ms) \n16:58:39   ├─ /get-started/index.html (+2ms) \n16:58:39   ├─ /how-it-works/index.html (+2ms) \n16:58:39   ├─ /pricing/index.html (+4ms) \n16:58:39   ├─ /privacy/index.html (+1ms) \n16:58:39   ├─ /robots.txt (+1ms) \n16:58:39   ├─ /support/index.html (+1ms) \n16:58:39   ├─ /terms/index.html (+1ms) \n16:58:39   ├─ /index.html (+1ms) \n16:58:39 ✓ Completed in 47ms.\n\n16:58:39 [build] ✓ Completed in 1.14s.\n16:58:39 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`\n16:58:39 [build] 10 page(s) built in 1.32s\n16:58:39 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
         },
         {
           "name": "Dialer website delivery contracts",
@@ -245,8 +262,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 57,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [0.13ms]\n(pass) Dialer marketing delivery > preserves the legacy OS feed URL when Dialer owns the root [0.04ms]\n(pass) Dialer marketing delivery > preserves every displaced static OS page through the migration map [0.89ms]\n(pass) Dialer marketing delivery > publishes product-owned sitemaps without authentication or OS URLs [0.30ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.15ms]\n(pass) Dialer marketing delivery > restores the current pricing share image from committed source bytes [20.86ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [0.46ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.28ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.11ms]\n(pass) Dialer marketing delivery > renders four approved launch plans and a plan-specific setup journey [0.20ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.58ms]\n\n 11 pass\n 0 fail\n 78 expect() calls\nRan 11 tests across 1 file. [52.00ms]\n"
+          "durationMs": 63,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [0.11ms]\n(pass) Dialer marketing delivery > preserves the legacy OS feed URL when Dialer owns the root [0.03ms]\n(pass) Dialer marketing delivery > preserves every displaced static OS page through the migration map [0.84ms]\n(pass) Dialer marketing delivery > publishes product-owned sitemaps without authentication or OS URLs [0.28ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.15ms]\n(pass) Dialer marketing delivery > restores the current pricing share image from committed source bytes [21.50ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [0.51ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.28ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.11ms]\n(pass) Dialer marketing delivery > renders four approved launch plans and a plan-specific setup journey [0.21ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.60ms]\n\n 11 pass\n 0 fail\n 78 expect() calls\nRan 11 tests across 1 file. [56.00ms]\n"
         },
         {
           "name": "Dialer website rendered browser contracts",
@@ -264,8 +281,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 47479,
-          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":65,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
+          "durationMs": 52105,
+          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"all-plan-setup\",\"plans\":4,\"billingPeriods\":2,\"cases\":8}\n{\"flow\":\"interaction-lifecycle\",\"persistedCycles\":2,\"terminalCleanup\":\"pass\",\"cloudMotion\":\"finite\",\"sectionAnalytics\":\"pass\",\"analyticsExternalRequests\":0}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":65,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
         }
       ],
       "failedSuites": []

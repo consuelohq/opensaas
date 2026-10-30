@@ -158,6 +158,7 @@ No test waiver: copy-only changes reviewed visually; interaction/math need tests
 - 2026-10-30 20:30:11 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
 - 2026-10-30 20:54:45 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
 - 2026-10-30 20:57:59 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+- 2026-10-30 21:01:02 fs.write: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
 
 ## Implementation and focused evidence
 - Focused red confirmed missing minutePacks export on old pricing-content.ts (trace trc_d11e23974dba). Green: 5 tests / 61 assertions; full package tests 19 / 176 assertions.
@@ -210,3 +211,13 @@ Resolution contract: preserve the stream's shared-catalog lookup and all-plan br
 The inherited setup unit test and browser runner assumed three plans and a removed subtitle field. Extend, rather than drop, their coverage to four catalog offers and both billing periods. The focused red run (trc_d1edd2fc181c) exposed a hardcoded Starter name in the new setup script: a catalog fixture named “Starter updated” still rendered “Starter”. Resolve by deriving Starter's name and allowance from the same catalog as paid plans. Keep hostile/unknown-plan checks and add exact quote-call/mailto assertions. All other lifecycle/motion/analytics tests remain intact.
 
 - 2026-10-30 20:57:59 append: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
+
+## Approved integration complete / publish evidence
+- Merge commit 75f74d6e56965e511c2938f78ddff32d5030b6d5 preserves parents cb4b90cb044251e6b029cb5bc3364887b2ca8d2c and 933cd32a8b4e255310eb7a2b8beadc5ee0a2c5be. All existing DEV-1636 scrolling/cloud/analytics fixes and metadata were retained.
+- Setup still uses the shared catalog; Starter now derives name/allowance from it too. Inherited catalog test was extended to 4 offers × 2 billing periods, including mutated names/prices, exact quote arguments, email subjects and hostile query values. Browser coverage checks all eight selection paths.
+- Green: 24 package tests / 240 assertions; Astro check/build 10 pages / 0 errors / 0 warnings. Full verifier pass/full/publishValid=true for exact merge commit at 2026-10-30T20:59:32.253Z. Existing marketing browser runner checks eight selection paths plus BFCache, scrolling, bounded cloud motion and analytics lifecycle.
+- Independent pricing browser rerun AFTER verifier completed: eight sizes pass, keyboard/no-JS/query/billing/team/filter/FAQ paths pass, empty stderr, owned resources closed. Receipt /tmp/consuelo-pricing-integration-validation.json is complete exit0.
+- Workflow gap: task.push asserts local SHA equals remote and creates a single-parent API snapshot. It cannot publish an approved two-parent local merge while preserving ancestry. Use OS-scoped code.call solely to push this exact verified merge without force, then normal task.push for evidence and task.pr promotion. No native repo tools or other worktrees touched.
+- Existing stream review #2683 has been converted to draft before promotion to preserve launch gates. User approved combine/verify/promote, not production publication or billing changes.
+
+- 2026-10-30 21:01:02 append: `.task/website/rebuild-dialer-pricing-with-seats-feature-comparisons-and-add-ons/workpad.md`
