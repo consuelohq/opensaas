@@ -115,6 +115,36 @@ describe('LeadConnector embed API client', () => {
       expect(request.headers.get('authorization')).toBe('Bearer embed-token');
   });
 
+  it('sends the purchase claim only in the authenticated request body', async () => {
+    let captured: Request | undefined;
+    const api = createLeadConnectorEmbedApi({
+      baseUrl: 'https://dialer.test',
+      fetch: async (input, init) => {
+        captured = input instanceof Request ? input : new Request(input, init);
+        return jsonResponse({
+          claimed: true,
+          workspaceId: 'workspace-1',
+          purchaseId: 'purchase-1',
+        });
+      },
+    });
+    api.setSessionToken('fixture-session');
+    await api.claimCommercialPurchase({
+      purchaseId: 'purchase-1',
+      claimToken: 'fixture-claim',
+    });
+    expect(captured!.url).toBe(
+      'https://dialer.test/v1/commercial/billing/claim',
+    );
+    expect(captured!.headers.get('authorization')).toBe(
+      'Bearer fixture-session',
+    );
+    expect(await captured!.json()).toEqual({
+      purchaseId: 'purchase-1',
+      claimToken: 'fixture-claim',
+    });
+  });
+
   it('raises a typed expiration error for an expired embed session', async () => {
     const api = createLeadConnectorEmbedApi({
       baseUrl: 'https://dialer.test',

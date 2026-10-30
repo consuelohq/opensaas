@@ -13,7 +13,7 @@ const { execSync } = require('child_process');
 const { getToken, githubRequest, mergePullRequest } = require('./lib/github.js');
 const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { findTaskMeta } = require('./lib/task-meta.js');
-const { summarizeCheckRuns } = require('./lib/task-merge-readiness.js');
+const { getPullRequestCheckSummary } = require('./lib/task-merge-readiness.js');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const DEFAULT_SERVICE = 'opensaas';
@@ -54,41 +54,6 @@ function parseArgs(argv) {
 async function getPullRequest(token, repo, prNumber) {
   const [owner, name] = repo.split('/');
   return githubRequest({ token, endpoint: `/repos/${owner}/${name}/pulls/${prNumber}` });
-}
-
-async function getPullRequestCheckSummary(token, repo, pr) {
-  const [owner, name] = repo.split('/');
-  const headSha = pr?.head?.sha;
-  if (!headSha) {
-    return {
-      state: 'pending',
-      total: 0,
-      pending: ['GitHub has not exposed the PR head SHA yet'],
-      failed: [],
-      passed: [],
-      headSha: null,
-    };
-  }
-  try {
-    const response = await githubRequest({
-      token,
-      endpoint: `/repos/${owner}/${name}/commits/${headSha}/check-runs?per_page=100`,
-    });
-    return {
-      ...summarizeCheckRuns(response?.check_runs),
-      headSha,
-    };
-  } catch (error) {
-    return {
-      state: 'pending',
-      total: 0,
-      pending: ['GitHub check-run readiness could not be read'],
-      failed: [],
-      passed: [],
-      headSha,
-      error: error instanceof Error ? error.message : 'unknown GitHub readiness error',
-    };
-  }
 }
 
 function ciGatePayload(prNumber, pr, ci) {
@@ -225,6 +190,9 @@ async function main() {
     process.exit(1);
   }
 
+  const headSha = pr?.head?.sha;
+  if (!headSha) throw new Error('GitHub did not expose a PR head SHA; refusing an unfenced merge');
+
   if (args.wait) {
     const ci = await getPullRequestCheckSummary(token, args.repo, pr);
     if (ci.state !== 'passed') {
@@ -245,6 +213,7 @@ async function main() {
     token,
     repository: args.repo,
     prNumber,
+    sha: headSha,
     commitTitle: pr.title,
     mergeMethod: args.mergeMethod || 'squash',
   });

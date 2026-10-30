@@ -16,6 +16,11 @@
   var launcher = null;
   var ready = false;
   var busy = false;
+  var minimized = false;
+  var expandedHeight = 640;
+  var pendingWorkspace = null;
+  var workspaceLaunchSent = false;
+  var ownedLocation = null;
   var pending = null;
   var lastRoute = window.location.href;
   var sessionContextPromise = null;
@@ -99,16 +104,38 @@
     panel = null;
     launcher = null;
     ready = false;
+    minimized = false;
+    ownedLocation = null;
+    pendingWorkspace = null;
     pending = null;
     sessionContextPromise = null;
   }
 
+  function setPresentation(compact) {
+    minimized = compact;
+    var host = document.getElementById(hostId);
+    if (host) host.setAttribute('data-minimized', compact ? 'true' : 'false');
+    if (panel) {
+      panel.hidden = false;
+      panel.style.height = compact ? '72px' : expandedHeight + 'px';
+    }
+    post({
+      type: 'consuelo.leadconnector/workspace-presentation',
+      version: 1,
+      compact: compact,
+    });
+  }
+
   function minimizeOverlay() {
+    if (busy) {
+      setPresentation(true);
+      if (launcher) launcher.hidden = true;
+      return;
+    }
     if (panel) panel.hidden = true;
     if (launcher && routeAllowed()) {
       placeLauncher();
       launcher.hidden = false;
-      launcher.textContent = ready ? 'Resume dialer' : 'Dial';
     }
   }
 
@@ -188,9 +215,14 @@
     ].join('');
     panel.insertAdjacentHTML('beforeend', html);
     frame = panel.querySelector('iframe[name="consuelo-dialer"]');
+    ownedLocation = currentLocation();
     frame.addEventListener('load', function () {
       ready = false;
       sessionContextPromise = null;
+      if (workspaceLaunchSent) {
+        pendingWorkspace = null;
+        workspaceLaunchSent = false;
+      }
     });
     return frame;
   }
@@ -227,7 +259,7 @@
         };
       }
     }
-    panel.hidden = false;
+    setPresentation(false);
     launcher.hidden = true;
   }
 
@@ -361,7 +393,6 @@
     }
     if (!routeAllowed()) {
       if (busy && document.getElementById(hostId)) {
-        if (panel) panel.hidden = false;
         if (launcher) launcher.hidden = true;
         return;
       }
@@ -375,29 +406,140 @@
     }
   }
 
+  function currentLocation() {
+    var match = window.location.pathname.match(/\/location\/([^/]+)/);
+    return match ? match[1] : null;
+  }
+
+  function nativeWorkspaceSource(event) {
+    if (event.origin !== origin) return false;
+    var frames = document.querySelectorAll('iframe');
+    for (var i = 0; i < frames.length; i += 1) {
+      if (frames[i] === frame || frames[i].contentWindow !== event.source)
+        continue;
+      try {
+        var url = new URL(frames[i].src);
+        if (
+          url.origin === origin &&
+          (url.pathname === '/admin' || url.pathname === '/calls/embedded')
+        )
+          return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
+  }
+
   window.addEventListener('message', function (event) {
+    if (event.origin !== origin) return;
+    var data = event.data;
+    if (
+      data &&
+      data.version === 1 &&
+      data.type === 'consuelo.leadconnector/open-workspace' &&
+      nativeWorkspaceSource(event)
+    ) {
+      if (!data.launch || typeof data.launch.id !== 'string') return;
+      if (busy && ownedLocation !== currentLocation()) return;
+      if (
+        pendingWorkspace ||
+        (busy && data.launch.action === 'start-configured')
+      ) {
+        openOverlay();
+        return;
+      }
+      workspaceLaunchSent = false;
+      pendingWorkspace = {
+        type: 'consuelo.leadconnector/workspace-launch',
+        version: 1,
+        launch: data.launch,
+      };
+      busy = true;
+      openOverlay();
+      if (ready) {
+        workspaceLaunchSent = true;
+        post(pendingWorkspace);
+      }
+      return;
+    }
     if (!frame || !frame.contentWindow) return;
     if (event.source !== frame.contentWindow) return;
     if (event.origin !== origin) return;
-    if (event.data && event.data.message === 'REQUEST_USER_DATA') {
+    if (data && data.message === 'REQUEST_USER_DATA') {
       sendSessionContext();
       return;
     }
-    if (!event.data || event.data.version !== 1) return;
-    if (event.data.type === 'consuelo.leadconnector/ready') {
+    if (!data || data.version !== 1) return;
+    if (
+      data.type === 'consuelo.leadconnector/workspace-height' &&
+      !minimized &&
+      Number.isSafeInteger(data.height) &&
+      data.height >= 160 &&
+      data.height <= 1600
+    ) {
+      var modernHost = document.getElementById(hostId);
+      if (modernHost) modernHost.setAttribute('data-modern', 'true');
+      expandedHeight = data.height + 2;
+      if (panel) panel.style.height = expandedHeight + 'px';
+    }
+    if (data.type === 'consuelo.leadconnector/ready') {
       ready = true;
+      post({
+        type: 'consuelo.leadconnector/workspace-presentation',
+        version: 1,
+        compact: minimized,
+      });
+      if (pendingWorkspace && !workspaceLaunchSent) {
+        workspaceLaunchSent = true;
+        post(pendingWorkspace);
+      }
       if (pending && post(pending)) pending = null;
     }
-    if (event.data.type === 'consuelo.leadconnector/busy') {
-      busy = true;
-      openOverlay();
+    if (
+      data.type === 'consuelo.leadconnector/launch-accepted' &&
+      pendingWorkspace &&
+      data.id === pendingWorkspace.launch.id
+    ) {
+      pendingWorkspace = null;
+      workspaceLaunchSent = false;
     }
-    if (event.data.type === 'consuelo.leadconnector/completed') {
-      busy = false;
-      window.setTimeout(function () {
-        minimizeOverlay();
-        if (!routeAllowed()) removeOverlayHost();
-      }, 1200);
+    if (
+      data.type === 'consuelo.leadconnector/presentation-request' &&
+      typeof data.compact === 'boolean'
+    ) {
+      if (data.compact) minimizeOverlay();
+      else openOverlay();
+    }
+    if (data.type === 'consuelo.leadconnector/busy') {
+      var wasBusy = busy;
+      busy = true;
+      if (!wasBusy) openOverlay();
+    }
+    if (
+      data.type === 'consuelo.leadconnector/session-status' &&
+      typeof data.active === 'boolean' &&
+      (data.mode === 'inbound' || data.mode === 'outbound')
+    ) {
+      var previouslyBusy = busy;
+      busy = data.active || pendingWorkspace !== null;
+      var host = document.getElementById(hostId);
+      if (host) host.setAttribute('data-live', busy ? 'true' : 'false');
+      // Raise incoming calls once, while repeated snapshots respect a deliberate minimize.
+      var incoming = data.status === 'offering';
+      if (
+        host &&
+        incoming &&
+        host.getAttribute('data-session-status') !== 'offering'
+      )
+        openOverlay();
+      else if (!previouslyBusy && busy && !minimized) openOverlay();
+      if (host)
+        host.setAttribute('data-session-status', String(data.status || ''));
+    }
+    if (data.type === 'consuelo.leadconnector/completed') {
+      // Session-status owns the busy flag: finishing outbound must not end inbound readiness.
+      if (!busy) minimizeOverlay();
     }
   });
 

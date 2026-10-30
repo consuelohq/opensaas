@@ -132,15 +132,23 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         additionalNumber: number;
       };
     }) =>
-      request<{ id: string; url: string }>(
-        '/v1/commercial/billing/checkout',
+      request<{ id: string; url: string }>('/v1/commercial/billing/checkout', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    claimCommercialPurchase: (input: {
+      purchaseId: string;
+      claimToken: string;
+    }) =>
+      request<{ claimed: boolean; workspaceId: string; purchaseId: string }>(
+        '/v1/commercial/billing/claim',
         { method: 'POST', body: JSON.stringify(input) },
       ),
     createCommercialBillingPortal: () =>
-      request<{ id: string; url: string }>(
-        '/v1/commercial/billing/portal',
-        { method: 'POST', body: '{}' },
-      ),
+      request<{ id: string; url: string }>('/v1/commercial/billing/portal', {
+        method: 'POST',
+        body: '{}',
+      }),
     previewCommercialBillingChange: (input: {
       quantities: {
         single: number;
@@ -194,10 +202,7 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         method: 'POST',
         body: JSON.stringify(input),
       }),
-    assignCommercialNumber: (input: {
-      userId: string;
-      phoneNumber: string;
-    }) =>
+    assignCommercialNumber: (input: { userId: string; phoneNumber: string }) =>
       request<{ assigned: true }>('/v1/commercial/numbers/assign', {
         method: 'POST',
         body: JSON.stringify(input),
@@ -207,10 +212,7 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         method: 'POST',
         body: JSON.stringify({ phoneNumber }),
       }),
-    resolveQueueCandidates: (input: {
-      pipelineId: string;
-      stageId: string;
-    }) =>
+    resolveQueueCandidates: (input: { pipelineId: string; stageId: string }) =>
       request<LeadConnectorQueuePreview>(
         '/v1/integrations/leadconnector/queues/preview',
         { method: 'POST', body: JSON.stringify(input) },
@@ -252,19 +254,29 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         transferId: string;
         transferCallSid?: string;
         conferenceSid?: string;
-        status: 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
+        status:
+          | 'initiating'
+          | 'consulting'
+          | 'completed'
+          | 'cancelled'
+          | 'failed';
         error?: string;
-      }>(
-        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers`,
-        { method: 'POST', body: JSON.stringify(input) },
-      ),
+      }>(`/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
     getCallTransferStatus: (sessionId: string, transferId: string) =>
       request<{
         success: boolean;
         transferId: string;
         transferCallSid?: string;
         conferenceSid?: string;
-        status: 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
+        status:
+          | 'initiating'
+          | 'consulting'
+          | 'completed'
+          | 'cancelled'
+          | 'failed';
         error?: string;
       }>(
         `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers/${encodeURIComponent(transferId)}`,

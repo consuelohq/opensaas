@@ -1,0 +1,160 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/redesign-the-calling-workspace-with-live-sessions-and-compact-controls",
+  "base": "origin/main",
+  "headSha": "b78e5b07f8daf35f185a898e3cd19f79ded419ee",
+  "changeHash": "cddd9a5743392b1c137fbd4a9cbe6357c0126c8ea1bdabeda1d77889c01491b3",
+  "changedFiles": [
+    "packages/lead-connector/src/deployment/commercial-artifacts.test.ts",
+    "packages/lead-connector/src/embed/api-client.test.ts",
+    "packages/lead-connector/src/embed/api-client.ts",
+    "packages/lead-connector/src/embed/calling-workspace.test.ts",
+    "packages/lead-connector/src/embed/calling-workspace.ts",
+    "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
+    "packages/lead-connector/src/embed/combobox.ts",
+    "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/inbound-operator-view.ts",
+    "packages/lead-connector/src/embed/inbound-operator.test.ts",
+    "packages/lead-connector/src/embed/internal-main.ts",
+    "packages/lead-connector/src/embed/protocol.test.ts",
+    "packages/lead-connector/src/embed/protocol.ts",
+    "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css",
+    "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+    "packages/lead-connector/src/embed/state-machine.ts",
+    "packages/lead-connector/src/embed/styles.css",
+    "packages/lead-connector/src/embed/view.test.ts",
+    "packages/lead-connector/src/embed/view.ts",
+    "packages/lead-connector/src/embed/workspace-dom.test.ts",
+    "packages/lead-connector/src/embed/workspace-dom.ts",
+    "packages/lead-connector/src/embed/workspace-launch.test.ts",
+    "packages/lead-connector/src/embed/workspace-launch.ts"
+  ],
+  "verifiedAt": "2026-10-30T22:23:02.216Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/redesign-the-calling-workspace-with-live-sessions-and-compact-controls/verify.json",
+        ".task/dialer/redesign-the-calling-workspace-with-live-sessions-and-compact-controls/workpad.md",
+        ".task/tasks/dialer/redesign-the-calling-workspace-with-live-sessions-and-compact-controls.json",
+        "packages/lead-connector/src/deployment/commercial-artifacts.test.ts",
+        "packages/lead-connector/src/embed/api-client.test.ts",
+        "packages/lead-connector/src/embed/api-client.ts",
+        "packages/lead-connector/src/embed/calling-workspace.test.ts",
+        "packages/lead-connector/src/embed/calling-workspace.ts",
+        "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
+        "packages/lead-connector/src/embed/combobox.ts",
+        "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+        "packages/lead-connector/src/embed/controller.test.ts",
+        "packages/lead-connector/src/embed/controller.ts",
+        "packages/lead-connector/src/embed/inbound-operator-view.ts",
+        "packages/lead-connector/src/embed/inbound-operator.test.ts",
+        "packages/lead-connector/src/embed/internal-main.ts",
+        "packages/lead-connector/src/embed/protocol.test.ts",
+        "packages/lead-connector/src/embed/protocol.ts",
+        "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css",
+        "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+        "packages/lead-connector/src/embed/state-machine.ts",
+        "packages/lead-connector/src/embed/styles.css",
+        "packages/lead-connector/src/embed/view.test.ts",
+        "packages/lead-connector/src/embed/view.ts",
+        "packages/lead-connector/src/embed/workspace-dom.test.ts",
+        "packages/lead-connector/src/embed/workspace-dom.ts",
+        "packages/lead-connector/src/embed/workspace-launch.test.ts",
+        "packages/lead-connector/src/embed/workspace-launch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/deployment/commercial-artifacts.test.ts",
+            "packages/lead-connector/src/embed/api-client.test.ts",
+            "packages/lead-connector/src/embed/api-client.ts",
+            "packages/lead-connector/src/embed/calling-workspace.test.ts",
+            "packages/lead-connector/src/embed/calling-workspace.ts",
+            "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
+            "packages/lead-connector/src/embed/combobox.ts",
+            "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/controller.ts",
+            "packages/lead-connector/src/embed/inbound-operator-view.ts",
+            "packages/lead-connector/src/embed/inbound-operator.test.ts",
+            "packages/lead-connector/src/embed/internal-main.ts",
+            "packages/lead-connector/src/embed/protocol.test.ts",
+            "packages/lead-connector/src/embed/protocol.ts",
+            "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css",
+            "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+            "packages/lead-connector/src/embed/state-machine.ts",
+            "packages/lead-connector/src/embed/styles.css",
+            "packages/lead-connector/src/embed/view.test.ts",
+            "packages/lead-connector/src/embed/view.ts",
+            "packages/lead-connector/src/embed/workspace-dom.test.ts",
+            "packages/lead-connector/src/embed/workspace-dom.ts",
+            "packages/lead-connector/src/embed/workspace-launch.test.ts",
+            "packages/lead-connector/src/embed/workspace-launch.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1595,
+          "outputTail": "s) rep-first calling workspace > keeps the minimized live session usable without exposing setup and management forms [2.12ms]\n(pass) rep-first calling workspace > keeps advanced outbound options closed and requires an explicit start [7.62ms]\n\npackages/lead-connector/src/embed/inbound-operator.test.ts:\n(pass) inbound operator state > projects an authoritative snapshot without inventing capacity [0.04ms]\n(pass) inbound operator state > stale acceptance keeps the offer actionable and reports the server reason [0.03ms]\n(pass) inbound operator state > renders endpoint readiness, truthful connecting state, queue visibility, and recovery controls [0.06ms]\n(pass) inbound operator state > allows an offline unowned rep to go ready [0.03ms]\n(pass) inbound operator state > prefers a healthy browser endpoint over an eligible phone endpoint for offer acceptance [0.09ms]\n(pass) inbound operator state > blocks Go ready with no healthy devices but permits declining unanswerable fenced offers [0.12ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.29ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.09ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.31ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.13ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.41ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.38ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.84ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.64ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.39ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [168.82ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.25ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.80ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.13ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.04ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.10ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.11ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.84ms]\n\n 197 pass\n 0 fail\n 1497 expect() calls\nRan 197 tests across 33 files. [1.58s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

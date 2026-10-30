@@ -207,12 +207,16 @@ async function createTree({ token, repository, baseTree, tree }) {
 async function createCommit({ token, repository, message, tree, parents, author, committer }) {
   const { owner, name } = parseRepository(repository);
 
-  return githubRequest({
-    token,
-    method: 'POST',
-    endpoint: `/repos/${owner}/${name}/git/commits`,
-    body: { message, tree, parents, author, committer },
-  });
+  try {
+    return await githubRequest({
+      token,
+      method: 'POST',
+      endpoint: `/repos/${owner}/${name}/git/commits`,
+      body: { message, tree, parents, author, committer },
+    });
+  } catch (error) {
+    throw error; // Preserve the GitHub provider error and its status details.
+  }
 }
 
 async function listPullRequests({ token, repository, state = 'open', owner, head, base }) {
@@ -232,23 +236,33 @@ async function listPullRequests({ token, repository, state = 'open', owner, head
     query.set('base', base);
   }
 
-  const pullRequests = await githubRequest({
-    token,
-    endpoint: `/repos/${parsedRepository.owner}/${parsedRepository.name}/pulls?${query.toString()}`,
-  });
+  let pullRequests;
+  try {
+    pullRequests = await githubRequest({
+      token,
+      endpoint: `/repos/${parsedRepository.owner}/${parsedRepository.name}/pulls?${query.toString()}`,
+    });
+  } catch (error) {
+    throw error; // Preserve structured GitHubRequestError for callers.
+  }
 
   return Array.isArray(pullRequests) ? pullRequests : [];
 }
 
 async function findPullRequest({ token, repository, owner, branch, base, state = 'open' }) {
-  const pullRequests = await listPullRequests({
-    token,
-    repository,
-    state,
-    owner,
-    head: branch,
-    base,
-  });
+  let pullRequests;
+  try {
+    pullRequests = await listPullRequests({
+      token,
+      repository,
+      state,
+      owner,
+      head: branch,
+      base,
+    });
+  } catch (error) {
+    throw error;
+  }
 
   return pullRequests.length > 0 ? pullRequests[0] : null;
 }
@@ -291,12 +305,16 @@ async function updatePullRequest({ token, repository, prNumber, title, body, bas
     payload.base = base;
   }
 
-  return githubRequest({
-    token,
-    method: 'PATCH',
-    endpoint: `/repos/${owner}/${name}/pulls/${prNumber}`,
-    body: payload,
-  });
+  try {
+    return await githubRequest({
+      token,
+      method: 'PATCH',
+      endpoint: `/repos/${owner}/${name}/pulls/${prNumber}`,
+      body: payload,
+    });
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function markPullRequestReadyForReview({ token, repository, prNumber }) {
@@ -331,10 +349,12 @@ async function markPullRequestReadyForReview({ token, repository, prNumber }) {
   });
 }
 
-async function mergePullRequest({ token, repository, prNumber, commitTitle, mergeMethod = 'merge' }) {
+async function mergePullRequest({ token, repository, prNumber, commitTitle, mergeMethod = 'merge', sha }) {
   const { owner, name } = parseRepository(repository);
   const body = { merge_method: mergeMethod };
 
+  // GitHub rejects the merge if the PR head moved since the checks were read.
+  if (sha) body.sha = sha;
   if (commitTitle) {
     body.commit_title = commitTitle;
   }

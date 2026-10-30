@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/redesign-the-calling-workspace-with-live-sessions-and-compact-controls",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2711,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2711",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-redesign-the-calling-workspace-with-live-sessions-and-compact-controls",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5385a75d6dc3",
+  "tmuxSession": "opensaas-dialer-redesign-the-calling-workspace-with-live-session-5385a75d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-redesign-the-calling-workspace-with-live-sessions-and-compact-controls/.task/session.json",
+  "createdAt": "2026-10-30T21:38:04.242Z"
+}

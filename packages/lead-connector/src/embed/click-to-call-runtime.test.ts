@@ -229,4 +229,185 @@ describe('LeadConnector click-to-call runtime', () => {
     );
     expect(listView?.nextElementSibling).toBe(launcher);
   });
+  it('does not reopen a session the rep minimized when another busy update arrives', () => {
+    const { dom } = boot({
+      path: '/v2/location/location-1/contacts',
+      body: '<nav><a id="tb_lists">Smart Lists</a></nav>',
+    });
+    const doc = dom.window.document;
+    doc.getElementById('consuelo-dialer-launcher')?.click();
+    const frame = doc.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    )!;
+    const send = () =>
+      dom.window.dispatchEvent(
+        new dom.window.MessageEvent('message', {
+          origin: embedOrigin,
+          source: frame.contentWindow,
+          data: {
+            type: 'consuelo.leadconnector/busy',
+            version: 1,
+            sessionId: 'session-1',
+          },
+        }),
+      );
+    send();
+    doc.querySelector<HTMLButtonElement>('[data-action="minimize"]')?.click();
+    send();
+    const host = doc.getElementById('consuelo-dialer-overlay-host');
+    expect(host?.getAttribute('data-minimized')).toBe('true');
+    expect(doc.querySelector('iframe[name="consuelo-dialer"]')).toBe(frame);
+    expect(
+      doc.querySelector<HTMLElement>('.consuelo-dialer-panel')?.hidden,
+    ).toBe(false);
+  });
+
+  it('keeps a receiving-calls iframe mounted and compact while the rep uses another CRM page', () => {
+    const { dom } = boot({
+      path: '/v2/location/location-1/contacts',
+      body: '<nav><a id="tb_lists">Smart Lists</a></nav>',
+    });
+    const doc = dom.window.document;
+    doc.getElementById('consuelo-dialer-launcher')?.click();
+    const frame = doc.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    )!;
+    dom.window.dispatchEvent(
+      new dom.window.MessageEvent('message', {
+        origin: embedOrigin,
+        source: frame.contentWindow,
+        data: {
+          type: 'consuelo.leadconnector/session-status',
+          version: 1,
+          active: true,
+          mode: 'inbound',
+          status: 'available',
+        },
+      }),
+    );
+    doc.querySelector<HTMLButtonElement>('[data-action="minimize"]')?.click();
+    dom.window.history.pushState(
+      {},
+      '',
+      '/v2/location/location-1/conversations',
+    );
+    dom.window.dispatchEvent(new dom.window.Event('routeLoaded'));
+    expect(doc.querySelector('iframe[name="consuelo-dialer"]')).toBe(frame);
+    expect(
+      doc
+        .getElementById('consuelo-dialer-overlay-host')
+        ?.getAttribute('data-minimized'),
+    ).toBe('true');
+    expect(
+      doc.querySelector<HTMLElement>('.consuelo-dialer-panel')?.hidden,
+    ).toBe(false);
+  });
+
+  it('accepts explicit workspace handoff only from the approved native admin iframe and sends a launch once', () => {
+    const { dom } = boot({
+      path: '/v2/location/location-1/custom-menu-link/test',
+      body: '<iframe id="native" src="https://calls.consuelohq.com/admin"></iframe><iframe id="public" src="https://calls.consuelohq.com/call/sales"></iframe>',
+    });
+    const document = dom.window.document;
+    const launch = {
+      id: 'explicit-user-action',
+      mode: 'inbound',
+      action: 'inbound-readiness',
+      ready: true,
+      endpoints: [{ endpointId: 'phone', kind: 'phone' }],
+    };
+    const dispatch = (source: Window, origin = embedOrigin) =>
+      dom.window.dispatchEvent(
+        new dom.window.MessageEvent('message', {
+          source,
+          origin,
+          data: {
+            type: 'consuelo.leadconnector/open-workspace',
+            version: 1,
+            launch,
+          },
+        }),
+      );
+    dispatch(
+      document.querySelector<HTMLIFrameElement>('#public')!.contentWindow!,
+    );
+    expect(document.querySelector('iframe[name="consuelo-dialer"]')).toBeNull();
+    dispatch(
+      document.querySelector<HTMLIFrameElement>('#native')!.contentWindow!,
+      'https://attacker.test',
+    );
+    expect(document.querySelector('iframe[name="consuelo-dialer"]')).toBeNull();
+    dispatch(
+      document.querySelector<HTMLIFrameElement>('#native')!.contentWindow!,
+    );
+    const frame = document.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    )!;
+    expect(frame).not.toBeNull();
+    const messages: unknown[] = [];
+    Object.defineProperty(frame.contentWindow!, 'postMessage', {
+      configurable: true,
+      value: (message: unknown) => messages.push(message),
+    });
+    for (let i = 0; i < 2; i++)
+      dom.window.dispatchEvent(
+        new dom.window.MessageEvent('message', {
+          source: frame.contentWindow,
+          origin: embedOrigin,
+          data: { type: 'consuelo.leadconnector/ready', version: 1 },
+        }),
+      );
+    expect(
+      messages.filter(
+        (m) =>
+          typeof m === 'object' &&
+          m !== null &&
+          'type' in m &&
+          m.type === 'consuelo.leadconnector/workspace-launch',
+      ),
+    ).toEqual([
+      { type: 'consuelo.leadconnector/workspace-launch', version: 1, launch },
+    ]);
+  });
+
+  it('raises a new incoming offer once and then respects minimization of repeated offer snapshots', () => {
+    const { dom } = boot({
+      path: '/v2/location/location-1/contacts',
+      body: '<a id="tb_lists">Smart Lists</a>',
+    });
+    const document = dom.window.document;
+    document.getElementById('consuelo-dialer-launcher')!.click();
+    const frame = document.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    )!;
+    const status = (value: string) =>
+      dom.window.dispatchEvent(
+        new dom.window.MessageEvent('message', {
+          source: frame.contentWindow,
+          origin: embedOrigin,
+          data: {
+            type: 'consuelo.leadconnector/session-status',
+            version: 1,
+            active: true,
+            mode: 'inbound',
+            status: value,
+          },
+        }),
+      );
+    status('available');
+    document.querySelector<HTMLElement>('[data-action="minimize"]')!.click();
+    status('offering');
+    expect(
+      document
+        .getElementById('consuelo-dialer-overlay-host')!
+        .getAttribute('data-minimized'),
+    ).toBe('false');
+    document.querySelector<HTMLElement>('[data-action="minimize"]')!.click();
+    status('offering');
+    expect(
+      document
+        .getElementById('consuelo-dialer-overlay-host')!
+        .getAttribute('data-minimized'),
+    ).toBe('true');
+  });
 });
