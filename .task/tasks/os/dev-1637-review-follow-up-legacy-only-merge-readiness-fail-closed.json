@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1637-review-follow-up-legacy-only-merge-readiness-fail-closed",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2706,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2706",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-review-follow-up-legacy-only-merge-readiness-fail-closed",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2715c0391ca5",
+  "tmuxSession": "opensaas-os-dev-1637-review-follow-up-legacy-only-merge-read-2715c039",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-review-follow-up-legacy-only-merge-readiness-fail-closed/.task/session.json",
+  "createdAt": "2026-10-30T20:02:00.748Z"
+}

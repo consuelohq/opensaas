@@ -191,6 +191,38 @@ describe('DEV-1637 effective check contexts and fail-closed boundaries', () => {
     expect(summarizeCheckRuns([laterStartedFailure, laterUpdatedSuccess]).state).not.toBe('passed');
   });
 
+  it('never interprets successful legacy-only contexts as complete GitHub Actions CI', () => {
+    const legacy = (state: string) => ({
+      __typename: 'StatusContext', id: 'status-1', context: 'legacy/verify',
+      state, createdAt: '2026-10-29T03:29:00Z',
+    });
+    const passingLegacyOnly = summarizeCheckRuns([legacy('SUCCESS')]);
+    expect(passingLegacyOnly).toMatchObject({
+      state: 'pending', total: 1, failed: [], passed: ['legacy/verify'],
+    });
+    expect(passingLegacyOnly.pending).toEqual(expect.arrayContaining([
+      expect.stringContaining('GitHub Actions'),
+    ]));
+
+    const thirdParty = {
+      __typename: 'CheckRun', id: 'coderabbit', name: 'CodeRabbit',
+      status: 'COMPLETED', conclusion: 'SUCCESS',
+      checkSuite: { app: { databaseId: 123 }, workflowRun: null },
+    };
+    expect(summarizeCheckRuns([legacy('SUCCESS'), thirdParty])).toMatchObject({
+      state: 'pending', total: 2, failed: [],
+    });
+
+    expect(summarizeCheckRuns([legacy('FAILURE')]).state).toBe('failed');
+    expect(summarizeCheckRuns([legacy('PENDING')]).state).toBe('pending');
+    expect(summarizeCheckRuns([legacy('UNKNOWN')]).state).not.toBe('passed');
+
+    const actualActions = actionCheck('verify', 'CI', 42, 'SUCCESS');
+    expect(summarizeCheckRuns([legacy('SUCCESS'), actualActions])).toMatchObject({
+      state: 'passed', total: 2, failed: [], pending: [],
+    });
+  });
+
   it('gates legacy status contexts and never treats unknown legacy states as success', () => {
     const ok = actionCheck('verify', 'CI', 15, 'SUCCESS');
     const status = (state: string) => ({ __typename: 'StatusContext', context: 'legacy/verify', state, createdAt: '2026-10-29T03:29:00Z' });
