@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_80175ebe27f1",
+  "tmuxSession": "opensaas-dialer-align-redesigned-calling-settings-with-server-ow-80175ebe",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout",
+  "branch": "task/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-align-redesigned-calling-settings-with-server-owned-hosted-checkout",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-align-redesigned-calling-settings-with-server-owned-hosted-checkout",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2713,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2713",
+  "createdAt": "2026-10-30T22:31:06.077Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-align-redesigned-calling-settings-with-server-owned-hosted-checkout/.task/dialer/align-redesigned-calling-settings-with-server-owned-hosted-checkout/session.json"
+}

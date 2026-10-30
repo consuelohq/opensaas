@@ -129,7 +129,7 @@ describe('commercial LeadConnector surfaces', () => {
       workspace: { screen: 'settings', mode: 'inbound', compact: false },
     });
     expect(trialHtml).not.toContain('data-form="commercial-billing-checkout"');
-    expect(trialHtml).toContain('href="https://consuelohq.com/get-started/"');
+    expect(trialHtml).toContain('data-action="manage-billing"');
     expect(trialHtml).toContain('Choose a plan');
     expect(trialHtml).not.toContain('data-form="commercial-billing-change"');
 

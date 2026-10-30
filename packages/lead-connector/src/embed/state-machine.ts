@@ -185,6 +185,7 @@ export type EmbedCommercialDashboard = {
       'single' | 'standard' | 'power',
       {
         code: string;
+        name?: string;
         priceCents: number;
         maxNumbersPerSeat: number;
         includedMinutes: number | null;
