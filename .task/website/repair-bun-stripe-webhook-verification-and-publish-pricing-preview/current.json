@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2714,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2714",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2714",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2714/repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2714",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2714/repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-bun-stripe-webhook-verification-and-publish-pricing-preview",
+  "repoRoot": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-refine-dialer-pricing-layout-and-connect-existing-stripe-checkout",
+  "taskSession": "tsk_b20841c5d22e",
+  "tmuxSession": "opensaas-website-repair-bun-stripe-webhook-verification-and-publi-b20841c5",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-bun-stripe-webhook-verification-and-publish-pricing-preview/.task/website/repair-bun-stripe-webhook-verification-and-publish-pricing-preview/session.json",
+  "createdAt": "2026-10-30T22:42:56.392Z"
+}

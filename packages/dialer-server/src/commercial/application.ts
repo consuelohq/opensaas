@@ -1111,7 +1111,7 @@ export const createCommercialApplication = (input: {
         if (!input.billing) throw new Error('BILLING_PROVIDER_UNAVAILABLE');
         let event;
         try {
-          event = input.billing.constructWebhookEvent(rawBody, signature);
+          event = await input.billing.constructWebhookEvent(rawBody, signature);
         } catch (cause: unknown) {
           throw new Error('INVALID_STRIPE_SIGNATURE', { cause });
         }
