@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/dev-1628-prevent-os-browser-freezes-and-support-cdp-recovery/workpad.md",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-10-30T19:22:26.265Z"
+}

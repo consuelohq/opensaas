@@ -2468,7 +2468,7 @@ describe('test selection registry', () => {
   });
 
 
-  it('uses focused headed browser handoff contracts instead of the broad OS package suite', () => {
+  it('uses focused browser process and CDP recovery contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
       '--changed-file',
@@ -2479,6 +2479,10 @@ describe('test selection registry', () => {
       'packages/workspace/scripts/lib/browser/service.ts',
       '--changed-file',
       'packages/workspace/tests/browser-service.test.ts',
+      '--changed-file',
+      'packages/os/scripts/chrome-stderr-safe.sh',
+      '--changed-file',
+      'packages/workspace/tests/browser-process.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -2486,7 +2490,10 @@ describe('test selection registry', () => {
     const suiteNames = data.selectedSuites.map((suite) => suite.name);
 
     expect(matchedRuleIds).toContain('os-browser-headed-handoff');
-    expect(suiteNames).toContain('OS headed browser handoff contracts');
+    expect(suiteNames).toContain('OS browser process and CDP handoff contracts');
+    const browserSuite = data.selectedSuites.find((suite) => suite.name === 'OS browser process and CDP handoff contracts');
+    expect(browserSuite?.command).toContain('packages/os/tests/browser-process.test.ts');
+    expect(browserSuite?.command).toContain('packages/workspace/tests/browser-process.test.ts');
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 

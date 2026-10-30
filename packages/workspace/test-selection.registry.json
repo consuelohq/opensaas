@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 726,
-    "mappedTestCount": 642,
+    "testFileCount": 733,
+    "mappedTestCount": 649,
     "unmappedTestCount": 84,
     "ruleCount": 86,
     "explicitRuleCount": 72,
@@ -11,8 +11,8 @@
     "projectCount": 10,
     "packageTestScriptCount": 22,
     "byGroup": {
-      "packages/os/tests": 331,
-      "packages/workspace/tests": 66,
+      "packages/os/tests": 336,
+      "packages/workspace/tests": 67,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -25,7 +25,7 @@
       "packages/documentation/tests": 12,
       "packages/dialer-server/src/runtime": 11,
       "packages/api/src/routes": 10,
-      "packages/lead-connector/src": 8,
+      "packages/lead-connector/src": 9,
       "packages/lead-connector/src/deployment": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
       "packages/dialer-documentation/tests": 5,
@@ -101,7 +101,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 661,
+      "test": 668,
       "spec": 29,
       "__tests__": 11,
       "integration": 10,
@@ -461,28 +461,32 @@
       "id": "os-browser-headed-handoff",
       "source": [
         "packages/os/scripts/lib/browser/**",
+        "packages/os/scripts/chrome-stderr-safe.sh",
         "packages/os/tests/browser-service.test.ts",
+        "packages/os/tests/browser-process.test.ts",
         "packages/workspace/scripts/lib/browser/**",
-        "packages/workspace/tests/browser-service.test.ts"
+        "packages/workspace/scripts/chrome-stderr-safe.sh",
+        "packages/workspace/tests/browser-service.test.ts",
+        "packages/workspace/tests/browser-process.test.ts"
       ],
       "tests": [
         {
-          "name": "OS headed browser handoff contracts",
+          "name": "OS browser process and CDP handoff contracts",
           "command": [
             "bun",
             "x",
             "vitest",
             "run",
             "packages/os/tests/browser-service.test.ts",
+            "packages/os/tests/browser-process.test.ts",
             "packages/workspace/tests/browser-service.test.ts",
-            "-t",
-            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+            "packages/workspace/tests/browser-process.test.ts"
           ]
         }
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
+      "reason": "Browser stderr backpressure, explicit CDP attach, helper cleanup, persistent-profile handoff and OS/workspace parity require the focused browser suites without selecting the broad package tests.",
       "origin": "explicit"
     },
     {
@@ -4598,6 +4602,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/lead-connector/src/oauth-wire.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/lead-connector/src/persistent-stores.contract.test.ts",
       "group": "packages/lead-connector/src",
       "kind": "test"
@@ -4694,6 +4703,11 @@
     },
     {
       "path": "packages/os/tests/branch-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/browser-process.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6313,6 +6327,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/trace-site-inspector-batch-polish.browser.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-batch-polish.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-site-inspector-interactions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6339,6 +6363,16 @@
     },
     {
       "path": "packages/os/tests/trace-site-renderer.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-table-polish.browser.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-table-polish.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6705,6 +6739,11 @@
     {
       "path": "packages/workspace/tests/audit/audit.test.ts",
       "group": "packages/workspace/tests/audit",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/browser-process.test.ts",
+      "group": "packages/workspace/tests",
       "kind": "test"
     },
     {

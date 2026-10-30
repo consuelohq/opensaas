@@ -988,6 +988,22 @@ workspace browser.clipboard '{"action":"read"}'
 
 Use `browser.headed` whenever Ko must complete a human-only authentication step. It restarts an incompatible daemon in visible mode, opens the requested URL with the same persistent browser home, and leaves the window running. Continue afterward with `browser.status`, `browser.snap`, `browser.open`, or other typed browser tools. Do not create site-specific auth profiles. Use `browser.raw` only when an upstream agent-browser command has no typed facade alias.
 
+
+#### Scoped Chrome/CDP recovery (DEV-1628)
+
+The OS browser process runner drains the `agent-browser` helper output and retains at most 64 KiB of its stderr. On macOS, when the default Google Chrome executable exists and no custom `AGENT_BROWSER_EXECUTABLE_PATH` is configured, new OS-owned Chrome launches use `scripts/chrome-stderr-safe.sh` through agent-browser's executable override. It redirects Chrome's standard streams to `/dev/null` before exec (preserving CDP descriptor fds) so Chrome cannot freeze on an undrained stderr pipe. Chrome's raw stderr is intentionally not logged; use browser console/errors/trace and the bounded helper diagnostics for investigation. `CONSUELO_BROWSER_CHROME_BINARY` may select an alternate Chrome executable. This affects **future launches only**, not an existing Chrome process. Do not restart the live browser just to pick up this change.
+
+When recovering a stuck browser, first establish ownership of **the exact profile and Chrome PID**, not merely a process name. Inspect the Chrome command line for the expected `--user-data-dir`, the PID's stderr descriptor using `lsof -a -p <verified-pid> -d 2`, and the profile's `DevToolsActivePort`. Verify that the locally bound CDP port belongs to that owner and responds at `http://127.0.0.1:<verified-port>/json/version` before attaching. Avoid printing cookies, URLs with secrets, or other session state.
+
+Explicit CDP routes do not select/restart the OS persistent profile:
+
+```bash
+workspace browser.raw '{"args":["--session","consuelo-recovery","--cdp","<verified-owned-port>","get","title"]}'
+workspace browser.raw '{"args":["connect","<verified-owned-port>"]}'
+```
+
+Keep `--cdp` on subsequent recovery commands if the session is not proven sticky after helper exit. Prefer closing only a **confirmed owned** session gracefully (never the global `browser.close` / `close --all` during recovery); verify the owner has exited before removing any disposable test profile. Do not kill unrelated Chrome processes or remove `SingletonLock` while its owner is alive. Force termination of an exactly verified owned PID is a coordinated last resort; preserve the persistent profile and login data. Do not switch the existing Wet Stone test browser or any other live session without coordinating its owner.
+
 ---
 
 ### deployment provider tools — deploy observability and mutations

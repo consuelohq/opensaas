@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1628-prevent-os-browser-freezes-and-support-cdp-recovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2703,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2703",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1628-prevent-os-browser-freezes-and-support-cdp-recovery",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5acbcb051c64",
+  "tmuxSession": "opensaas-os-dev-1628-prevent-os-browser-freezes-and-support--5acbcb05",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1628-prevent-os-browser-freezes-and-support-cdp-recovery/.task/session.json",
+  "createdAt": "2026-10-30T19:10:09.088Z"
+}
