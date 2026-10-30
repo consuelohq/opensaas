@@ -5,6 +5,7 @@ import {
   LEAD_CONNECTOR_PARENT_ORIGINS,
   createLeadConnectorParentBridge,
   normalizeClickToCallTarget,
+  type LeadConnectorProtocolError,
 } from './protocol';
 
 const createHost = () => {
@@ -163,5 +164,107 @@ describe('LeadConnector embed protocol', () => {
       dedupeKey: 'contact-1:+15550100123',
     });
     expect(normalizeClickToCallTarget({ phone: '123' })).toBeNull();
+  });
+  it('ignores unrelated trusted-parent telemetry before authentication', () => {
+    const fixture = createHost();
+    const onMessage = mock(() => undefined);
+    const onProtocolError = mock(() => undefined);
+    const parentOrigin = LEAD_CONNECTOR_PARENT_ORIGINS[2];
+    const bridge = createLeadConnectorParentBridge(fixture.host, {
+      allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
+      onMessage,
+      onProtocolError,
+    });
+    bridge.start();
+    fixture.dispatch(parentOrigin, {
+      type: 'rrweb',
+      origin: parentOrigin,
+      snapshot: { type: 2 },
+    });
+    fixture.dispatch(parentOrigin, {
+      type: 'host.other-feature',
+      version: 999,
+    });
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(onProtocolError).not.toHaveBeenCalled();
+  });
+
+  it('keeps a valid bootstrap and click-to-call channel after unrelated parent messages', () => {
+    const fixture = createHost();
+    const onMessage = mock(() => undefined);
+    const onProtocolError = mock(() => undefined);
+    const parentOrigin = LEAD_CONNECTOR_PARENT_ORIGINS[2];
+    const bridge = createLeadConnectorParentBridge(fixture.host, {
+      allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
+      onMessage,
+      onProtocolError,
+    });
+    bridge.start();
+    fixture.dispatch(parentOrigin, {
+      message: 'REQUEST_USER_DATA_RESPONSE',
+      payload: 'opaque-parent-ciphertext',
+    });
+    fixture.dispatch(parentOrigin, {
+      type: 'rrweb',
+      origin: parentOrigin,
+      snapshot: { type: 2 },
+    });
+    fixture.dispatch(parentOrigin, {
+      type: 'host.other-feature',
+      version: 999,
+    });
+    fixture.dispatch(parentOrigin, {
+      type: 'consuelo.leadconnector/click-to-call',
+      version: LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION,
+      target: { phone: '(555) 010-0123', contactId: 'contact-1' },
+    });
+    expect(onProtocolError).not.toHaveBeenCalled();
+    expect(onMessage).toHaveBeenCalledTimes(2);
+    expect(onMessage).toHaveBeenLastCalledWith({
+      type: 'click-to-call',
+      target: expect.objectContaining({
+        phone: '+15550100123',
+        contactId: 'contact-1',
+      }),
+      autoDial: false,
+    });
+    bridge.sendReady();
+    expect(fixture.posts).toEqual([
+      {
+        targetOrigin: parentOrigin,
+        message: {
+          type: 'consuelo.leadconnector/ready',
+          version: LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION,
+        },
+      },
+    ]);
+  });
+
+  it('still rejects missing and incompatible versions on recognized Dialer messages', () => {
+    const fixture = createHost();
+    const onMessage = mock(() => undefined);
+    const onProtocolError = mock(
+      (_error: LeadConnectorProtocolError) => undefined,
+    );
+    const bridge = createLeadConnectorParentBridge(fixture.host, {
+      allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
+      onMessage,
+      onProtocolError,
+    });
+    bridge.start();
+    for (const type of [
+      'consuelo.leadconnector/handshake',
+      'consuelo.leadconnector/click-to-call',
+    ]) {
+      fixture.dispatch(LEAD_CONNECTOR_PARENT_ORIGINS[2], { type });
+      fixture.dispatch(LEAD_CONNECTOR_PARENT_ORIGINS[2], {
+        type,
+        version: 999,
+      });
+    }
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(onProtocolError.mock.calls).toEqual(
+      Array.from({ length: 4 }, () => ['PROTOCOL_VERSION_MISMATCH']),
+    );
   });
 });

@@ -1,0 +1,90 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/dev-1619-ignore-unrelated-parent-telemetry-messages",
+  "base": "origin/stream/dialer",
+  "headSha": "fea2d04851ed0c0b7b7e92c96a533b5d8f9070e7",
+  "changeHash": "6d0bcaaa4677fe3510c4e7bdf2837f87e2879b2696e9f0b4c8dd810e03c8ba23",
+  "changedFiles": [
+    "packages/lead-connector/src/embed/protocol.test.ts",
+    "packages/lead-connector/src/embed/protocol.ts"
+  ],
+  "verifiedAt": "2026-10-30T02:03:17.055Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/dev-1619-ignore-unrelated-parent-telemetry-messages/workpad.md",
+        ".task/tasks/dialer/dev-1619-ignore-unrelated-parent-telemetry-messages.json",
+        "packages/lead-connector/src/embed/protocol.test.ts",
+        "packages/lead-connector/src/embed/protocol.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/protocol.test.ts",
+            "packages/lead-connector/src/embed/protocol.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 754,
+          "outputTail": "ound browser leg without treating it as connected [0.10ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.12ms]\n\npackages/lead-connector/src/embed/inbound-operator.test.ts:\n(pass) inbound operator state > projects an authoritative snapshot without inventing capacity [0.04ms]\n(pass) inbound operator state > stale acceptance keeps the offer actionable and reports the server reason [0.03ms]\n(pass) inbound operator state > renders endpoint readiness, truthful connecting state, queue visibility, and recovery controls [0.14ms]\n(pass) inbound operator state > allows an offline unowned rep to go ready [0.04ms]\n(pass) inbound operator state > prefers a healthy browser endpoint over an eligible phone endpoint for offer acceptance [0.05ms]\n(pass) inbound operator state > blocks Go ready with no healthy devices but permits declining unanswerable fenced offers [0.10ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.20ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.05ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.23ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.06ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.29ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.05ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.25ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.24ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.32ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.65ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [125.13ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [2.47ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.37ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.09ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.02ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.05ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.07ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.63ms]\n\n 173 pass\n 0 fail\n 1368 expect() calls\nRan 173 tests across 30 files. [747.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
