@@ -1481,6 +1481,15 @@ export const createCommercialApplication = (input: {
   return {
     ...application,
     publicCheckout,
+    catalog: (identity) =>
+      effectQuery(async () => {
+        try {
+          const target = identity ? await scoped(identity) : application;
+          return Effect.runPromise(target.catalog());
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      }),
     claimCheckout: (identity, body) =>
       effectQuery(() => publicCheckout.claim(identity, body)),
     dashboard: (identity) =>
@@ -1534,7 +1543,28 @@ export const createCommercialApplication = (input: {
     searchNumbers: scopedAction('searchNumbers'),
     provisionNumber: scopedAction('provisionNumber'),
     releaseNumber: scopedAction('releaseNumber'),
-    createCheckout: legacyBilling('createCheckout'),
+    createCheckout: (identity, body) =>
+      effectQuery(async () => {
+        try {
+          if (await publicCheckout.isClaimed(identity.workspaceId))
+            throw new Error('PUBLIC_PLAN_USE_BILLING_PORTAL');
+          const subscription = await getWorkspaceSubscription(
+            identity.workspaceId,
+          );
+          if (
+            subscription.subscriptionId &&
+            !['canceled', 'incomplete_expired'].includes(
+              subscription.status ?? '',
+            )
+          )
+            return Effect.runPromise(
+              application.createCheckout(identity, body),
+            );
+          return publicCheckout.websiteCheckout(identity, body);
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      }),
     previewBillingChange: legacyBilling('previewBillingChange'),
     applyBillingChange: legacyBilling('applyBillingChange'),
   };

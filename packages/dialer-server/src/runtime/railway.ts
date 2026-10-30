@@ -646,6 +646,7 @@ export const createRailwayCommercialApplication = async (
       publicCheckout = createPublicCheckout({
         store: createPublicCheckoutStore(sqlClient),
         baseCatalog,
+        websiteOrigin: environment.DIALER_CHECKOUT_WEBSITE_ORIGIN,
         installUrl: install.href,
         rateLimitSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),
         provider: {

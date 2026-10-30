@@ -2,6 +2,7 @@ export type DialerPlanCode = 'single' | 'standard' | 'power';
 
 export type DialerPlanDefinition = {
   code: DialerPlanCode;
+  name?: string;
   priceCents: number;
   stripePriceId: string;
   maxNumbersPerSeat: number;

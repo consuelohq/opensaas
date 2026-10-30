@@ -13,7 +13,7 @@ export type CommercialRouteDependencies = {
     identity: CommercialIdentity,
     body: unknown,
   ) => Effect.Effect<unknown, unknown>;
-  catalog: () => Effect.Effect<unknown, unknown>;
+  catalog: (identity?: CommercialIdentity) => Effect.Effect<unknown, unknown>;
   dashboard: (identity: CommercialIdentity) => Effect.Effect<unknown, unknown>;
   createCheckout: (
     identity: CommercialIdentity,
@@ -101,7 +101,9 @@ export const createCommercialRoutes = (
 
   app.get('/v1/commercial/catalog', async (context) => {
     try {
-      return context.json(await Effect.runPromise(dependencies.catalog()));
+      return context.json(
+        await Effect.runPromise(dependencies.catalog(context.get('identity'))),
+      );
     } catch (cause: unknown) {
       throw normalizeAsyncError(cause);
     }

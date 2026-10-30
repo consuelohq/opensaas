@@ -243,6 +243,32 @@ suite('public checkout with disposable PostgreSQL and simulated Stripe', () => {
         installUrl:
           'https://marketplace.leadconnectorhq.com/oauth/chooselocation',
       });
+      const trialCatalog = await checkout.catalogFor({
+        ...admin,
+        workspaceId: 'new-trial',
+      });
+      expect(trialCatalog!.plans.single.priceCents).toBe(9900);
+      expect(trialCatalog!.trial.includedMinutes).toBe(100);
+      const trialCommercial = createCommercialApplication({
+        database,
+        catalog: baseCatalog,
+        publicCheckout: checkout,
+      });
+      const newCheckout = (await Effect.runPromise(
+        trialCommercial.createCheckout(
+          { ...admin, workspaceId: 'new-trial' },
+          {
+            quantities: {
+              single: 0,
+              standard: 2,
+              power: 0,
+              additionalNumber: 0,
+            },
+          },
+        ),
+      )) as { url: string };
+      expect(new URL(newCheckout.url).searchParams.get('plan')).toBe('agency');
+      expect(new URL(newCheckout.url).searchParams.get('seats')).toBe('2');
       const id = randomUUID(),
         token = randomBytes(32).toString('base64url'),
         body = { version: 1, requestId: id, claimToken: token, selection };
@@ -373,6 +399,9 @@ suite('public checkout with disposable PostgreSQL and simulated Stripe', () => {
       expect(catalog.plans.standard.priceCents).toBe(14900);
       expect(catalog.plans.standard.includedMinutes).toBe(5600);
       expect(catalog.includedNumbersPerSeat).toBe(10);
+      await pool.query(
+        "INSERT INTO dialer_workspace_subscriptions(workspace_id,provider_subscription_id,status) VALUES('legacy-workspace','sub_legacy_existing','active')",
+      );
       expect(
         await checkout.catalogFor({
           ...admin,

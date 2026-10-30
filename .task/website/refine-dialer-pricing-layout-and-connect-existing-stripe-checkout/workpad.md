@@ -15,13 +15,47 @@ started: 2026-10-30
 
 ## files changed
 
-- `packages/lead-connector/src/embed/api-client.ts`
-- `packages/lead-connector/src/embed/api-client.test.ts`
-- `packages/lead-connector/src/embed/controller.ts`
-- `packages/lead-connector/src/embed/controller.test.ts`
-- `packages/lead-connector/src/embed/internal-main.ts`
-- `packages/lead-connector/src/embed/state-machine.ts`
-- `packages/lead-connector/src/embed/view.ts`
+- `packages/dialer-server/src/app.ts`
+- `packages/dialer-server/src/billing/stripe.ts`
+- `packages/dialer-server/src/commercial/application.ts`
+- `packages/dialer-server/src/plans/catalog.ts`
+- `packages/dialer-server/src/plans/entitlements.ts`
+- `packages/dialer-server/src/routes/commercial.ts`
+- `packages/dialer-server/src/runtime/railway.ts`
+- `packages/dialer-website/scripts/test-marketing-browser.mjs`
+- `packages/dialer-website/scripts/test-pricing-browser.mjs`
+- `packages/dialer-website/src/components/home/HomeFaq.astro`
+- `packages/dialer-website/src/components/pricing/PricingAddons.astro`
+- `packages/dialer-website/src/components/pricing/PricingTechnology.astro`
+- `packages/dialer-website/src/data/pricing-content.ts`
+- `packages/dialer-website/src/pages/get-started.astro`
+- `packages/dialer-website/src/pages/pricing.astro`
+- `packages/dialer-website/src/styles/pricing.css`
+- `packages/dialer-website/tests/interaction-lifecycle.test.ts`
+- `packages/dialer-server/PUBLIC-CHECKOUT.md`
+- `packages/dialer-server/src/billing/public-checkout-catalog.ts`
+- `packages/dialer-server/src/billing/public-checkout-store.ts`
+- `packages/dialer-server/src/billing/public-checkout.ts`
+- `packages/dialer-server/src/public-checkout.acceptance.test.ts`
+- `packages/dialer-server/src/public-checkout.postgres.integration.test.ts`
+- `packages/dialer-server/src/routes/public-checkout.ts`
+- `packages/dialer-website/public/images/technology/wordmarks/SOURCES.md`
+- `packages/dialer-website/public/images/technology/wordmarks/SVGL-LICENSE`
+- `packages/dialer-website/public/images/technology/wordmarks/bun.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/claude.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/cloudflare.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/github.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/groq.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/hono.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/openai.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/opencode.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/pi.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/postgresql.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/redis.svg`
+- `packages/dialer-website/public/images/technology/wordmarks/twilio.svg`
+- `packages/dialer-website/src/lib/checkout-selection.ts`
+- `packages/dialer-website/tests/checkout-selection.test.ts`
+- `packages/dialer-website/tests/pricing-refinement.test.ts`
 
 
 ## key decisions
@@ -99,6 +133,7 @@ Deployment tool gap: deployment.environment set failed with exit 1 and empty dia
 - 2026-10-30 22:03:32 `verify`: passed — OK
 - 2026-10-30 22:06:40 `verify`: passed — OK
 - 2026-10-30 22:11:22 `verify`: passed — OK
+- 2026-10-30 22:23:55 `verify`: passed — OK
 
 ## Release progress
 - Existing Stripe account now contains the exact new catalog and dedicated launch portal configuration; older prices/subscribers were not edited. No payment submitted.

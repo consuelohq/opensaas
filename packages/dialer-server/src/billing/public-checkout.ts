@@ -119,7 +119,42 @@ export const createPublicCheckout = (input: {
   rateLimitSecret: string;
   installUrl: string;
   baseCatalog: DialerPlanCatalog;
+  websiteOrigin?: string;
 }) => {
+  const websiteOrigin = input.websiteOrigin ?? 'https://consuelohq.com';
+  if (!trustedOrigin(websiteOrigin))
+    throw new Error('CHECKOUT_WEBSITE_ORIGIN_INVALID');
+  const launchCatalog = () => {
+    const catalog = structuredClone(input.baseCatalog);
+    const names = {
+      professional: 'Professional',
+      agency: 'Agency',
+      enterprise: 'Enterprise',
+    };
+    for (const [code, plan] of Object.entries(publicCheckoutCatalog)) {
+      Object.assign(catalog.plans[plan.legacyCode], {
+        name: names[code as keyof typeof names],
+        priceCents: plan.monthlyCents,
+        maxNumbersPerSeat: plan.numbers,
+        includedMinutes: plan.minutes,
+        providerBudgetCents: null,
+        predictive: code !== 'professional',
+        recordings: code !== 'professional',
+        transcripts: code !== 'professional',
+        parallelDialing: true,
+      });
+    }
+    catalog.trial = {
+      ...catalog.trial,
+      includedMinutes: 100,
+      maxSeats: 1,
+      maxNumbers: 1,
+      planCode: 'single',
+    };
+    catalog.includedNumbersPerSeat = 1;
+    catalog.additionalNumberPriceCents = 300;
+    return catalog;
+  };
   let pricePromise: Promise<Map<string, PublicPrice>> | undefined;
   const prices = () =>
     (pricePromise ??= (async () => {
@@ -487,10 +522,27 @@ export const createPublicCheckout = (input: {
     ): Promise<DialerPlanCatalog | null> => {
       try {
         const purchase = await input.store.claimed(identity.workspaceId);
-        if (!purchase) return null;
+        if (!purchase) {
+          const subscription = record(
+            (
+              await input.store.database.query(
+                'SELECT provider_subscription_id,status FROM dialer_workspace_subscriptions WHERE workspace_id=$1',
+                [identity.workspaceId],
+              )
+            ).rows[0],
+          );
+          if (
+            subscription.provider_subscription_id &&
+            !['canceled', 'incomplete_expired'].includes(
+              String(subscription.status),
+            )
+          )
+            return null;
+          return launchCatalog();
+        }
         const s = selectionOnly(purchase.entitlement_selection);
         const definition = publicCheckoutCatalog[s.plan],
-          catalog = structuredClone(input.baseCatalog);
+          catalog = launchCatalog();
         for (const [code, plan] of Object.entries(publicCheckoutCatalog)) {
           const legacy = catalog.plans[plan.legacyCode];
           legacy.priceCents = plan.monthlyCents;
@@ -541,6 +593,48 @@ export const createPublicCheckout = (input: {
       } catch (cause: unknown) {
         throw normalizeAsyncError(cause);
       }
+    },
+    websiteCheckout: (identity: DialerIdentity, body: unknown) => {
+      authorizeCommercialAction({
+        identity: {
+          workspaceId: identity.workspaceId,
+          userId: identity.userId,
+          role: identity.role ?? 'user',
+        },
+        targetWorkspaceId: identity.workspaceId,
+        action: 'billing.manage',
+      });
+      const quantities = record(record(body).quantities);
+      const mapping = {
+        single: 'professional',
+        standard: 'agency',
+        power: 'enterprise',
+      } as const;
+      const choices = Object.entries(mapping).map(([legacy, plan]) => ({
+        plan,
+        seats: Number(quantities[legacy] ?? 0),
+      }));
+      if (choices.some((c) => !Number.isSafeInteger(c.seats) || c.seats < 0))
+        throw new Error('INVALID_SEAT_QUANTITY');
+      const selected = choices.filter((c) => c.seats > 0);
+      if (selected.length !== 1) throw new Error('CHOOSE_ONE_PLAN_ON_WEBSITE');
+      const numbers = Number(quantities.additionalNumber ?? 0);
+      const selection = quotePublicCheckout({
+        plan: selected[0].plan,
+        billing: 'monthly',
+        seats: selected[0].seats,
+        mercurySeats: 0,
+        minutePack: 0,
+        numberPack: numbers,
+      }).selection;
+      const url = new URL('/get-started', websiteOrigin);
+      url.search = new URLSearchParams({
+        plan: selection.plan,
+        billing: selection.billing,
+        seats: String(selection.seats),
+        ...(numbers ? { addon: 'numbers-' + numbers } : {}),
+      }).toString();
+      return { id: 'website-selection', url: url.href };
     },
     summaryFor: async (workspaceId: string) => {
       try {

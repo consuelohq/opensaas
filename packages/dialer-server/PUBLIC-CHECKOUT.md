@@ -7,12 +7,13 @@ The website's public purchase flow reuses the existing Consuelo Stripe account a
 The server owns launch catalog version `launch-20261030` in `src/billing/public-checkout-catalog.ts`. Prices are looked up by `consuelo_launch_20261030_<code>_<monthly|annual|once>` and verified for amount, USD currency, and recurring interval before Checkout creation. Professional is $99, Agency $149, Enterprise $199 per rep/month. Mercury is $25 per rep/month. Annual recurring items cost twelve monthly equivalents upfront; monthly minute allowances remain monthly.
 
 - `DIALER_PUBLIC_CHECKOUT_ENABLED=true` enables backend composition and routes.
+- `DIALER_CHECKOUT_WEBSITE_ORIGIN` selects the approved website checkout origin for new signups starting in GoHighLevel. Use the isolated preview until the public marketing release is approved; production can then use https://consuelohq.com.
 - `STRIPE_PUBLIC_PORTAL_CONFIGURATION_ID` selects the launch-only portal configuration for payment methods, invoices, and period-end cancellation. Subscription item updates are disabled.
 - `DIALER_BILLING_RETURN_URL=https://calls.consuelohq.com/admin`.
 - `PUBLIC_DIALER_CHECKOUT_ENABLED=true` enables the website's payment button only after backend proof.
 - Existing Stripe secret/webhook keys and GoHighLevel OAuth settings remain authoritative. Do not print them.
 
-Legacy subscription prices and the single/standard/power catalog remain intact. A claimed launch purchase gets its own scoped catalog and is projected into the existing seat-storage codes. The launch checkout does not migrate another subscription. Existing active subscriptions cannot be overwritten by a claim.
+Active legacy subscription prices and entitlements remain intact. New trials receive the launch catalog and 100 total minutes. Authenticated new signups open the same owned website checkout selection, preserving their selected tier and seat count, so the embedded path cannot sell an older price. The single/standard/power storage codes remain intact. A claimed launch purchase gets its own scoped catalog and is projected into the existing seat-storage codes. The launch checkout does not migrate another subscription. Existing active subscriptions cannot be overwritten by a claim.
 
 ## Purchase contract
 
