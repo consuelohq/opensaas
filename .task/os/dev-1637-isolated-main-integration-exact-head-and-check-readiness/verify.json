@@ -1,0 +1,188 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness",
+  "base": "origin/task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness",
+  "headSha": "3bc356eb9763f322d8553ed3e174da3c0b5b45a3",
+  "changeHash": "31eca300d293e8ba636546195d3ef9621f3ff25085f56a23705e414d4d90a149",
+  "changedFiles": [
+    "packages/os/scripts/lib/github.js",
+    "packages/os/scripts/lib/task-merge-readiness.js",
+    "packages/os/scripts/task-merge.js",
+    "packages/workspace/scripts/lib/github.js",
+    "packages/workspace/scripts/lib/task-merge-readiness.js",
+    "packages/workspace/scripts/task-merge.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/task-merge-readiness.test.ts"
+  ],
+  "verifiedAt": "2026-10-30T20:08:42.181Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness/workpad.md",
+        ".task/tasks/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness.json",
+        "packages/os/scripts/lib/github.js",
+        "packages/os/scripts/lib/task-merge-readiness.js",
+        "packages/os/scripts/task-merge.js",
+        "packages/workspace/scripts/lib/github.js",
+        "packages/workspace/scripts/lib/task-merge-readiness.js",
+        "packages/workspace/scripts/task-merge.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/task-merge-readiness.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-task-merge-agent-boundary",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing PR merge readiness must stay bounded, fail closed on unreadable or failed GitHub checks, and keep deployment polling behind an explicit operator path.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/github.js",
+            "packages/os/scripts/lib/task-merge-readiness.js",
+            "packages/os/scripts/task-merge.js",
+            "packages/workspace/scripts/lib/github.js",
+            "packages/workspace/scripts/lib/task-merge-readiness.js",
+            "packages/workspace/scripts/task-merge.js",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "workspace task merge agent-boundary contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ],
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true
+        },
+        {
+          "name": "workspace task merge GitHub transport contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts"
+          ],
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5348,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-isolated-main-integration-exact-head-and-check-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m92 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5053\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 524\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves explicit selector ownership after registry regeneration \u001b[33m 560\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m provisions OS package dependencies before selected OS suites on a clean checkout \u001b[33m 302\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m92 passed\u001b[39m\u001b[22m\u001b[90m (92)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:08:36\n\u001b[2m   Duration \u001b[22m 5.15s\u001b[2m (transform 22ms, setup 0ms, import 32ms, tests 5.05s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace task merge agent-boundary contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 351,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-isolated-main-integration-exact-head-and-check-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-merge-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:08:41\n\u001b[2m   Duration \u001b[22m 148ms\u001b[2m (transform 52ms, setup 0ms, import 73ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace task merge GitHub transport contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-task-merge-agent-boundary",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 352,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-isolated-main-integration-exact-head-and-check-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/github.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 59\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/github.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 92\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:08:41\n\u001b[2m   Duration \u001b[22m 176ms\u001b[2m (transform 38ms, setup 0ms, import 49ms, tests 151ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

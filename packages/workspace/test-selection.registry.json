@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 726,
-    "mappedTestCount": 642,
+    "testFileCount": 731,
+    "mappedTestCount": 647,
     "unmappedTestCount": 84,
     "ruleCount": 86,
     "explicitRuleCount": 72,
@@ -11,7 +11,7 @@
     "projectCount": 10,
     "packageTestScriptCount": 22,
     "byGroup": {
-      "packages/os/tests": 331,
+      "packages/os/tests": 335,
       "packages/workspace/tests": 66,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
@@ -25,7 +25,7 @@
       "packages/documentation/tests": 12,
       "packages/dialer-server/src/runtime": 11,
       "packages/api/src/routes": 10,
-      "packages/lead-connector/src": 8,
+      "packages/lead-connector/src": 9,
       "packages/lead-connector/src/deployment": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
       "packages/dialer-documentation/tests": 5,
@@ -101,7 +101,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 661,
+      "test": 666,
       "spec": 29,
       "__tests__": 11,
       "integration": 10,
@@ -395,7 +395,9 @@
         "packages/workspace/scripts/lib/task-merge-readiness.js",
         "packages/os/scripts/task-merge.js",
         "packages/os/scripts/lib/task-merge-readiness.js",
-        "packages/workspace/tests/task-merge-readiness.test.ts"
+        "packages/workspace/tests/task-merge-readiness.test.ts",
+        "packages/workspace/scripts/lib/github.js",
+        "packages/os/scripts/lib/github.js"
       ],
       "tests": [
         {
@@ -406,6 +408,17 @@
             "vitest",
             "run",
             "packages/workspace/tests/task-merge-readiness.test.ts"
+          ]
+        },
+        {
+          "name": "workspace task merge GitHub transport contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts"
           ]
         }
       ],
@@ -4598,6 +4611,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/lead-connector/src/oauth-wire.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/lead-connector/src/persistent-stores.contract.test.ts",
       "group": "packages/lead-connector/src",
       "kind": "test"
@@ -6313,6 +6331,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/trace-site-inspector-batch-polish.browser.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-batch-polish.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-site-inspector-interactions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6339,6 +6367,16 @@
     },
     {
       "path": "packages/os/tests/trace-site-renderer.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-table-polish.browser.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-table-polish.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
