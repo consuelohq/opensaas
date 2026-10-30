@@ -72,6 +72,7 @@ try {
   const box=await close.boundingBox();
   assert.ok(box && box.y>=0 && box.y+box.height<=height+1,'Footer CTA clipped at '+width+'x'+height);
   await close.click();
+  await page.waitForURL(url => /^\/get-started\/?$/.test(url.pathname));
   const destination = new URL(page.url()).pathname;
   assert.ok(destination === '/get-started' || destination === '/get-started/', 'Setup CTA reaches the setup page');
   assert.deepEqual(errors,[],'Browser errors at '+width+'x'+height);
@@ -83,10 +84,10 @@ try {
  const context=await browser.newContext({viewport:{width:1440,height:960},reducedMotion:'reduce'});
  const page=await context.newPage();
  await page.goto(base+'/pricing',{waitUntil:'networkidle'});
- assert.equal(await page.locator('[data-plan-code]').count(),3);
- await page.locator('[data-plan-code="standard"]').click();
- await page.waitForFunction(()=>document.querySelector('[data-selected-plan]').textContent.includes('Standard'));
- assert.match(await page.locator('[data-selected-plan]').innerText(),/\$99/);
+ assert.equal(await page.locator('[data-plan-code]').count(),4);
+ await page.locator('[data-plan-code="agency"] [data-plan-cta]').click();
+ await page.waitForFunction(()=>document.querySelector('[data-selected-plan]').textContent.includes('Agency'));
+ assert.match(await page.locator('[data-selected-plan]').innerText(),/\$149/);
  assert.match(await page.locator('[data-setup-request]').getAttribute('href'),/^mailto:support@consuelohq.com\?/);
  for (const bad of ['__proto__','<img src=x onerror=alert(1)>']) {
   await page.goto(base+'/get-started?plan='+encodeURIComponent(bad),{waitUntil:'networkidle'});

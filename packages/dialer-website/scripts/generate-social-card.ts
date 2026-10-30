@@ -10,7 +10,7 @@ const tokensPath = join(packageRoot, 'src/styles/tokens.css');
 
 export const socialCards = {
   home: { fileName: 'consuelo-dialer-og-20261028.png', label: 'CONSUELO DIALER', headline: ['TURN MORE LEADS', 'INTO LIVE', 'CONVERSATIONS.'], kicker: 'OUTBOUND · INBOUND · GOHIGHLEVEL', domain: 'Consuelo Dialer' },
-  pricing: { fileName: 'consuelo-dialer-pricing-og-20261028.png', label: 'CONSUELO DIALER', headline: ['THE RIGHT PLAN', 'FOR YOUR', 'NEXT CALL.'], kicker: 'SINGLE $59 · STANDARD $99 · POWER $159', domain: 'Monthly plans per seat' },
+  pricing: { fileName: 'consuelo-dialer-pricing-og-20261030.png', label: 'CONSUELO DIALER', headline: ['MORE CONVERSATIONS.', 'ROOM TO GROW.'], kicker: 'PROFESSIONAL $99 · AGENCY $149 · ENTERPRISE $199', domain: 'Start with 100 minutes' },
 } as const;
 
 type CardKey = keyof typeof socialCards;
@@ -165,10 +165,10 @@ export const renderSocialCard = async (key: CardKey) => {
   }
 };
 
-export const writeSocialCards = async () => {
+export const writeSocialCards = async (keys: CardKey[] = Object.keys(socialCards) as CardKey[]) => {
   try {
     const outputPaths: string[] = [];
-    for (const key of Object.keys(socialCards) as CardKey[]) {
+    for (const key of keys) {
       const card = socialCards[key];
       const image = await renderSocialCard(key);
       const outputPath = join(packageRoot, 'public', card.fileName);
@@ -186,5 +186,5 @@ export const writeSocialCards = async () => {
 };
 
 if (import.meta.main) {
-  for (const path of await writeSocialCards()) process.stdout.write(path + '\n');
+  for (const path of await writeSocialCards(process.argv.includes('--pricing-only') ? ['pricing'] : undefined)) process.stdout.write(path + '\n');
 }

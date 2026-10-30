@@ -1,0 +1,71 @@
+---
+import PricingIcon from './PricingIcon.astro';
+const technologies = [
+  ['twilio', 'Twilio'],
+  ['bun', 'Bun'],
+  ['hono', 'Hono'],
+  ['postgresql', 'PostgreSQL'],
+  ['redis', 'Redis'],
+  ['cloudflare', 'Cloudflare'],
+  ['github', 'GitHub'],
+  ['groq', 'Groq'],
+];
+---
+
+<section class="pricing-technology" aria-labelledby="technology-heading">
+  <p class="pricing-eyebrow">UNDER THE HOOD</p><h2 id="technology-heading">
+    Built for scale.
+  </h2><p>The tools behind the calling day.</p><div
+    class="technology-carousel-controls"
+    data-logo-controls
+    hidden
+  >
+    <button type="button" data-logo-step="-1" aria-label="Previous technologies"
+      ><PricingIcon /></button
+    ><button type="button" data-logo-step="1" aria-label="Next technologies"
+      ><PricingIcon /></button>
+  </div><div
+    class="technology-strip"
+    data-technology-strip
+    role="region"
+    aria-label="Infrastructure technologies — scroll to explore"
+    tabindex="0"
+  >
+    {
+      technologies.map(([slug, name]) => (
+        <span class="technology-wordmark">
+          {slug !== 'groq' && (
+            <img
+              src={'/images/technology/' + slug + '.svg'}
+              width="30"
+              height="30"
+              alt=""
+              loading="lazy"
+            />
+          )}
+          <span>{name}</span>
+        </span>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  const strip = document.querySelector<HTMLElement>('[data-technology-strip]');
+  const controls = document.querySelector<HTMLElement>('[data-logo-controls]');
+  if (strip && controls) {
+    controls.hidden = false;
+    controls
+      .querySelectorAll<HTMLButtonElement>('[data-logo-step]')
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          strip.scrollBy({
+            left: Number(button.dataset.logoStep) * strip.clientWidth * 0.6,
+            behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+              ? 'instant'
+              : 'smooth',
+          }),
+        ),
+      );
+  }
+</script>
