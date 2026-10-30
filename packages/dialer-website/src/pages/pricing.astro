@@ -5,7 +5,11 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
 import PricingAddons from '../components/pricing/PricingAddons.astro';
 import PricingComparison from '../components/pricing/PricingComparison.astro';
 import PricingTechnology from '../components/pricing/PricingTechnology.astro';
-import { pricingPlans, pricingFaqItems } from '../data/pricing-content';
+import {
+  pricingPlans,
+  pricingFaqItems,
+  pricingAccountLink,
+} from '../data/pricing-content';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
 import '../styles/pricing.css';
 ---
@@ -105,12 +109,11 @@ import '../styles/pricing.css';
                     <span title="Analytics">
                       <PricingIcon name="analytics" />
                     </span>
-                    {plan.code !== 'starter' &&
-                      plan.code !== 'professional' && (
-                        <span title="Predictive dialing">
-                          <PricingIcon name="connect" />
-                        </span>
-                      )}
+                    {plan.code !== 'starter' && (
+                      <span title="Predictive dialing">
+                        <PricingIcon name="connect" />
+                      </span>
+                    )}
                   </div>
                   <p class="plan-seat__usage">
                     {plan.includedMinutes.toLocaleString('en-US')} connected
@@ -164,6 +167,12 @@ import '../styles/pricing.css';
             Paid minutes renew monthly per seat. Contiguous US local calling.
             Taxes extra. <a href="#pricing-faq"
               >How billing works <PricingIcon /></a
+            >
+          </p>
+          <p>
+            {pricingAccountLink.prompt}
+            <a href={pricingAccountLink.href}
+              >{pricingAccountLink.label} <PricingIcon /></a
             >
           </p>
         </div>

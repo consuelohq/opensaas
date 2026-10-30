@@ -3,6 +3,7 @@ import bodoniLatinUrl from '@fontsource-variable/bodoni-moda/files/bodoni-moda-l
 import interLatinUrl from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import SeoHead from '../components/SeoHead.astro';
 import SiteSmoothScroll from '../components/site/SiteSmoothScroll.astro';
+import StripeCheckoutLauncher from '../components/site/StripeCheckoutLauncher.astro';
 import { siteMetadata } from '../lib/site-seo';
 import { posthogKey, posthogHost } from '../config/analytics';
 import '../styles/tokens.css';
@@ -157,6 +158,7 @@ const landingFontFaces = `
   </head>
   <body>
     <SiteSmoothScroll />
+    <StripeCheckoutLauncher />
     <div class="launch-shell">
       <slot />
     </div>
