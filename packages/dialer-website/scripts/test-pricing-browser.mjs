@@ -4,6 +4,10 @@ import { createServer } from 'node:http';
 import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import {
+  newCheckoutFixtureContext,
+  checkoutRequestsFor,
+} from './checkout-browser-fixture.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
@@ -71,7 +75,7 @@ const sizes = process.argv.includes('--smoke')
     ];
 try {
   for (const [width, height] of sizes) {
-    const context = await browser.newContext({
+    const context = await newCheckoutFixtureContext(browser, {
       viewport: { width, height },
       reducedMotion: 'reduce',
     });
@@ -401,7 +405,7 @@ try {
     emit({ viewport: width + 'x' + height, passed: true });
     await context.close();
   }
-  const context = await browser.newContext({
+  const context = await newCheckoutFixtureContext(browser, {
     viewport: { width: 1440, height: 1000 },
     reducedMotion: 'no-preference',
   });
@@ -412,25 +416,19 @@ try {
     .getByText('Annual', { exact: true })
     .click();
   await page.locator('[data-plan-code="agency"] [data-plan-cta]').click();
-  await page.waitForFunction(() =>
-    document
-      .querySelector('[data-selected-plan]')
-      .textContent.includes('Agency'),
-  );
-  assert.match(
-    await page.locator('[data-selected-plan]').innerText(),
-    /\$149.*\$1,788.*annually/,
-  );
+  await page.waitForURL('https://checkout.stripe.com/**');
+  assert.equal(checkoutRequestsFor(context).at(-1).selection.plan, 'agency');
+  assert.equal(checkoutRequestsFor(context).at(-1).selection.billing, 'annual');
   for (const bad of ['__proto__', '<img src=x onerror=alert(1)>']) {
     await page.goto(
       base + '/get-started?plan=' + encodeURIComponent(bad) + '&billing=annual',
       { waitUntil: 'networkidle' },
     );
-    assert.match(
-      await page.locator('[data-selected-plan]').innerText(),
-      /^Professional/,
+    await page.waitForURL('https://checkout.stripe.com/**');
+    assert.equal(
+      checkoutRequestsFor(context).at(-1).selection.plan,
+      'professional',
     );
-    assert.equal(await page.locator('img[src="x"]').count(), 0);
   }
   await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
   await page.getByLabel('Annual', { exact: true }).focus();
@@ -447,6 +445,9 @@ try {
     await page.locator('meta[name="robots"]').getAttribute('content'),
     'noindex,nofollow',
   );
+  await page.getByRole('link', { name: 'MANAGE BILLING', exact: true }).click();
+  await page.waitForURL('https://billing.stripe.com/p/login/**');
+  await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
   // Simulated provider proof: no real Checkout session or payment is created here.
   const payloads = [];
   let checkoutAttempt = 0;
@@ -500,22 +501,17 @@ try {
   const purchaseUrl =
     base + '/get-started?plan=agency&billing=annual&seats=2&addon=mercury';
   await page.goto(purchaseUrl, { waitUntil: 'networkidle' });
-  await page.evaluate(() => {
-    const form = document.querySelector('[data-checkout-form]');
-    form.dataset.checkoutEnabled = 'true';
-    form.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-  assert.equal(
-    await page.locator('[data-checkout-total]').innerText(),
-    '$4,176',
-  );
-  await page.locator('[data-checkout-submit]').click();
   await page.waitForFunction(() =>
     document
       .querySelector('[data-checkout-status]')
       .textContent.includes('could not open'),
   );
-  await page.locator('[data-checkout-submit]').click();
+  assert.equal(
+    await page.getByRole('combobox').count(),
+    0,
+    'There is no intermediate configuration form',
+  );
+  await page.locator('[data-retry-checkout]').click();
   await page.waitForFunction(() =>
     document
       .querySelector('[data-checkout-status]')
@@ -523,12 +519,6 @@ try {
   );
   assert.equal(new URL(page.url()).origin, base);
   await page.reload({ waitUntil: 'networkidle' });
-  await page.evaluate(() => {
-    const form = document.querySelector('[data-checkout-form]');
-    form.dataset.checkoutEnabled = 'true';
-    form.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-  await page.locator('[data-checkout-submit]').click();
   await page.waitForURL('https://checkout.stripe.com/c/pay/cs_fixture');
   assert.equal(payloads.length, 3);
   for (const payload of payloads) {
@@ -679,7 +669,7 @@ try {
   );
   emit({ flow: 'home FAQ pointer and keyboard disclosure', passed: true });
   await context.close();
-  const nojs = await browser.newContext({
+  const nojs = await newCheckoutFixtureContext(browser, {
     javaScriptEnabled: false,
     viewport: { width: 375, height: 812 },
   });

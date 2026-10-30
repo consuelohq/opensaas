@@ -1,3 +1,4 @@
+import { siteLinks } from './site-links';
 export type BillingPeriod = 'monthly' | 'annual';
 export type PlanCode = 'starter' | 'professional' | 'agency' | 'enterprise';
 export const pricingHero = {
@@ -6,9 +7,9 @@ export const pricingHero = {
     'Start with a few calls. Build a team that keeps every lead moving.',
 };
 export const pricingAccountLink = {
-  prompt: 'Already set up?',
-  label: 'OPEN YOUR DIALER',
-  href: 'https://app.gohighlevel.com/',
+  prompt: 'Already a customer?',
+  label: 'MANAGE BILLING',
+  href: siteLinks.billing,
 };
 export const pricingPlans = [
   {

@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/send-pricing-purchases-directly-to-stripe-and-integrate-hosted-billing",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2717,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2717",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2717",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2717/send-pricing-purchases-directly-to-stripe-and-integrate-hosted-billing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2717",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2717/send-pricing-purchases-directly-to-stripe-and-integrate-hosted-billing",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-send-pricing-purchases-directly-to-stripe-and-integrate-hosted-billing",
+  "repoRoot": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-pricing-disclosures-and-align-professional-features",
+  "taskSession": "tsk_db7074b6556b",
+  "tmuxSession": "opensaas-website-send-pricing-purchases-directly-to-stripe-and-in-db7074b6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-send-pricing-purchases-directly-to-stripe-and-integrate-hosted-billing/.task/website/send-pricing-purchases-directly-to-stripe-and-integrate-hosted-billing/session.json",
+  "createdAt": "2026-10-30T23:24:07.343Z"
+}
