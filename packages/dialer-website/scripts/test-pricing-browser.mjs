@@ -86,8 +86,45 @@ try {
     await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.locator('[data-plan-code]').count(), 4);
-    const overflowEvidence = await page.evaluate(() => ({width:innerWidth, scroll:document.documentElement.scrollWidth, elements:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.right>innerWidth+1&&!el.closest('.comparison-scroll,.technology-strip')}).slice(0,20).map(el=>({tag:el.tagName,classes:el.className,width:el.getBoundingClientRect().width,right:el.getBoundingClientRect().right}))}));
-    if(overflowEvidence.scroll>width+1){emit({overflowEvidence});emit(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(e=>e.scrollWidth>e.clientWidth+50).slice(0,30).map(e=>({tag:e.tagName,classes:e.className,client:e.clientWidth,scroll:e.scrollWidth,overflow:getComputedStyle(e).overflow,position:getComputedStyle(e).position,text:e.textContent.slice(0,50)}))));await page.screenshot({path:join(artifacts,'overflow.png')});}
+    const overflowEvidence = await page.evaluate(() => ({
+      width: innerWidth,
+      scroll: document.documentElement.scrollWidth,
+      elements: [...document.querySelectorAll('body *')]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            r.right > innerWidth + 1 &&
+            !el.closest('.comparison-scroll,.technology-strip')
+          );
+        })
+        .slice(0, 20)
+        .map((el) => ({
+          tag: el.tagName,
+          classes: el.className,
+          width: el.getBoundingClientRect().width,
+          right: el.getBoundingClientRect().right,
+        })),
+    }));
+    if (overflowEvidence.scroll > width + 1) {
+      emit({ overflowEvidence });
+      emit(
+        await page.evaluate(() =>
+          [...document.querySelectorAll('body *')]
+            .filter((e) => e.scrollWidth > e.clientWidth + 50)
+            .slice(0, 30)
+            .map((e) => ({
+              tag: e.tagName,
+              classes: e.className,
+              client: e.clientWidth,
+              scroll: e.scrollWidth,
+              overflow: getComputedStyle(e).overflow,
+              position: getComputedStyle(e).position,
+              text: e.textContent.slice(0, 50),
+            })),
+        ),
+      );
+      await page.screenshot({ path: join(artifacts, 'overflow.png') });
+    }
     assert.equal(
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth + 1,
@@ -179,12 +216,44 @@ try {
     await detail.locator('summary').click();
     assert.equal(await detail.getAttribute('open'), '');
     const faq = page.locator('#pricing-faq [data-home-faq-item]');
-    await faq.nth(0).locator('summary').click();
-    await faq.nth(1).locator('summary').click();
-    await page.waitForFunction(
-      () => !document.querySelector('#pricing-faq [data-home-faq-item]').open,
+    assert.equal(await faq.count(), 10);
+    assert.equal(
+      await faq.evaluateAll((items) => items.every((item) => item.open)),
+      true,
     );
-    assert.equal(await faq.nth(1).getAttribute('open'), '');
+    await faq.nth(1).locator('summary').click();
+    assert.equal(await faq.nth(0).getAttribute('open'), '');
+    await faq.nth(1).locator('summary').click();
+    assert.equal(await faq.nth(0).getAttribute('open'), '');
+    if (width === 1440) {
+      assert.equal(
+        await page
+          .locator('#pricing-heading')
+          .evaluate((el) =>
+            Math.round(
+              el.getBoundingClientRect().height /
+                parseFloat(getComputedStyle(el).lineHeight),
+            ),
+          ),
+        2,
+      );
+      assert.ok(
+        (
+          await page
+            .locator('[data-plan-code="professional"] .plan-column__price')
+            .boundingBox()
+        ).y < 820,
+        'Prices visible in first desktop viewport',
+      );
+      assert.equal(
+        await page
+          .locator('.technology-strip')
+          .evaluate((el) =>
+            getComputedStyle(el).getPropertyValue('--visible-logos').trim(),
+          ),
+        '7',
+      );
+    }
     const addonHeading = page.locator('.pricing-sticky-heading');
     if (width >= 1060 && height > 500) {
       await page.evaluate(() =>
@@ -206,7 +275,10 @@ try {
         path: join(artifacts, 'pricing-' + width + 'x' + height + '.png'),
         fullPage: true,
       });
-    if([375,1440].includes(width))await page.screenshot({path:join(artifacts,'pricing-top-'+width+'.png')});
+    if ([375, 1440].includes(width))
+      await page.screenshot({
+        path: join(artifacts, 'pricing-top-' + width + '.png'),
+      });
     emit({ viewport: width + 'x' + height, passed: true });
     await context.close();
   }
@@ -234,7 +306,7 @@ try {
     );
     assert.match(
       await page.locator('[data-selected-plan]').innerText(),
-      /^Tell us/,
+      /^Professional/,
     );
     assert.equal(await page.locator('img[src="x"]').count(), 0);
   }
@@ -248,13 +320,213 @@ try {
     /\$1,188/,
   );
   for (const link of await page.locator('.minute-pack,.number-packs a').all())
-    assert.match(
-      await link.getAttribute('href'),
-      /^mailto:support@consuelohq.com\?/,
-    );
+    assert.match(await link.getAttribute('href'), /^\/get-started\?addon=/);
   assert.equal(
     await page.locator('meta[name="robots"]').getAttribute('content'),
     'noindex,nofollow',
+  );
+  // Simulated provider proof: no real Checkout session or payment is created here.
+  const payloads = [];
+  let checkoutAttempt = 0;
+  await page.route(
+    'https://calls.consuelohq.com/v1/public/billing/checkout',
+    async (route) => {
+      try {
+        if (route.request().method() === 'OPTIONS')
+          return route.fulfill({
+            status: 204,
+            headers: {
+              'access-control-allow-origin': base,
+              'access-control-allow-credentials': 'true',
+              'access-control-allow-methods': 'POST',
+              'access-control-allow-headers': 'content-type',
+            },
+          });
+        payloads.push(route.request().postDataJSON());
+        checkoutAttempt++;
+        return route.fulfill({
+          status: checkoutAttempt === 1 ? 503 : 200,
+          headers: {
+            'access-control-allow-origin': base,
+            'access-control-allow-credentials': 'true',
+          },
+          contentType: 'application/json',
+          body: JSON.stringify(
+            checkoutAttempt === 1
+              ? { error: { code: 'CHECKOUT_UNAVAILABLE' } }
+              : {
+                  id: payloads.at(-1).requestId,
+                  url:
+                    checkoutAttempt === 2
+                      ? 'https://evil.test/checkout'
+                      : 'https://checkout.stripe.com/c/pay/cs_fixture',
+                },
+          ),
+        });
+      } catch (cause) {
+        if (cause instanceof Error) throw cause;
+        throw new Error(String(cause));
+      }
+    },
+  );
+  await page.route('https://checkout.stripe.com/c/pay/cs_fixture', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<title>Simulated Stripe Checkout</title><h1>Fixture checkout</h1>',
+    }),
+  );
+  const purchaseUrl =
+    base + '/get-started?plan=agency&billing=annual&seats=2&addon=mercury';
+  await page.goto(purchaseUrl, { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    const form = document.querySelector('[data-checkout-form]');
+    form.dataset.checkoutEnabled = 'true';
+    form.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  assert.equal(
+    await page.locator('[data-checkout-total]').innerText(),
+    '$4,176',
+  );
+  await page.locator('[data-checkout-submit]').click();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('[data-checkout-status]')
+      .textContent.includes('could not open'),
+  );
+  await page.locator('[data-checkout-submit]').click();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('[data-checkout-status]')
+      .textContent.includes('could not open'),
+  );
+  assert.equal(new URL(page.url()).origin, base);
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    const form = document.querySelector('[data-checkout-form]');
+    form.dataset.checkoutEnabled = 'true';
+    form.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.locator('[data-checkout-submit]').click();
+  await page.waitForURL('https://checkout.stripe.com/c/pay/cs_fixture');
+  assert.equal(payloads.length, 3);
+  for (const payload of payloads) {
+    assert.equal(payload.requestId, payloads[0].requestId);
+    assert.equal(payload.claimToken, payloads[0].claimToken);
+    assert.equal(payload.claimToken.length, 43);
+    assert.deepEqual(payload.selection, {
+      plan: 'agency',
+      billing: 'annual',
+      seats: 2,
+      mercurySeats: 2,
+      minutePack: 0,
+      numberPack: 0,
+    });
+    assert.equal('price' in payload, false);
+  }
+  let paid = false;
+  await page.route(
+    'https://calls.consuelohq.com/v1/public/billing/purchase/*',
+    async (route) => {
+      try {
+        if (route.request().method() === 'OPTIONS')
+          return route.fulfill({
+            status: 204,
+            headers: {
+              'access-control-allow-origin': base,
+              'access-control-allow-headers': 'x-purchase-claim',
+              'access-control-allow-methods': 'GET',
+            },
+          });
+        assert.equal(
+          route.request().headers()['x-purchase-claim'],
+          payloads[0].claimToken,
+        );
+        return route.fulfill({
+          headers: { 'access-control-allow-origin': base },
+          contentType: 'application/json',
+          body: JSON.stringify({
+            paid,
+            status: paid ? 'active' : 'pending',
+            claimed: false,
+            installUrl: paid
+              ? 'https://marketplace.leadconnectorhq.com/oauth/chooselocation?fixture=true'
+              : null,
+          }),
+        });
+      } catch (cause) {
+        if (cause instanceof Error) throw cause;
+        throw new Error(String(cause));
+      }
+    },
+  );
+  await page.goto(base + '/get-started?purchase=' + payloads[0].requestId, {
+    waitUntil: 'networkidle',
+  });
+  assert.match(
+    await page.locator('[data-purchase-status]').innerText(),
+    /not confirmed/,
+  );
+  assert.equal(await page.locator('[data-purchase-ready]').isVisible(), false);
+  paid = true;
+  await page.locator('[data-retry-purchase]').click();
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[data-purchase-status]').textContent ===
+      'Payment confirmed.',
+  );
+  assert.equal(
+    await page.locator('[data-purchase-code]').inputValue(),
+    payloads[0].requestId + '.' + payloads[0].claimToken,
+  );
+  assert.equal(new URL(page.url()).searchParams.has('claimToken'), false);
+  assert.match(
+    await page.locator('[data-connect-ghl]').getAttribute('href'),
+    /^https:\/\/marketplace.leadconnectorhq.com/,
+  );
+  emit({
+    flow: 'simulated Stripe checkout and pay-first confirmation',
+    retryIdentity: 'preserved',
+    maliciousRedirect: 'rejected',
+    unpaidActivation: 'rejected',
+    passed: true,
+  });
+  await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
+  await page.mouse.move(0, 0);
+  await page.locator('[data-logo-carousel]').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('[data-logo-track]')
+      .getAnimations()
+      .some((a) => a.playState === 'running'),
+  );
+  const before = await page
+    .locator('[data-logo-track]')
+    .evaluate((el) => getComputedStyle(el).transform);
+  await page.waitForTimeout(120);
+  assert.notEqual(
+    await page
+      .locator('[data-logo-track]')
+      .evaluate((el) => getComputedStyle(el).transform),
+    before,
+  );
+  await page.locator('[data-logo-carousel]').hover();
+  assert.equal(
+    await page
+      .locator('[data-logo-track]')
+      .evaluate((el) => el.getAnimations()[0].playState),
+    'paused',
+  );
+  await page.getByRole('button', { name: 'Pause logos', exact: true }).click();
+  assert.equal(
+    await page
+      .getByRole('button', { name: 'Play logos', exact: true })
+      .getAttribute('aria-pressed'),
+    'true',
+  );
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[data-logo-track]').getAnimations().length === 0,
   );
   await context.close();
   const nojs = await browser.newContext({

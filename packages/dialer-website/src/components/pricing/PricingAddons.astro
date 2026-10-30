@@ -2,9 +2,8 @@
 import PricingIcon from './PricingIcon.astro';
 import { minutePacks, numberPacks } from '../../data/pricing-content';
 const money = (cents: number) => '$' + (cents / 100).toLocaleString('en-US');
-const request = (subject: string) =>
-  'mailto:support@consuelohq.com?' +
-  new URLSearchParams({ subject }).toString();
+const purchase = (addon: string) =>
+  '/get-started?' + new URLSearchParams({ addon }).toString();
 ---
 
 <section
@@ -18,15 +17,20 @@ const request = (subject: string) =>
     </h2><p>
       Add coaching, minutes or numbers.<br />Keep the plan that fits.
     </p><a class="pricing-text-link" href="/contact"
-      >Find the right setup <PricingIcon /></a>
+      >Find the right setup <PricingIcon /></a
+    >
   </div>
   <div class="addon-list">
     <article class="addon mercury-addon">
       <div class="addon__title">
         <PricingIcon name="mercury" /><span class="pricing-eyebrow"
-          >A LITTLE HELP ON EVERY CALL</span>
+          >A LITTLE HELP ON EVERY CALL</span
+        >
       </div>
-      <h3>Mercury coaching</h3><p>Keep your playbook in the conversation.</p>
+      <h3>
+        Mercury coaching <span class="addon-price"
+          >$25 <small>/ rep / month</small></span>
+      </h3><p>Keep your playbook in the conversation.</p>
       <div class="mercury-modes">
         <div>
           <span>01 / SCRIPT MODE</span><h4>
@@ -44,16 +48,15 @@ const request = (subject: string) =>
           </p>
         </div>
       </div>
-      <a
-        class="pricing-text-link"
-        href={request('Mercury coaching — team quote')}
+      <a class="pricing-text-link" href={purchase('mercury')}
         >Add Mercury to your team <PricingIcon /></a
       >
     </article>
     <article class="addon" aria-labelledby="minute-pack-heading">
       <div class="addon__title">
         <PricingIcon name="outbound" /><span class="pricing-eyebrow"
-          >KEEP TALKING</span>
+          >KEEP TALKING</span
+        >
       </div>
       <h3 id="minute-pack-heading">Extra connected minutes</h3><p>
         A little extra or a busy month. Add the room you need.
@@ -61,16 +64,7 @@ const request = (subject: string) =>
       <div class="minute-packs">
         {
           minutePacks.map((pack) => (
-            <a
-              class="minute-pack"
-              href={request(
-                'Request ' +
-                  money(pack.priceCents) +
-                  ' minute pack — ' +
-                  pack.minutes +
-                  ' minutes',
-              )}
-            >
+            <a class="minute-pack" href={purchase('minutes-' + pack.minutes)}>
               <>
                 <span class="minute-pack__price">{money(pack.priceCents)}</span>
                 <strong>
@@ -84,14 +78,16 @@ const request = (subject: string) =>
         }
       </div>
       <p class="addon-note">
-        One-time packs. Request multiple packs for your team. <a href="/contact"
-          >Need more? Talk to us <PricingIcon /></a>
+        One-time packs. Choose the quantity at checkout. <a href="/contact"
+          >Need more? Talk to us <PricingIcon /></a
+        >
       </p>
     </article>
     <article class="addon" aria-labelledby="number-pack-heading">
       <div class="addon__title">
         <PricingIcon name="number" /><span class="pricing-eyebrow"
-          >GROW YOUR REACH</span>
+          >GROW YOUR REACH</span
+        >
       </div>
       <h3 id="number-pack-heading">More phone numbers</h3><p>
         Build the local number pool your team needs.
@@ -101,7 +97,7 @@ const request = (subject: string) =>
         ><thead
           ><tr
             ><th scope="col">Numbers</th><th scope="col">Monthly total</th><th
-              scope="col"><span class="sr-only">Request pack</span></th
+              scope="col"><span class="sr-only">Choose pack</span></th
             ></tr
           ></thead
         ><tbody
@@ -121,15 +117,9 @@ const request = (subject: string) =>
                   <td>
                     <a
                       aria-label={
-                        'Request ' + pack.numbers + ' additional numbers'
+                        'Choose ' + pack.numbers + ' additional numbers'
                       }
-                      href={request(
-                        'Request ' +
-                          pack.numbers +
-                          ' additional numbers — ' +
-                          money(pack.priceCents) +
-                          '/month',
-                      )}
+                      href={purchase('numbers-' + pack.numbers)}
                     >
                       <PricingIcon />
                     </a>
@@ -137,7 +127,8 @@ const request = (subject: string) =>
                 </>
               </tr>
             ))
-          }</tbody>
+          }</tbody
+        >
       </table>
       <p class="addon-note">
         Single numbers are $3/month. Number packs expand the pool; parallel call

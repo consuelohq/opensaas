@@ -1,71 +1,125 @@
 ---
-import PricingIcon from './PricingIcon.astro';
 const technologies = [
-  ['twilio', 'Twilio'],
-  ['bun', 'Bun'],
-  ['hono', 'Hono'],
+  ['twilio', 'Twilio', true],
+  ['openai', 'OpenAI'],
+  ['claude', 'Claude'],
+  ['opencode', 'OpenCode'],
+  ['pi', 'Pi', true],
+  ['bun', 'Bun', true],
+  ['hono', 'Hono', true],
   ['postgresql', 'PostgreSQL'],
-  ['redis', 'Redis'],
-  ['cloudflare', 'Cloudflare'],
+  ['redis', 'Redis', true],
+  ['cloudflare', 'Cloudflare', true],
   ['github', 'GitHub'],
   ['groq', 'Groq'],
-];
+] as const;
 ---
 
-<section class="pricing-technology" aria-labelledby="technology-heading">
-  <p class="pricing-eyebrow">UNDER THE HOOD</p><h2 id="technology-heading">
-    Built for scale.
-  </h2><p>The tools behind the calling day.</p><div
-    class="technology-carousel-controls"
-    data-logo-controls
-    hidden
-  >
-    <button type="button" data-logo-step="-1" aria-label="Previous technologies"
-      ><PricingIcon /></button
-    ><button type="button" data-logo-step="1" aria-label="Next technologies"
-      ><PricingIcon /></button>
-  </div><div
+<section
+  class="pricing-technology"
+  aria-labelledby="technology-heading"
+  data-logo-carousel
+>
+  <h2 id="technology-heading">Built for scale</h2>
+  <div
     class="technology-strip"
     data-technology-strip
-    role="region"
-    aria-label="Infrastructure technologies — scroll to explore"
     tabindex="0"
+    role="region"
+    aria-label="Tools in our stack"
   >
-    {
-      technologies.map(([slug, name]) => (
-        <span class="technology-wordmark">
-          {slug !== 'groq' && (
-            <img
-              src={'/images/technology/' + slug + '.svg'}
-              width="30"
-              height="30"
-              alt=""
-              loading="lazy"
-            />
-          )}
-          <span>{name}</span>
-        </span>
-      ))
-    }
+    <div class="technology-track" data-logo-track>
+      {
+        [false, true].map((duplicate) =>
+          technologies.map(([slug, name, symbol]) => (
+            <span
+              class:list={[
+                'technology-wordmark',
+                { 'technology-wordmark--symbol': symbol },
+              ]}
+              aria-hidden={duplicate || undefined}
+            >
+              <img
+                src={'/images/technology/wordmarks/' + slug + '.svg'}
+                width="112"
+                height="32"
+                alt={duplicate ? '' : name}
+                loading="lazy"
+              />
+            </span>
+          )),
+        )
+      }
+    </div>
   </div>
+  <button
+    class="technology-pause"
+    type="button"
+    data-logo-pause
+    hidden
+    aria-pressed="false">Pause logos</button
+  >
 </section>
-
 <script>
-  const strip = document.querySelector<HTMLElement>('[data-technology-strip]');
-  const controls = document.querySelector<HTMLElement>('[data-logo-controls]');
-  if (strip && controls) {
-    controls.hidden = false;
-    controls
-      .querySelectorAll<HTMLButtonElement>('[data-logo-step]')
-      .forEach((button) =>
-        button.addEventListener('click', () =>
-          strip.scrollBy({
-            left: Number(button.dataset.logoStep) * strip.clientWidth * 0.6,
-            behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
-              ? 'instant'
-              : 'smooth',
-          }),
-        ),
+  const root = document.querySelector<HTMLElement>('[data-logo-carousel]');
+  const track = root?.querySelector<HTMLElement>('[data-logo-track]');
+  const button = root?.querySelector<HTMLButtonElement>('[data-logo-pause]');
+  if (root && track && button) {
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    let animation: Animation | undefined;
+    let paused = false;
+    let visible = false;
+    let hovering = false;
+    const sync = () => {
+      if (motion.matches) {
+        animation?.cancel();
+        animation = undefined;
+        button.hidden = true;
+        return;
+      }
+      button.hidden = false;
+      animation ??= track.animate(
+        [{ transform: 'translateX(0)' }, { transform: 'translateX(-50%)' }],
+        { duration: 48000, iterations: Infinity, easing: 'linear' },
       );
+      if (
+        paused ||
+        hovering ||
+        !visible ||
+        document.hidden ||
+        root.contains(document.activeElement)
+      )
+        animation.pause();
+      else animation.play();
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      sync();
+    });
+    observer.observe(root);
+    button.addEventListener('click', () => {
+      paused = !paused;
+      button.setAttribute('aria-pressed', String(paused));
+      button.textContent = paused ? 'Play logos' : 'Pause logos';
+      sync();
+    });
+    root.addEventListener('mouseenter', () => {
+      hovering = true;
+      sync();
+    });
+    root.addEventListener('mouseleave', () => {
+      hovering = false;
+      sync();
+    });
+    root.addEventListener('focusin', sync);
+    root.addEventListener('focusout', () => requestAnimationFrame(sync));
+    motion.addEventListener('change', sync);
+    document.addEventListener('visibilitychange', sync);
+    window.addEventListener('pagehide', () => {
+      animation?.cancel();
+      animation = undefined;
+    });
+    window.addEventListener('pageshow', sync);
+    sync();
   }
 </script>

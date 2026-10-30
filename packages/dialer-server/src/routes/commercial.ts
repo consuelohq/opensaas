@@ -1,3 +1,5 @@
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+import type { PublicCheckout } from '../billing/public-checkout';
 import { Effect } from 'effect';
 import { Hono } from 'hono';
 
@@ -6,10 +8,13 @@ import type { DialerIdentity } from '../contracts';
 export type CommercialIdentity = DialerIdentity;
 
 export type CommercialRouteDependencies = {
-  catalog: () => Effect.Effect<unknown, unknown>;
-  dashboard: (
+  publicCheckout?: PublicCheckout;
+  claimCheckout?: (
     identity: CommercialIdentity,
+    body: unknown,
   ) => Effect.Effect<unknown, unknown>;
+  catalog: (identity?: CommercialIdentity) => Effect.Effect<unknown, unknown>;
+  dashboard: (identity: CommercialIdentity) => Effect.Effect<unknown, unknown>;
   createCheckout: (
     identity: CommercialIdentity,
     body: unknown,
@@ -62,7 +67,10 @@ export type CommercialRouteDependencies = {
     workspaceId: string;
     locationId: string;
     appId: string | null;
-  }) => Effect.Effect<{ duplicate: boolean; cancellationScheduled: boolean }, unknown>;
+  }) => Effect.Effect<
+    { duplicate: boolean; cancellationScheduled: boolean },
+    unknown
+  >;
   recordProviderCompletion: (input: {
     workspaceId: string;
     sessionId: string;
@@ -91,14 +99,26 @@ export const createCommercialRoutes = (
 ) => {
   const app = new Hono<{ Variables: CommercialVariables }>();
 
-  app.get('/v1/commercial/catalog', async (context) =>
-    context.json(await Effect.runPromise(dependencies.catalog())),
-  );
-  app.get('/v1/commercial/admin', async (context) =>
-    context.json(
-      await Effect.runPromise(dependencies.dashboard(context.get('identity'))),
-    ),
-  );
+  app.get('/v1/commercial/catalog', async (context) => {
+    try {
+      return context.json(
+        await Effect.runPromise(dependencies.catalog(context.get('identity'))),
+      );
+    } catch (cause: unknown) {
+      throw normalizeAsyncError(cause);
+    }
+  });
+  app.get('/v1/commercial/admin', async (context) => {
+    try {
+      return context.json(
+        await Effect.runPromise(
+          dependencies.dashboard(context.get('identity')),
+        ),
+      );
+    } catch (cause: unknown) {
+      throw normalizeAsyncError(cause);
+    }
+  });
   if (dependencies.callerContext) {
     app.get('/v1/commercial/caller', async (context) =>
       context.json(
@@ -109,12 +129,13 @@ export const createCommercialRoutes = (
     );
   }
 
-  const mutation = (
-    operation: (
-      identity: CommercialIdentity,
-      body: unknown,
-    ) => Effect.Effect<unknown, unknown>,
-  ) =>
+  const mutation =
+    (
+      operation: (
+        identity: CommercialIdentity,
+        body: unknown,
+      ) => Effect.Effect<unknown, unknown>,
+    ) =>
     async (context: {
       get: (key: 'identity') => CommercialIdentity;
       req: { json: () => Promise<unknown> };
@@ -143,6 +164,11 @@ export const createCommercialRoutes = (
       }
     };
 
+  if (dependencies.claimCheckout)
+    app.post(
+      '/v1/commercial/billing/claim',
+      mutation(dependencies.claimCheckout),
+    );
   app.post(
     '/v1/commercial/billing/checkout',
     mutation(dependencies.createCheckout),

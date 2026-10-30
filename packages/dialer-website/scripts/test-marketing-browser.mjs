@@ -106,20 +106,20 @@ try {
    const annualAmount = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(card.monthlyCents * 12 / 100);
    const label = card.code === 'starter'
     ? 'Starter — 100 total trial minutes'
-    : card.name + ' — ' + card.price + ' per seat / month'
-      + (billing === 'annual' ? ' (' + annualAmount + ' per seat billed annually)' : ' (billed monthly)');
+    : card.name + ' — ' + card.price + ' per rep / month'
+      + (billing === 'annual' ? ' (' + annualAmount + ' per rep billed annually)' : ' (billed monthly)');
    await page.waitForFunction(label => document.querySelector('[data-selected-plan]').textContent.includes(label), label);
-   const mailto = new URL(await page.locator('[data-setup-request]').getAttribute('href'));
-   assert.equal(mailto.protocol, 'mailto:');
-   assert.equal(mailto.pathname, 'support@consuelohq.com');
-   assert.equal(mailto.searchParams.get('subject'), 'Set up Consuelo Dialer — ' + label);
+   assert.equal(await page.locator('[data-checkout-plan]').inputValue(),card.code);
+   assert.equal(await page.locator('[data-checkout-billing]').inputValue(),billing);
+   assert.equal(await page.locator('[data-checkout-seats]').inputValue(),'1');
+   assert.equal(await page.locator('a[href^="mailto:"]').count(),0);
    setupCases++;
   }
  }
  emit({flow:'all-plan-setup',plans:cards.length,billingPeriods:2,cases:setupCases});
  for (const bad of ['__proto__','<img src=x onerror=alert(1)>']) {
   await page.goto(base+'/get-started?plan='+encodeURIComponent(bad),{waitUntil:'networkidle'});
-  assert.match(await page.locator('[data-selected-plan]').innerText(),/^Tell us/);
+  assert.match(await page.locator('[data-selected-plan]').innerText(),/^Professional/);
   assert.equal(await page.locator('img[src="x"]').count(),0);
  }
  const paths=['/','/pricing','/get-started','/how-it-works','/contact','/privacy','/terms','/support'];
