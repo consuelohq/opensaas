@@ -129,7 +129,63 @@ try {
         await link.getAttribute('href'),
         'https://docs.consuelohq.com/',
       );
-    assert.equal(await page.locator('.product-story__chapter').count(), 5);
+    assert.equal(await page.locator('.product-story__chapter').count(), 4);
+    const chapters = await page
+      .locator('[data-feature-chapter]')
+      .evaluateAll((items) =>
+        items.map((item) => ({
+          label: item.dataset.featureChapter,
+          x: item.getBoundingClientRect().x,
+          y: item.getBoundingClientRect().y,
+          width: item.getBoundingClientRect().width,
+        })),
+      );
+    assert.deepEqual(
+      chapters.map((item) => item.label),
+      ['inbound', 'outbound', 'analytics', 'ai assistant'],
+    );
+    if (width > 760) {
+      assert.ok(
+        Math.abs(chapters[0].y - chapters[1].y) < 2,
+        'First feature row aligns',
+      );
+      assert.ok(
+        Math.abs(chapters[2].y - chapters[3].y) < 2,
+        'Second feature row aligns',
+      );
+      assert.ok(
+        chapters.every((item) => Math.abs(item.width - chapters[0].width) < 2),
+        'Feature widths are equal',
+      );
+    }
+    const returningNav = page.locator('[data-returning-nav]');
+    assert.equal(
+      await returningNav.getAttribute('inert'),
+      '',
+      'Returning nav is inactive in hero',
+    );
+    await page.locator('[data-feature-story]').scrollIntoViewIfNeeded();
+    await page.waitForFunction(
+      () =>
+        !document.querySelector('[data-returning-nav]').hasAttribute('inert'),
+    );
+    if ([375, 1440].includes(width))
+      await page.screenshot({
+        path: join(artifactRoot, 'features-' + width + '.png'),
+      });
+    await returningNav
+      .getByRole('link', { name: 'Pricing', exact: true })
+      .focus();
+    assert.equal(
+      await returningNav
+        .getByRole('link', { name: 'Pricing', exact: true })
+        .evaluate((el) => el === document.activeElement),
+      true,
+    );
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForFunction(() =>
+      document.querySelector('[data-returning-nav]').hasAttribute('inert'),
+    );
     const clouds = await page.locator('.cloud-field img').count();
     assert.equal(
       await page
@@ -139,6 +195,16 @@ try {
         ),
       0,
       'Reduced motion disables decorative cloud animation',
+    );
+    await page.locator('img').evaluateAll((images) =>
+      Promise.all(
+        images.map(async (img) => {
+          img.loading = 'eager';
+          try {
+            await img.decode();
+          } catch {}
+        }),
+      ),
     );
     const badImages = await page
       .locator('img')
@@ -163,6 +229,31 @@ try {
       () =>
         !document.querySelector('[data-cloud-reveal]').hasAttribute('inert'),
     );
+    assert.ok(
+      (await page.locator('#faq .home-faq__steps li').count()) >= 3,
+      'Homepage FAQ provides setup steps',
+    );
+    assert.ok(
+      (await page.locator('#faq .home-faq__bullets li').count()) >= 6,
+      'Homepage FAQ provides scannable lists',
+    );
+    await page.locator('.cloud-cta__primary').scrollIntoViewIfNeeded();
+    const footer = page.locator('.dialer-footer');
+    assert.ok(
+      (await footer.locator('nav').count()) >= 3,
+      'Footer has grouped navigation',
+    );
+    await footer.scrollIntoViewIfNeeded();
+    if ([375, 1440].includes(width))
+      await page.screenshot({
+        path: join(artifactRoot, 'footer-' + width + '.png'),
+      });
+    const footerBox = await footer.boundingBox();
+    assert.ok(
+      footerBox && footerBox.width <= width + 1,
+      'Footer fits viewport',
+    );
+    await page.locator('.cloud-cta__primary').scrollIntoViewIfNeeded();
     const close = page.locator('.cloud-cta__primary');
     const box = await close.boundingBox();
     assert.ok(
@@ -192,6 +283,40 @@ try {
   });
   const page = await context.newPage();
   await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
+  const pricingClearance = await page.evaluate(() => {
+    const social = [...document.querySelectorAll('.os-header__socials')].find(
+      (el) => el.getBoundingClientRect().height > 0,
+    );
+    return (
+      document.querySelector('.pricing-frame').getBoundingClientRect().top -
+      social.getBoundingClientRect().bottom
+    );
+  });
+  assert.ok(pricingClearance >= 16, 'Pricing keeps blue below social links');
+  assert.equal(
+    await page.locator('[data-logo-pause]').count(),
+    0,
+    'No visible logo pause button',
+  );
+  await page.locator('[data-logo-carousel]').scrollIntoViewIfNeeded();
+  const logoSizes = await page
+    .locator('.technology-wordmark:not([aria-hidden]) img')
+    .evaluateAll((images) =>
+      images.map((img) => ({
+        width: img.getBoundingClientRect().width,
+        height: img.getBoundingClientRect().height,
+      })),
+    );
+  assert.ok(
+    logoSizes.every((size) => size.width >= 44 && size.height >= 32),
+    'Stack marks have readable display sizes',
+  );
+  assert.equal(
+    await page.locator('.pricing-close .cloud-field').count(),
+    1,
+    'Pricing close restores clouds',
+  );
+  assert.ok((await page.locator('.dialer-footer nav').count()) >= 3);
   assert.equal(await page.locator('[data-plan-code]').count(), 4);
   const cards = await page.locator('[data-plan-code]').evaluateAll((elements) =>
     elements.map((el) => ({
@@ -387,6 +512,36 @@ try {
     ),
     false,
     'Terminal pagehide destroys Lenis',
+  );
+  await motionPage.goto(base + '/pricing', { waitUntil: 'networkidle' });
+  const strip = motionPage.locator('[data-logo-carousel]');
+  await strip.scrollIntoViewIfNeeded();
+  await motionPage.mouse.move(0, 0);
+  await motionPage.waitForFunction(() =>
+    document
+      .querySelector('[data-logo-track]')
+      .getAnimations()
+      .some((animation) => animation.playState === 'running'),
+  );
+  await strip.hover();
+  await motionPage.waitForFunction(() =>
+    document
+      .querySelector('[data-logo-track]')
+      .getAnimations()
+      .every((animation) => animation.playState === 'paused'),
+  );
+  await motionPage.locator('[data-technology-strip]').focus();
+  await motionPage.mouse.move(0, 0);
+  await motionPage.waitForFunction(() =>
+    document
+      .querySelector('[data-logo-track]')
+      .getAnimations()
+      .every((animation) => animation.playState === 'paused'),
+  );
+  await motionPage.emulateMedia({ reducedMotion: 'reduce' });
+  await motionPage.waitForFunction(
+    () =>
+      document.querySelector('[data-logo-track]').getAnimations().length === 0,
   );
   await motion.close();
   const fragmentContext = await newCheckoutFixtureContext(browser, {

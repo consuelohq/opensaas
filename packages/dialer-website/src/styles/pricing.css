@@ -1,5 +1,5 @@
 .pricing-page {
-  padding: 9.2rem 0 0;
+  padding: var(--dialer-page-top) var(--site-frame-inset) var(--site-frame-inset);
   color: var(--site-color-ink);
 }
 .pricing-frame {
@@ -692,13 +692,13 @@
 
 .pricing-technology {
   background: var(--site-color-surface);
-  color: #171717;
-  padding: 4rem 0;
+  color: var(--site-color-stack-ink);
+  padding: var(--site-space-8) 0;
   text-align: center;
   overflow: hidden;
 }
 .pricing-technology h2 {
-  margin: 0 0 2.8rem;
+  margin: 0 0 var(--site-space-7);
   font: 500 0.9rem/1.4 var(--site-font-mono);
   letter-spacing: 0.04em;
 }
@@ -713,31 +713,23 @@
 .technology-wordmark {
   display: grid;
   place-items: center;
-  flex: 0 0 calc(100vw / var(--visible-logos));
-  width: calc(100vw / var(--visible-logos));
-  height: 3rem;
-  padding: 0 1.8rem;
+  flex: 0 0 calc((100vw - 2 * var(--site-frame-inset)) / var(--visible-logos));
+  width: calc((100vw - 2 * var(--site-frame-inset)) / var(--visible-logos));
+  height: var(--site-space-8);
+  padding: 0 var(--site-space-5);
 }
 .technology-wordmark img {
-  width: 100%;
-  max-width: 112px;
-  max-height: 28px;
+  width: min(100%, var(--dialer-logo-size));
+  height: var(--dialer-logo-height);
+  max-width: none;
+  max-height: none;
   object-fit: contain;
 }
 .technology-wordmark--symbol img {
-  width: 36px;
-  max-height: 36px;
+  width: var(--dialer-logo-height);
+  height: var(--dialer-logo-height);
 }
-.technology-pause {
-  display: block;
-  margin: 1.5rem auto -1.5rem;
-  padding: 0.3rem 0.6rem;
-  border: 0;
-  background: none;
-  color: #767676;
-  font-size: 0.68rem;
-  cursor: pointer;
-}
+
 @media (max-width: 1050px) {
   .technology-strip {
     --visible-logos: 5;
@@ -755,25 +747,6 @@
   .technology-track [aria-hidden] {
     display: none;
   }
-}
-.pricing-close {
-  text-align: center;
-  color: var(--site-color-on-brand);
-  padding: var(--site-space-section) var(--site-space-4);
-}
-.pricing-close h2 {
-  font: 430 clamp(3.5rem, 8vw, 7rem)/0.98 var(--site-font-display);
-  letter-spacing: -0.035em;
-  margin: 0 0 var(--site-space-7);
-}
-.pricing-close > .pricing-button {
-  max-width: 20rem;
-  margin: 0 auto var(--site-space-5);
-  padding: var(--site-space-4) var(--site-space-5);
-  font-size: var(--site-text-sm);
-}
-.pricing-close__contact {
-  font-size: var(--site-text-sm);
 }
 .pricing-page [hidden] {
   display: none !important;
@@ -834,7 +807,7 @@
 }
 @media (max-width: 760px) {
   .pricing-page {
-    padding-top: 9rem;
+    padding-top: var(--dialer-page-top);
   }
   .pricing-frame {
     border: 0;
@@ -904,9 +877,6 @@
   }
   .technology-strip {
     justify-content: flex-start;
-  }
-  .pricing-close {
-    padding-block: var(--site-space-8);
   }
 }
 @media (max-width: 470px) {

@@ -36,3 +36,4 @@ The clone contains only the public Dialer route dependency tree. OS installer, a
 - HomeFaq accepts typed items/title/id/variant and is reused by homepage and pricing.
 - src/styles/pricing.css owns the pricing layout and composes shared tokens.
 - Tests: bun test tests; bun run test:pricing-browser (built dist required).
+SiteFooter owns the shared grouped product/resources/account/community links. HomeCloudCta composes the cloud closing scene and SiteFooter for both landing and pricing. SiteHeader owns the returning feature navigation; core static navigation stays available without JavaScript.

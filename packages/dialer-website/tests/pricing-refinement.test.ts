@@ -26,7 +26,7 @@ describe('pricing purchase and reading experience', () => {
     expect(html).not.toContain('data-logo-step');
     expect(html).toContain('data-logo-carousel');
     expect(html.indexOf('data-logo-carousel')).toBeLessThan(
-      html.indexOf('class="pricing-close"'),
+      html.indexOf('data-cloud-reveal'),
     );
   });
 });

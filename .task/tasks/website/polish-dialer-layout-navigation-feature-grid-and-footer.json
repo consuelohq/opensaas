@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/polish-dialer-layout-navigation-feature-grid-and-footer",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2734,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2734",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-dialer-layout-navigation-feature-grid-and-footer",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ff76ef367290",
+  "tmuxSession": "opensaas-website-polish-dialer-layout-navigation-feature-grid-and-ff76ef36",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-polish-dialer-layout-navigation-feature-grid-and-footer/.task/session.json",
+  "createdAt": "2026-10-31T05:03:39.732Z"
+}

@@ -695,12 +695,23 @@ try {
       .evaluate((el) => el.getAnimations()[0].playState),
     'paused',
   );
-  await page.getByRole('button', { name: 'Pause logos', exact: true }).click();
+  assert.equal(
+    await page.getByRole('button', { name: /Pause logos|Play logos/ }).count(),
+    0,
+  );
+  await page.locator('[data-technology-strip]').focus();
+  await page.mouse.move(0, 0);
   assert.equal(
     await page
-      .getByRole('button', { name: 'Play logos', exact: true })
-      .getAttribute('aria-pressed'),
-    'true',
+      .locator('[data-logo-track]')
+      .evaluate((el) => el.getAnimations()[0].playState),
+    'paused',
+  );
+  await page.locator('[data-technology-strip]').evaluate((el) => el.blur());
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[data-logo-track]').getAnimations()[0]
+        .playState === 'running',
   );
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.waitForFunction(
