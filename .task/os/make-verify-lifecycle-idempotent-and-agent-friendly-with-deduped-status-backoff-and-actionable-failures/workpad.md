@@ -83,6 +83,8 @@ no-test waiver: none. Red→green, strict review, formal verify exactly once aft
 - 2026-10-31 07:59:58 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
 - 2026-10-31 08:02:43 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
 - 2026-10-31 08:06:45 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+- 2026-10-31 08:08:09 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+- 2026-10-31 08:09:56 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
 
 ## Verification lifecycle implementation and red/green evidence
 
@@ -100,6 +102,7 @@ no-test waiver: none. Red→green, strict review, formal verify exactly once aft
 
 - 2026-10-31 08:01:11 `review.run`: passed — OK
 - 2026-10-31 08:02:50 `review.run`: passed — OK
+- 2026-10-31 08:07:57 `review.run`: passed — OK
 
 ## Stream integration and validation
 
@@ -120,3 +123,21 @@ no-test waiver: none. Red→green, strict review, formal verify exactly once aft
 - Latest stream moved again with unrelated cleanup and analytics changes; only overlapping file is script-parity classifications. Preserve all partner changes on merge, then do final verification and task PR publication. Do not merge main/stream or deploy without approval.
 
 - 2026-10-31 08:06:45 append: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+
+## Final stream synchronization and scoped validation
+
+- Committed focused follow-up at 59f76962ebe72beab71ad90f36a7f7201595bed8. Merged newer stream/os 0a6389f0b7da7331bf3306964a90c8a650a1e3dc normally at task HEAD 7caf46f16e52851b84bf53dd3f91afa81424c912; only conflict was parity fixture. Kept all stream-owned classifications, retained proven byte-identical paths.js and added verify-status.js. No unrelated work overwritten.
+- Exact combined-tree focused tests: 160/160 across ten packages/os and packages/workspace suites, including tool manifest baseline, script parity, audit without eager yaml, read-only verify.status and lifecycle, selector mapping. Generated tool manifest drift and selected-test registry checks pass.
+- Formal strict review against exact SHA 0a6389f0b7da7331bf3306964a90c8a650a1e3dc: zero blocking findings and zero documentation opportunities. Prior full facade suite: 768/768; public docs validate: 105 selected pages. Base SHA pinned for final verification to avoid mutable stream invalidation during concurrent agents' work.
+- Next: one formal verification run against immutable stream SHA, follow its runKey with read-only status long-poll, then publish task PR #2759 (no stream/main merge/deploy without separate approval).
+
+- 2026-10-31 08:08:09 append: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+
+## Final formal verification — passed
+
+- Ran `verify` ONCE against immutable stream base `0a6389f0b7da7331bf3306964a90c8a650a1e3dc` from task HEAD `7caf46f16e52851b84bf53dd3f91afa81424c912`; runKey `e9da18fcb490a9c97b7ed2107b28f8b9e6c5d9c66b5497d3f953c692fa6f414a`.
+- All progress and result retrieval used **read-only** `bun packages/os/scripts/verify-status.js --run-key ... --wait-seconds 18 --json`; never called mutating verify again. Status showed phase `tests`, pending true, passed null, stale false; final status `VERIFY_PASSED`, pending false, terminal true, stale false, passed true, publishValid true, review/tests/db all true, failedSuites []. Verification stamp written at task workpad path and publishValid true.
+- This validates the original user complaint end-to-end: a single verification worker, actionable status, no repeated verifier launch, explicit stale guard and clear terminal semantics.
+- Final source/doc review before gate: zero blockers and zero documentation opportunities; focused suite 160/160, full facade suite 768/768, documentation validate passed. Publication boundary: push task branch to PR #2759 only, no `stream/os`/`main` merge or deployment without separate approval.
+
+- 2026-10-31 08:09:56 append: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
