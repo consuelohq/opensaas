@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 719,
-    "mappedTestCount": 637,
+    "testFileCount": 721,
+    "mappedTestCount": 639,
     "unmappedTestCount": 82,
     "ruleCount": 86,
     "explicitRuleCount": 73,
@@ -11,8 +11,8 @@
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 330,
-      "packages/workspace/tests": 69,
+      "packages/os/tests": 331,
+      "packages/workspace/tests": 70,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -99,7 +99,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 655,
+      "test": 657,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -196,7 +196,19 @@
         "packages/workspace/tests/task-push-binary.test.ts",
         "packages/workspace/scripts/lib/verification.js",
         "packages/workspace/scripts/confirm.js",
-        "packages/os/scripts/confirm.js"
+        "packages/os/scripts/confirm.js",
+        "packages/workspace/scripts/verify-status.js",
+        "packages/os/scripts/verify-status.js",
+        "packages/workspace/tests/verify-status.test.js",
+        "packages/os/tools/review/schema.ts",
+        "packages/os/tools/review/handler.ts",
+        "packages/os/tools/review/handler.test.ts",
+        "packages/os/tests/verify-status-facade.test.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/paths.js",
+        "packages/workspace/tests/audit/audit.test.ts"
       ],
       "tests": [
         {
@@ -212,7 +224,12 @@
             "packages/workspace/tests/task-push-binary.test.ts",
             "packages/workspace/tests/task-push-local-sync.test.ts",
             "packages/os/tests/task-push-local-sync.test.ts",
-            "packages/workspace/tests/task-push-session.test.ts"
+            "packages/workspace/tests/task-push-session.test.ts",
+            "packages/workspace/tests/verify-status.test.js",
+            "packages/os/tests/verify-status-facade.test.ts",
+            "packages/os/tools/review/handler.test.ts",
+            "packages/os/tests/audit/script-parity-audit.test.ts",
+            "packages/workspace/tests/audit/audit.test.ts"
           ]
         }
       ],
@@ -6304,6 +6321,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/verify-status-facade.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/windows-bootstrap-source.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6940,6 +6962,11 @@
     },
     {
       "path": "packages/workspace/tests/verify-run-state.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/verify-status.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },

@@ -95,7 +95,24 @@ export const toolHandlers = [
           "source": "noStamp",
           "flag": "--no-stamp",
           "kind": "boolean"
+        },
+        {
+          "source": "retry",
+          "flag": "--retry",
+          "kind": "boolean"
         }
+      ]
+    }
+  },
+  {
+    "name": "verify.status",
+    "command": {
+      "script": "verify-status",
+      "branchMode": "optional",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "runKey", "flag": "--run-key", "kind": "value" },
+        { "source": "waitSeconds", "flag": "--wait-seconds", "kind": "value" }
       ]
     }
   }

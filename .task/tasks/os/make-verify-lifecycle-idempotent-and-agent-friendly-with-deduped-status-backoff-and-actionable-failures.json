@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2759,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2759",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_96ca60d08a73",
+  "tmuxSession": "opensaas-os-make-verify-lifecycle-idempotent-and-agent-frien-96ca60d0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/.task/session.json",
+  "createdAt": "2026-10-31T07:47:08.077Z"
+}

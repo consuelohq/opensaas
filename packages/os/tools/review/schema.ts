@@ -147,7 +147,7 @@ export const toolSchemas = [
       "methodPath": [
         "verify"
       ],
-      "description": "run the full task safety gate",
+      "description": "Run the full task safety gate once per exact snapshot; on VERIFY_PENDING use read-only verify.status with runKey and waitSeconds:60 rather than polling verify; retry:true explicitly reruns an unchanged failed gate.",
       "category": "review",
       "underlying": "workspace verify",
       "capabilities": {
@@ -163,6 +163,33 @@ export const toolSchemas = [
         "branch": "task/workspace-agents/example",
         "noStamp": true,
         "dryRun": true
+      },
+      "sessionRequired": true,
+      "workflowRole": "validation.verify"
+    }
+  },
+  {
+    "name": "verify.status",
+    "order": [
+      "name", "methodPath", "description", "category", "underlying",
+      "capabilities", "defaultTimeout", "inputSchema", "outputSchema",
+      "command", "exampleInput", "sessionRequired", "workflowRole"
+    ],
+    "definition": {
+      "name": "verify.status",
+      "methodPath": ["verifyStatus"],
+      "description": "Read-only long-poll for a previously started verify run. Reuses runKey, waits up to 60 seconds by default, reports pending/success/failure/stale without starting work.",
+      "category": "review",
+      "underlying": "workspace verify-status",
+      "capabilities": {
+        "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true
+      },
+      "defaultTimeout": 150000,
+      "inputSchema": "VerifyStatusInput",
+      "outputSchema": "RawOutput",
+      "exampleInput": {
+        "runKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "waitSeconds": 60
       },
       "sessionRequired": true,
       "workflowRole": "validation.verify"
