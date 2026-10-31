@@ -270,6 +270,11 @@ function summarizeInput(
     return `${action === 'patch' ? 'patch' : action} workpad.md`;
   }
   if (tool === 'code.call') {
+    const codeFile = clean(input?.codeFile);
+    if (codeFile && isUsefulDisplayValue(codeFile)) {
+      const mode = clean(input?.mode);
+      return `${mode === 'verify' ? 'verify' : mode === 'edit' ? 'edit' : 'run'} ${fileName(codeFile)}`;
+    }
     const rawExisting = valueText(row.input);
     const existing = isSerializedStructure(rawExisting) ? '' : rawExisting;
     const stripped = stripCodePrefix(existing, input, toolLabel);
@@ -360,6 +365,34 @@ function summarizeInput(
     return paths.length
       ? `patch ${paths.length} ${paths.length === 1 ? 'file' : 'files'} · ${paths.join(', ')}`
       : 'patch files';
+  }
+  if (tool.startsWith('linear.')) {
+    const action = tool.slice('linear.'.length);
+    if (action === 'search') {
+      const search = clean(input?.search ?? input?.query);
+      return search && isUsefulDisplayValue(search) ? search : 'search Linear';
+    }
+    const result = resultRecord(row);
+    const resultIssue = record(record(result?.data)?.issue ?? result?.issue);
+    const issue = [
+      input?.identifier,
+      input?.issueId,
+      input?.issue,
+      resultIssue?.identifier,
+    ].map(clean).find((candidate) => /^[A-Z]{1,12}-\d{1,10}$/.test(candidate)) ?? '';
+    if (action === 'issue') return issue || 'issue details';
+    if (action === 'createComment') return issue ? `comment ${issue}` : 'comment on issue';
+    if (action === 'comments') return issue ? `comments ${issue}` : 'issue comments';
+    if (action === 'updateIssue') {
+      const state = clean(input?.state);
+      const usableState = state && !/^[0-9a-f-]{36}$/i.test(state) && isUsefulDisplayValue(state);
+      return [issue ? `update ${issue}` : 'update issue', usableState ? state : '']
+        .filter(Boolean).join(' · ');
+    }
+    if (action === 'relations') return issue ? `relations ${issue}` : 'issue relations';
+    if (issue) return `${action} ${issue}`;
+    const title = clean(input?.title);
+    if (title && isUsefulDisplayValue(title)) return title;
   }
   if (tool === 'github') {
     const repo = clean(input?.repo);
@@ -482,6 +515,8 @@ function summarizeOutput(
   if (tool === 'refresh_steering') return 'steering refreshed';
   const result = resultRecord(row);
   const data = record(result?.data) ?? result;
+  if (tool === 'linear.updateIssue') return 'issue updated';
+  if (tool === 'linear.createComment') return 'comment added';
   if (tool === 'code.call') {
     const mode = toolLabel.split('.').at(-1);
     const changed = stringArray(data?.filesChanged ?? result?.filesChanged);
@@ -721,6 +756,15 @@ function summarizeCode(code: string, mode: string): string {
             : 'read';
     return `${verb} ${fileName(fileTarget.path)}`;
   }
+  if (/\bbun:sqlite\b/.test(code) && /(?:\.query\(|\.prepare\(|\bSELECT\b)/i.test(code)) {
+    return 'query SQLite';
+  }
+  const moduleImports = [...code.matchAll(
+    /\b(?:import|require)\s*\([^\n]{0,160}?['"]([^'"]+\.(?:ts|tsx|js|jsx|mjs))['"]\s*\)/g,
+  )];
+  if (moduleImports.length === 1 && isUsefulDisplayValue(moduleImports[0][1])) {
+    return `inspect ${fileName(moduleImports[0][1])}`;
+  }
   const command = spawnedCommand(code);
   if (command.length) return summarizeSpawnedCommand(command);
   const shell = summarizeShellCode(code, mode);
@@ -941,8 +985,20 @@ function codeFileTarget(
 
 function summarizeShellCode(code: string, mode: string): string {
   const trimmed = code.trim();
-  if (!trimmed || trimmed.includes('\n')) return '';
-  const command = trimmed.split(/\s*(?:&&|\|\||;)\s*/)[0]?.trim() ?? '';
+  if (!trimmed) return '';
+  const lines = trimmed.split(/\r?\n|\s*(?:&&|\|\||;)\s*/)
+    .map((line) => line.trim())
+    .filter((line) => line && !/^(?:#|set\s|export\s|echo\s)/.test(line));
+  const command = lines.find((line) =>
+    /^(?:cat|head|tail|sed|awk|less|more|rg|grep|find|fd)\s/.test(line)
+  ) ?? lines[0] ?? '';
+  if (/^gh\s+run\s+view\b/.test(command)) return 'view GitHub Actions run';
+  if (/^wrangler\s+pages\s+deployment\s+list\b/.test(command)) {
+    return 'list Cloudflare Pages deployments';
+  }
+  const typecheck = command.match(/^bunx?\s+nx\s+run\s+([a-zA-Z0-9_-]+):typecheck\b/);
+  if (typecheck) return `typecheck ${typecheck[1]}`;
+  if (/^curl\s/.test(command)) return 'HTTP request';
   const tokens = [
     ...command.matchAll(/"((?:\\.|[^"\\])*)"|'([^']*)'|([^\s]+)/g),
   ].map((match) => match[1] ?? match[2] ?? match[3]);
@@ -1114,12 +1170,12 @@ function patchPaths(
   input: Record<string, unknown> | null,
   row: TraceRecord,
 ): string[] {
-  const patch = clean(input?.patch ?? input?.content ?? row.input);
+  const patch = clean(input?.patchText ?? input?.patch ?? input?.content ?? row.input);
   return [
     ...new Set(
       [...patch.matchAll(/^\*\*\* (?:Update|Add|Delete) File: (.+)$/gm)].map(
         (match) => fileName(match[1].trim()),
-      ),
+      ).filter(isUsefulDisplayValue),
     ),
   ];
 }
