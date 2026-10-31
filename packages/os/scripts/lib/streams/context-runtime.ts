@@ -12,6 +12,7 @@ import type { StreamInstructionResult, StreamWorkpad, WorkpadRow } from './types
 
 const require = createRequire(import.meta.url);
 const { getToken, listPullRequests } = require('../github.js');
+const { compactStreamContext } = require('./context-compact.js');
 const { fetchOrigin, listWorktrees, refExists, runGit } = require('../git.js');
 const { DEFAULT_REPO, resolveGitRoot } = require('../paths.js');
 const {
@@ -256,9 +257,14 @@ function writeInstructions(result: StreamInstructionResult): void {
   if (!result.content.endsWith('\n')) process.stdout.write('\n');
 }
 
-export function printStreamContext(result: StreamContextResult, json: boolean): void {
+export function printStreamContext(result: StreamContextResult, json: boolean, full = false): void {
+  const displayed = compactStreamContext(result, { full });
   if (json) {
-    writeLine(JSON.stringify(result, null, 2));
+    writeLine(JSON.stringify(displayed, null, 2));
+    return;
+  }
+  if (!full) {
+    writeLine(JSON.stringify(displayed, null, 2));
     return;
   }
   writeLine(`stream: ${result.stream}`);

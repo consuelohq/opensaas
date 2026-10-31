@@ -348,9 +348,11 @@ function compactResolvedStreamContext(result) {
     area: result?.area || null,
     stream: result?.stream || null,
     aheadBehind: result?.aheadBehind || null,
-    openTaskPrCount: Array.isArray(result?.openTaskPullRequests?.pullRequests)
-      ? result.openTaskPullRequests.pullRequests.length
-      : 0,
+    openTaskPrCount: Number.isSafeInteger(result?.openTaskPullRequests?.total)
+      ? result.openTaskPullRequests.total
+      : Array.isArray(result?.openTaskPullRequests?.pullRequests)
+        ? result.openTaskPullRequests.pullRequests.length
+        : 0,
     recentWorkpadCount: Array.isArray(result?.recentWorkpads?.workpads)
       ? result.recentWorkpads.workpads.length
       : 0,

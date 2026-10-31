@@ -532,6 +532,7 @@ export const StreamInput = z.object({
   area: z.string().min(1),
   stream: optionalString,
   repo: optionalString,
+  full: z.boolean().optional(),
 });
 
 export const StreamListInput = z.object({
@@ -1242,7 +1243,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
   ConfirmInput: '{ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }',
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
-  StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  StreamInput: '{ area: string; stream?: string; repo?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
   StreamCleanupInput: '{ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ReviewInput: "{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",

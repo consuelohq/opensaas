@@ -23,6 +23,11 @@ export const toolHandlers = [
           "source": "repo",
           "flag": "--repo",
           "kind": "value"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
         }
       ]
     }

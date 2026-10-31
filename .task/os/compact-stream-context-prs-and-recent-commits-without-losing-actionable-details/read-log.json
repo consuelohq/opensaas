@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/os/compact-stream-context-prs-and-recent-commits-without-losing-actionable-details/workpad.md",
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/lib/streams/cli.ts",
+    "packages/os/scripts/lib/streams/context-runtime.ts",
+    "packages/os/scripts/stream-context.js",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tests/stream-context-memory.test.ts",
+    "packages/workspace/scripts/lib/stream-context-compact.js",
+    "packages/workspace/scripts/test-selection.js"
+  ],
+  "updatedAt": "2026-10-31T07:44:39.402Z"
+}

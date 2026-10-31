@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/compact-stream-context-prs-and-recent-commits-without-losing-actionable-details",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2752,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2752",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compact-stream-context-prs-and-recent-commits-without-losing-actionable-details",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4e1b374510f2",
+  "tmuxSession": "opensaas-os-compact-stream-context-prs-and-recent-commits-wi-4e1b3745",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compact-stream-context-prs-and-recent-commits-without-losing-actionable-details/.task/session.json",
+  "createdAt": "2026-10-31T07:26:14.949Z"
+}

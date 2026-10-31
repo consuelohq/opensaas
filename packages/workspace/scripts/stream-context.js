@@ -8,6 +8,7 @@ const { fetchOrigin, listWorktrees, refExists, runGit } = require('./lib/git');
 const { DEFAULT_REPO, resolveGitRoot } = require('./lib/paths');
 const { filterRecentWorkpads } = require('./lib/stream-workpads');
 const { readStreamInstructions } = require('./lib/stream-instructions');
+const { compactStreamContext } = require('./lib/stream-context-compact');
 const {
   assertStreamBranchName,
   getDefaultStreamBranch,
@@ -34,6 +35,7 @@ function printHelp() {
   writeStdout('  --stream <branch>      stream branch (default: stream/<area>)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --json                 output json');
+  writeStdout('  --full                 return complete original PR, workpad, commit and worktree details');
   writeStdout('  --help                 show this help');
 }
 
@@ -51,7 +53,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help';
+    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--full';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -74,6 +76,9 @@ function parseArgs(argv) {
         break;
       case '--json':
         args.json = true;
+        break;
+      case '--full':
+        args.full = true;
         break;
       case '--help':
         args.help = true;
@@ -305,9 +310,14 @@ function printInstructions(result) {
   if (!result.content.endsWith('\n')) process.stdout.write('\n');
 }
 
-function printResult(result, useJson) {
+function printResult(result, useJson, full = false) {
+  const displayed = compactStreamContext(result, { full });
   if (useJson) {
-    writeStdout(JSON.stringify(result, null, 2));
+    writeStdout(JSON.stringify(displayed, null, 2));
+    return;
+  }
+  if (!full) {
+    writeStdout(JSON.stringify(displayed, null, 2));
     return;
   }
 
@@ -428,7 +438,7 @@ function main() {
         recentWorkpads,
         aheadBehind: getAheadBehind(repoRoot, streamBranch),
         worktrees: getAreaWorktrees(repoRoot, area),
-      }, args.json);
+      }, args.json, args.full);
     });
   });
 }

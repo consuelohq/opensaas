@@ -27,9 +27,9 @@ function fail(error: unknown): never {
 
 export async function runStreamContextCli(): Promise<void> {
   try {
-    const args = parse(process.argv.slice(2), new Set(['--json', '--help']));
+    const args = parse(process.argv.slice(2), new Set(['--json', '--help', '--full']));
     if (args.help) {
-      process.stdout.write('usage: bun run stream:context -- --area <area> [--stream <branch>] [--repo <owner/name>] [--json]\n');
+      process.stdout.write('usage: bun run stream:context -- --area <area> [--stream <branch>] [--repo <owner/name>] [--json] [--full]\n');
       return;
     }
     if (typeof args.area !== 'string') throw new Error('missing required --area');
@@ -38,7 +38,7 @@ export async function runStreamContextCli(): Promise<void> {
       stream: typeof args.stream === 'string' ? args.stream : undefined,
       repo: typeof args.repo === 'string' ? args.repo : undefined,
     }));
-    printStreamContext(result, Boolean(args.json));
+    printStreamContext(result, Boolean(args.json), Boolean(args.full));
   } catch (error: unknown) {
     fail(error);
   }
