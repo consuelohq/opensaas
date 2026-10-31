@@ -28,16 +28,24 @@ export const targetChoices = (
         name: resolveLeadConnectorContactName(c),
       });
       return target ? [target] : [];
-    })
-    .slice(0, 7);
+    });
+  const visible = matches.slice(0, 7);
   const manual = /^[+()\d\s.-]+$/.test(q)
     ? normalizeClickToCallTarget({ phone: q })
     : null;
   // Every choice has already crossed normalizeClickToCallTarget above.
-  const canonicalPhones = new Set(matches.map((choice) => choice.phone));
+  const exactContact = manual
+    ? matches.find((choice) => choice.dedupeKey.endsWith(':' + manual.phone))
+    : undefined;
+  if (
+    exactContact &&
+    !visible.some((choice) => choice.contactId === exactContact.contactId)
+  )
+    return [exactContact, ...visible];
+  const canonicalPhones = new Set(visible.map((choice) => choice.phone));
   return manual && !canonicalPhones.has(manual.phone)
-    ? [manual, ...matches]
-    : matches;
+    ? [manual, ...visible]
+    : visible;
 };
 export const renderTargetPicker = (input: {
   contacts: LeadConnectorContact[];

@@ -409,6 +409,11 @@
       sessionContextPromise = null;
       clearDisconnectedReferences();
     }
+    // An idle frame belongs to exactly one trusted location.
+    // Keep live calls mounted until their authoritative terminal status.
+    if (!busy && ownedLocation && currentLocation() !== ownedLocation) {
+      removeOverlayHost();
+    }
     if (!routeAllowed()) {
       if (busy && document.getElementById(hostId)) {
         if (launcher) launcher.hidden = true;

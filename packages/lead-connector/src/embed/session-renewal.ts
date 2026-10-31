@@ -1,3 +1,6 @@
+const REQUEST_TIMEOUT_MS = 8_000;
+const MAX_ATTEMPTS = 3;
+
 export const createSessionRenewal = (options: {
   now: () => number;
   schedule: (callback: () => void, delay: number) => number;
@@ -32,12 +35,12 @@ export const createSessionRenewal = (options: {
     options.requestContext();
     deadline = options.schedule(() => {
       pending = false;
-      if (attempts < 3) request();
+      if (attempts < MAX_ATTEMPTS) request();
       else {
         exhausted = true;
         options.onExhausted();
       }
-    }, 8000);
+    }, REQUEST_TIMEOUT_MS);
   };
   function check() {
     if (expires !== null && options.now() >= (renewAt ?? expires)) request();
@@ -47,7 +50,15 @@ export const createSessionRenewal = (options: {
     const parsed = iso ? Date.parse(iso) : NaN;
     if (!Number.isFinite(parsed) || parsed <= options.now()) return;
     expires = parsed;
-    renewAt = parsed - Math.min(90000, (parsed - options.now()) * 0.1);
+    const ttl = parsed - options.now();
+    const retryBudget = MAX_ATTEMPTS * REQUEST_TIMEOUT_MS;
+    const lead = Math.min(90_000, Math.max(retryBudget, ttl * 0.1));
+    // Keep a positive spacing for very short TTLs to avoid instant success
+    // loops; when ttl >= retryBudget, reserve all three request deadlines.
+    renewAt = Math.max(
+      options.now() + Math.min(1_000, ttl * 0.05),
+      parsed - lead,
+    );
     pending = false;
     attempts = 0;
     exhausted = false;
