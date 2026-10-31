@@ -260,6 +260,11 @@ function buildRegistry(root) {
 }
 
 function changedFiles(root, args) {
+  if (args.all) {
+    const all = [];
+    walk(root, (_absolute, file) => all.push(file));
+    return all.sort();
+  }
   const explicit = valuesFor(args, 'changed-file');
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
@@ -574,7 +579,7 @@ function parseArgs(argv) {
     const raw = rest[i];
     if (!raw.startsWith('--')) { args._.push(raw); continue; }
     const [key, inline] = raw.slice(2).split('=', 2);
-    if (['json', 'run', 'no-run', 'committed-only'].includes(key)) args[key] = true;
+    if (['json', 'run', 'no-run', 'committed-only', 'all'].includes(key)) args[key] = true;
     else {
       const value = inline !== undefined ? inline : rest[++i];
       if (args[key] === undefined) args[key] = value;

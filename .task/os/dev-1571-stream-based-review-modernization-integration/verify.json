@@ -1,0 +1,211 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/dev-1571-stream-based-review-modernization-integration",
+  "base": "origin/stream/os",
+  "headSha": "92dc6b814efa37f8c7fa604a0c09c73e28bb67f2",
+  "changeHash": "6ccf06e7a781ec651a4fd23a4c7bcb1301700025b5fbc2854a037453f4f7ec5b",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/nx-projects.js",
+    "packages/workspace/scripts/lib/review-tests.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/review-modernization.test.js"
+  ],
+  "verifiedAt": "2026-10-31T05:27:36.154Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/dev-1571-modernize-and-speed-up-review-run/evidence-log.json",
+        ".task/os/dev-1571-modernize-and-speed-up-review-run/read-log.json",
+        ".task/os/dev-1571-modernize-and-speed-up-review-run/verify.json",
+        ".task/os/dev-1571-modernize-and-speed-up-review-run/workpad.md",
+        ".task/os/dev-1571-stream-based-review-modernization-integration/evidence-log.json",
+        ".task/os/dev-1571-stream-based-review-modernization-integration/read-log.json",
+        ".task/os/dev-1571-stream-based-review-modernization-integration/workpad.md",
+        ".task/tasks/os/dev-1571-modernize-and-speed-up-review-run.json",
+        ".task/tasks/os/dev-1571-stream-based-review-modernization-integration.json",
+        "packages/workspace/scripts/lib/nx-projects.js",
+        "packages/workspace/scripts/lib/review-tests.js",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/test-selection.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/review-modernization.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/review.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-review-run-modernization",
+          "critical": true,
+          "reason": "Changes to review execution, scoped Nx discovery, and review summarization must preserve modern Bun/Vitest selection, fail-closed test reporting, and review state caching.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/nx-projects.js",
+            "packages/workspace/scripts/lib/review-tests.js",
+            "packages/workspace/scripts/review.js",
+            "packages/workspace/tests/review-modernization.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/scripts/test-selection.js",
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/task-push-session.test.ts"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace review and selector regression tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/review-modernization.test.js",
+            "packages/workspace/tests/review-run-state.test.js",
+            "packages/workspace/tests/review-documentation-opportunity.test.js"
+          ],
+          "ruleId": "workspace-review-run-modernization",
+          "critical": true
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/task-push-session.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5541,
+          "outputTail": "workspace-agents/example -> task/workspace-agents/example\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-stale-previous-c0xhfT/local'...\ndone.\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-stale-previous-HHbQpp/local'...\ndone.\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-stale-previous-HHbQpp/remote.git\n   4109d11..c82388f  task/workspace-agents/example -> task/workspace-agents/example\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-stale-previous-c0xhfT/remote.git\n   4109d11..c82388f  task/workspace-agents/example -> task/workspace-agents/example\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nSwitched to a new branch 'task/workspace-agents/example'\nSwitched to a new branch 'task/workspace-agents/example'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-rEd7x7/remote.git\n * [new branch]      task/workspace-agents/example -> task/workspace-agents/example\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-xvo8os/remote.git\n * [new branch]      task/workspace-agents/example -> task/workspace-agents/example\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-rEd7x7/local'...\ndone.\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-xvo8os/local'...\ndone.\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-rEd7x7/remote.git\n   4109d11..23faae1  task/workspace-agents/example -> task/workspace-agents/example\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-xvo8os/remote.git\n   4109d11..23faae1  task/workspace-agents/example -> task/workspace-agents/example\n"
+        },
+        {
+          "name": "workspace review and selector regression tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/review-modernization.test.js",
+            "packages/workspace/tests/review-run-state.test.js",
+            "packages/workspace/tests/review-documentation-opportunity.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-review-run-modernization",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1852,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1571-stream-based-review-modernization-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/review-documentation-opportunity.test.js \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 9\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/review-modernization.test.js \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 278\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/review-run-state.test.js \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1577\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m live lock without record is not removed while waiting \u001b[33m 1137\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:27:29\n\u001b[2m   Duration \u001b[22m 1.66s\u001b[2m (transform 29ms, setup 0ms, import 57ms, tests 1.86s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5229,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1571-stream-based-review-modernization-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m93 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4948\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 530\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves explicit selector ownership after registry regeneration \u001b[33m 559\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m93 passed\u001b[39m\u001b[22m\u001b[90m (93)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:27:31\n\u001b[2m   Duration \u001b[22m 5.05s\u001b[2m (transform 24ms, setup 0ms, import 34ms, tests 4.95s, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

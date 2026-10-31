@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1571-modernize-and-speed-up-review-run",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2735,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2735",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1571-modernize-and-speed-up-review-run",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b562065bd148",
+  "tmuxSession": "opensaas-os-dev-1571-modernize-and-speed-up-review-run-b562065b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1571-modernize-and-speed-up-review-run/.task/session.json",
+  "createdAt": "2026-10-31T05:13:47.352Z"
+}

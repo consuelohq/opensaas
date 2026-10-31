@@ -81,6 +81,31 @@
       "reason": "Review, verify, and task push changes must prove publish-gate behavior."
     },
     {
+      "id": "workspace-review-run-modernization",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/lib/review-tests.js",
+        "packages/workspace/scripts/lib/nx-projects.js",
+        "packages/workspace/tests/review-modernization.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace review and selector regression tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/review-modernization.test.js",
+            "packages/workspace/tests/review-run-state.test.js",
+            "packages/workspace/tests/review-documentation-opportunity.test.js"
+          ]
+        }
+      ],
+      "reason": "Changes to review execution, scoped Nx discovery, and review summarization must preserve modern Bun/Vitest selection, fail-closed test reporting, and review state caching."
+    },
+    {
       "id": "os-task-push-binary-publication",
       "critical": true,
       "exclusive": true,

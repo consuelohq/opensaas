@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/os/dev-1571-modernize-and-speed-up-review-run/workpad.md",
+    "AGENTS.md",
+    "package.json",
+    "packages/os/tools/review/manifest.ts",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/review-run-state.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/review-modernization.test.js",
+    "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/review.test.js"
+  ],
+  "updatedAt": "2026-10-31T05:22:45.159Z"
+}
