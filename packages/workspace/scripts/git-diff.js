@@ -3,6 +3,7 @@
 
 const { execFileSync, spawnSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 function writeStdout(value = '') { process.stdout.write(`${value}\n`); }
 function writeStderr(value = '') { process.stderr.write(`${value}\n`); }
@@ -21,6 +22,7 @@ function parseArgs(argv) {
     hunks: false,
     patch: false,
     nameOnly: false,
+    task: false,
     context: 3,
     maxBytes: 20000,
     paths: [],
@@ -36,6 +38,7 @@ function parseArgs(argv) {
     else if (argument === '--hunks') args.hunks = true;
     else if (argument === '--patch') args.patch = true;
     else if (argument === '--name-only') args.nameOnly = true;
+    else if (argument === '--task') args.task = true;
     else if (argument === '--context') args.context = Number.parseInt(readFlagValue(argv, ++index, '--context'), 10);
     else if (argument === '--max-bytes') args.maxBytes = Number.parseInt(readFlagValue(argv, ++index, '--max-bytes'), 10);
     else if (argument === '--paths') {
@@ -48,6 +51,7 @@ function parseArgs(argv) {
 
   if (!Number.isInteger(args.context) || args.context < 0) throw new Error('--context must be a non-negative integer');
   if (!Number.isInteger(args.maxBytes) || args.maxBytes <= 0) throw new Error('--max-bytes must be a positive integer');
+  if (args.task && (!args.base || args.head)) throw new Error('--task requires --base without --head');
 
   if (!args.stat && !args.files && !args.hunks && !args.patch && !args.nameOnly) {
     args.stat = true;
@@ -64,6 +68,7 @@ function showHelp() {
   writeStdout('usage:');
   writeStdout('  bun run git:diff -- --branch task/... --base origin/main --files --hunks --json');
   writeStdout('  bun run git:diff -- --patch --max-bytes 20000 --json');
+  writeStdout('  bun run git:diff -- --task --base origin/stream/os --json  (complete task changes)');
   writeStdout('');
   writeStdout('defaults: no base/head reads working tree diff; base without head compares base...HEAD.');
 }
@@ -125,20 +130,21 @@ function resolveWorktree(cwd, branch) {
 }
 
 function revisionArgs(args) {
+  if (args.task) return [args.base];
   if (args.base && args.head) return [`${args.base}...${args.head}`];
   if (args.base) return [`${args.base}...HEAD`];
   if (args.head) return [args.head];
-  return [];
+  return ['HEAD'];
 }
 
 function diffArgs(args, extra = []) {
-  const gitArgs = ['diff', '--no-ext-diff', ...extra, ...revisionArgs(args)];
+  const gitArgs = ['-c', 'core.quotePath=false', 'diff', '--no-ext-diff', '--find-renames', ...extra, ...revisionArgs(args)];
   if (args.paths.length > 0) gitArgs.push('--', ...args.paths);
   return gitArgs;
 }
 
 function isWorkingTreeMode(args) {
-  return !args.base && !args.head;
+  return (!args.base && !args.head) || args.task;
 }
 
 function pathMatchesFilters(filePath, paths) {
@@ -151,14 +157,36 @@ function pathMatchesFilters(filePath, paths) {
 
 function listUntrackedFiles(cwd, args) {
   if (!isWorkingTreeMode(args)) return [];
-  return runGit(cwd, ['ls-files', '--others', '--exclude-standard'])
-    .split(/\r?\n/)
+  return runGit(cwd, ['ls-files', '--others', '--exclude-standard', '-z'])
+    .split('\0')
     .filter(Boolean)
     .filter((filePath) => pathMatchesFilters(filePath, args.paths));
 }
 
-function readFileFromWorktree(cwd, filePath) {
-  return require('fs').readFileSync(path.join(cwd, filePath), 'utf8');
+const MAX_UNTRACKED_TEXT_BYTES = 8 * 1024 * 1024;
+
+function describeUntracked(cwd, filePath) {
+  const absolute = path.join(cwd, filePath);
+  const entry = fs.lstatSync(absolute);
+  if (entry.isSymbolicLink()) {
+    // Never follow an untracked symlink into a different worktree or a secret.
+    const link = fs.readlinkSync(absolute);
+    return { path: filePath, text: link, additions: 1, binary: false, mode: '120000', symlink: true };
+  }
+  if (!entry.isFile() || entry.size > MAX_UNTRACKED_TEXT_BYTES) {
+    return { path: filePath, text: null, additions: null, binary: true, mode: '100644', oversized: entry.size > MAX_UNTRACKED_TEXT_BYTES };
+  }
+  const buffer = fs.readFileSync(absolute);
+  if (buffer.includes(0)) {
+    return { path: filePath, text: null, additions: null, binary: true, mode: '100644' };
+  }
+  let text;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+  } catch {
+    return { path: filePath, text: null, additions: null, binary: true, mode: '100644' };
+  }
+  return { path: filePath, text, additions: countContentLines(text), binary: false, mode: '100644' };
 }
 
 function countContentLines(content) {
@@ -167,32 +195,47 @@ function countContentLines(content) {
   return lines.at(-1) === '' ? lines.length - 1 : lines.length;
 }
 
-function untrackedFilePatch(cwd, filePath) {
-  const content = readFileFromWorktree(cwd, filePath);
-  const lines = content.split(/\r?\n/);
-  const comparableLines = lines.at(-1) === '' ? lines.slice(0, -1) : lines;
-  const lineCount = Math.max(comparableLines.length, 1);
-  const body = comparableLines.map((line) => `+${line}`).join('\n');
-  return [
-    `diff --git a/${filePath} b/${filePath}`,
-    'new file mode 100644',
+function quoteGitPath(prefix, filePath) {
+  const name = prefix + filePath;
+  return /[\t\n"\\]/.test(name) ? JSON.stringify(name) : name;
+}
+
+function untrackedFilePatch(info) {
+  const name = info.path;
+  const header = [
+    'diff --git ' + quoteGitPath('a/', name) + ' ' + quoteGitPath('b/', name),
+    'new file mode ' + info.mode,
     'index 0000000..0000000',
+  ];
+  if (info.binary) {
+    return header.concat('Binary files /dev/null and ' + quoteGitPath('b/', name) + ' differ').join('\n');
+  }
+  const text = info.text || '';
+  const lines = text.split(/\r?\n/);
+  const comparable = lines.at(-1) === '' ? lines.slice(0, -1) : lines;
+  const count = comparable.length;
+  return header.concat(
     '--- /dev/null',
-    `+++ b/${filePath}`,
-    `@@ -0,0 +1,${lineCount} @@`,
-    body,
-  ].filter(Boolean).join('\n');
+    '+++ ' + quoteGitPath('b/', name),
+    '@@ -0,0 +1,' + count + ' @@',
+    ...comparable.map((line) => '+' + line),
+  ).join('\n');
 }
 
-function untrackedFilesPatch(cwd, files) {
-  return files.map((filePath) => untrackedFilePatch(cwd, filePath)).join('\n');
+function untrackedFilesPatch(files) {
+  return files.map(untrackedFilePatch).join('\n');
 }
 
-function untrackedNumstat(cwd, files) {
-  return files.map((filePath) => {
-    const content = readFileFromWorktree(cwd, filePath);
-    return { path: filePath, additions: countContentLines(content), deletions: 0, status: 'A' };
-  });
+function untrackedNumstat(files) {
+  return files.map((info) => ({
+    path: info.path,
+    additions: info.additions,
+    deletions: info.binary ? null : 0,
+    status: 'A',
+    ...(info.binary ? { binary: true } : {}),
+    ...(info.symlink ? { symlink: true } : {}),
+    ...(info.oversized ? { oversized: true } : {}),
+  }));
 }
 
 function combinePatch(trackedPatch, untrackedPatch) {
@@ -204,8 +247,18 @@ function combinePatch(trackedPatch, untrackedPatch) {
 function capText(text, maxBytes) {
   const buffer = Buffer.from(text, 'utf8');
   if (buffer.length <= maxBytes) return { text, truncated: false, bytes: buffer.length };
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let preview = '';
+  for (let end = maxBytes; end >= Math.max(0, maxBytes - 4); end -= 1) {
+    try {
+      preview = decoder.decode(buffer.subarray(0, end));
+      break;
+    } catch {
+      // Cap may fall inside a multi-byte character; clip to its beginning.
+    }
+  }
   return {
-    text: buffer.subarray(0, maxBytes).toString('utf8'),
+    text: preview,
     truncated: true,
     bytes: buffer.length,
   };
@@ -218,28 +271,45 @@ function parseShortStat(text) {
   return { filesChanged: files, insertions, deletions };
 }
 
-function parseNumstat(text) {
-  return text.split(/\r?\n/).filter(Boolean).map((line) => {
-    const [added, deleted, ...rest] = line.split('\t');
-    return {
-      path: rest.join('\t'),
-      additions: added === '-' ? null : Number.parseInt(added, 10),
-      deletions: deleted === '-' ? null : Number.parseInt(deleted, 10),
-    };
-  });
+function parseNumstatZ(text) {
+  const records = [];
+  const fields = text.split('\0');
+  for (let index = 0; index < fields.length;) {
+    const entry = fields[index++];
+    if (!entry) continue;
+    const match = entry.match(/^(-|\d+)\t(-|\d+)\t(.*)$/s);
+    if (!match) throw new Error('invalid NUL-delimited Git numstat entry');
+    const renamed = match[3] === '';
+    const oldPath = renamed ? fields[index++] : undefined;
+    const filePath = renamed ? fields[index++] : match[3];
+    if (!filePath) throw new Error('invalid NUL-delimited Git numstat rename');
+    records.push({
+      path: filePath,
+      additions: match[1] === '-' ? null : Number(match[1]),
+      deletions: match[2] === '-' ? null : Number(match[2]),
+      ...(oldPath !== undefined ? { oldPath } : {}),
+    });
+  }
+  return records;
 }
 
-function parseNameStatus(text) {
-  return text.split(/\r?\n/).filter(Boolean).map((line) => {
-    const parts = line.split('\t');
-    const status = parts[0];
-    const paths = parts.slice(1);
-    return {
+function parseNameStatusZ(text) {
+  const records = [];
+  const fields = text.split('\0');
+  for (let index = 0; index < fields.length;) {
+    const status = fields[index++];
+    if (!status) continue;
+    const renamed = status.startsWith('R') || status.startsWith('C');
+    const oldPath = renamed ? fields[index++] : undefined;
+    const filePath = fields[index++];
+    if (!filePath) throw new Error('invalid NUL-delimited Git status entry');
+    records.push({
       status,
-      path: paths[paths.length - 1] || '',
-      oldPath: paths.length > 1 ? paths[0] : undefined,
-    };
-  });
+      path: filePath,
+      ...(oldPath !== undefined ? { oldPath } : {}),
+    });
+  }
+  return records;
 }
 
 function mergeFiles(numstat, statuses) {
@@ -249,6 +319,42 @@ function mergeFiles(numstat, statuses) {
     status: statusByPath.get(item.path)?.status || 'M',
     oldPath: statusByPath.get(item.path)?.oldPath,
   }));
+}
+
+function parseGitDiffHeader(line) {
+  if (!line.startsWith('diff --git ')) return null;
+  const body = line.slice('diff --git '.length);
+
+  // Git quotes only the filename that needs escaping: an unquoted old path
+  // can coexist with a C-quoted new path (especially for tabs/newlines).
+  const quotedNew = body.match(/^(.*) ("b\/(?:\\.|[^"\\])*")$/);
+  const quotedOld = !quotedNew && body.match(/^("(?:\\.|[^"\\])*") (.*)$/);
+  let oldName;
+  let newName;
+  if (quotedNew) {
+    oldName = quotedNew[1];
+    newName = quotedNew[2];
+  } else if (quotedOld) {
+    oldName = quotedOld[1];
+    newName = quotedOld[2];
+  } else {
+    const boundary = body.lastIndexOf(' b/');
+    if (boundary < 0) return null;
+    oldName = body.slice(0, boundary);
+    newName = body.slice(boundary + 1);
+  }
+
+  try {
+    const decode = (name) => name.startsWith('"') ? JSON.parse(name) : name;
+    oldName = decode(oldName);
+    newName = decode(newName);
+  } catch {
+    return null;
+  }
+  return typeof oldName === 'string' && oldName.startsWith('a/')
+    && typeof newName === 'string' && newName.startsWith('b/')
+      ? { oldPath: oldName.slice(2), path: newName.slice(2) }
+      : null;
 }
 
 function parseHunks(patch, maxPreviewChars = 1200) {
@@ -278,10 +384,10 @@ function parseHunks(patch, maxPreviewChars = 1200) {
   };
 
   for (const line of patch.split(/\r?\n/)) {
-    const fileMatch = line.match(/^diff --git a\/(.*) b\/(.*)$/);
-    if (fileMatch) {
+    const header = parseGitDiffHeader(line);
+    if (header) {
       finishFile();
-      currentFile = { path: fileMatch[2], oldPath: fileMatch[1], hunks: [] };
+      currentFile = { ...header, hunks: [] };
       continue;
     }
 
@@ -316,51 +422,51 @@ function main() {
   }
 
   const worktree = resolveWorktree(process.cwd(), args.branch);
-  const untrackedFiles = listUntrackedFiles(worktree, args);
-  const trackedPatchRaw = args.hunks || args.patch
-    ? runGit(worktree, diffArgs(args, [`--unified=${args.context}`]))
+  const untracked = listUntrackedFiles(worktree, args).map((name) => describeUntracked(worktree, name));
+  const needPatch = Boolean(args.hunks || args.patch);
+  const trackedPatchRaw = needPatch
+    ? runGit(worktree, diffArgs(args, ['--unified=' + args.context]))
     : '';
-  const untrackedPatchRaw = args.hunks || args.patch ? untrackedFilesPatch(worktree, untrackedFiles) : '';
-  const patchRaw = combinePatch(trackedPatchRaw, untrackedPatchRaw);
+  const patchRaw = combinePatch(trackedPatchRaw, needPatch ? untrackedFilesPatch(untracked) : '');
   const cappedPatch = capText(patchRaw, args.maxBytes);
-  const trackedFiles = args.files ? mergeFiles(
-    parseNumstat(runGit(worktree, diffArgs(args, ['--numstat']))),
-    parseNameStatus(runGit(worktree, diffArgs(args, ['--name-status']))),
-  ) : undefined;
-  const untrackedFileStats = args.files ? untrackedNumstat(worktree, untrackedFiles) : undefined;
-  const trackedNameOnly = args.nameOnly ? runGit(worktree, diffArgs(args, ['--name-only'])).split(/\r?\n/).filter(Boolean) : undefined;
+
+  const needMetadata = Boolean(args.stat || args.files || args.nameOnly);
+  const trackedNumstat = needMetadata ? parseNumstatZ(runGit(worktree, diffArgs(args, ['--numstat', '-z']))) : [];
+  const trackedStatuses = needMetadata ? parseNameStatusZ(runGit(worktree, diffArgs(args, ['--name-status', '-z']))) : [];
+  const trackedFiles = needMetadata ? mergeFiles(trackedNumstat, trackedStatuses) : [];
+  const fileStats = needMetadata ? trackedFiles.concat(untrackedNumstat(untracked)) : [];
 
   const output = {
     branch: args.branch || runGit(worktree, ['rev-parse', '--abbrev-ref', 'HEAD']).trim(),
     worktree,
     base: args.base || null,
-    head: args.head || (args.base ? 'HEAD' : null),
-    mode: args.base || args.head ? 'revision' : 'working-tree',
-    summary: args.stat ? (() => {
-      const tracked = parseShortStat(runGit(worktree, diffArgs(args, ['--shortstat'])).trim());
-      const untracked = untrackedNumstat(worktree, untrackedFiles);
-      return {
-        filesChanged: tracked.filesChanged + untracked.length,
-        insertions: tracked.insertions + untracked.reduce((sum, file) => sum + (file.additions || 0), 0),
-        deletions: tracked.deletions,
-      };
-    })() : undefined,
-    files: args.files ? [...(trackedFiles || []), ...(untrackedFileStats || [])] : undefined,
-    nameOnly: args.nameOnly ? [...(trackedNameOnly || []), ...untrackedFiles] : undefined,
-    hunks: args.hunks ? parseHunks(cappedPatch.text) : undefined,
+    head: args.head || (args.base && !args.task ? 'HEAD' : null),
+    mode: args.task ? 'task' : args.base || args.head ? 'revision' : 'working-tree',
+    summary: args.stat ? {
+      filesChanged: fileStats.length,
+      insertions: fileStats.reduce((sum, file) => sum + (file.additions || 0), 0),
+      deletions: fileStats.reduce((sum, file) => sum + (file.deletions || 0), 0),
+    } : undefined,
+    files: args.files ? fileStats : undefined,
+    nameOnly: args.nameOnly ? [...new Set(fileStats.map((file) => file.path))] : undefined,
+    // No partial hunks are reported as complete when the byte cap cuts a diff.
+    hunks: args.hunks ? (cappedPatch.truncated ? [] : parseHunks(cappedPatch.text)) : undefined,
     patch: args.patch ? cappedPatch.text : undefined,
     truncated: cappedPatch.truncated,
     bytes: cappedPatch.bytes,
-    notes: cappedPatch.truncated ? [`diff output truncated to ${args.maxBytes} bytes`] : [],
+    notes: cappedPatch.truncated
+      ? ['diff output truncated to ' + args.maxBytes + ' bytes; structured hunks omitted because the patch is incomplete']
+      : [],
   };
 
   if (args.json) writeStdout(JSON.stringify(output, null, 2));
   else {
-    if (output.summary) writeStdout(`${output.summary.filesChanged} files changed, ${output.summary.insertions} insertions, ${output.summary.deletions} deletions`);
-    if (output.files) for (const file of output.files) writeStdout(`${file.status}\t${file.additions ?? '-'}\t${file.deletions ?? '-'}\t${file.path}`);
+    if (output.summary) writeStdout(output.summary.filesChanged + ' files changed, ' + output.summary.insertions + ' insertions, ' + output.summary.deletions + ' deletions');
+    if (output.files) for (const file of output.files) writeStdout(file.status + '\t' + (file.additions ?? '-') + '\t' + (file.deletions ?? '-') + '\t' + file.path);
     if (output.patch) writeStdout(output.patch);
   }
 }
+
 
 try {
   main();

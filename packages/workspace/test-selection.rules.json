@@ -18,7 +18,10 @@
         {
           "name": "OS and Workspace stream.context compact and complete contracts",
           "command": [
-            "bun", "x", "vitest", "run",
+            "bun",
+            "x",
+            "vitest",
+            "run",
             "packages/workspace/tests/stream-context-compact.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
             "packages/workspace/tests/tool-manifest.test.ts"
@@ -2882,6 +2885,32 @@
         }
       ],
       "reason": "M4 OS reference and snapshot cleanup must prove deleted Twenty topology stays absent and large-diff code.call snapshots remain safe without selecting the broad OS package suite."
+    },
+    {
+      "id": "os-git-diff-unified-task",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/git-diff.js",
+        "packages/workspace/scripts/git-diff.js",
+        "packages/os/tools/git/handler.ts",
+        "packages/workspace/tests/git-diff.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS and Workspace git.diff task visibility and byte-integrity contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/git-diff.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/tool-manifest.test.ts"
+          ]
+        }
+      ],
+      "reason": "Every git.diff change must preserve complete task visibility, revision compatibility, binary and path safety, typed dispatch and bounded output without selecting unrelated OS package tests."
     }
   ]
 }
