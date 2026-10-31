@@ -9,11 +9,28 @@ export const scriptSteps = (content: string): string[] =>
             const chunks: string[] = [];
             let part = '';
             for (const word of sentence.trim().split(/\s+/u)) {
-              if (part.length + word.length > 200 && part) {
-                chunks.push(part);
-                part = '';
+              let remaining = word;
+              while (remaining.length) {
+                const separator = part ? ' ' : '';
+                const capacity = 200 - part.length - separator.length;
+                if (capacity === 0) {
+                  chunks.push(part);
+                  part = '';
+                  continue;
+                }
+                if (remaining.length <= capacity) {
+                  part += separator + remaining;
+                  break;
+                }
+                if (part) {
+                  chunks.push(part);
+                  part = '';
+                  continue;
+                }
+                // A single long token can exceed the cue bound.
+                chunks.push(remaining.slice(0, 200));
+                remaining = remaining.slice(200);
               }
-              part += (part ? ' ' : '') + word;
             }
             if (part) chunks.push(part);
             return chunks;

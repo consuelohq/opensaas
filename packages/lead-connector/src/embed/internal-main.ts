@@ -4,6 +4,11 @@ import {
   writeWorkspacePreferences,
 } from './workspace-preferences.js';
 import { targetChoices } from './target-picker.js';
+import {
+  canRestoreWorkspacePreferences,
+  canPersistWorkspacePreferences,
+  selectScriptIdAfterReload,
+} from './workspace-recovery.js';
 import { scriptSteps } from './script-presentation.js';
 import { createNativeWorkspaceLauncher } from './native-workspace.js';
 import { createLeadConnectorEmbedApi } from './api-client.js';
@@ -269,6 +274,7 @@ const sessionRenewal = createSessionRenewal({
   cancel: (id) => window.clearTimeout(id),
   requestContext: () => bridge.requestUserContext(),
   onExhausted: () => {
+    controller.onSessionRenewalExhausted();
     managementError =
       'Your secure session could not reconnect. Use Retry to reconnect your dialer.';
     render();
@@ -406,12 +412,13 @@ const paint = (): void => {
     state.inboundOperator.rep.repId
       ? workspace.locationId + ':' + state.inboundOperator.rep.repId
       : null;
-  if (scope && scope !== preferenceScope) {
+  const callMode = activeCallingMode(state);
+  if (scope && canRestoreWorkspacePreferences(scope, preferenceScope, Boolean(callMode))) {
     preferenceScope = scope;
     const saved = preferenceStorage
       ? readWorkspacePreferences(preferenceStorage, scope)
       : null;
-    if (saved && !activeCallingMode(state)) {
+    if (saved) {
       restoredView = true;
       Object.assign(workspace, {
         screen: saved.screen,
@@ -426,14 +433,21 @@ const paint = (): void => {
       });
     }
   }
-  if (preferenceScope && state.sessionToken && preferenceStorage)
+  if (
+    preferenceStorage &&
+    canPersistWorkspacePreferences(
+      scope,
+      preferenceScope,
+      Boolean(state.sessionToken),
+      Boolean(callMode),
+    )
+  )
     writeWorkspacePreferences(
       preferenceStorage,
-      preferenceScope,
+      scope!,
       workspace,
       state.setup.mode,
     );
-  const callMode = activeCallingMode(state);
   if (callMode) workspace.mode = callMode;
   if (state.inboundOperator.offers.length) workspace.screen = 'calling';
   document.documentElement.dataset.theme = workspace.theme ?? 'system';
@@ -509,13 +523,11 @@ const loadScripts = async (): Promise<void> => {
   if (!controller.getState().sessionToken) return;
   try {
     workspace.coachingLibrary = await api.listCoachingScripts();
-    if (
-      workspace.coachingMode === 'script' &&
-      !workspace.coachingLibrary.scripts.some(
-        (s) => s.id === workspace.activeScriptId,
-      )
-    )
-      workspace.activeScriptId = workspace.coachingLibrary.scripts[0]?.id;
+    if (workspace.coachingMode === 'script')
+      workspace.activeScriptId = selectScriptIdAfterReload(
+        workspace.activeScriptId,
+        workspace.coachingLibrary.scripts,
+      );
     managementError = null;
   } catch (error: unknown) {
     managementError =

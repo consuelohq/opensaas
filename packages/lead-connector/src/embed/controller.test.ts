@@ -1439,3 +1439,34 @@ it('keeps active media state during a renewal failure and requests bounded conte
   expect(voice.disconnect).not.toHaveBeenCalled();
   expect(recover).toHaveBeenCalledTimes(1);
 });
+
+it('preserves the current token through a transient secure renewal failure', async () => {
+  const api = createApi(), voice = createVoice(), recover = mock(() => undefined);
+  api.createEmbedSession = mock(async () => { throw new Error('upstream 503'); });
+  const state = createInitialEmbedState();
+  state.phase = 'connected';
+  state.sessionToken = 'still-valid';
+  state.activeSessionId = 'connected-call';
+  const controller = createLeadConnectorEmbedController({
+    api, voice, initialState: state, onSessionExpired: recover,
+  });
+  await controller.authenticate('fresh-context');
+  expect(controller.getState().sessionToken).toBe('still-valid');
+  expect(controller.getState().activeSessionId).toBe('connected-call');
+  expect(api.setSessionToken).not.toHaveBeenCalledWith(null);
+  expect(recover).not.toHaveBeenCalled();
+  expect(voice.disconnect).not.toHaveBeenCalled();
+});
+
+it('rejects only the pending browser invite when secure session recovery exhausts', () => {
+  const api = createApi(), voice = createVoice();
+  const state = createInitialEmbedState();
+  state.phase = 'connected';
+  state.sessionToken = 'current';
+  state.activeSessionId = 'connected-call';
+  const controller = createLeadConnectorEmbedController({ api, voice, initialState: state });
+  controller.onSessionRenewalExhausted();
+  expect(voice.rejectIncoming).toHaveBeenCalledTimes(1);
+  expect(voice.disconnect).not.toHaveBeenCalled();
+  expect(controller.getState().activeSessionId).toBe('connected-call');
+});

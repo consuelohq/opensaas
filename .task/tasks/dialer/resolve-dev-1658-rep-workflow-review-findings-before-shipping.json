@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/resolve-dev-1658-rep-workflow-review-findings-before-shipping",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2736,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2736",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-resolve-dev-1658-rep-workflow-review-findings-before-shipping",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7d4e2148cb2a",
+  "tmuxSession": "opensaas-dialer-resolve-dev-1658-rep-workflow-review-findings-be-7d4e2148",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-resolve-dev-1658-rep-workflow-review-findings-before-shipping/.task/session.json",
+  "createdAt": "2026-10-31T05:18:06.867Z"
+}

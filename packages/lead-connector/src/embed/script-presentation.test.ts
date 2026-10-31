@@ -36,3 +36,13 @@ it('presents short literal script cues and keeps model instructions as escaped t
     ),
   ).toBe(true);
 });
+
+it('never exceeds 200 UTF-16 units for long words or the joining space', () => {
+  const oversized = 'z'.repeat(451);
+  const pieces = scriptSteps(oversized);
+  expect(pieces.every((cue) => cue.length <= 200)).toBe(true);
+  expect(pieces.join('')).toBe(oversized);
+  const withSpace = scriptSteps('x'.repeat(199) + ' y');
+  expect(withSpace.every((cue) => cue.length <= 200)).toBe(true);
+  expect(withSpace).toEqual(['x'.repeat(199), 'y']);
+});

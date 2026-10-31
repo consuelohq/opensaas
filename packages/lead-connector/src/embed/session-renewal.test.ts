@@ -80,8 +80,27 @@ it('gives short lived credentials room to renew without an immediate success loo
     onExhausted: () => {},
   });
   scheduler.succeeded(new Date(21000).toISOString());
-  expect(delays[0]).toBe(18000);
+  expect(delays[0]).toBe(1000); // Leave maximum recovery room without immediate loops.
   scheduler.succeeded(new Date(900).toISOString());
   expect(delays).toHaveLength(1);
   scheduler.dispose();
+});
+
+it('starts short-TTL renewal with up to three response deadlines before expiry when feasible', () => {
+  let now = 1000;
+  const delays: number[] = [];
+  const session = createSessionRenewal({
+    now: () => now,
+    schedule: (_callback, delay) => { delays.push(delay); return delays.length; },
+    cancel: () => {},
+    requestContext: () => {},
+    onExhausted: () => {},
+  });
+  session.succeeded(new Date(41000).toISOString()); // 40s TTL, 24s for three tries
+  expect(delays[0]).toBeLessThanOrEqual(16000);
+  now = 42000;
+  session.succeeded(new Date(62000).toISOString()); // 20s TTL, no instant loop
+  expect(delays[1]).toBeGreaterThan(0);
+  expect(delays[1]).toBeLessThan(18000);
+  session.dispose();
 });

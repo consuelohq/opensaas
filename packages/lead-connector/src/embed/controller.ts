@@ -517,6 +517,9 @@ export const createLeadConnectorEmbedController = (input: {
 
   return {
     getState: (): LeadConnectorEmbedState => state,
+    // On bounded renewal exhaustion, stop only a ringing browser invitation.
+    // Rejecting an invite does not disconnect a connected conference leg.
+    onSessionRenewalExhausted: (): void => input.voice.rejectIncoming(),
     subscribe: (listener: (next: LeadConnectorEmbedState) => void) => {
       listeners.add(listener);
       listener(state);
@@ -548,10 +551,13 @@ export const createLeadConnectorEmbedController = (input: {
           ]);
         } catch (error: unknown) {
           if (renewing) {
-            input.api.setSessionToken(null);
-            input.inboundOperatorApi?.setSessionToken(null);
-            dispatch({ type: 'SESSION_RECOVERY_REQUIRED' });
-            input.onSessionExpired?.();
+            // A transient 5xx/network failure must not revoke a still-valid token.
+            if (error instanceof EmbedSessionExpiredError) {
+              input.api.setSessionToken(null);
+              input.inboundOperatorApi?.setSessionToken(null);
+              dispatch({ type: 'SESSION_RECOVERY_REQUIRED' });
+              input.onSessionExpired?.();
+            }
           } else reportUnexpectedFailure(error);
         } finally {
           authenticationPromise = null;

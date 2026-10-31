@@ -195,3 +195,19 @@ it('combines existing contacts and typed destination numbers without auto callin
   });
   expect(targetChoices(contacts, '5550100123')).toHaveLength(1);
 });
+
+it('prioritizes a matching known contact even beyond the first seven numeric suggestions', () => {
+  const query = '5550100123';
+  const contacts = Array.from({ length: 8 }, (_, i) => ({
+    id: 'contact-' + i,
+    name: i === 7 ? 'Exact Contact' : query + ' Search ' + i,
+    firstName: i === 7 ? 'Exact' : 'Other',
+    lastName: 'Contact',
+    phone: i === 7 ? '+15550100123' : '+1555010200' + i,
+    email: null,
+    tags: [],
+  }));
+  const choices = targetChoices(contacts, query);
+  expect(choices[0]).toMatchObject({ phone: '+15550100123', contactId: 'contact-7' });
+  expect(choices.filter((c) => c.dedupeKey.endsWith(':+15550100123'))).toHaveLength(1);
+});

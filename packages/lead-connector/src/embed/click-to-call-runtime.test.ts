@@ -663,3 +663,23 @@ it('drops a late secure context response after the parent location changes', asy
     dom.window.document.querySelector('iframe[name="consuelo-dialer"]'),
   ).toBe(frame);
 });
+
+it('recreates an idle iframe when switching trusted CRM locations', () => {
+  const { dom } = boot({
+    path: '/v2/location/location-1/contacts',
+    body: '<nav><a id="tb_lists">Smart Lists</a></nav>',
+  });
+  const doc = dom.window.document;
+  doc.getElementById('consuelo-dialer-launcher')!.click();
+  const firstFrame = doc.querySelector<HTMLIFrameElement>('iframe[name="consuelo-dialer"]')!;
+  const firstHost = doc.getElementById('consuelo-dialer-overlay-host')!;
+  expect(firstFrame).not.toBeNull();
+  dom.window.history.pushState({}, '', '/v2/location/location-2/contacts');
+  dom.window.dispatchEvent(new dom.window.Event('routeLoaded'));
+  expect(firstHost.isConnected).toBe(false);
+  expect(firstFrame.isConnected).toBe(false);
+  doc.getElementById('consuelo-dialer-launcher')!.click();
+  const nextFrame = doc.querySelector<HTMLIFrameElement>('iframe[name="consuelo-dialer"]');
+  expect(nextFrame).not.toBeNull();
+  expect(nextFrame).not.toBe(firstFrame);
+});
