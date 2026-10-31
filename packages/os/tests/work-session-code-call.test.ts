@@ -428,9 +428,28 @@ describe('work-session code.call authority', () => {
     expect(result.message).toContain('managed task worktree');
   });
 
-  it('fails closed when managed Git worktree discovery fails', () => {
+  it('ignores a non-Git signed runtime when discovering managed worktrees', () => {
     const ordinaryDirectory = tempRoot('consuelo-code-call-not-a-git-repo-');
-    expect(() => managedWorktreeRoots(ordinaryDirectory))
+    mkdirSync(join(ordinaryDirectory, 'skills'), { recursive: true });
+    expect(managedWorktreeRoots(ordinaryDirectory)).toEqual([]);
+  });
+
+  it('protects linked worktrees when the managed project path is nested in a Git checkout', () => {
+    const repo = tempRoot('consuelo-code-call-nested-project-');
+    initRepo(repo);
+    const nestedProject = join(repo, 'packages', 'os');
+    mkdirSync(nestedProject, { recursive: true });
+    const linkedWorktree = createLinkedTaskWorktree(repo);
+    expect(managedWorktreeRoots(nestedProject)).toEqual(expect.arrayContaining([
+      realpathSync(repo),
+      realpathSync(linkedWorktree),
+    ]));
+  });
+
+  it('fails closed when managed Git worktree discovery fails for a broken repository', () => {
+    const malformedRepo = tempRoot('consuelo-code-call-malformed-repo-');
+    mkdirSync(join(malformedRepo, '.git'), { recursive: true });
+    expect(() => managedWorktreeRoots(malformedRepo))
       .toThrow(/failed to enumerate managed Git worktrees/i);
   });
 

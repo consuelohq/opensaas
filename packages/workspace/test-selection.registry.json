@@ -2345,6 +2345,7 @@
       "id": "os-bundled-skill-contract",
       "source": [
         "packages/os/skills/**",
+        "packages/os/scripts/lib/skills.ts",
         "packages/os/tests/fixtures/skills/**",
         "packages/os/tests/branch-skill.test.ts",
         "packages/os/tests/cli-skill-routing.test.ts",

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/converge-verified-cloud-session-fixes-after-parallel-stream-selector-changes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2760,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2760",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-converge-verified-cloud-session-fixes-after-parallel-stream-selector-changes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5ea3ce0e35b7",
+  "tmuxSession": "opensaas-os-converge-verified-cloud-session-fixes-after-para-5ea3ce0e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-converge-verified-cloud-session-fixes-after-parallel-stream-selector-changes/.task/session.json",
+  "createdAt": "2026-10-31T07:49:37.530Z"
+}
