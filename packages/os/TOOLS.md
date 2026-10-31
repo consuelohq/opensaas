@@ -3009,7 +3009,7 @@ inspect task or working-tree diffs as bounded structured JSON for agents
 | Field | Value |
 | --- | --- |
 | Category | git |
-| Signature | `workspace.git.diff({ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.git.diff({ branch?: string; base?: string; head?: string; task?: boolean; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace git:diff` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |

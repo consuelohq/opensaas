@@ -38,6 +38,23 @@ export function pathsOverlap(first: string, second: string): boolean {
   return containsPath(first, second) || containsPath(second, first);
 }
 
+function hasGitMarkerInAncestors(candidate: string): boolean {
+  let current = candidate;
+  while (true) {
+    try {
+      // lstat detects a broken .git symlink. Never treat a damaged checkout
+      // as an ordinary directory that accepts unscoped work-session edits.
+      fs.lstatSync(path.join(current, '.git'));
+      return true;
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) return false;
+    current = parent;
+  }
+}
+
 export function managedWorktreeRoots(managedRepoRoot: string): string[] {
   let canonicalManagedRoot: string;
   try {
@@ -45,6 +62,10 @@ export function managedWorktreeRoots(managedRepoRoot: string): string[] {
   } catch {
     return [];
   }
+  // Signed OS distributions do not contain Git metadata. Only enumerate
+  // worktrees when the candidate actually belongs to a Git checkout.
+  // Existing Git corruption continues to fail closed.
+  if (!hasGitMarkerInAncestors(canonicalManagedRoot)) return [];
   try {
     const output = execFileSync('git', ['worktree', 'list', '--porcelain'], {
       cwd: canonicalManagedRoot,

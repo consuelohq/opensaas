@@ -3,10 +3,10 @@
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
     "testFileCount": 721,
-    "mappedTestCount": 638,
-    "unmappedTestCount": 83,
-    "ruleCount": 85,
-    "explicitRuleCount": 72,
+    "mappedTestCount": 639,
+    "unmappedTestCount": 82,
+    "ruleCount": 86,
+    "explicitRuleCount": 73,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
@@ -2359,6 +2359,7 @@
       "id": "os-bundled-skill-contract",
       "source": [
         "packages/os/skills/**",
+        "packages/os/scripts/lib/skills.ts",
         "packages/os/tests/fixtures/skills/**",
         "packages/os/tests/branch-skill.test.ts",
         "packages/os/tests/cli-skill-routing.test.ts",
@@ -3077,6 +3078,33 @@
       "critical": true,
       "exclusive": true,
       "reason": "M4 OS reference and snapshot cleanup must prove deleted Twenty topology stays absent and large-diff code.call snapshots remain safe without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-git-diff-unified-task",
+      "source": [
+        "packages/os/scripts/git-diff.js",
+        "packages/workspace/scripts/git-diff.js",
+        "packages/os/tools/git/handler.ts",
+        "packages/workspace/tests/git-diff.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS and Workspace git.diff task visibility and byte-integrity contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/git-diff.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/tool-manifest.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Every git.diff change must preserve complete task visibility, revision compatibility, binary and path safety, typed dispatch and bounded output without selecting unrelated OS package tests.",
       "origin": "explicit"
     },
     {
@@ -7007,7 +7035,6 @@
     "packages/workspace/tests/fs-apply-patch.test.ts",
     "packages/workspace/tests/fs-read.test.ts",
     "packages/workspace/tests/fs-search.test.ts",
-    "packages/workspace/tests/git-diff.test.ts",
     "packages/workspace/tests/github-pr-reviews.test.ts",
     "packages/workspace/tests/github.test.ts",
     "packages/workspace/tests/index-path-exclusions.test.js",

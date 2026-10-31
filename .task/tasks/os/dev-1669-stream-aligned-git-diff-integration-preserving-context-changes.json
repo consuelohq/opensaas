@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1669-stream-aligned-git-diff-integration-preserving-context-changes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2761,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2761",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1669-stream-aligned-git-diff-integration-preserving-context-changes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4c207e7c607a",
+  "tmuxSession": "opensaas-os-dev-1669-stream-aligned-git-diff-integration-pre-4c207e7c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1669-stream-aligned-git-diff-integration-preserving-context-changes/.task/session.json",
+  "createdAt": "2026-10-31T07:52:07.875Z"
+}
