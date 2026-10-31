@@ -250,5 +250,53 @@ export const toolHandlers = [
       ],
       "jsonFlag": "--json"
     }
-  }
+  },
+  {
+    name: 'linear.createComment',
+    command: {
+      script: 'linear', subcommand: 'comment', branchMode: 'none',
+      arguments: [{ source: 'issueId', kind: 'value' }, { source: 'body', kind: 'value' }],
+      jsonFlag: '--json',
+    },
+  },
+  {
+    name: 'linear.comments',
+    command: {
+      script: 'linear', subcommand: 'comments', branchMode: 'none',
+      arguments: [{ source: 'issueId', kind: 'value' }, { source: 'first', flag: '--first', kind: 'value' }, { source: 'after', flag: '--after', kind: 'value' }],
+      jsonFlag: '--json',
+    },
+  },
+  {
+    name: 'linear.relations',
+    command: {
+      script: 'linear', subcommand: 'relations', branchMode: 'none',
+      arguments: [{ source: 'identifier', kind: 'value' }],
+      jsonFlag: '--json',
+    },
+  },
+  {
+    name: 'linear.createRelation',
+    command: {
+      script: 'linear', subcommand: 'relation-create', branchMode: 'none',
+      arguments: [{ source: 'issueId', kind: 'value' }, { source: 'relatedIssueId', kind: 'value' }, { source: 'type', flag: '--type', kind: 'value' }],
+      jsonFlag: '--json',
+    },
+  },
+  {
+    name: 'linear.deleteRelation',
+    command: {
+      script: 'linear', subcommand: 'relation-delete', branchMode: 'none',
+      arguments: [{ source: 'relationId', kind: 'value' }],
+      jsonFlag: '--json',
+    },
+  },
+  {
+    name: 'linear.triageIssue',
+    command: {
+      script: 'linear', subcommand: 'triage', branchMode: 'none',
+      arguments: [{ source: 'issueId', kind: 'value' }, { source: 'action', flag: '--action', kind: 'value' }],
+      jsonFlag: '--json',
+    },
+  },
 ] as const satisfies readonly ToolHandlerContribution[];

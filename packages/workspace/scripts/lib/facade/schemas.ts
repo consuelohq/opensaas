@@ -853,6 +853,41 @@ export const LinearTeamScopedListInput = z.object({
   team: optionalString,
 });
 
+export const LinearCreateCommentInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  issueId: z.string().min(1),
+  body: z.string().min(1).max(20000),
+});
+
+export const LinearIssueListInput = z.object({
+  ...requestFields,
+  issueId: z.string().min(1),
+  first: z.number().int().min(1).max(100).optional(),
+  after: optionalString,
+});
+
+export const LinearCreateRelationInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  issueId: z.string().min(1),
+  relatedIssueId: z.string().min(1),
+  type: z.enum(['blocks', 'related', 'duplicate', 'similar']),
+});
+
+export const LinearDeleteRelationInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  relationId: z.string().uuid(),
+});
+
+export const LinearTriageIssueInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  issueId: z.string().min(1),
+  action: z.enum(['intake', 'accept', 'decline']),
+});
+
 export const SentryConfigInput = z.object({
   ...requestFields,
   verify: z.boolean().optional(),
@@ -1133,6 +1168,11 @@ export const schemaRegistry = {
   LinearUpdateIssueInput,
   LinearListInput,
   LinearTeamScopedListInput,
+  LinearCreateCommentInput,
+  LinearIssueListInput,
+  LinearCreateRelationInput,
+  LinearDeleteRelationInput,
+  LinearTriageIssueInput,
   SentryConfigInput,
   SentryProjectsInput,
   SentryIssuesInput,
@@ -1237,6 +1277,11 @@ export const schemaTypeSignatures: Record<string, string> = {
   LinearUpdateIssueInput: '{ issueId: string; title?: string; description?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   LinearListInput: '{ first?: number; after?: string; requestId?: string; taskSession?: string }',
   LinearTeamScopedListInput: '{ team?: string; requestId?: string; taskSession?: string }',
+  LinearCreateCommentInput: '{ issueId: string; body: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LinearIssueListInput: '{ issueId: string; first?: number; after?: string; requestId?: string; taskSession?: string }',
+  LinearCreateRelationInput: '{ issueId: string; relatedIssueId: string; type: "blocks" | "related" | "duplicate" | "similar"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LinearDeleteRelationInput: '{ relationId: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LinearTriageIssueInput: '{ issueId: string; action: "intake" | "accept" | "decline"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   SentryConfigInput: '{ verify?: boolean; requestId?: string; taskSession?: string }',
   SentryProjectsInput: '{ limit?: number; cursor?: string; requestId?: string; taskSession?: string }',
   SentryIssuesInput: '{ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string; taskSession?: string }',

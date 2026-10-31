@@ -1,5 +1,14 @@
 import type { ToolSchemaContribution } from '../package';
 
+const linearAdditions = [
+  { name: 'linear.createComment', inputSchema: 'LinearCreateCommentInput', description: 'post a Linear comment as the authenticated application and verify its author', exampleInput: { issueId: 'DEV-123', body: 'Verified and ready for review' }, readOnly: false },
+  { name: 'linear.comments', inputSchema: 'LinearIssueListInput', description: 'read Linear issue comments, authors, and pagination', exampleInput: { issueId: 'DEV-123', first: 20 }, readOnly: true },
+  { name: 'linear.relations', inputSchema: 'LinearIssueInput', description: 'read native incoming and outgoing issue dependencies and relations', exampleInput: { identifier: 'DEV-123' }, readOnly: true },
+  { name: 'linear.createRelation', inputSchema: 'LinearCreateRelationInput', description: 'idempotently create a native Linear blocks, related, duplicate or similar issue relation', exampleInput: { issueId: 'DEV-123', relatedIssueId: 'DEV-124', type: 'blocks' }, readOnly: false },
+  { name: 'linear.deleteRelation', inputSchema: 'LinearDeleteRelationInput', description: 'remove a native Linear issue relation by its id', exampleInput: { relationId: '11111111-1111-4111-8111-111111111111' }, readOnly: false },
+  { name: 'linear.triageIssue', inputSchema: 'LinearTriageIssueInput', description: 'move an issue through team Triage intake, accept, or decline using current team states', exampleInput: { issueId: 'DEV-123', action: 'accept' }, readOnly: false },
+] as const;
+
 export const toolSchemas = [
   {
     "name": "linear.createIssue",
@@ -23,7 +32,7 @@ export const toolSchemas = [
         "linear",
         "createIssue"
       ],
-      "description": "create a Linear issue with DEV/open defaults and the opensaas label",
+      "description": "create a Linear issue with provider-configured workflow defaults, optional labels and projects",
       "category": "linear",
       "underlying": "workspace linear.createIssue",
       "capabilities": {
@@ -36,10 +45,7 @@ export const toolSchemas = [
       "inputSchema": "LinearCreateIssueInput",
       "outputSchema": "RawOutput",
       "exampleInput": {
-        "title": "add Linear facade commands",
-        "labels": [
-          "opensaas"
-        ]
+        "title": "add Linear facade commands"
       },
       "sessionRequired": false
     }
@@ -321,12 +327,26 @@ export const toolSchemas = [
       "inputSchema": "LinearUpdateIssueInput",
       "outputSchema": "RawOutput",
       "exampleInput": {
-        "issueId": "DEV-123",
-        "labels": [
-          "opensaas"
-        ]
+        "issueId": "DEV-123"
       },
       "sessionRequired": false
     }
-  }
+  },
+  ...linearAdditions.map((entry) => ({
+    name: entry.name,
+    order: ['name', 'methodPath', 'description', 'category', 'underlying', 'capabilities', 'defaultTimeout', 'inputSchema', 'outputSchema', 'command', 'exampleInput', 'sessionRequired'],
+    definition: {
+      name: entry.name,
+      methodPath: ['linear', entry.name.slice('linear.'.length)],
+      description: entry.description,
+      category: 'linear',
+      underlying: 'workspace ' + entry.name,
+      capabilities: { readOnly: entry.readOnly, mutating: !entry.readOnly, deterministic: false, safeToRetry: entry.readOnly },
+      defaultTimeout: 60000,
+      inputSchema: entry.inputSchema,
+      outputSchema: 'RawOutput',
+      exampleInput: entry.exampleInput,
+      sessionRequired: false,
+    },
+  })),
 ] as const satisfies readonly ToolSchemaContribution[];

@@ -36,8 +36,13 @@ function printHelp() {
     '  query <graphql>              run raw graphql (query or mutation)',
     '  issue <identifier>           get issue by identifier (DEV-123)',
     '  issues|search [--search <text>] list/search issues',
-    '  create|createIssue <title>   create issue (DEV/open, opensaas label by default)',
-    '  comment <issue-id> <body>    add comment to issue',
+    '  create|createIssue <title>   create issue (provider default state; no default label)',
+    '  comment <issue-id> <body>    add comment with verified application identity',
+    '  comments <issue-id>          list comments, authors, and pagination',
+    '  relations <issue-id>         list incoming and outgoing issue relations',
+    '  relation-create <from> <to>  create idempotent native relation (--type blocks|related|duplicate|similar)',
+    '  relation-delete <id>         delete a native issue relation',
+    '  triage <issue-id>            act on triage (--action intake|accept|decline)',
     '  update|updateIssue <issue-id> update issue fields',
     '  labels                       list issue labels',
     '  teams                        list teams and workflow states',
@@ -46,7 +51,7 @@ function printHelp() {
     '',
     'options:',
     '  --team <id>           team id (default: DEV)',
-    '  --state <id>          workflow state id',
+    '  --state <id|name>     workflow state id or exact team state name',
     '  --labels <name-or-id>  label names or ids (comma-separated or repeated after flag)',
     '  --priority <0-4>      priority (1=urgent, 4=low)',
     '  --assignee <id>       assignee id',
@@ -55,6 +60,8 @@ function printHelp() {
     '  --project <id|name>   project id or name',
     '  --cycle <id>          cycle id',
     '  --parent <issue-id>   parent issue id for sub-issues',
+    '  --type <relation>     native issue relation type',
+    '  --action <action>     triage action',
     '  --search <text>       search query for issues command',
     '  --first <n>           pagination limit (default: 20)',
     '  --after <cursor>      pagination cursor',
@@ -76,7 +83,6 @@ function printHelp() {
 
 // --- IDs ---
 const DEV_TEAM = '29f5c661-da6c-4bfb-bd48-815a006ccaac';
-const STATE_OPEN = '1160621c-7a00-4945-9093-47ba33862b7e';
 const GROWTH_TEAM = 'd923f357-397d-4416-832f-2ec2e822acdf';
 const TEAM_IDS = { dev: DEV_TEAM, development: DEV_TEAM, DEV: DEV_TEAM, grow: GROWTH_TEAM, growth: GROWTH_TEAM, GROW: GROWTH_TEAM };
 
@@ -89,9 +95,12 @@ function parseArgs(argv) {
       case '--labels': {
         const labels = [];
         while (i + 1 < argv.length && !argv[i + 1].startsWith('--')) labels.push(argv[++i]);
-        args.labels = labels.flatMap((value) => String(value).split(',')).map((value) => value.trim()).filter(Boolean);
+        // Facade array flags are repeated (one --labels per item). Accumulate, never overwrite.
+        args.labels = [...(args.labels || []), ...labels.flatMap((value) => String(value).split(',')).map((value) => value.trim()).filter(Boolean)];
         break;
       }
+      case '--type': args.type = argv[++i]; break;
+      case '--action': args.action = argv[++i]; break;
       case '--priority': args.priority = parseInt(argv[++i], 10); break;
       case '--assignee': args.assignee = argv[++i]; break;
       case '--description': args.description = argv[++i]; break;
@@ -114,72 +123,114 @@ function parseArgs(argv) {
 }
 
 async function gql(token, query, variables) {
-  const body = { query };
-  if (variables && Object.keys(variables).length > 0) body.variables = variables;
+  try {
+    const body = { query };
+    if (variables && Object.keys(variables).length > 0) body.variables = variables;
 
-  const resp = await fetch(API, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
+    const resp = await fetch(API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
 
-  const json = await resp.json();
+    const json = await resp.json();
 
-  if (!resp.ok || json.errors) {
-    const msg = json.errors
-      ? json.errors.map((e) => e.message).join('; ')
-      : `HTTP ${resp.status}`;
-    throw new Error(msg);
+    if (!resp.ok || json.errors) {
+      const msg = json.errors
+        ? json.errors.map((e) => e.message).join('; ')
+        : `HTTP ${resp.status}`;
+      throw new Error(msg);
+    }
+
+    return json.data;
+  } catch (error) {
+    throw new Error('Linear gql failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
   }
-
-  return json.data;
 }
 
 // --- commands ---
 
 async function cmdQuery(token, args) {
-  const query = args.positional[1];
-  if (!query) throw new Error('usage: linear query "<graphql>"');
-  const data = await gql(token, query);
-  writeStdout(JSON.stringify(data, null, 2));
+  try {
+    const query = args.positional[1];
+    if (!query) throw new Error('usage: linear query "<graphql>"');
+    const data = await gql(token, query);
+    writeStdout(JSON.stringify(data, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdQuery failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 async function cmdIssue(token, args) {
-  const id = args.positional[1];
-  if (!id) throw new Error('usage: linear issue <identifier>');
+  try {
+    const id = args.positional[1];
+    if (!id) throw new Error('usage: linear issue <identifier>');
 
-  const data = await gql(token, `
-    query($id: String!) {
-      issue(id: $id) {
-        id identifier url title description priority
-        state { id name type }
-        team { id key name }
-        assignee { id name }
-        labels { nodes { id name } }
-        project { id name url state }
-        cycle { id name number }
-        parent { id identifier title }
-        children { nodes { id identifier title } }
-        comments(first: 10) {
-          nodes { id body user { name } createdAt }
+    const data = await gql(token, `
+      query($id: String!) {
+        issue(id: $id) {
+          id identifier url title description priority
+          state { id name type }
+          team { id key name }
+          assignee { id name }
+          labels { nodes { id name } }
+          project { id name url state }
+          cycle { id name number }
+          parent { id identifier title }
+          children { nodes { id identifier title } }
+          comments(first: 10) {
+            nodes { id body user { id name } createdAt }
+          }
+          relations { nodes { id type issue { id identifier } relatedIssue { id identifier } } }
+          inverseRelations { nodes { id type issue { id identifier } relatedIssue { id identifier } } }
+          attachments { nodes { id title url } }
+          createdAt updatedAt
         }
-        attachments { nodes { id title url } }
-        createdAt updatedAt
       }
-    }
-  `, { id });
+    `, { id });
 
-  writeStdout(JSON.stringify(data.issue, null, 2));
+    writeStdout(JSON.stringify(data.issue, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdIssue failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 async function cmdIssues(token, args) {
-  if (args.search) {
+  try {
+    if (args.search) {
+      const data = await gql(token, `
+        query($term: String!, $first: Int, $after: String) {
+          searchIssues(term: $term, first: $first, after: $after) {
+            nodes {
+              id identifier title priority
+              state { name }
+              assignee { name }
+              labels { nodes { name } }
+            }
+            pageInfo { hasNextPage endCursor }
+          }
+        }
+      `, { term: args.search, first: args.first, after: args.after || null });
+
+      const result = data.searchIssues;
+      writeStdout(JSON.stringify({
+        issues: result.nodes,
+        pageInfo: result.pageInfo,
+      }, null, 2));
+      return;
+    }
+
+    // list with optional filter
+    let filter = args.filter ? JSON.parse(args.filter) : {};
+    const teamId = resolveTeamId(args.team);
+    filter = { ...filter, team: { id: { eq: teamId } } };
+
     const data = await gql(token, `
-      query($term: String!, $first: Int, $after: String) {
-        searchIssues(term: $term, first: $first, after: $after) {
+      query($filter: IssueFilter, $first: Int, $after: String) {
+        issues(filter: $filter, first: $first, after: $after, orderBy: updatedAt) {
           nodes {
             id identifier title priority
             state { name }
@@ -189,50 +240,24 @@ async function cmdIssues(token, args) {
           pageInfo { hasNextPage endCursor }
         }
       }
-    `, { term: args.search, first: args.first, after: args.after || null });
+    `, { filter, first: args.first, after: args.after || null });
 
-    const result = data.searchIssues;
+    const result = data.issues;
     writeStdout(JSON.stringify({
       issues: result.nodes,
       pageInfo: result.pageInfo,
     }, null, 2));
-    return;
+  } catch (error) {
+    throw new Error('Linear cmdIssues failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
   }
-
-  // list with optional filter
-  let filter = args.filter ? JSON.parse(args.filter) : {};
-  const teamId = resolveTeamId(args.team);
-  filter = { ...filter, team: { id: { eq: teamId } } };
-
-  const data = await gql(token, `
-    query($filter: IssueFilter, $first: Int, $after: String) {
-      issues(filter: $filter, first: $first, after: $after, orderBy: updatedAt) {
-        nodes {
-          id identifier title priority
-          state { name }
-          assignee { name }
-          labels { nodes { name } }
-        }
-        pageInfo { hasNextPage endCursor }
-      }
-    }
-  `, { filter, first: args.first, after: args.after || null });
-
-  const result = data.issues;
-  writeStdout(JSON.stringify({
-    issues: result.nodes,
-    pageInfo: result.pageInfo,
-  }, null, 2));
 }
 
 function resolveTeamId(value) { return TEAM_IDS[value] || value || DEV_TEAM; }
 function isUuid(value) { return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || '')); }
-function defaultLabels() {
-  return ['opensaas'];
-}
 async function resolveLabelIds(token, labels) {
   try {
-    const requested = labels && labels.length > 0 ? labels : defaultLabels();
+    if (!labels || labels.length === 0) return [];
+    const requested = labels;
     const data = await gql(token, `
       query($first: Int) {
         issueLabels(first: $first) { nodes { id name } }
@@ -254,33 +279,102 @@ async function resolveLabelIds(token, labels) {
   }
 }
 
-async function cmdCreate(token, args) {
-  const title = args.positional[1] || args.title;
-  if (!title) throw new Error('usage: linear create "<title>" [--description "..."]');
+async function resolveTeamState(token, teamId, nameOrId) {
+  try {
+    if (!nameOrId) return undefined;
+    if (isUuid(nameOrId)) return nameOrId;
+    const data = await gql(token, `query($id: String!) {
+      team(id: $id) { id states { nodes { id name type } } }
+    }`, { id: teamId });
+    if (!data.team) throw new Error('unknown Linear team: ' + teamId);
+    const name = nameOrId.toLowerCase();
+    const matches = data.team.states.nodes.filter((state) => state.name.toLowerCase() === name || state.type === name);
+    if (matches.length !== 1) throw new Error('unknown or ambiguous Linear workflow state: ' + nameOrId);
+    return matches[0].id;
+  } catch (error) {
+    throw new Error('Linear resolveTeamState failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+}
 
-  const input = {
-    teamId: resolveTeamId(args.team),
-    title,
-    stateId: args.state || STATE_OPEN,
-    labelIds: await resolveLabelIds(token, args.labels),
-  };
-  if (args.description) input.description = args.description;
-  if (args.priority !== undefined) input.priority = args.priority;
-  if (args.assignee) input.assigneeId = args.assignee;
-  if (args.project) input.projectId = args.project;
-  if (args.cycle) input.cycleId = args.cycle;
-  if (args.parent) input.parentId = args.parent;
-
-  const data = await gql(token, `
-    mutation($input: IssueCreateInput!) {
-      issueCreate(input: $input) {
-        success
-        issue { id identifier url title team { key name } state { name type } labels { nodes { id name } } project { id name url state } parent { id identifier title } }
-      }
+async function resolveProjectId(token, project, teamId) {
+  try {
+    if (!project) return undefined;
+    if (isUuid(project)) return project;
+    let after = null;
+    const matches = [];
+    for (let page = 0; page < 25; page++) {
+      const data = await gql(token, `query($after: String) {
+        projects(first: 100, after: $after) {
+          nodes { id name teams { nodes { id } } }
+          pageInfo { hasNextPage endCursor }
+        }
+      }`, { after });
+      const connection = data.projects;
+      matches.push(...connection.nodes.filter((p) => p.name.toLowerCase() === project.toLowerCase() &&
+        p.teams.nodes.some((team) => team.id === teamId)));
+      if (!connection.pageInfo.hasNextPage) break;
+      if (!connection.pageInfo.endCursor || connection.pageInfo.endCursor === after) throw new Error('incomplete Linear project pagination');
+      after = connection.pageInfo.endCursor;
+      if (page === 24) throw new Error('Linear project pagination limit reached');
     }
-  `, { input });
+    if (matches.length !== 1) throw new Error('unknown or ambiguous Linear project for team: ' + project);
+    return matches[0].id;
+  } catch (error) {
+    throw new Error('Linear resolveProjectId failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+}
 
-  writeStdout(JSON.stringify(data.issueCreate, null, 2));
+async function readIssue(token, identifier) {
+  try {
+    if (!identifier) throw new Error('Linear issue identifier is required');
+    const data = await gql(token, `query($id: String!) {
+      issue(id: $id) {
+        id identifier
+        team { id }
+        state { id name type }
+        relations(first: 100) { nodes { id type issue { id identifier } relatedIssue { id identifier } } pageInfo { hasNextPage } }
+        inverseRelations(first: 100) { nodes { id type issue { id identifier } relatedIssue { id identifier } } pageInfo { hasNextPage } }
+      }
+    }`, { id: identifier });
+    if (!data.issue) throw new Error('Linear issue not found: ' + identifier);
+    return data.issue;
+  } catch (error) {
+    throw new Error('Linear readIssue failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+}
+
+async function cmdCreate(token, args) {
+  try {
+    const title = args.positional[1] || args.title;
+    if (!title) throw new Error('usage: linear create "<title>" [--description "..."]');
+
+    const input = {
+      teamId: resolveTeamId(args.team),
+      title,
+    };
+    // Omit absent fields. Let Linear choose its configured intake state and labels.
+    if (args.state) input.stateId = await resolveTeamState(token, input.teamId, args.state);
+    if (args.labels?.length) input.labelIds = await resolveLabelIds(token, args.labels);
+    if (args.description) input.description = args.description;
+    if (args.priority !== undefined) input.priority = args.priority;
+    if (args.assignee) input.assigneeId = args.assignee;
+    if (args.project) input.projectId = await resolveProjectId(token, args.project, input.teamId);
+    if (args.cycle) input.cycleId = args.cycle;
+    if (args.parent) input.parentId = args.parent;
+
+    const data = await gql(token, `
+      mutation($input: IssueCreateInput!) {
+        issueCreate(input: $input) {
+          success
+          issue { id identifier url title team { key name } state { name type } labels { nodes { id name } } project { id name url state } parent { id identifier title } }
+        }
+      }
+    `, { input });
+
+    writeStdout(JSON.stringify(data.issueCreate, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdCreate failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 async function cmdComment(token, args) {
@@ -288,129 +382,297 @@ async function cmdComment(token, args) {
   const body = args.positional[2];
   if (!issueId || !body) throw new Error('usage: linear comment <issue-id> "<body>"');
 
+  const issue = await readIssue(token, issueId);
+  // Resolve the application identity before making a non-idempotent mutation.
+  const actor = (await gql(token, 'query { viewer { id name } }')).viewer;
+  if (!actor?.id) throw new Error('unable to verify authenticated Linear identity');
   const data = await gql(token, `
     mutation($input: CommentCreateInput!) {
       commentCreate(input: $input) {
         success
-        comment { id body }
+        comment { id body createdAt user { id name } }
       }
     }
-  `, { input: { issueId, body } });
+  `, { input: { issueId: issue.id, body } });
 
-  writeStdout(JSON.stringify(data.commentCreate, null, 2));
+  if (!data.commentCreate.success || !data.commentCreate.comment?.id) throw new Error('Linear comment not created');
+  writeStdout(JSON.stringify({
+    ...data.commentCreate,
+    authenticatedAs: actor,
+    authorVerified: data.commentCreate.comment.user?.id === actor.id,
+  }, null, 2));
+}
+
+async function cmdComments(token, args) {
+  try {
+    const issue = await readIssue(token, args.positional[1]);
+    const data = await gql(token, `query($id: String!, $first: Int, $after: String) {
+      issue(id: $id) {
+        id identifier
+        comments(first: $first, after: $after) {
+          nodes { id body createdAt user { id name } }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    }`, { id: issue.id, first: args.first, after: args.after || null });
+    writeStdout(JSON.stringify({ issueId: issue.id, identifier: issue.identifier, ...data.issue.comments }, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdComments failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+}
+
+async function cmdRelations(token, args) {
+  try {
+    const issue = await readIssue(token, args.positional[1]);
+    writeStdout(JSON.stringify({
+      issueId: issue.id,
+      identifier: issue.identifier,
+      outgoing: issue.relations.nodes,
+      incoming: issue.inverseRelations.nodes,
+      outgoingTruncated: !!issue.relations.pageInfo?.hasNextPage,
+      incomingTruncated: !!issue.inverseRelations.pageInfo?.hasNextPage,
+    }, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdRelations failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+}
+
+async function cmdCreateRelation(token, args) {
+  try {
+    const from = args.positional[1];
+    const to = args.positional[2];
+    const type = args.type || 'blocks';
+    if (!from || !to || !['blocks', 'related', 'duplicate', 'similar'].includes(type)) {
+      throw new Error('usage: linear relation-create <issue-id> <related-issue-id> --type blocks|related|duplicate|similar');
+    }
+    const source = await readIssue(token, from);
+    const target = await readIssue(token, to);
+    if (source.id === target.id) throw new Error('cannot relate an issue to itself');
+    const connections = [source.relations, source.inverseRelations, target.relations, target.inverseRelations];
+    if (connections.some((connection) => connection.pageInfo?.hasNextPage)) {
+      throw new Error('cannot safely create relation: relation listing incomplete; inspect and paginate first');
+    }
+    const allRelations = connections.flatMap((connection) => connection.nodes);
+    const existing = allRelations.find((r) => r.type === type &&
+      ((r.issue.id === source.id && r.relatedIssue.id === target.id) ||
+        (type === 'related' && r.issue.id === target.id && r.relatedIssue.id === source.id)));
+    if (existing) {
+      writeStdout(JSON.stringify({ success: true, alreadyExists: true, relation: existing }, null, 2));
+      return;
+    }
+    // Linear maintains one native relation per pair: a different type can replace the prior link.
+    const conflicting = allRelations.find((r) =>
+      (r.issue.id === source.id && r.relatedIssue.id === target.id) ||
+      (r.issue.id === target.id && r.relatedIssue.id === source.id));
+    if (conflicting) {
+      throw new Error('existing Linear relation ' + conflicting.id + ' (' + conflicting.type +
+        ') would be replaced; inspect and explicitly delete it before changing the relation type');
+    }
+    const data = await gql(token, `mutation($input: IssueRelationCreateInput!) {
+      issueRelationCreate(input: $input) { success issueRelation { id type } }
+    }`, { input: { issueId: source.id, relatedIssueId: target.id, type } });
+    if (!data.issueRelationCreate.success) throw new Error('Linear relation creation failed');
+    writeStdout(JSON.stringify({ ...data.issueRelationCreate, alreadyExists: false, from: source.identifier, to: target.identifier }, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdCreateRelation failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+}
+
+async function cmdDeleteRelation(token, args) {
+  try {
+    const relationId = args.positional[1];
+    if (!isUuid(relationId)) throw new Error('relation UUID required');
+    const existing = await gql(token, 'query($id: String!) { issueRelation(id: $id) { id } }', { id: relationId });
+    if (!existing.issueRelation) {
+      writeStdout(JSON.stringify({ success: true, alreadyAbsent: true }, null, 2));
+      return;
+    }
+    const data = await gql(token, `mutation($id: String!) {
+      issueRelationDelete(id: $id) { success }
+    }`, { id: relationId });
+    writeStdout(JSON.stringify(data.issueRelationDelete, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdDeleteRelation failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+}
+
+async function cmdTriage(token, args) {
+  try {
+    const issue = await readIssue(token, args.positional[1]);
+    const action = args.action;
+    if (!['intake', 'accept', 'decline'].includes(action)) throw new Error('triage --action intake|accept|decline is required');
+    if (action !== 'intake' && issue.state.type !== 'triage') throw new Error('issue must currently be in Triage');
+    if (action === 'intake' && ['completed', 'canceled'].includes(issue.state.type)) {
+      throw new Error('do not reopen completed issues using triage intake');
+    }
+    const data = await gql(token, `query($id: String!) {
+      team(id: $id) { id states { nodes { id name type } } }
+    }`, { id: issue.team.id });
+    const states = data.team?.states.nodes || [];
+    let state;
+    if (action === 'intake') state = states.find((s) => s.type === 'triage');
+    if (action === 'accept') state = states.find((s) => s.name.toLowerCase() === 'open' && s.type === 'unstarted') ||
+      states.find((s) => s.type === 'unstarted');
+    if (action === 'decline') state = states.find((s) => s.type === 'canceled');
+    if (!state) throw new Error('team does not have a compatible workflow state for triage action: ' + action);
+    if (issue.state.id === state.id) {
+      writeStdout(JSON.stringify({ success: true, alreadyInState: true, issue: { id: issue.id, identifier: issue.identifier, state: issue.state } }, null, 2));
+      return;
+    }
+    const updated = await gql(token, `mutation($id: String!, $input: IssueUpdateInput!) {
+      issueUpdate(id: $id, input: $input) {
+        success issue { id identifier state { id name type } }
+      }
+    }`, { id: issue.id, input: { stateId: state.id } });
+    if (!updated.issueUpdate.success) throw new Error('triage state update failed');
+    writeStdout(JSON.stringify({ ...updated.issueUpdate, action }, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdTriage failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 async function cmdUpdate(token, args) {
-  const issueId = args.positional[1];
-  if (!issueId) throw new Error('usage: linear update <issue-id> [--state <id>] [--labels <ids>] ...');
+  try {
+    const issueId = args.positional[1];
+    if (!issueId) throw new Error('usage: linear update <issue-id> [--state <id>] [--labels <ids>] ...');
 
-  const input = {};
-  if (args.state) input.stateId = args.state;
-  if (args.title) input.title = args.title;
-  if (args.labels) input.labelIds = await resolveLabelIds(token, args.labels);
-  if (args.priority !== undefined) input.priority = args.priority;
-  if (args.assignee) input.assigneeId = args.assignee;
-  if (args.description) input.description = args.description;
-  if (args.project) input.projectId = args.project;
-  if (args.cycle) input.cycleId = args.cycle;
-  if (args.parent) input.parentId = args.parent;
+    const input = {};
+    let issue;
+    if ((args.state && !isUuid(args.state)) || (args.project && !isUuid(args.project))) issue = await readIssue(token, issueId);
+    if (args.state) input.stateId = await resolveTeamState(token, issue?.team.id || DEV_TEAM, args.state);
+    if (args.title) input.title = args.title;
+    if (args.labels) input.labelIds = await resolveLabelIds(token, args.labels);
+    if (args.priority !== undefined) input.priority = args.priority;
+    if (args.assignee) input.assigneeId = args.assignee;
+    if (args.description) input.description = args.description;
+    if (args.project) input.projectId = await resolveProjectId(token, args.project, issue?.team.id || DEV_TEAM);
+    if (args.cycle) input.cycleId = args.cycle;
+    if (args.parent) input.parentId = args.parent;
 
-  if (Object.keys(input).length === 0) throw new Error('no fields to update — pass --state, --labels, --priority, etc.');
+    if (Object.keys(input).length === 0) throw new Error('no fields to update — pass --state, --labels, --priority, etc.');
 
-  const data = await gql(token, `
-    mutation($id: String!, $input: IssueUpdateInput!) {
-      issueUpdate(id: $id, input: $input) {
-        success
-        issue { id identifier url title state { name type } labels { nodes { id name } } project { id name url state } parent { id identifier title } }
+    const data = await gql(token, `
+      mutation($id: String!, $input: IssueUpdateInput!) {
+        issueUpdate(id: $id, input: $input) {
+          success
+          issue { id identifier url title state { name type } labels { nodes { id name } } project { id name url state } parent { id identifier title } }
+        }
       }
-    }
-  `, { id: issueId, input });
+    `, { id: issueId, input });
 
-  writeStdout(JSON.stringify(data.issueUpdate, null, 2));
+    writeStdout(JSON.stringify(data.issueUpdate, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdUpdate failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 
 async function cmdLabels(token, args) {
-  const data = await gql(token, `
-    query($first: Int, $after: String) {
-      issueLabels(first: $first, after: $after) {
-        nodes { id name description color }
-        pageInfo { hasNextPage endCursor }
+  try {
+    const data = await gql(token, `
+      query($first: Int, $after: String) {
+        issueLabels(first: $first, after: $after) {
+          nodes { id name description color }
+          pageInfo { hasNextPage endCursor }
+        }
       }
-    }
-  `, { first: args.first, after: args.after || null });
-  writeStdout(JSON.stringify({ labels: data.issueLabels.nodes, pageInfo: data.issueLabels.pageInfo }, null, 2));
+    `, { first: args.first, after: args.after || null });
+    writeStdout(JSON.stringify({ labels: data.issueLabels.nodes, pageInfo: data.issueLabels.pageInfo }, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdLabels failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 async function cmdTeams(token, args) {
-  const data = await gql(token, `
-    query($first: Int, $after: String) {
-      teams(first: $first, after: $after) {
-        nodes { id key name states { nodes { id name type position } } }
-        pageInfo { hasNextPage endCursor }
+  try {
+    const data = await gql(token, `
+      query($first: Int, $after: String) {
+        teams(first: $first, after: $after) {
+          nodes { id key name states { nodes { id name type position } } }
+          pageInfo { hasNextPage endCursor }
+        }
       }
-    }
-  `, { first: args.first, after: args.after || null });
-  writeStdout(JSON.stringify({ teams: data.teams.nodes, pageInfo: data.teams.pageInfo }, null, 2));
+    `, { first: args.first, after: args.after || null });
+    writeStdout(JSON.stringify({ teams: data.teams.nodes, pageInfo: data.teams.pageInfo }, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdTeams failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 async function cmdProjects(token, args) {
-  const data = await gql(token, `
-    query($first: Int, $after: String) {
-      projects(first: $first, after: $after) {
-        nodes { id name url state teams { nodes { id key name } } }
-        pageInfo { hasNextPage endCursor }
+  try {
+    const data = await gql(token, `
+      query($first: Int, $after: String) {
+        projects(first: $first, after: $after) {
+          nodes { id name url state teams { nodes { id key name } } }
+          pageInfo { hasNextPage endCursor }
+        }
       }
-    }
-  `, { first: args.first, after: args.after || null });
-  writeStdout(JSON.stringify({ projects: data.projects.nodes, pageInfo: data.projects.pageInfo }, null, 2));
+    `, { first: args.first, after: args.after || null });
+    writeStdout(JSON.stringify({ projects: data.projects.nodes, pageInfo: data.projects.pageInfo }, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdProjects failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 async function cmdStates(token, args) {
-  const teamId = resolveTeamId(args.team);
-  const data = await gql(token, `
-    query($id: String!) {
-      team(id: $id) { id key name states { nodes { id name type position } } }
-    }
-  `, { id: teamId });
-  writeStdout(JSON.stringify(data.team, null, 2));
+  try {
+    const teamId = resolveTeamId(args.team);
+    const data = await gql(token, `
+      query($id: String!) {
+        team(id: $id) { id key name states { nodes { id name type position } } }
+      }
+    `, { id: teamId });
+    writeStdout(JSON.stringify(data.team, null, 2));
+  } catch (error) {
+    throw new Error('Linear cmdStates failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
 }
 
 // --- main ---
 
 async function main() {
-  const argv = process.argv.slice(2);
-  const sepIdx = argv.indexOf('--');
-  const scriptArgs = sepIdx >= 0 ? argv.slice(sepIdx + 1) : argv;
+  try {
+    const argv = process.argv.slice(2);
+    const sepIdx = argv.indexOf('--');
+    const scriptArgs = sepIdx >= 0 ? argv.slice(sepIdx + 1) : argv;
 
-  if (scriptArgs.length === 0 || scriptArgs[0] === '--help') {
-    printHelp();
-    return;
-  }
+    if (scriptArgs.length === 0 || scriptArgs[0] === '--help') {
+      printHelp();
+      return;
+    }
 
-  const args = parseArgs(scriptArgs);
-  if (args.help) { printHelp(); return; }
+    const args = parseArgs(scriptArgs);
+    if (args.help) { printHelp(); return; }
 
-  const command = args.positional[0];
-  if (!command) { printHelp(); return; }
+    const command = args.positional[0];
+    if (!command) { printHelp(); return; }
 
-  const token = loadToken();
+    const token = loadToken();
 
-  switch (command) {
-    case 'query': await cmdQuery(token, args); break;
-    case 'issue': await cmdIssue(token, args); break;
-    case 'issues':
-    case 'search': await cmdIssues(token, args); break;
-    case 'create':
-    case 'createIssue': await cmdCreate(token, args); break;
-    case 'comment': await cmdComment(token, args); break;
-    case 'update':
-    case 'updateIssue': await cmdUpdate(token, args); break;
-    case 'labels': await cmdLabels(token, args); break;
-    case 'teams': await cmdTeams(token, args); break;
-    case 'projects': await cmdProjects(token, args); break;
-    case 'states': await cmdStates(token, args); break;
-    default: throw new Error(`unknown command: ${command}. run --help for usage.`);
+    switch (command) {
+      case 'query': await cmdQuery(token, args); break;
+      case 'issue': await cmdIssue(token, args); break;
+      case 'issues':
+      case 'search': await cmdIssues(token, args); break;
+      case 'create':
+      case 'createIssue': await cmdCreate(token, args); break;
+      case 'comment': await cmdComment(token, args); break;
+      case 'comments': await cmdComments(token, args); break;
+      case 'relations': await cmdRelations(token, args); break;
+      case 'relation-create': await cmdCreateRelation(token, args); break;
+      case 'relation-delete': await cmdDeleteRelation(token, args); break;
+      case 'triage': await cmdTriage(token, args); break;
+      case 'update':
+      case 'updateIssue': await cmdUpdate(token, args); break;
+      case 'labels': await cmdLabels(token, args); break;
+      case 'teams': await cmdTeams(token, args); break;
+      case 'projects': await cmdProjects(token, args); break;
+      case 'states': await cmdStates(token, args); break;
+      default: throw new Error(`unknown command: ${command}. run --help for usage.`);
+    }
+  } catch (error) {
+    throw new Error('Linear main failed: ' + (error instanceof Error ? error.message : String(error)), { cause: error });
   }
 }
 
