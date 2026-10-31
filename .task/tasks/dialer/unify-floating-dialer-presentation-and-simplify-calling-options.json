@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/unify-floating-dialer-presentation-and-simplify-calling-options",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2728,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2728",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-unify-floating-dialer-presentation-and-simplify-calling-options",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1654c6446790",
+  "tmuxSession": "opensaas-dialer-unify-floating-dialer-presentation-and-simplify--1654c644",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-unify-floating-dialer-presentation-and-simplify-calling-options/.task/session.json",
+  "createdAt": "2026-10-31T03:06:36.810Z"
+}

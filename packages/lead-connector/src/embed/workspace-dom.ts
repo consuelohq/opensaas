@@ -17,25 +17,34 @@ export const replaceWorkspace = (root: HTMLElement, html: string): void => {
         element.getAttribute('name') ??
         '') +
       ':' +
-      (element.getAttribute('data-endpoint-id') ?? '')
+      (element.getAttribute('data-endpoint-id') ?? '') +
+      (element instanceof root.ownerDocument.defaultView!.HTMLInputElement &&
+      element.type === 'radio'
+        ? ':' + element.value
+        : '')
     );
   };
   const fields = [
     ...root.querySelectorAll<DraftField>('input, textarea, select'),
   ];
   const drafts = new Map(
-    fields.filter(e=>!(e.tagName==='INPUT'&&(e as HTMLInputElement).type==='file')).map((e) => [
-      key(e),
-      {
-        value: e.value,
-        original: originalValue(e),
-        checked: 'checked' in e ? e.checked : null,
-        defaultChecked: 'defaultChecked' in e ? e.defaultChecked : null,
-        focused: e === e.ownerDocument.activeElement,
-        start: 'selectionStart' in e ? e.selectionStart : null,
-        end: 'selectionEnd' in e ? e.selectionEnd : null,
-      },
-    ]),
+    fields
+      .filter(
+        (e) =>
+          !(e.tagName === 'INPUT' && (e as HTMLInputElement).type === 'file'),
+      )
+      .map((e) => [
+        key(e),
+        {
+          value: e.value,
+          original: originalValue(e),
+          checked: 'checked' in e ? e.checked : null,
+          defaultChecked: 'defaultChecked' in e ? e.defaultChecked : null,
+          focused: e === e.ownerDocument.activeElement,
+          start: 'selectionStart' in e ? e.selectionStart : null,
+          end: 'selectionEnd' in e ? e.selectionEnd : null,
+        },
+      ]),
   );
   const disclosures = new Map(
     [

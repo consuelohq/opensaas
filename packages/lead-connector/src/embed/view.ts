@@ -1,4 +1,4 @@
-import { renderWorkspacePage } from './workspace-pages.js';
+import { renderWorkspacePage, pageHeading } from './workspace-pages.js';
 import { renderHistory, renderHistoryDetail } from './workspace-history.js';
 import { planName } from './workspace-format.js';
 import { icon } from './workspace-icons.js';
@@ -11,7 +11,10 @@ import {
   activeCallingMode,
   type CallingWorkspace,
 } from './calling-workspace.js';
-import { renderInboundOperatorPanel } from './inbound-operator-view.js';
+import {
+  renderInboundOperatorPanel,
+  renderInboundQueueDetails,
+} from './inbound-operator-view.js';
 
 const escapeHtml = (value: unknown): string =>
   String(value ?? '')
@@ -161,9 +164,6 @@ const renderCallSetup = (
 ): string => {
   const queueMode = state.setup.mode === 'queue';
   const caller = state.commercialCaller;
-  const lineOptions = caller?.lineOptions.length
-    ? caller.lineOptions
-    : [1, 2, 3];
   const canStart =
     state.sessionToken !== null &&
     state.selectedTargets.length > 0 &&
@@ -196,54 +196,7 @@ const renderCallSetup = (
               <div class="single-contact-list">${renderContactRows(state, surface === 'overlay' ? 4 : 8)}</div>
             </div>`
       }
-      <details class="workspace-details" data-disclosure="call-options"><summary>Calling options<span>Caller ID &amp; lines</span></summary><div class="options-fields">
-      ${renderCombobox({
-        field: 'caller-id',
-        label: 'Call from',
-        value: state.setup.callerIdNumber,
-        placeholder: 'Automatic caller ID',
-        options: [
-          { value: '', label: 'Automatic caller ID' },
-          ...state.callerIds.map((phoneNumber) => ({
-            value: phoneNumber,
-            label: maskPhone(phoneNumber),
-          })),
-        ],
-      })}
-      <label class="check-field"><input type="checkbox" data-field="local-presence"${state.setup.preferLocalPresence ? ' checked' : ''} /><span>Prefer local presence calling</span></label>
-      ${
-        queueMode
-          ? `${renderCombobox({
-              field: 'calling-mode',
-              label: 'Calling mode',
-              value: state.setup.callingMode,
-              placeholder: 'Choose a calling mode',
-              options: [
-                ...(caller?.predictive === false
-                  ? []
-                  : [
-                      {
-                        value: 'predictive',
-                        label: 'Predictive dialing',
-                      },
-                    ]),
-                { value: 'single', label: 'Single (one call at a time)' },
-              ],
-            })}
-             ${renderCombobox({
-               field: 'line-count',
-               label: 'Number of lines',
-               value: String(state.setup.requestedFanout),
-               placeholder: 'Choose line count',
-               options: lineOptions.map((line) => ({
-                 value: String(line),
-                 label: line === 1 ? 'One' : String(line),
-               })),
-               disabled: state.setup.callingMode === 'single',
-             })}`
-          : ''
-      }
-      </div></details>
+      <button type="button" class="calling-options-entry" data-action="workspace-call-options"><span>${icon('settings')}<strong>Calling options</strong></span><span>${state.setup.callerIdNumber ? maskPhone(state.setup.callerIdNumber) : 'Automatic caller ID'} ${icon('arrow')}</span></button>
     </div>
     ${state.selectedTargets.length ? '<div class="target-list">' + renderSelectedTargets(state) + '</div>' : ''}
     ${caller && !caller.canStartCall ? `<p class="notice notice--error" role="status">Calling is unavailable: ${escapeHtml(phaseLabel(caller.denialCode ?? 'commercial access blocked'))}.</p>` : ''}
@@ -251,6 +204,49 @@ const renderCallSetup = (
       <button type="button" class="button button--primary" data-action="start-configured"${canStart ? '' : ' disabled'}>Start calling</button>
     </div>
   </section>`;
+};
+
+const renderCallOptions = (state: LeadConnectorEmbedState): string => {
+  const caller = state.commercialCaller;
+  const choices = (
+    field: string,
+    value: string,
+    options: ComboboxOption[],
+    disabled = false,
+  ) =>
+    options
+      .map(
+        (option) =>
+          `<label class="option-choice"><input type="radio" name="${field}" data-field="${field}" value="${escapeHtml(option.value)}"${option.value === value ? ' checked' : ''}${disabled ? ' disabled' : ''} /><span>${escapeHtml(option.label)}</span></label>`,
+      )
+      .join('');
+  return (
+    pageHeading(
+      'Calling options',
+      'Set up this calling session. Changes are saved as you choose.',
+    ) +
+    `<div class="calling-options-page">
+      <fieldset class="option-group"><legend>Caller ID</legend>${choices('caller-id', state.setup.callerIdNumber ?? '', [{ value: '', label: 'Choose automatically' }, ...state.callerIds.map((number) => ({ value: number, label: maskPhone(number) }))])}</fieldset>
+      <label class="option-toggle"><span><strong>Local presence</strong><small>Prefer a caller ID near the person you’re calling.</small></span><input type="checkbox" data-field="local-presence"${state.setup.preferLocalPresence ? ' checked' : ''} /></label>
+      ${
+        state.setup.mode === 'queue'
+          ? `<fieldset class="option-group"><legend>Calling mode</legend>${choices('calling-mode', state.setup.callingMode, [...(caller?.predictive === false ? [] : [{ value: 'predictive', label: 'Predictive dialing' }]), { value: 'single', label: 'One call at a time' }])}</fieldset>
+      <fieldset class="option-group"><legend>Calling lines</legend><div class="line-choices">${choices(
+        'line-count',
+        String(state.setup.requestedFanout),
+        (caller?.lineOptions.length ? caller.lineOptions : [1, 2, 3]).map(
+          (line) => ({
+            value: String(line),
+            label: line === 1 ? '1 line' : `${line} lines`,
+          }),
+        ),
+        state.setup.callingMode === 'single',
+      )}</div><p class="form-caption">${state.setup.callingMode === 'single' ? 'One call at a time uses one line.' : 'The maximum simultaneous calls in this session.'}</p></fieldset>`
+          : ''
+      }
+      <button type="button" class="button button--primary primary-wide" data-action="workspace-calling">Done</button>
+    </div>`
+  );
 };
 
 const renderWrapUp = (state: LeadConnectorEmbedState): string => {
@@ -355,6 +351,8 @@ export const renderLeadConnectorEmbed = (
     mode: surface === 'admin' ? 'inbound' : 'outbound',
     compact: false,
   };
+  if (surface === 'admin' && requested.nativeFloating)
+    return `<main class="native-launcher" data-workspace data-workspace-screen="launcher"><img src="/consuelo-logo.svg" alt="" width="40" height="40" /><h1>Consuelo Dialer</h1><p>Your calling window floats above your CRM.</p><button type="button" class="button button--primary" data-action="workspace-open-floating">Open calling window</button></main>`;
   const callMode = activeCallingMode(state);
   const workspace = { ...requested, mode: callMode ?? requested.mode };
   const status = sessionPresentation(state, workspace.mode);
@@ -372,23 +370,30 @@ export const renderLeadConnectorEmbed = (
                 selectedEndpointIds: workspace.answeringEndpointIds,
               })
             : renderOverlayStage(state)
-      : workspace.screen === 'history'
-        ? renderHistory(state)
-        : workspace.screen === 'call-detail'
-          ? renderHistoryDetail(state)
-          : renderWorkspacePage(state, workspace);
+      : workspace.screen === 'queue-details'
+        ? pageHeading('Queue details', 'Incoming calls for your team.') +
+          renderInboundQueueDetails(state.inboundOperator)
+        : workspace.screen === 'call-options'
+          ? renderCallOptions(state)
+          : workspace.screen === 'history'
+            ? renderHistory(state)
+            : workspace.screen === 'call-detail'
+              ? renderHistoryDetail(state)
+              : renderWorkspacePage(state, workspace);
   const parentScreen =
     workspace.screen === 'mercury' &&
     (workspace.scriptId || workspace.scriptDraft)
       ? 'mercury'
-      : ['team', 'numbers', 'billing', 'appearance'].includes(workspace.screen)
+      : ['team', 'numbers', 'billing', 'appearance', 'mercury'].includes(
+            workspace.screen,
+          )
         ? 'settings'
         : workspace.screen === 'call-detail'
           ? 'history'
           : 'calling';
   const remaining = state.commercialCaller?.remainingMinutes;
   return `<main class="calling-workspace" data-workspace data-workspace-screen="${workspace.screen}" data-workspace-compact="false" data-surface="${surface}" data-phase="${state.phase}">
-  <header class="workspace-header"><a class="workspace-brand" href="https://consuelohq.com/" target="_blank" rel="noopener noreferrer" aria-label="Consuelo Dialer"><img src="/consuelo-logo.svg" data-brand-logo width="36" height="36" alt="" /><span class="workspace-wordmark"><span>CONSUELO</span><span>DIALER</span></span></a><nav aria-label="Workspace"><button type="button" class="header-action" data-action="workspace-history" aria-label="Call history" aria-pressed="${workspace.screen === 'history' || workspace.screen === 'call-detail'}">${icon('history')}<span>History</span></button><button type="button" class="header-action" data-action="workspace-mercury" aria-label="Mercury scripts" aria-pressed="${workspace.screen === 'mercury'}">${icon('script')}<span>Mercury</span></button><button type="button" class="icon-button" data-action="workspace-settings" aria-label="Settings">${icon('settings')}</button>${surface === 'overlay' || status.active ? `<button type="button" class="icon-button" data-action="workspace-minimize" aria-label="Minimize calling window">${icon('minus')}</button>` : ''}</nav></header>
+  <header class="workspace-header"><a class="workspace-brand" href="https://consuelohq.com/" target="_blank" rel="noopener noreferrer" aria-label="Consuelo Dialer"><img src="/consuelo-logo.svg" data-brand-logo width="36" height="36" alt="" /><span class="workspace-wordmark"><span>CONSUELO</span><span>DIALER</span></span></a><nav aria-label="Workspace"><button type="button" class="header-action" data-action="workspace-history" aria-label="Call history" aria-pressed="${workspace.screen === 'history' || workspace.screen === 'call-detail'}">${icon('history')}<span>History</span></button><button type="button" class="icon-button" data-action="workspace-settings" aria-label="Settings">${icon('settings')}</button>${surface === 'overlay' || status.active ? `<button type="button" class="icon-button" data-action="workspace-minimize" aria-label="Minimize calling window">${icon('minus')}</button>` : ''}</nav></header>
   ${workspace.screen === 'calling' ? `<div class="direction-tabs" role="tablist" aria-label="Calling direction"><button type="button" role="tab" aria-selected="${workspace.mode === 'inbound'}" data-action="workspace-inbound"${callMode === 'outbound' ? ' disabled' : ''}>${icon('incoming')} Inbound</button><button type="button" role="tab" aria-selected="${workspace.mode === 'outbound'}" data-action="workspace-outbound"${callMode === 'inbound' ? ' disabled' : ''}>${icon('outgoing')} Outbound</button></div>` : `<div class="page-breadcrumb"><button type="button" class="text-button" data-action="workspace-${parentScreen}">${icon('back')} ${parentScreen === 'settings' ? 'Settings' : parentScreen === 'history' ? 'Call history' : 'Back to calling'}</button>${status.active ? `<button type="button" class="live-indicator" data-action="workspace-calling"><span class="session-dot"></span>${escapeHtml(status.label)}</button>` : ''}</div>`}
   <div class="workspace-content">${workspace.screen !== 'calling' ? renderError(state) : ''}${body}</div>
   ${!loading ? `<footer class="workspace-footer"><button type="button" class="plan-entry" data-action="workspace-billing" aria-label="Open plan and billing"><strong>${escapeHtml(planName(state))}</strong><span>${remaining == null ? (remaining === null ? 'Unlimited minutes' : '') : escapeHtml(remaining.toLocaleString('en-US')) + ' minutes left'}</span>${icon('arrow')}</button><a href="https://docs.consuelohq.com/" target="_blank" rel="noopener noreferrer">Learn more</a></footer>` : ''}

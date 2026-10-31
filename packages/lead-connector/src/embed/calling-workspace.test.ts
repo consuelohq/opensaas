@@ -141,13 +141,15 @@ describe('rep-first calling workspace', () => {
     expect(doc.querySelector('form')).toBeNull();
   });
 
-  it('keeps advanced outbound options closed and requires an explicit start', () => {
+  it('opens advanced outbound options as a separate page and requires an explicit start', () => {
     const doc = dom(renderLeadConnectorEmbed(rep(), { surface: 'overlay' }));
     const options = doc.querySelector(
       'details[data-disclosure="call-options"]',
     );
-    expect(options).not.toBeNull();
-    expect(options?.hasAttribute('open')).toBe(false);
+    expect(options).toBeNull();
+    expect(
+      doc.querySelector('[data-action="workspace-call-options"]'),
+    ).not.toBeNull();
     expect(
       doc.querySelector('[data-action="start-configured"]')?.textContent,
     ).toContain('Start calling');
@@ -218,5 +220,55 @@ describe('rep-first calling workspace', () => {
     expect(
       doc.querySelector('[data-action="select-call"]')?.textContent,
     ).toContain('Call');
+  });
+});
+
+describe('floating workspace pages', () => {
+  it('keeps Mercury in Settings and moves queue details out of the setup form', () => {
+    const doc = dom(
+      renderLeadConnectorEmbed(rep(), {
+        surface: 'overlay',
+        workspace: { screen: 'calling', mode: 'inbound', compact: false },
+      }),
+    );
+    expect(
+      doc.querySelector('.workspace-header [data-action="workspace-mercury"]'),
+    ).toBeNull();
+    expect(
+      doc.querySelector('details[data-disclosure="inbound-queue"]'),
+    ).toBeNull();
+    expect(
+      doc.querySelector('[data-action="workspace-queue-details"]'),
+    ).not.toBeNull();
+    const detail = dom(
+      renderLeadConnectorEmbed(rep(), {
+        surface: 'overlay',
+        workspace: { screen: 'queue-details', mode: 'inbound', compact: false },
+      }),
+    );
+    expect(detail.querySelector('#workspace-page-title')?.textContent).toBe(
+      'Queue details',
+    );
+    expect(detail.body.textContent).toContain('Longest wait');
+    expect(
+      detail.querySelector('[data-action="inbound-readiness"]'),
+    ).toBeNull();
+  });
+  it('gives calling options their own page without nested dropdowns', () => {
+    const state = rep();
+    state.callerIds = ['+15550103891'];
+    const doc = dom(
+      renderLeadConnectorEmbed(state, {
+        surface: 'overlay',
+        workspace: { screen: 'call-options', mode: 'outbound', compact: false },
+      }),
+    );
+    expect(doc.querySelector('#workspace-page-title')?.textContent).toBe(
+      'Calling options',
+    );
+    expect(doc.querySelector('details')).toBeNull();
+    expect(doc.querySelector('[data-field="caller-id"]')).not.toBeNull();
+    expect(doc.querySelector('[data-field="calling-mode"]')).not.toBeNull();
+    expect(doc.querySelector('[data-action="start-configured"]')).toBeNull();
   });
 });

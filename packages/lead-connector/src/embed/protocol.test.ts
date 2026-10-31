@@ -302,3 +302,26 @@ describe('LeadConnector embed protocol', () => {
     });
   });
 });
+
+it('accepts a workspace acknowledgement only from the exact active parent', () => {
+  const fixture = createHost();
+  const messages: unknown[] = [];
+  const origin = LEAD_CONNECTOR_PARENT_ORIGINS[2];
+  const bridge = createLeadConnectorParentBridge(fixture.host, {
+    allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
+    parentOrigin: origin,
+    onMessage: (m) => messages.push(m),
+  });
+  bridge.start();
+  bridge.requestUserContext();
+  const ack = {
+    type: 'consuelo.leadconnector/workspace-opened',
+    version: 1,
+    id: 'launch-1',
+  };
+  fixture.dispatch('https://attacker.test', ack);
+  fixture.dispatch(origin, ack, {});
+  expect(messages).toEqual([]);
+  fixture.dispatch(origin, ack);
+  expect(messages).toEqual([{ type: 'workspace-opened', id: 'launch-1' }]);
+});

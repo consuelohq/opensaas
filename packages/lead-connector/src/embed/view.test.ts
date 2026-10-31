@@ -324,10 +324,15 @@ describe('LeadConnector embed view', () => {
     expect(html).toContain('Marketing Pipeline');
     expect(html).toContain('New Lead');
     expect(html).toContain('Hot Lead');
-    expect(html).toContain('Prefer local presence calling');
-    expect(html).toContain('Predictive dialing');
-    expect(html).toContain('Single (one call at a time)');
-    expect(html).toContain('Number of lines');
+    expect(html).toContain('data-action="workspace-call-options"');
+    const options = renderLeadConnectorEmbed(state, {
+      surface: 'overlay',
+      workspace: { screen: 'call-options', mode: 'outbound', compact: false },
+    });
+    expect(options).toContain('Local presence');
+    expect(options).toContain('Predictive dialing');
+    expect(options).toContain('One call at a time');
+    expect(options).toContain('Calling lines');
     expect(html).not.toContain('Choose someone to call');
     expect(html).not.toContain('<h3>Deals</h3>');
     expect(html).not.toContain('AI coaching');

@@ -17,6 +17,7 @@
   var ready = false;
   var busy = false;
   var minimized = false;
+  var nativeWorkspaceRoute = null;
   var pendingWorkspace = null;
   var workspaceLaunchSent = false;
   var ownedLocation = null;
@@ -27,7 +28,9 @@
   function routeAllowed() {
     var path = window.location.pathname;
     return (
-      path.indexOf('/contacts') !== -1 || path.indexOf('/opportunities') !== -1
+      path.indexOf('/contacts') !== -1 ||
+      path.indexOf('/opportunities') !== -1 ||
+      nativeWorkspaceRoute === window.location.href
     );
   }
 
@@ -105,6 +108,7 @@
     ready = false;
     minimized = false;
     ownedLocation = null;
+    nativeWorkspaceRoute = null;
     pendingWorkspace = null;
     pending = null;
     sessionContextPromise = null;
@@ -152,7 +156,9 @@
     button.className = 'consuelo-dialer-launcher';
     button.setAttribute('aria-label', 'Open Consuelo Dialer');
     button.innerHTML =
-      '<img src="'+origin+'/consuelo-logo.svg" alt="" class="consuelo-dialer-launcher__icon" />' +
+      '<img src="' +
+      origin +
+      '/consuelo-logo.svg" alt="" class="consuelo-dialer-launcher__icon" />' +
       '<span>Dial</span>';
     button.addEventListener('click', openOverlay);
     document.body.appendChild(button);
@@ -439,13 +445,31 @@
       data.type === 'consuelo.leadconnector/open-workspace' &&
       nativeWorkspaceSource(event)
     ) {
-      if (!data.launch || typeof data.launch.id !== 'string') return;
+      if (
+        !data.launch ||
+        typeof data.launch.id !== 'string' ||
+        data.launch.id.length > 200
+      )
+        return;
       if (busy && ownedLocation !== currentLocation()) return;
+      nativeWorkspaceRoute = window.location.href;
+      var acknowledgeNative = function () {
+        if (!panel || !frame) return;
+        event.source.postMessage(
+          {
+            type: 'consuelo.leadconnector/workspace-opened',
+            version: 1,
+            id: data.launch.id,
+          },
+          origin,
+        );
+      };
       if (
         pendingWorkspace ||
         (busy && data.launch.action === 'start-configured')
       ) {
         openOverlay();
+        acknowledgeNative();
         return;
       }
       workspaceLaunchSent = false;
@@ -456,6 +480,7 @@
       };
       busy = true;
       openOverlay();
+      acknowledgeNative();
       if (ready) {
         workspaceLaunchSent = true;
         post(pendingWorkspace);
@@ -522,7 +547,10 @@
       var previouslyBusy = busy;
       busy = data.active || pendingWorkspace !== null;
       var host = document.getElementById(hostId);
-      if(host){host.setAttribute('data-modern','true');host.setAttribute('data-live',busy?'true':'false');}
+      if (host) {
+        host.setAttribute('data-modern', 'true');
+        host.setAttribute('data-live', busy ? 'true' : 'false');
+      }
       // Raise incoming calls once, while repeated snapshots respect a deliberate minimize.
       var incoming = data.status === 'offering';
       if (

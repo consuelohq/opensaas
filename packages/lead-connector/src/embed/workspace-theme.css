@@ -22,7 +22,7 @@ body:has([data-workspace]) {
   --blue-soft: #f2f2ee;
   --danger: #aa3d35;
   --success: #38745a;
-  background: #e8e8e5;
+  background: transparent;
   color: var(--ink);
   font-family:
     Consuelo Interface,
@@ -43,7 +43,7 @@ html[data-theme='dark'] body:has([data-workspace]) {
   --blue-soft: #31312e;
   --danger: #ef9a91;
   --success: #98c5ad;
-  background: #191918;
+  background: transparent;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -57,7 +57,7 @@ html[data-theme='dark'] body:has([data-workspace]) {
     --blue-soft: #31312e;
     --danger: #ef9a91;
     --success: #98c5ad;
-    background: #191918;
+    background: transparent;
     color-scheme: dark;
   }
 }
@@ -68,7 +68,7 @@ body[data-surface='overlay']:has([data-workspace]) {
 }
 .calling-workspace {
   width: min(520px, calc(100% - 32px));
-  height: min(720px, calc(100dvh - 48px));
+  height: min(clamp(640px, 75dvh, 1100px), calc(100dvh - 48px));
   margin: 24px auto;
   padding: 0;
   display: flex;
@@ -216,7 +216,8 @@ body[data-surface='overlay'] .calling-workspace {
   margin: 22px 24px 0;
   padding: 4px;
   border-radius: 10px;
-  background: var(--soft);
+  background: transparent;
+  border: 1px solid var(--line);
 }
 .direction-tabs button {
   display: flex;
@@ -232,7 +233,7 @@ body[data-surface='overlay'] .calling-workspace {
   font-weight: 550;
 }
 .direction-tabs button[aria-selected='true'] {
-  background: var(--paper);
+  background: var(--soft);
   color: var(--ink);
   box-shadow: 0 1px 4px #0000000b;
 }
@@ -336,7 +337,8 @@ body[data-surface='overlay'] .calling-workspace {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
-.calling-workspace input[type='checkbox'] {
+.calling-workspace input[type='checkbox'],
+.calling-workspace input[type='radio'] {
   appearance: auto;
   width: 15px;
   height: 15px;
@@ -1283,4 +1285,137 @@ body:has([data-workspace]) {
   .direction-tabs {
     margin: 16px 16px 0;
   }
+}
+
+/* The parent script owns the backdrop. A cross-origin sidebar stays transparent. */
+html:has(body[data-surface='admin']),
+body[data-surface='admin']:has([data-workspace]) {
+  background: transparent;
+}
+.workspace-header,
+.workspace-footer,
+.page-breadcrumb {
+  background: transparent;
+}
+.native-launcher {
+  width: min(360px, calc(100% - 40px));
+  margin: 56px auto;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 14px;
+  color: var(--ink);
+}
+.native-launcher h1 {
+  font-size: 22px;
+  margin: 0;
+}
+.native-launcher p {
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.native-launcher img {
+  border-radius: 10px;
+}
+.native-launcher .button--primary {
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+}
+.calling-workspace .setup-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.calling-workspace .calling-options-entry {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+  padding: 18px 0;
+  margin: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font-size: 11px;
+}
+.calling-options-entry > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.calling-options-entry strong {
+  font-weight: 550;
+}
+.calling-options-entry > span:last-child {
+  color: var(--muted);
+  font-size: 10px;
+}
+.calling-options-entry > span:last-child svg {
+  width: 14px;
+  height: 14px;
+}
+.calling-options-page {
+  display: grid;
+  gap: 26px;
+}
+.option-group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.option-group legend {
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 550;
+}
+.calling-workspace .option-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 14px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--ink);
+}
+.option-choice:has(:checked) {
+  background: var(--soft);
+  border-color: var(--muted);
+}
+.calling-workspace .option-choice input {
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+.calling-workspace .option-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+}
+.option-toggle strong {
+  font-weight: 550;
+}
+.option-toggle small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.line-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 8px;
+}
+.calling-workspace .line-choices .option-choice {
+  margin: 0;
 }
