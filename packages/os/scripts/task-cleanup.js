@@ -302,6 +302,14 @@ async function main() {
       continue;
     }
 
+    // --merged is unattended pruning, not authorization to terminate a live
+    // agent or discard a durable task recovery record. Use --stale-days to
+    // evict inactive worktrees with a verified recovery archive instead.
+    if (args.merged && (durable || worktreePath)) {
+      result.skipped.push({ branch, reason: 'registered task session or checked-out worktree' });
+      continue;
+    }
+
     const staleOnly = args.staleDays !== undefined && !args.merged;
     if (staleOnly) {
       if (!durable) {

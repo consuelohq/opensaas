@@ -1,0 +1,270 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics",
+  "base": "origin/task/os/fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics",
+  "headSha": "0692c75c8b5ab480f7bc1dfb3476f6bf0061ecf8",
+  "changeHash": "761a4a8d9b790381e7adaff0cb24b9b5dea88688de4bc90e6a423713fdf2f119",
+  "changedFiles": [
+    "packages/os/scripts/lib/git.js",
+    "packages/os/scripts/task-cleanup.js",
+    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+    "packages/os/tests/task-cleanup-merged-targets.test.ts",
+    "packages/os/tests/trace-analytics-live-db.test.ts",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/task-cleanup.js",
+    "scripts/operator/trace-analytics-db.ts",
+    "scripts/operator/trace-analytics.ts"
+  ],
+  "verifiedAt": "2026-10-31T08:02:31.638Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics/evidence-log.json",
+        ".task/os/fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics/read-log.json",
+        ".task/os/fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics/workpad.md",
+        ".task/tasks/os/fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics.json",
+        "packages/os/scripts/lib/git.js",
+        "packages/os/scripts/task-cleanup.js",
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+        "packages/os/tests/task-cleanup-merged-targets.test.ts",
+        "packages/os/tests/trace-analytics-live-db.test.ts",
+        "packages/workspace/scripts/lib/git.js",
+        "packages/workspace/scripts/task-cleanup.js",
+        "scripts/operator/trace-analytics-db.ts",
+        "scripts/operator/trace-analytics.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-task-session",
+          "critical": true,
+          "reason": "Task routing and metadata changes must prove task-session behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-cleanup.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-task-worktree-eviction",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/task-cleanup.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-script-parity-audit",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS/workspace script inventory and classification changes must prove the focused parity audit without selecting the unrelated whole-OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/audit/fixtures/script-parity-classifications.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/git.js",
+            "packages/os/tests/task-cleanup-merged-targets.test.ts",
+            "packages/os/tests/trace-analytics-live-db.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts",
+            "packages/workspace/tests/task-init.test.js",
+            "packages/workspace/tests/task-selection.test.js",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-worktree-eviction.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true
+        },
+        {
+          "name": "OS script parity audit contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
+          ],
+          "ruleId": "os-script-parity-audit",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts",
+            "packages/workspace/tests/task-init.test.js",
+            "packages/workspace/tests/task-selection.test.js",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-worktree-eviction.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-task-session",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5270,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-selection.test.js:\n(pass) findActiveTaskResult includes the current task worktree [97.02ms]\n(pass) findActiveTaskCandidates can recover metadata from the durable registry [75.88ms]\n(pass) findActiveTaskResult recovers an evicted taskSession even when no worktree candidate exists [21.06ms]\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [0.60ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.47ms]\n\npackages/workspace/tests/task-worktree-eviction.test.ts:\n(pass) durable activity lease updates lastActiveAt without rewriting task creation time [215.52ms]\n(pass) recovery archive captures dirty, untracked, and locally-ahead state without changing the real branch or index [415.46ms]\n(pass) dirty task eviction archives unique state, removes the worktree, and restores the exact file contents [529.14ms]\n(pass) clean remote-backed task eviction needs no recovery bundle and keeps the branch recoverable [339.02ms]\n(pass) archive failure is fail-closed and never removes the worktree [276.90ms]\n(pass) tampered recovery bundle is rejected before restore and the archive remains available [378.05ms]\n(pass) an evicting task with its worktree still present rejects recovery instead of racing eviction [212.64ms]\n(pass) stale evicting task with a live worktree recovers to active after the eviction lease expires [210.61ms]\n(pass) stale evicting task with a removed worktree is finalized as evicted and restored [252.95ms]\n(pass) durable registry transition rejects a stale updatedAt compare-and-swap writer [277.38ms]\n(pass) durable registry transitions reject stale status writers [256.48ms]\n(pass) corrupt recovery manifest reports the manifest path [404.99ms]\n(pass) evicting task rejects recovery even after its worktree has been removed [227.98ms]\n(pass) final recovery cleanup deletes only task-owned archive and registry state [402.56ms]\n(pass) inactivity GC evicts only active worktrees whose last activity exceeds the lease [2.44ms]\n\npackages/workspace/tests/durable-task-worktrees.test.ts:\n(pass) task worktrees default to durable Consuelo node storage without changing generic temp worktrees [0.21ms]\n(pass) durable registry round-trips taskSession metadata outside the worktree [0.79ms]\n\npackages/workspace/tests/task-init.test.js:\n(pass) task:init preserves compatible surviving PR and session metadata [97.73ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.08ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.17ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.12ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.25ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.07ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.05ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.04ms]\n(pass) recoverDurableTaskSession validates branch and recreates missing tmux [61.23ms]\n(pass) writeTaskSessionMetadata mirrors session state into the durable registry [1.41ms]\n(pass) recoverDurableTaskSession restores an evicted worktree before recreating tmux [452.31ms]\n\n 36 pass\n 0 fail\n 111 expect() calls\nRan 36 tests across 6 files. [5.26s]\n"
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5054,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/task-worktree-gc-scheduler.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/durable-task-worktrees.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-session.test.js \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 667\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recoverDurableTaskSession restores an evicted worktree before recreating tmux \u001b[33m 578\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-worktree-eviction.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4751\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recovery archive captures dirty, untracked, and locally-ahead state without changing the real branch or index \u001b[33m 519\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m dirty task eviction archives unique state, removes the worktree, and restores the exact file contents \u001b[33m 563\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m clean remote-backed task eviction needs no recovery bundle and keeps the branch recoverable \u001b[33m 363\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m tampered recovery bundle is rejected before restore and the archive remains available \u001b[33m 412\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m corrupt recovery manifest reports the manifest path \u001b[33m 416\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m final recovery cleanup deletes only task-owned archive and registry state \u001b[33m 442\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m32 passed\u001b[39m\u001b[22m\u001b[90m (32)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:01:21\n\u001b[2m   Duration \u001b[22m 4.88s\u001b[2m (transform 117ms, setup 0ms, import 213ms, tests 5.42s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2073,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS script parity audit contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-script-parity-audit",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 327,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/audit/script-parity-audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 51\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:01:28\n\u001b[2m   Duration \u001b[22m 138ms\u001b[2m (transform 19ms, setup 0ms, import 26ms, tests 51ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 63077,
+          "outputTail": ":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:24.935Z\"}\n(node:92728) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:25.067Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:25.094Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\",\\\"version\\\":\\\"1.2.3\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --version 1.2.3 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:25.106Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:25.130Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:25.147Z\"}\n(node:92760) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:25.653Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:25.673Z\"}\n(node:92844) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:93248) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:93353) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:94319) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
