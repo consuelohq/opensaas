@@ -139,12 +139,35 @@ it('preserves the current page scroll during polling and resets it for navigatio
   );
 });
 
-it('never restores a browser file-picker value during a snapshot redraw',()=>{
- const document=new JSDOM('<div id="app"></div>').window.document;
- const root=document.querySelector<HTMLElement>('#app')!;
- const markup='<form data-form="coaching-script"><input type="file" data-field="script-file" /></form>';
- replaceWorkspace(root,markup);
- Object.defineProperty(root.querySelector('input')!,'value',{value:'C:\\fakepath\\playbook.md',configurable:true});
- expect(()=>replaceWorkspace(root,markup)).not.toThrow();
- expect(root.querySelector<HTMLInputElement>('input')!.value).toBe('');
+it('never restores a browser file-picker value during a snapshot redraw', () => {
+  const document = new JSDOM('<div id="app"></div>').window.document;
+  const root = document.querySelector<HTMLElement>('#app')!;
+  const markup =
+    '<form data-form="coaching-script"><input type="file" data-field="script-file" /></form>';
+  replaceWorkspace(root, markup);
+  Object.defineProperty(root.querySelector('input')!, 'value', {
+    value: 'C:\\fakepath\\playbook.md',
+    configurable: true,
+  });
+  expect(() => replaceWorkspace(root, markup)).not.toThrow();
+  expect(root.querySelector<HTMLInputElement>('input')!.value).toBe('');
+});
+
+it('keeps the selected radio and focus associated with its own option across a snapshot', () => {
+  const doc = new JSDOM('<div id="root"></div>').window.document;
+  const root = doc.querySelector<HTMLElement>('#root')!;
+  const view = (selected: string) =>
+    `<main data-workspace data-workspace-screen="call-options">${['single', 'predictive'].map((value) => `<input type="radio" data-field="calling-mode" name="mode" value="${value}"${value === selected ? ' checked' : ''}>`).join('')}</main>`;
+  replaceWorkspace(root, view('single'));
+  const choice = root.querySelector<HTMLInputElement>('input[value="single"]')!;
+  choice.focus();
+  replaceWorkspace(root, view('single'));
+  expect((doc.activeElement as HTMLInputElement).value).toBe('single');
+  expect(
+    root.querySelector<HTMLInputElement>('input[value="single"]')!.checked,
+  ).toBe(true);
+  replaceWorkspace(root, view('predictive'));
+  expect(
+    root.querySelector<HTMLInputElement>('input[value="predictive"]')!.checked,
+  ).toBe(true);
 });

@@ -1,3 +1,4 @@
+import { createNativeWorkspaceLauncher } from './native-workspace.js';
 import { createLeadConnectorEmbedApi } from './api-client.js';
 import { createLeadConnectorInboundOperatorApi } from './inbound-operator.js';
 import { createLeadConnectorAgentVoice } from './agent-voice.js';
@@ -177,6 +178,10 @@ const bridge = createLeadConnectorParentBridge(window, {
   allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
   parentOrigin,
   onMessage: (message) => {
+    if (message.type === 'workspace-opened') {
+      if (surface === 'admin') nativeLauncher.acknowledge(message.id);
+      return;
+    }
     if (message.type === 'workspace-presentation') {
       if (surface !== 'overlay') return;
       workspace.compact = message.compact;
@@ -195,6 +200,7 @@ const bridge = createLeadConnectorParentBridge(window, {
         const phase = controller.getState().phase;
         if (phase === 'ready' || phase === 'target-selected') {
           bridge.sendReady();
+          if (surface === 'admin') nativeLauncher.requestOnce();
           void applyLaunch();
         }
       });
@@ -206,6 +212,7 @@ const bridge = createLeadConnectorParentBridge(window, {
         const phase = controller.getState().phase;
         if (phase === 'ready' || phase === 'target-selected') {
           bridge.sendReady();
+          if (surface === 'admin') nativeLauncher.requestOnce();
           void applyLaunch();
         }
       });
@@ -228,6 +235,17 @@ const bridge = createLeadConnectorParentBridge(window, {
     if (message.autoDial) void controller.startCall('single');
   },
   onProtocolError: failBootstrap,
+});
+
+const nativeLauncher = createNativeWorkspaceLauncher({
+  open: (launch) => bridge.openWorkspace(launch),
+  newId: () => crypto.randomUUID(),
+  schedule: (fn, delay) => window.setTimeout(fn, delay),
+  cancel: (id) => window.clearTimeout(id),
+  onOpened: () => {
+    workspace.nativeFloating = true;
+    render();
+  },
 });
 
 const stopRefresh = (): void => {
@@ -444,6 +462,10 @@ root.addEventListener('click', (event) => {
     (actionElement instanceof HTMLButtonElement && actionElement.disabled)
   )
     return;
+  if (action === 'workspace-open-floating') {
+    nativeLauncher.open();
+    return;
+  }
   if (action.startsWith('workspace-')) {
     if (action === 'workspace-minimize' || action === 'workspace-expand') {
       if (surface === 'admin')
@@ -481,6 +503,8 @@ root.addEventListener('click', (event) => {
         'numbers',
         'billing',
         'appearance',
+        'queue-details',
+        'call-options',
         'mercury',
       ].includes(page)
     )
@@ -1089,6 +1113,7 @@ window.addEventListener('beforeunload', () => {
   if (inboundHeartbeatTimer) clearInterval(inboundHeartbeatTimer);
   idleRefreshScheduler.stop();
   interactionRenderer.dispose();
+  nativeLauncher.dispose();
   voice.disconnect();
   bridge.stop();
 });

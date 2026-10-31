@@ -62,6 +62,11 @@ export const renderInboundOperatorPanel = (
     ${!busy ? `<fieldset class="answering-devices"><legend>Answer calls on</legend>${state.rep.endpoints.map((e) => endpointRow(e, state.rep.ready, state.rep.ready ? undefined : options.selectedEndpointIds)).join('') || '<p class="resource-empty">No answering device is set up yet.</p>'}${!state.rep.endpoints.some((e) => e.kind === 'browser') ? `<div class="device-unavailable"><span class="device-icon">${icon('browser')}</span><span><strong>This browser</strong><small>Browser answering isn’t enabled for this workspace yet.</small></span></div>` : ''}</fieldset>` : ''}
     <button type="button" class="button ${state.rep.ready ? 'button--secondary' : 'button--primary'} primary-wide" data-action="inbound-readiness" data-ready="${!state.rep.ready}"${canToggle ? '' : ' disabled'}>${state.pendingAction ? 'Updating…' : state.rep.ready ? 'Stop receiving calls' : 'Start receiving calls'}</button>
     
-    <details class="workspace-details" data-disclosure="inbound-queue"><summary>Queue details <span>${state.queue.waitingCount} waiting</span></summary><dl class="detail-list"><div><dt>Queue</dt><dd>${escapeHtml(state.queue.queueName || 'Your team')}</dd></div><div><dt>Longest wait</dt><dd>${state.queue.oldestWaitSeconds}s</dd></div><div><dt>Business hours</dt><dd>${title(state.queue.businessHours)}</dd></div><div><dt>Overflow</dt><dd>${title(state.queue.overflow)}</dd></div><div><dt>Number</dt><dd>${escapeHtml(state.configuration.maskedNumber)}</dd></div></dl></details>
+    <button type="button" class="calling-options-entry" data-action="workspace-queue-details"><span><strong>Queue details</strong></span><span>${state.queue.waitingCount} waiting ${icon('arrow')}</span></button>
   </section>`;
 };
+
+export const renderInboundQueueDetails = (
+  state: InboundOperatorState,
+): string =>
+  `<dl class="detail-list"><div><dt>Queue</dt><dd>${escapeHtml(state.queue.queueName || 'Your team')}</dd></div><div><dt>Longest wait</dt><dd>${state.queue.oldestWaitSeconds}s</dd></div><div><dt>Business hours</dt><dd>${title(state.queue.businessHours)}</dd></div><div><dt>Overflow</dt><dd>${title(state.queue.overflow)}</dd></div><div><dt>Number</dt><dd>${escapeHtml(state.configuration.maskedNumber)}</dd></div></dl>`;
