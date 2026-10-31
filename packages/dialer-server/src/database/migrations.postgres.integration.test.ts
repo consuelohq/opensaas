@@ -99,7 +99,7 @@ suite('LeadConnector company credential upgrades with isolated PostgreSQL', () =
       await run([initDb, '-D', dataDirectory, '--auth=trust', '--username=postgres', '--no-locale']);
       await run([
         pgCtl, '-D', dataDirectory, '-l', join(root, 'postgres.log'),
-        '-o', `-h 127.0.0.1 -p ${port} -F`, '-w', 'start',
+        '-o', `-h 127.0.0.1 -p ${port} -F -c unix_socket_directories=''`, '-w', 'start',
       ]);
       started = true;
       pool = new Pool({
@@ -128,7 +128,7 @@ suite('LeadConnector company credential upgrades with isolated PostgreSQL', () =
       );
       await pool.query(
         'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = ANY($1::text[])',
-        [[DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,COACHING_SCRIPTS_MIGRATION_ID]],
+        [[DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,COACHING_SCRIPTS_MIGRATION_ID,'20261031_016_native_billing']],
       );
       await pool.query('DROP TABLE consuelo_lead_connector_company_credentials');
 
@@ -154,7 +154,7 @@ suite('LeadConnector company credential upgrades with isolated PostgreSQL', () =
       const ledgerAfterUpgrade = (await pool.query(
         'SELECT migration_id, applied_at FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
       )).rows;
-      expect(ledgerAfterUpgrade).toHaveLength(15);
+      expect(ledgerAfterUpgrade).toHaveLength(16);
       expect(ledgerAfterUpgrade.slice(0, 13)).toEqual(oldLedger);
 
       await migrateDialerDatabase(pool);

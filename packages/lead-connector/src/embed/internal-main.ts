@@ -211,7 +211,12 @@ const bridge = createLeadConnectorParentBridge(window, {
       });
       return;
     }
-    workspace = { ...workspace, screen: 'calling', mode: 'outbound', compact: false };
+    workspace = {
+      ...workspace,
+      screen: 'calling',
+      mode: 'outbound',
+      compact: false,
+    };
     controller.updateSetup({
       mode: 'single',
       callingMode: 'single',
@@ -247,8 +252,9 @@ const updateRefresh = (): void => {
   if (surface === 'overlay') {
     const inbound = sessionPresentation(state, 'inbound');
     const outbound = sessionPresentation(state, 'outbound');
-    const mode=activeCallingMode(state)??(inbound.active?'inbound':'outbound');
-    const current=mode==='inbound'?inbound:outbound;
+    const mode =
+      activeCallingMode(state) ?? (inbound.active ? 'inbound' : 'outbound');
+    const current = mode === 'inbound' ? inbound : outbound;
     bridge.sendWorkspaceStatus({
       active: inbound.active || outbound.active,
       mode,
@@ -648,13 +654,23 @@ root.addEventListener('click', (event) => {
   if (action === 'cancel-billing-preview') {
     controller.clearBillingPreview();
   }
-  if (action === 'manage-billing') {
+  if (
+    action === 'manage-billing' ||
+    action === 'manage-number-billing' ||
+    action === 'buy-minute-pack'
+  ) {
     const hasSubscription = Boolean(
       controller.getState().commercialDashboard?.subscription,
     );
     void openHostedBilling(() =>
       hasSubscription
-        ? controller.openBillingPortal()
+        ? controller.openBillingPortal(
+            action === 'manage-number-billing'
+              ? 'numbers'
+              : action === 'buy-minute-pack'
+                ? 'minutes'
+                : 'base',
+          )
         : controller.createCheckout(currentBillingQuantities()),
     );
   }

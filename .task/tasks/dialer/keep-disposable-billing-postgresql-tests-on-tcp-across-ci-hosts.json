@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/keep-disposable-billing-postgresql-tests-on-tcp-across-ci-hosts",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2727,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2727",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2727",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2727/keep-disposable-billing-postgresql-tests-on-tcp-across-ci-hosts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2727",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2727/keep-disposable-billing-postgresql-tests-on-tcp-across-ci-hosts",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-keep-disposable-billing-postgresql-tests-on-tcp-across-ci-hosts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5a3c202b20ea",
+  "tmuxSession": "opensaas-dialer-keep-disposable-billing-postgresql-tests-on-tcp--5a3c202b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-keep-disposable-billing-postgresql-tests-on-tcp-across-ci-hosts/.task/dialer/keep-disposable-billing-postgresql-tests-on-tcp-across-ci-hosts/session.json",
+  "createdAt": "2026-10-31T01:49:05.549Z"
+}

@@ -18,6 +18,7 @@ export type PublicPrice = {
   unitAmount: number;
   currency: string;
   interval: string | null;
+  productId?: string;
 };
 export type PublicSubscription = {
   id: string;
@@ -26,6 +27,11 @@ export type PublicSubscription = {
   cancelAtPeriodEnd: boolean;
   metadata: Record<string, string>;
   items: Array<{ id: string; priceId: string; quantity: number }>;
+  latestInvoicePaid?: boolean;
+  latestInvoiceAmountDue?: number;
+  pendingUpdate?: boolean;
+  currentPeriodEnd?: number;
+  defaultPaymentMethodId?: string | null;
 };
 export type PublicSession = {
   id: string;
@@ -34,6 +40,10 @@ export type PublicSession = {
   metadata: Record<string, string>;
   customerId: string | null;
   subscription: PublicSubscription | null;
+  url?: string | null;
+  mode?: string;
+  amountTotal?: number | null;
+  currency?: string | null;
 };
 export type PublicCheckoutProvider = {
   listPrices: (lookupKeys: string[]) => Promise<PublicPrice[]>;
@@ -42,6 +52,25 @@ export type PublicCheckoutProvider = {
     idempotencyKey: string,
   ) => Promise<{ id: string; url: string | null }>;
   retrieveSession: (id: string) => Promise<PublicSession>;
+  retrieveLineItems?: (
+    id: string,
+  ) => Promise<Array<{ priceId: string; quantity: number }>>;
+  findCheckoutSession?: (
+    customerId: string,
+    referenceId: string,
+  ) => Promise<{ id: string; url: string | null } | null>;
+  createSubscription?: (
+    parameters: Record<string, unknown>,
+    idempotencyKey: string,
+  ) => Promise<PublicSubscription>;
+  retrieveSubscription?: (id: string) => Promise<PublicSubscription>;
+  findNumberSubscription?: (
+    customerId: string,
+    attemptId: string,
+  ) => Promise<PublicSubscription | null>;
+  createPortal?: (
+    parameters: Record<string, unknown>,
+  ) => Promise<{ id: string; url: string }>;
 };
 type Store = ReturnType<typeof createPublicCheckoutStore>;
 const record = (value: unknown): Record<string, unknown> =>
@@ -666,4 +695,28 @@ export const createPublicCheckout = (input: {
     },
   };
 };
-export type PublicCheckout = ReturnType<typeof createPublicCheckout>;
+export type PublicCheckout = ReturnType<typeof createPublicCheckout> & {
+  native?: {
+    isNative: (workspaceId: string) => Promise<boolean>;
+    capacityFor: (identity: DialerIdentity) => Promise<{ allowed: boolean }>;
+    createPortal: (
+      identity: DialerIdentity,
+      body: unknown,
+    ) => Promise<{ id: string; url: string }>;
+    createCheckout: (
+      identity: DialerIdentity,
+      body: unknown,
+    ) => Promise<{ id: string; url: string }>;
+  };
+  continueNumbers?: (
+    id: unknown,
+    token: unknown,
+  ) => Promise<{ id: string; url: string }>;
+};
+export {
+  record as checkoutRecord,
+  uuid as checkoutUuid,
+  tokenHash as checkoutTokenHash,
+  verifyClaim as verifyCheckoutClaim,
+  selectionOnly as checkoutSelectionOnly,
+};

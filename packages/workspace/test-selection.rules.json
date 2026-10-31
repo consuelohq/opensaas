@@ -2343,6 +2343,29 @@
       "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts."
     },
     {
+      "id": "dialer-native-billing",
+      "critical": true,
+      "source": [
+        "packages/dialer-server/src/billing/**",
+        "packages/dialer-server/src/native-billing*",
+        "packages/dialer-server/src/public-checkout*",
+        "packages/dialer-server/src/database/migrations*",
+        "packages/dialer-server/src/commercial/application.ts",
+        "packages/dialer-server/src/runtime/railway.ts",
+        "packages/dialer-server/scripts/verify-native-billing.ts"
+      ],
+      "tests": [
+        {
+          "name": "Stripe native billing with disposable PostgreSQL",
+          "command": [
+            "bun",
+            "packages/dialer-server/scripts/verify-native-billing.ts"
+          ]
+        }
+      ],
+      "reason": "Billing edits must prove paid-only native changes, isolated component invoices, idempotent top-ups, immutable usage debits and legacy schema upgrades against disposable PostgreSQL."
+    },
+    {
       "id": "lead-connector-package",
       "critical": true,
       "source": [

@@ -1,3 +1,9 @@
+import { createNativeCheckout } from '../billing/native-checkout';
+import {
+  createNativeBillingStore,
+  initializeNativeBillingStore,
+} from '../billing/native-billing-store';
+import { createStripePublicCheckoutProvider } from '../billing/stripe-public-provider';
 import { createCoachingScripts } from '../coaching/scripts';
 import { createPublicCheckout } from '../billing/public-checkout';
 import {
@@ -48,7 +54,10 @@ import { Effect, Layer } from 'effect';
 import type StripeSdk from 'stripe';
 
 import type { DialerApplicationLayers } from '../application';
-import { createStripeCommercialBilling, createStripeCommercialWebhookVerifier } from '../billing/stripe';
+import {
+  createStripeCommercialBilling,
+  createStripeCommercialWebhookVerifier,
+} from '../billing/stripe';
 import { createCallOperationsApplication } from '../call-operations/application';
 import { createCommercialApplication } from '../commercial/application';
 import { initializeCommercialPersistence } from '../commercial/persistence';
@@ -643,87 +652,24 @@ export const createRailwayCommercialApplication = async (
         websiteOrigin: environment.DIALER_CHECKOUT_WEBSITE_ORIGIN,
         installUrl: install.href,
         rateLimitSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),
-        provider: {
-          listPrices: async (lookupKeys) => {
-            try {
-              const pages = await Promise.all(
-                Array.from(
-                  { length: Math.ceil(lookupKeys.length / 10) },
-                  (_, index) =>
-                    stripe.prices.list({
-                      lookup_keys: lookupKeys.slice(
-                        index * 10,
-                        (index + 1) * 10,
-                      ),
-                      active: true,
-                      limit: 100,
-                    }),
-                ),
-              );
-              return pages.flatMap((page) =>
-                page.data.map((price) => ({
-                  id: price.id,
-                  lookupKey: price.lookup_key ?? '',
-                  unitAmount: price.unit_amount ?? -1,
-                  currency: price.currency,
-                  interval: price.recurring?.interval ?? null,
-                })),
-              );
-            } catch (cause: unknown) {
-              throw normalizeAsyncError(cause);
-            }
-          },
-          createSession: async (parameters, idempotencyKey) => {
-            try {
-              const session = await stripe.checkout.sessions.create(
-                parameters as StripeSdk.Checkout.SessionCreateParams,
-                { idempotencyKey },
-              );
-              return { id: session.id, url: session.url };
-            } catch (cause: unknown) {
-              throw normalizeAsyncError(cause);
-            }
-          },
-          retrieveSession: async (id) => {
-            try {
-              const session = await stripe.checkout.sessions.retrieve(id, {
-                expand: ['subscription'],
-              });
-              const sub =
-                typeof session.subscription === 'string'
-                  ? await stripe.subscriptions.retrieve(session.subscription)
-                  : session.subscription;
-              return {
-                id: session.id,
-                status: session.status,
-                paymentStatus: session.payment_status,
-                metadata: session.metadata ?? {},
-                customerId:
-                  typeof session.customer === 'string'
-                    ? session.customer
-                    : (session.customer?.id ?? null),
-                subscription: sub
-                  ? {
-                      id: sub.id,
-                      customerId:
-                        typeof sub.customer === 'string'
-                          ? sub.customer
-                          : sub.customer.id,
-                      status: sub.status,
-                      cancelAtPeriodEnd: sub.cancel_at_period_end,
-                      metadata: sub.metadata,
-                      items: sub.items.data.map((item) => ({
-                        id: item.id,
-                        priceId: item.price.id,
-                        quantity: item.quantity ?? 0,
-                      })),
-                    }
-                  : null,
-              };
-            } catch (cause: unknown) {
-              throw normalizeAsyncError(cause);
-            }
-          },
+        provider: createStripePublicCheckoutProvider(stripe),
+      });
+      await initializeNativeBillingStore(sqlClient);
+      publicCheckout = createNativeCheckout({
+        legacy: publicCheckout,
+        store: createPublicCheckoutStore(sqlClient),
+        nativeStore: createNativeBillingStore(sqlClient),
+        provider: createStripePublicCheckoutProvider(stripe),
+        enabled: environment.DIALER_STRIPE_NATIVE_BILLING_ENABLED === 'true',
+        rateLimitSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),
+        installUrl: install.href,
+        websiteOrigin:
+          environment.DIALER_CHECKOUT_WEBSITE_ORIGIN ??
+          'https://consuelohq.com',
+        portalConfigurations: {
+          base: environment.STRIPE_NATIVE_BASE_PORTAL_CONFIGURATION_ID ?? '',
+          numbers:
+            environment.STRIPE_NATIVE_NUMBER_PORTAL_CONFIGURATION_ID ?? '',
         },
       });
     }
@@ -1629,15 +1575,24 @@ export const createCommercialApplicationRuntime =
 export const createTransferApplicationRuntime =
   createRailwayTransferApplication;
 
-export const createInboundApplicationRuntime = (environment: RailwayEnvironment) =>
-  getInboundRuntime(environment, createLeadConnectorInboundEnrichment(
-    () => createRailwayLeadConnectorApplicationLayer(environment),
-  ));
+export const createInboundApplicationRuntime = (
+  environment: RailwayEnvironment,
+) =>
+  getInboundRuntime(
+    environment,
+    createLeadConnectorInboundEnrichment(() =>
+      createRailwayLeadConnectorApplicationLayer(environment),
+    ),
+  );
 
-export const createCoachingScriptsRuntime = async (environment: RailwayEnvironment) => {
+export const createCoachingScriptsRuntime = async (
+  environment: RailwayEnvironment,
+) => {
   try {
     const { database } = await createSharedResources(environment);
     await migrateDialerDatabase(database);
     return createCoachingScripts(database);
-  } catch(cause:unknown){throw new Error('Coaching script runtime composition failed',{cause});}
+  } catch (cause: unknown) {
+    throw new Error('Coaching script runtime composition failed', { cause });
+  }
 };
