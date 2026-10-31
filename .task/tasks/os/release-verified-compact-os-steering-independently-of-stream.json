@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/release-verified-compact-os-steering-independently-of-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2741,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2741",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-release-verified-compact-os-steering-independently-of-stream",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b25f5faaed09",
+  "tmuxSession": "opensaas-os-release-verified-compact-os-steering-independent-b25f5faa",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-release-verified-compact-os-steering-independently-of-stream/.task/session.json",
+  "createdAt": "2026-10-31T05:50:54.332Z"
+}
