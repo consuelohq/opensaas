@@ -1511,6 +1511,11 @@ export const createCommercialApplication = (input: {
     createBillingPortal: (identity, body) =>
       effectQuery(async () => {
         try {
+          if (
+            publicCheckout.native &&
+            (await publicCheckout.native.isNative(identity.workspaceId))
+          )
+            return publicCheckout.native.createPortal(identity, body);
           if (!(await publicCheckout.isClaimed(identity.workspaceId)))
             return Effect.runPromise(
               application.createBillingPortal(identity, body),
@@ -1534,10 +1539,41 @@ export const createCommercialApplication = (input: {
           throw normalizeAsyncError(cause);
         }
       }),
-    callerContext: scopedAction('callerContext'),
-    authorizeCall: scopedAction(
-      'authorizeCall',
-    ) as CommercialApplication['authorizeCall'],
+    callerContext: ((identity) =>
+      effectQuery(async () => {
+        try {
+          const result = await Effect.runPromise(
+            scopedAction('callerContext')(identity),
+          );
+          if (
+            publicCheckout.native &&
+            !(await publicCheckout.native.capacityFor(identity)).allowed
+          )
+            return {
+              ...record(result),
+              canStartCall: false,
+              denialCode: 'SUBSCRIPTION_CAPACITY_EXCEEDED',
+            };
+          return result;
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      })) as CommercialApplication['callerContext'],
+    authorizeCall: ((identity, body) =>
+      effectQuery(async () => {
+        try {
+          if (
+            publicCheckout.native &&
+            !(await publicCheckout.native.capacityFor(identity)).allowed
+          )
+            throw new Error('SUBSCRIPTION_CAPACITY_EXCEEDED');
+          return Effect.runPromise(
+            scopedAction('authorizeCall')(identity, body),
+          );
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      })) as CommercialApplication['authorizeCall'],
     updateTeam: scopedAction('updateTeam'),
     assignNumber: scopedAction('assignNumber'),
     searchNumbers: scopedAction('searchNumbers'),
@@ -1546,6 +1582,11 @@ export const createCommercialApplication = (input: {
     createCheckout: (identity, body) =>
       effectQuery(async () => {
         try {
+          if (
+            publicCheckout.native &&
+            (await publicCheckout.native.isNative(identity.workspaceId))
+          )
+            return publicCheckout.native.createCheckout(identity, body);
           if (await publicCheckout.isClaimed(identity.workspaceId))
             throw new Error('PUBLIC_PLAN_USE_BILLING_PORTAL');
           const subscription = await getWorkspaceSubscription(

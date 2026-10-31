@@ -155,10 +155,12 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         '/v1/commercial/billing/claim',
         { method: 'POST', body: JSON.stringify(input) },
       ),
-    createCommercialBillingPortal: () =>
+    createCommercialBillingPortal: (
+      input: { component?: 'base' | 'numbers' | 'minutes' } = {},
+    ) =>
       request<{ id: string; url: string }>('/v1/commercial/billing/portal', {
         method: 'POST',
-        body: '{}',
+        body: JSON.stringify(input),
       }),
     previewCommercialBillingChange: (input: {
       quantities: {

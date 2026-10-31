@@ -70,6 +70,26 @@ export const createPublicCheckoutRoutes = (checkout: PublicCheckout) => {
       );
     }
   });
+  app.post('/v1/public/billing/purchase/:id/numbers', async (context) => {
+    if (!checkout.continueNumbers)
+      return context.json(
+        { error: { code: 'NATIVE_BILLING_UNAVAILABLE' } },
+        404,
+      );
+    try {
+      return context.json(
+        await checkout.continueNumbers(
+          context.req.param('id'),
+          context.req.header('x-purchase-claim'),
+        ),
+      );
+    } catch {
+      return context.json(
+        { error: { code: 'NUMBER_BILLING_UNAVAILABLE' } },
+        409,
+      );
+    }
+  });
   app.get('/v1/public/billing/purchase/:id', async (context) => {
     try {
       return context.json(

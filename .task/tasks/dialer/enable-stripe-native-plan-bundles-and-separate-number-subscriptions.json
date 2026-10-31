@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/enable-stripe-native-plan-bundles-and-separate-number-subscriptions",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2723,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2723",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-enable-stripe-native-plan-bundles-and-separate-number-subscriptions",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4cf9e367a7b7",
+  "tmuxSession": "opensaas-dialer-enable-stripe-native-plan-bundles-and-separate-n-4cf9e367",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-enable-stripe-native-plan-bundles-and-separate-number-subscriptions/.task/session.json",
+  "createdAt": "2026-10-31T00:36:34.971Z"
+}

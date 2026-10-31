@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 731,
-    "mappedTestCount": 647,
+    "testFileCount": 742,
+    "mappedTestCount": 658,
     "unmappedTestCount": 84,
-    "ruleCount": 86,
-    "explicitRuleCount": 72,
+    "ruleCount": 87,
+    "explicitRuleCount": 73,
     "autoRuleCount": 14,
     "projectCount": 10,
     "packageTestScriptCount": 22,
@@ -14,10 +14,10 @@
       "packages/os/tests": 335,
       "packages/workspace/tests": 66,
       "packages/os/tests/media": 34,
+      "packages/dialer-server/src": 24,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
-      "packages/dialer-server/src": 19,
+      "packages/lead-connector/src/embed": 19,
       "packages/dialer/src/services": 18,
-      "packages/lead-connector/src/embed": 15,
       "packages/consuelo-design/upstream/open-design": 14,
       "packages/consuelo-website/tests": 14,
       "packages/os/tests/distribution": 13,
@@ -47,6 +47,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
+      "packages/dialer-server/src/coaching": 2,
       "packages/dialer-server/src/database": 2,
       "packages/dialer-website/tests": 2,
       "packages/diff-cockpit/tests": 2,
@@ -101,10 +102,10 @@
       "tests": 1
     },
     "byKind": {
-      "test": 666,
+      "test": 674,
       "spec": 29,
+      "integration": 13,
       "__tests__": 11,
-      "integration": 10,
       "other": 7,
       "tests-dir": 7,
       "e2e": 1
@@ -2508,6 +2509,30 @@
       "origin": "explicit"
     },
     {
+      "id": "dialer-native-billing",
+      "source": [
+        "packages/dialer-server/src/billing/**",
+        "packages/dialer-server/src/native-billing*",
+        "packages/dialer-server/src/public-checkout*",
+        "packages/dialer-server/src/database/migrations*",
+        "packages/dialer-server/src/commercial/application.ts",
+        "packages/dialer-server/src/runtime/railway.ts",
+        "packages/dialer-server/scripts/verify-native-billing.ts"
+      ],
+      "tests": [
+        {
+          "name": "Stripe native billing with disposable PostgreSQL",
+          "command": [
+            "bun",
+            "packages/dialer-server/scripts/verify-native-billing.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Billing edits must prove paid-only native changes, isolated component invoices, idempotent top-ups, immutable usage debits and legacy schema upgrades against disposable PostgreSQL.",
+      "origin": "explicit"
+    },
+    {
       "id": "lead-connector-package",
       "source": [
         "packages/lead-connector/**"
@@ -3981,6 +4006,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/coaching/scripts.postgres.integration.test.ts",
+      "group": "packages/dialer-server/src/coaching",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/coaching/scripts.test.ts",
+      "group": "packages/dialer-server/src/coaching",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/commercial-application.acceptance.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "test"
@@ -4146,6 +4181,26 @@
       "kind": "integration"
     },
     {
+      "path": "packages/dialer-server/src/native-billing.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/native-billing.postgres.integration.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/public-checkout.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/public-checkout.postgres.integration.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "integration"
+    },
+    {
       "path": "packages/dialer-server/src/release/production-release.test.ts",
       "group": "packages/dialer-server/src/release",
       "kind": "test"
@@ -4208,6 +4263,11 @@
     {
       "path": "packages/dialer-server/src/runtime/twilio-signature.test.ts",
       "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/stripe-webhook.test.ts",
+      "group": "packages/dialer-server/src",
       "kind": "test"
     },
     {
@@ -4541,12 +4601,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/lead-connector/src/embed/calling-workspace.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
       "path": "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },
     {
       "path": "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/coaching-scripts.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },
@@ -4597,6 +4667,16 @@
     },
     {
       "path": "packages/lead-connector/src/embed/view.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/workspace-dom.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/workspace-launch.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },

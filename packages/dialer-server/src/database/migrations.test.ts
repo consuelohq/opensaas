@@ -1,3 +1,4 @@
+import { NATIVE_BILLING_MIGRATION_ID } from '../billing/native-billing-store';
 import { COACHING_SCRIPTS_MIGRATION_ID } from '../coaching/scripts';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../inbound/callback-booking-attempt-migration';
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
@@ -79,9 +80,15 @@ describe('dialer database migrations', () => {
     expect(migrationInserts).toEqual([
       upgradeId,
       COACHING_SCRIPTS_MIGRATION_ID,
+      NATIVE_BILLING_MIGRATION_ID,
     ]);
     expect(harness.applied).toEqual(
-      new Set([...oldMigrations, upgradeId, COACHING_SCRIPTS_MIGRATION_ID]),
+      new Set([
+        ...oldMigrations,
+        upgradeId,
+        COACHING_SCRIPTS_MIGRATION_ID,
+        NATIVE_BILLING_MIGRATION_ID,
+      ]),
     );
     const sql = harness.calls.map((call) => call.text).join('\n');
     expect(sql).toContain(
@@ -98,7 +105,11 @@ describe('dialer database migrations', () => {
           call.text.includes('INSERT INTO consuelo_dialer_schema_migrations'),
         )
         .map((call) => call.values[0]),
-    ).toEqual([upgradeId, COACHING_SCRIPTS_MIGRATION_ID]);
+    ).toEqual([
+      upgradeId,
+      COACHING_SCRIPTS_MIGRATION_ID,
+      NATIVE_BILLING_MIGRATION_ID,
+    ]);
     await expect(
       rollbackDialerDatabaseMigration(harness.database, upgradeId),
     ).rejects.toThrow('This migration has no supported rollback');
@@ -149,6 +160,7 @@ describe('dialer database migrations', () => {
         CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
         DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
         COACHING_SCRIPTS_MIGRATION_ID,
+        NATIVE_BILLING_MIGRATION_ID,
       ]),
     );
   });
@@ -246,7 +258,7 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(15);
+    expect(migrationInserts).toHaveLength(16);
   });
 
   it('upgrades an RD7B schema with only the additive booking evidence migrations', async () => {
@@ -284,6 +296,7 @@ describe('dialer database migrations', () => {
         CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
         DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
         COACHING_SCRIPTS_MIGRATION_ID,
+        NATIVE_BILLING_MIGRATION_ID,
       ]),
     );
   });

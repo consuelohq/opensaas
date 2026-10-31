@@ -433,4 +433,36 @@ describe('commercial LeadConnector surfaces', () => {
         ?.hasAttribute('open'),
     ).toBe(false);
   });
+  it('keeps native plan and number billing separate and opens only Stripe management controls', () => {
+    const state = commercialAdminState({ status: 'active' });
+    state.commercialDashboard!.publicPurchase = {
+      plan: 'agency',
+      billing: 'annual',
+      seats: 2,
+      mercurySeats: 2,
+      minutePack: 0,
+      numberPack: 10,
+      recurringCents: 417600,
+      baseRecurringCents: 417600,
+      numberRecurringCents: 2800,
+      numberBilling: 'monthly',
+      separateInvoices: true,
+    };
+    const doc = new JSDOM(
+      renderLeadConnectorEmbed(state, {
+        surface: 'admin',
+        workspace: { screen: 'billing', mode: 'inbound', compact: false },
+      }),
+    ).window.document;
+    expect(
+      doc.querySelector('[data-action="manage-number-billing"]'),
+    ).not.toBeNull();
+    expect(doc.body.textContent).toContain('$4,176.00');
+    expect(doc.body.textContent).toContain('$28.00');
+    expect(doc.body.textContent).toContain('separate invoice');
+    expect(doc.body.textContent).toContain('Mercury');
+    expect(
+      doc.querySelector('[data-form="commercial-billing-checkout"]'),
+    ).toBeNull();
+  });
 });

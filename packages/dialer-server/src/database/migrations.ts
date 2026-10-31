@@ -1,4 +1,9 @@
 import {
+  NATIVE_BILLING_MIGRATION_ID,
+  initializeNativeBillingStore,
+} from '../billing/native-billing-store';
+import { PUBLIC_CHECKOUT_SCHEMA } from '../billing/public-checkout-store';
+import {
   COACHING_SCRIPTS_MIGRATION_ID,
   CREATE_COACHING_SCRIPTS_SQL,
 } from '../coaching/scripts';
@@ -271,7 +276,8 @@ type Migration =
       id:
         | typeof DIALER_DATABASE_BASELINE_MIGRATION_ID
         | typeof DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID
-        | typeof COACHING_SCRIPTS_MIGRATION_ID;
+        | typeof COACHING_SCRIPTS_MIGRATION_ID
+        | typeof NATIVE_BILLING_MIGRATION_ID;
       up: MigrationUp;
       down?: never;
     }
@@ -439,6 +445,15 @@ const migrations: readonly Migration[] = [
     id: COACHING_SCRIPTS_MIGRATION_ID,
     up: (database) =>
       database.query(CREATE_COACHING_SCRIPTS_SQL).then(() => undefined),
+  },
+  {
+    id: NATIVE_BILLING_MIGRATION_ID,
+    up: async (database) => {
+      // Public checkout previously initialized this durable parent lazily.
+      // Native bookkeeping is forward-only; never delete paid purchase history.
+      await database.query(PUBLIC_CHECKOUT_SCHEMA[0]);
+      await initializeNativeBillingStore(database);
+    },
   },
 ];
 
