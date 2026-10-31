@@ -25,6 +25,11 @@ export const toolHandlers = [
           "kind": "value"
         },
         {
+          "source": "task",
+          "flag": "--task",
+          "kind": "boolean"
+        },
+        {
           "source": "paths",
           "flag": "--paths",
           "kind": "array"

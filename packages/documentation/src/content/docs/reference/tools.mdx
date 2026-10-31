@@ -190,6 +190,12 @@ A successful `session.start` with `kind: "work"` similarly binds the returned wo
 
 See [Routing work](/nodes/routing/) for user-facing behavior and [Result and error formats](/reference/result-and-error-formats/#node-routing-errors) for mismatch and offline failures.
 
+## Git change inspection
+
+The typed `git.diff` tool shows staged, unstaged, and untracked files in its default working-tree view. An explicit task comparison, `{ "task": true, "base": "origin/stream/os" }`, includes committed task changes plus all local changes, and labels the result as a task view. Passing only `base` without `task` preserves revision-only semantics for callers that need a committed diff.
+
+Binary files are reported without inventing UTF-8 text; untracked symlinks are represented without reading their targets. Renamed paths, including whitespace, remain exact. When a patch exceeds the requested byte cap, `truncated` is true and incomplete structured hunks are not returned as though they were complete.
+
 ## Discovery
 
 Use `get_steering` for the core surface and `tools.search` for everything else. `tools.search` can filter by category and read/mutation intent. The generated core manifest is intentionally smaller than the full manifest.

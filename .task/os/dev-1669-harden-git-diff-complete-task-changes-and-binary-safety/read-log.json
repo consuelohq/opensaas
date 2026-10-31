@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os/dev-1669-harden-git-diff-complete-task-changes-and-binary-safety/workpad.md",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/workspace/scripts/git-diff.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-10-31T07:50:54.673Z"
+}

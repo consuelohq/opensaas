@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1669-harden-git-diff-complete-task-changes-and-binary-safety",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2756,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2756",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1669-harden-git-diff-complete-task-changes-and-binary-safety",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_10e591a21fbd",
+  "tmuxSession": "opensaas-os-dev-1669-harden-git-diff-complete-task-changes-a-10e591a2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1669-harden-git-diff-complete-task-changes-and-binary-safety/.task/session.json",
+  "createdAt": "2026-10-31T07:34:51.459Z"
+}
