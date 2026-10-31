@@ -1,0 +1,182 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/accept-canonical-pricing-urls-in-hosted-browser-verification",
+  "base": "origin/stream/website",
+  "headSha": "fde0f98306f2526228c74f419ca566f423e307cc",
+  "changeHash": "25f8186f4996686f07691ed40d85bcfc2e0c9406fcc2b87d256ef399ffd0af89",
+  "changedFiles": [
+    "packages/dialer-website/scripts/test-pricing-browser.mjs"
+  ],
+  "verifiedAt": "2026-10-31T00:07:25.472Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/accept-canonical-pricing-urls-in-hosted-browser-verification.json",
+        ".task/website/accept-canonical-pricing-urls-in-hosted-browser-verification/workpad.md",
+        "packages/dialer-website/scripts/test-pricing-browser.mjs"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-website-package",
+          "critical": true,
+          "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+          "matchedFiles": [
+            "packages/dialer-website/scripts/test-pricing-browser.mjs"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 158,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nChecked 690 installs across 803 packages (no changes) [152.00ms]\n"
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 9039,
+          "outputTail": "pt define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\n\u001b[96mtests/direct-checkout.test.ts\u001b[0m:\u001b[93m74\u001b[0m:\u001b[93m5\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(80007): \u001b[0m'await' has no effect on the type of this expression.\n\n\u001b[7m 74\u001b[0m     await expect(\n\u001b[7m   \u001b[0m \u001b[93m    ~~~~~~~~~~~~~\u001b[0m\n\u001b[7m 75\u001b[0m       createStripeRedirect(selection, {\n\u001b[7m   \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[7m...\u001b[0m \n\u001b[7m 87\u001b[0m       }),\n\u001b[7m   \u001b[0m \u001b[93m~~~~~~~~~\u001b[0m\n\u001b[7m 88\u001b[0m     ).rejects.toThrow();\n\u001b[7m   \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[96mtests/direct-checkout.test.ts\u001b[0m:\u001b[93m63\u001b[0m:\u001b[93m5\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(80007): \u001b[0m'await' has no effect on the type of this expression.\n\n\u001b[7m 63\u001b[0m     await expect(\n\u001b[7m   \u001b[0m \u001b[93m    ~~~~~~~~~~~~~\u001b[0m\n\u001b[7m 64\u001b[0m       createStripeRedirect(\n\u001b[7m   \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[7m...\u001b[0m \n\u001b[7m 67\u001b[0m       ),\n\u001b[7m   \u001b[0m \u001b[93m~~~~~~~~\u001b[0m\n\u001b[7m 68\u001b[0m     ).rejects.toThrow();\n\u001b[7m   \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[96mtests/direct-checkout.test.ts\u001b[0m:\u001b[93m59\u001b[0m:\u001b[93m5\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(80007): \u001b[0m'await' has no effect on the type of this expression.\n\n\u001b[7m59\u001b[0m     await expect(\n\u001b[7m  \u001b[0m \u001b[93m    ~~~~~~~~~~~~~\u001b[0m\n\u001b[7m60\u001b[0m       createStripeRedirect(selection, { storage, send }),\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[7m61\u001b[0m     ).rejects.toThrow();\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[96mtests/direct-checkout.test.ts\u001b[0m:\u001b[93m42\u001b[0m:\u001b[93m5\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(80007): \u001b[0m'await' has no effect on the type of this expression.\n\n\u001b[7m42\u001b[0m     await expect(\n\u001b[7m  \u001b[0m \u001b[93m    ~~~~~~~~~~~~~\u001b[0m\n\u001b[7m43\u001b[0m       createStripeRedirect(selection, { storage, send }),\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[7m44\u001b[0m     ).rejects.toThrow('NETWORK_TIMEOUT');\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[96mtests/direct-checkout.test.ts\u001b[0m:\u001b[93m39\u001b[0m:\u001b[93m5\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(80007): \u001b[0m'await' has no effect on the type of this expression.\n\n\u001b[7m39\u001b[0m     await expect(\n\u001b[7m  \u001b[0m \u001b[93m    ~~~~~~~~~~~~~\u001b[0m\n\u001b[7m40\u001b[0m       createStripeRedirect(selection, { storage, send }),\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[7m41\u001b[0m     ).rejects.toThrow('NETWORK_TIMEOUT');\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\nResult (57 files): \n- 0 errors\n- 0 warnings\n- 7 hints\n\n20:06:53 [types] Generated 18ms\n20:06:53 [build] output: \"static\"\n20:06:53 [build] mode: \"static\"\n20:06:53 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-accept-canonical-pricing-urls-in-hosted-browser-verification/packages/dialer-website/dist/\n20:06:53 [build] Collecting build info...\n20:06:53 [build] ✓ Completed in 34ms.\n20:06:53 [build] Building static entrypoints...\n20:06:53 [vite] ✓ built in 815ms\n20:06:54 [vite] ✓ built in 493ms\n20:06:54 [build] Rearranging server assets...\n\n generating static routes \n20:06:54   ├─ /404.html (+20ms) \n20:06:54   ├─ /calls/api/integrations/oauth/callback/index.html (+1ms) \n20:06:54   ├─ /contact/index.html (+1ms) \n20:06:54   ├─ /get-started/index.html (+2ms) \n20:06:54   ├─ /how-it-works/index.html (+1ms) \n20:06:54   ├─ /pricing/index.html (+4ms) \n20:06:54   ├─ /privacy/index.html (+1ms) \n20:06:54   ├─ /robots.txt (+1ms) \n20:06:54   ├─ /support/index.html (+1ms) \n20:06:54   ├─ /terms/index.html (+1ms) \n20:06:54   ├─ /index.html (+2ms) \n20:06:54 ✓ Completed in 49ms.\n\n20:06:54 [build] ✓ Completed in 1.38s.\n20:06:54 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`\n20:06:54 [build] 10 page(s) built in 1.42s\n20:06:54 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 75,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [0.10ms]\n(pass) Dialer marketing delivery > preserves the legacy OS feed URL when Dialer owns the root [0.03ms]\n(pass) Dialer marketing delivery > preserves every displaced static OS page through the migration map [1.14ms]\n(pass) Dialer marketing delivery > publishes product-owned sitemaps without authentication or OS URLs [0.28ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.16ms]\n(pass) Dialer marketing delivery > restores the current pricing share image from committed source bytes [29.08ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [0.49ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.46ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.11ms]\n(pass) Dialer marketing delivery > renders four approved launch plans and a plan-specific setup journey [0.26ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.63ms]\n\n 11 pass\n 0 fail\n 79 expect() calls\nRan 11 tests across 1 file. [69.00ms]\n"
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 30977,
+          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"all-plan-setup\",\"plans\":4,\"billingPeriods\":2,\"cases\":8}\n{\"flow\":\"interaction-lifecycle\",\"persistedCycles\":2,\"terminalCleanup\":\"pass\",\"cloudMotion\":\"finite\",\"sectionAnalytics\":\"pass\",\"analyticsExternalRequests\":0}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":84,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
