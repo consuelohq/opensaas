@@ -282,6 +282,9 @@ function createEngine(input: {
   managedSites?: {
     refresh(input: { home: string; releasePath: string }): Promise<void>;
   };
+  managedAgentBrowser?: {
+    ensure(input: { home: string; releasePath: string }): Promise<void>;
+  };
 } = {}): LifecycleEngine & { serviceOperations: string[]; onboardingCalls: number } {
   const events = input.events ?? [];
   const serviceOperations: string[] = [];
@@ -342,6 +345,7 @@ function createEngine(input: {
     runtime: input.runtime,
     visibleUserRoot: input.visibleUserRoot,
     managedSites: input.managedSites,
+    managedAgentBrowser: input.managedAgentBrowser,
     onboarding: input.onboarding ?? (async () => {
       onboardingCalls += 1;
       writeInstalledIdentity();
@@ -640,6 +644,52 @@ describe('unified lifecycle engine', () => {
       home: tempHome,
       releasePath: runtimeReleasePathFor(bundle100),
     }]);
+  });
+
+  it('repairs browser dependency after accepted updates, including the already-current path', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const repairs: Array<{ home: string; releasePath: string }> = [];
+    const events: LifecycleProgressEvent[] = [];
+    const current = createEngine({
+      bundle: bundle100,
+      events,
+      managedAgentBrowser: {
+        async ensure(input) { repairs.push(input); },
+      },
+    });
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false, updateAvailable: false,
+    });
+    expect(repairs).toEqual([{ home: tempHome, releasePath: runtimeReleasePathFor(bundle100) }]);
+    expect(events.some((event) =>
+      event.phase === 'repair-scan' && event.detail?.component === 'agent-browser' && event.detail?.status === 'ready',
+    )).toBe(true);
+
+    const upgraded = createEngine({
+      bundle: bundle110,
+      managedAgentBrowser: {
+        async ensure(input) { repairs.push(input); },
+      },
+    });
+    await expect(upgraded.update({ channel: 'dev', yes: true })).resolves.toMatchObject({ changed: true });
+    expect(repairs.at(-1)).toEqual({ home: tempHome, releasePath: runtimeReleasePathFor(bundle110) });
+  });
+
+  it('defers browser dependency failures without rolling back a verified OS runtime', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const events: LifecycleProgressEvent[] = [];
+    const current = createEngine({
+      bundle: bundle110,
+      events,
+      managedAgentBrowser: {
+        async ensure() { throw new Error('browser CDN unavailable'); },
+      },
+    });
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({ changed: true });
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(events.some((event) =>
+      event.phase === 'repair-scan' && event.detail?.status === 'deferred',
+    )).toBe(true);
   });
 
   it('keeps current-version check-only updates free of hosted reconciliation side effects', async () => {

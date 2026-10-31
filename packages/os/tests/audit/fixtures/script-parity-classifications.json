@@ -238,6 +238,10 @@
       "status": "same",
       "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
     },
+    "scripts/lib/browser/managed-cli.ts": {
+      "status": "same",
+      "reason": "Shared byte-identical managed agent-browser runtime resolver with safe legacy fallback."
+    },
     "scripts/lib/browser/process.ts": {
       "status": "same",
       "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
@@ -738,6 +742,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned macOS sidecar supervisor manages Caddy and Cloudflared child lifecycle for installed runtimes and intentionally has no workspace counterpart."
     },
+    "scripts/lib/managed-agent-browser.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned pinned, digest-verified agent-browser provisioner used during install and lifecycle updates."
+    },
     "scripts/lib/managed-cloud-node-enrollment.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/managed-cloud-node-enrollment.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -998,10 +1006,6 @@
       "status": "changed-needs-review",
       "reason": "The OS copy now lazy-loads yaml so scripts-only audit fixtures do not require index/config dependencies; keep the intentional runtime-specific divergence explicit."
     },
-    "scripts/lib/posthog-client.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-only privacy-checked PostHog provider client for optional per-node analytics; no workspace counterpart is needed."
-    },
     "scripts/lib/platform-cloudflare-provisioning.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1013,6 +1017,10 @@
     "scripts/lib/platforms/linux.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/platforms/linux.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/posthog-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only privacy-checked PostHog provider client for optional per-node analytics; no workspace counterpart is needed."
     },
     "scripts/lib/pr-links.js": {
       "status": "same",

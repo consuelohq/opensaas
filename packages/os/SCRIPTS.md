@@ -955,6 +955,13 @@ bun run linear -- query "{ viewer { id name } }"
 
 uses one persistent agent-browser home at `~/.agent-browser-ko` (or `AGENT_BROWSER_PROFILE`). logins completed in a headed window remain available to later agents and non-headed browser calls. screenshots default to `/tmp/opensaas-screenshots` unless `AGENT_SCREENSHOT_DIR` is set.
 
+**Managed agent-browser dependency for installed OS nodes.** Consuelo OS pins `agent-browser v0.40.0` and downloads the SHA-256-verified native release into `~/.consuelo/managed/agent-browser/0.40.0/` (respecting `CONSUELO_HOME`). It then runs `agent-browser install` to provision the required browser binaries and activates the version via `managed/agent-browser/active.json` only after successful validation. This does **not** upgrade the user's global npm/Homebrew CLI or reset `AGENT_BROWSER_PROFILE`, daemon sessions, Chrome profiles, or saved logins. The current process keeps running when an OS upgrade installs a new managed CLI.
+
+New installations provision the dependency automatically. `consuelo update` checks and repairs it on both updated and unchanged releases; the runtime supervisor also reconciles it after startup so the first OS upgrade from older releases is covered. If GitHub or Chrome downloads are unavailable, OS keeps the accepted runtime and reports a deferred dependency in diagnostics; `consuelo doctor` reports the managed version and missing/failed state. A later update retries it. On Linux, `agent-browser install` installs browser binaries but missing OS-native Chrome libraries may require the upstream `install --with-deps` procedure with administrator permission; the OS installer does not silently alter system packages. If the managed release is unavailable, OS falls back to an existing `agent-browser` on `PATH`. `CONSUELO_AGENT_BROWSER_BIN` allows an explicit binary override.
+
+Browser automation retains the DEV-1628 bounded-stderr and legacy Chrome stderr safety behavior. Isolated profile/session/namespace tests must be used when validating a new pin; never validate against someone's existing persistent browser profile or close all sessions.
+
+
 ```bash
 bun run browser -- consuelo                         # open consuelo CRM
 bun run browser -- app                              # open app.consuelohq.com

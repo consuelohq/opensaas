@@ -85,6 +85,9 @@ export type LifecycleEngineDependencies = {
   managedSites?: {
     refresh(input: { home: string; releasePath: string }): Promise<void>;
   };
+  managedAgentBrowser?: {
+    ensure(input: { home: string; releasePath: string }): Promise<void>;
+  };
   progress?: (event: LifecycleProgressEvent) => void;
   now?: () => Date;
   operationId?: () => string;
@@ -361,13 +364,29 @@ export function createLifecycleEngine(
     }
   };
 
-  const reconcileAcceptedReleaseState = async (releasePath: string): Promise<void> => {
+  const reconcileAcceptedReleaseState = async (
+    releasePath: string,
+    emit: ReturnType<typeof emitter>,
+  ): Promise<void> => {
     try {
       reconcileAcceptedReleaseUserState(releasePath);
       await reconcileAcceptedReleaseSites(releasePath);
     } catch (_error: unknown) {
-      // Both reconcilers are repairable post-accept state. Keep activation durable
-      // even if a future reconciler implementation unexpectedly throws.
+      // Accepted runtime content is repairable without rolling back activation.
+    }
+    if (dependencies.managedAgentBrowser) {
+      try {
+        await dependencies.managedAgentBrowser.ensure({ home, releasePath });
+        emit('repair-scan', { component: 'agent-browser', status: 'ready' });
+      } catch (error: unknown) {
+        // Network/browser-runtime availability must not roll back an accepted
+        // OS release. A subsequent update retries; OS doctor reports the gap.
+        emit('repair-scan', {
+          component: 'agent-browser',
+          status: 'deferred',
+          reason: error instanceof Error ? error.message : String(error),
+        });
+      }
     }
   };
 
@@ -453,7 +472,7 @@ export function createLifecycleEngine(
       // behind the optional afterActivate hook, because nothing supplies that hook and it would
       // silently never run. Failures here must not fail the release: the runtime is already live
       // and usable without this content.
-      await reconcileAcceptedReleaseState(input.nextReleasePath);
+      await reconcileAcceptedReleaseState(input.nextReleasePath, input.emit);
       clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {
@@ -601,7 +620,7 @@ export function createLifecycleEngine(
         });
         const currentReleasePath = current.currentReleasePath;
         if (currentReleasePath) {
-          yield* Effect.promise(() => reconcileAcceptedReleaseState(currentReleasePath));
+          yield* Effect.promise(() => reconcileAcceptedReleaseState(currentReleasePath, input.emit));
         }
         input.emit('complete', {
           changed: false,

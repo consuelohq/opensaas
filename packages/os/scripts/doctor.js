@@ -133,7 +133,21 @@ function checkRailway(repoRoot) {
 }
 
 function checkAgentBrowser() {
-  const cli = commandExists('agent-browser');
+  let binary = 'agent-browser';
+  try {
+    let home = path.resolve(process.env.CONSUELO_HOME || process.env.CONSUELO_OS_HOME || path.join(process.env.HOME || require('os').homedir(), '.consuelo'));
+    if (path.basename(home) === 'os' && path.basename(path.dirname(home)) === '.consuelo') home = path.dirname(home);
+    const root = path.join(home, 'managed', 'agent-browser');
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, 'active.json'), 'utf8'));
+    if (manifest.schemaVersion === 1 && manifest.browserReady === true &&
+      typeof manifest.version === 'string' && /^\d+\.\d+\.\d+$/.test(manifest.version)) {
+      const candidate = path.join(root, manifest.version, process.platform === 'win32' ? 'agent-browser.exe' : 'agent-browser');
+      if (fs.existsSync(candidate)) binary = candidate;
+    }
+  } catch {
+    // An absent or incomplete managed install falls back to PATH.
+  }
+  const cli = binary === 'agent-browser' ? commandExists('agent-browser') : { ok: true, path: binary };
 
   if (!cli.ok) {
     return {
@@ -143,10 +157,18 @@ function checkAgentBrowser() {
     };
   }
 
+  const version = runCommand(binary, ['--version'], { timeout: 5000 });
+  const parsed = (version.stdout + '\n' + version.stderr).match(/agent-browser\s+(\d+\.\d+\.\d+)/);
+  const current = parsed?.[1];
+  const numbers = current?.split('.').map(Number) ?? [];
+  const compatible = numbers.length === 3 &&
+    (numbers[0] > 0 || (numbers[0] === 0 && numbers[1] >= 40));
   return {
-    status: 'ok',
-    summary: 'agent-browser available',
-    details: { path: cli.path },
+    status: version.ok && compatible ? 'ok' : 'warn',
+    summary: version.ok
+      ? 'agent-browser ' + (current ?? 'unknown') + (compatible ? ' compatible' : ' upgrade recommended (>=0.40.0)')
+      : 'agent-browser version check failed',
+    details: { path: cli.path, version: current, minimum: '0.40.0' },
   };
 }
 

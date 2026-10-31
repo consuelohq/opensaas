@@ -31,6 +31,7 @@ import {
 import { verifyLocalAgents } from './lib/local-agent-connectivity';
 import { workspaceBootstrapFromApprovedDeviceGrant } from './lib/managed-cloud-node-enrollment';
 import { ensureManagedGog } from './lib/managed-gog';
+import { ensureManagedAgentBrowser } from './lib/managed-agent-browser';
 import { materializeSites } from './lib/sites';
 import {
   pollWorkspaceDeviceAccessToken,
@@ -1469,6 +1470,11 @@ async function main(): Promise<void> {
           info(
             `Google runtime provisioning was deferred to first use: ${formatUnknownError(error)}`,
           );
+        }
+        try {
+          await ensureManagedAgentBrowser({ home: result.home });
+        } catch (error: unknown) {
+          info('Browser dependency provisioning deferred; run consuelo update to retry: ' + formatUnknownError(error));
         }
       }
     } catch (error: unknown) {
