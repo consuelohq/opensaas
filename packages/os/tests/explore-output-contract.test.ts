@@ -8,6 +8,40 @@ const require = createRequire(import.meta.url);
 const { formatExploreOutput } = require('../scripts/lib/search/explore-output.js') as {
   formatExploreOutput: (payload: RichExplorePayload, detail?: 'compact' | 'full') => unknown;
 };
+const { formatExploreFailure } = require('../scripts/lib/search/explore-failure.js') as {
+  formatExploreFailure: (error: unknown, phase: 'index' | 'retrieve') => Error;
+};
+
+describe('explore failure diagnostics', () => {
+  it('preserves a SQLite concurrency cause and suggests a bounded retry/fallback', () => {
+    const original = Object.assign(new Error('database is locked'), { code: 'SQLITE_BUSY' });
+    const result = formatExploreFailure(original, 'index');
+    expect(result.message).toContain('explore index failed (SQLITE_BUSY)');
+    expect(result.message).toContain('database is locked');
+    expect(result.message).toContain('Retry explore once');
+    expect(result.message).toContain('fs.search');
+    expect(result.cause).toBe(original);
+  });
+
+  it('reports the actual retrieval phase and a concrete fallback', () => {
+    const result = formatExploreFailure(new Error('semantic index unavailable'), 'retrieve');
+    expect(result.message).toContain('explore retrieve failed');
+    expect(result.message).toContain('semantic index unavailable');
+    expect(result.message).toContain('fs.search');
+    expect(result.message).not.toBe('explore failed');
+  });
+
+  it('redacts credentials and bounds untrusted error details', () => {
+    const result = formatExploreFailure(
+      new Error('GET https://example.com/?token=topsecret123 Bearer abcdef1234567890 ' + 'x'.repeat(2000)),
+      'index',
+    );
+    expect(result.message).not.toContain('topsecret123');
+    expect(result.message).not.toContain('abcdef1234567890');
+    expect(result.message).not.toContain('x'.repeat(100));
+    expect(result.message.length).toBeLessThan(550);
+  });
+});
 
 type RichExploreResult = {
   path: string;

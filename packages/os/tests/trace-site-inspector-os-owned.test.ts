@@ -826,4 +826,106 @@ describe('OS-owned Trace Burn table formatting', () => {
     expect(wait.inputLabel).toBe('wait 30s');
     expect(command.inputLabel).toBe('run gh run view 123');
   });
+
+  it('labels current typed patchText targets and keeps multiple filenames visible', () => {
+    const patchText = [
+      '*** Begin Patch',
+      '*** Update File: packages/os/scripts/cli.ts',
+      '*** Update File: packages/os/tests/cli.test.ts',
+      '*** End Patch',
+    ].join('\n');
+    const formatted = formatTraceTableRow(record({
+      name: 'fs.apply_patch',
+      input: JSON.stringify({ patchText }),
+      rawResolvedInputJson: JSON.stringify({ patchText }),
+      output: 'command completed',
+    }));
+    expect(formatted.inputLabel).toBe('patch 2 files · cli.ts, cli.test.ts');
+    expect(formatted.outputLabel).toBe('patched 2 files · cli.ts, cli.test.ts');
+    expect(formatTraceTableRow(record({
+      name: 'fs.apply_patch',
+      input: JSON.stringify({
+        patchText: '*** Begin Patch\n*** Update File: [REDACTED_SECRET]\n*** End Patch',
+      }),
+    })).inputLabel).toBe('patch files');
+  });
+
+  it('labels codeFile execution and meaningful multi-line Bash reads without displaying code', () => {
+    const file = formatTraceTableRow(record({
+      name: 'code.call',
+      input: JSON.stringify({
+        language: 'bun',
+        mode: 'verify',
+        codeFile: 'scripts/code-call-examples/check-release.ts',
+      }),
+    }));
+    const shell = formatTraceTableRow(record({
+      name: 'code.call',
+      input: JSON.stringify({
+        language: 'bash',
+        mode: 'read',
+        code: "set -e\nsed -n '1,25p' packages/os/scripts/cli.ts\necho done",
+      }),
+    }));
+    expect(file.inputLabel).toBe('verify check-release.ts');
+    expect(shell.inputLabel).toBe('read cli.ts');
+    expect(shell.inputLabel).not.toContain('set -e');
+  });
+
+  it('labels Linear issue IDs and operations without leaking comment bodies', () => {
+    const cases = [
+      { name: 'linear.issue', input: { identifier: 'DEV-1665' }, label: 'DEV-1665' },
+      { name: 'linear.updateIssue', input: { issueId: 'DEV-1665', state: 'Done' }, label: 'update DEV-1665 · Done' },
+      { name: 'linear.createComment', input: { issueId: 'DEV-1665', body: 'Private contact information' }, label: 'comment DEV-1665' },
+      { name: 'linear.relations', input: { issueId: 'DEV-1665' }, label: 'relations DEV-1665' },
+      { name: 'linear.search', input: { search: 'agent observability' }, label: 'agent observability' },
+    ];
+    for (const item of cases) {
+      const formatted = formatTraceTableRow(record({
+        name: item.name,
+        input: JSON.stringify(item.input),
+      }));
+      expect(formatted.inputLabel, item.name).toBe(item.label);
+      expect(formatted.inputLabel).not.toContain('Private contact information');
+    }
+  });
+
+  it('uses returned Linear identifiers when inputs only contain opaque IDs', () => {
+    const update = formatTraceTableRow(record({
+      name: 'linear.updateIssue',
+      input: JSON.stringify({
+        issueId: 'd8f29981-a8ce-451d-8910-ca8c04af01b2',
+        state: '05c3e35f-4d31-49ee-a234-a204090e2ac7',
+      }),
+      rawResultJson: JSON.stringify({ data: { issue: { identifier: 'DEV-1666' } } }),
+      output: 'command completed',
+    }));
+    expect(update.inputLabel).toBe('update DEV-1666');
+    expect(update.outputLabel).toBe('issue updated');
+    const comment = formatTraceTableRow(record({
+      name: 'linear.createComment',
+      input: JSON.stringify({ issueId: 'DEV-1666', body: 'Private note' }),
+      output: 'command completed',
+    }));
+    expect(comment.outputLabel).toBe('comment added');
+  });
+
+  it('summarizes common shell and structured command families without dumping arguments', () => {
+    const cases = [
+      { language: 'bash', code: 'gh run view 41177127307 -R consuelohq/opensaas --json jobs', expected: 'view GitHub Actions run' },
+      { language: 'bash', code: 'wrangler pages deployment list --project-name consuelo-website --environment production --json', expected: 'list Cloudflare Pages deployments' },
+      { language: 'bash', code: 'bunx nx run consuelo-os:typecheck', expected: 'typecheck consuelo-os' },
+      { language: 'bash', code: 'curl -H "Authorization: Bearer top-secret-value" https://example.com/private', expected: 'HTTP request' },
+      { language: 'bun', code: "const {Database}=require('bun:sqlite'); const db=new Database(':memory:'); db.query('select * from tool_traces').all();", expected: 'query SQLite' },
+      { language: 'bun', code: "const module = await import(process.cwd()+'/scripts/lib/trace-site-inspector/table-formatters.ts');", expected: 'inspect table-formatters.ts' },
+    ];
+    for (const { language, code, expected } of cases) {
+      const formatted = formatTraceTableRow(record({
+        name: 'code.call',
+        input: JSON.stringify({ language, mode: 'read', code }),
+      }));
+      expect(formatted.inputLabel).toBe(expected);
+      expect(formatted.inputLabel).not.toContain('top-secret-value');
+    }
+  });
 });
