@@ -13,6 +13,7 @@ const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./l
 const { computeVerificationState } = require('./lib/verification');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
 const { findDocumentationOpportunities } = require('./lib/review-documentation');
+const { runSelectedReviewTests } = require('./lib/review-tests');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 let outputCapture = null;
 let activeReviewRun = null;
@@ -511,6 +512,7 @@ function runEslint(files, fix) {
 function runTypecheck(files) {
   const root = gitRoot();
   const findings = [];
+  if (files.length === 0) return findings;
   const nxPath = getNxBinary(root);
 
   if (!nxPath) {
@@ -568,84 +570,6 @@ function runTypecheck(files) {
 // --- main ---
 
 // --- tests ---
-
-function runTests(files) {
-  const root = gitRoot();
-
-  // detect affected packages from changed files, or run all known test packages
-  let packages;
-  if (files.length > 0) {
-    packages = [...new Set(files.map((f) => {
-      const m = f.match(/^packages\/([^/]+)\//);
-      return m ? m[1] : null;
-    }).filter(Boolean))];
-  } else {
-    packages = ['api', 'dialer'];
-  }
-
-  // map to packages that have jest configs
-  const testablePackages = packages.filter((pkg) =>
-    fs.existsSync(path.join(root, 'packages', pkg, 'jest.config.mjs'))
-  );
-
-  const results = [];
-
-  for (const pkg of testablePackages) {
-    const configPath = `packages/${pkg}/jest.config.mjs`;
-    const startTime = Date.now();
-
-    try {
-      const output = execFileSync('npx', [
-        'jest', '--config', configPath, '--no-coverage', '--forceExit',
-      ], {
-        encoding: 'utf8',
-        cwd: root,
-        maxBuffer: 10 * 1024 * 1024,
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 300000, // 5 min max per package
-      });
-
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      // parse summary from output
-      const suitesMatch = output.match(/Test Suites:\s*(.*)/);
-      const testsMatch = output.match(/Tests:\s*(.*)/);
-      results.push({
-        pkg,
-        passed: true,
-        elapsed,
-        suites: suitesMatch ? suitesMatch[1].trim() : 'unknown',
-        tests: testsMatch ? testsMatch[1].trim() : 'unknown',
-        failures: [],
-      });
-    } catch (err) {
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      if (err.killed) {
-        writeStderr(`⚠ jest timed out for ${pkg} after ${elapsed}s — partial output below`);
-      }
-      const output = (err.stdout || '') + (err.stderr || '');
-      const suitesMatch = output.match(/Test Suites:\s*(.*)/);
-      const testsMatch = output.match(/Tests:\s*(.*)/);
-
-      // extract failing test names
-      const failures = [];
-      const failMatches = output.matchAll(/FAIL\s+(.*\.(?:spec|test)\.tsx?)/g);
-      for (const m of failMatches) {
-        failures.push(m[1].trim());
-      }
-
-      results.push({
-        pkg,
-        passed: false,
-        elapsed,
-        suites: suitesMatch ? suitesMatch[1].trim() : 'unknown',
-        tests: testsMatch ? testsMatch[1].trim() : 'unknown',
-        failures,
-      });
-    }
-  }
-
-  return results;
-}
 
 function normalizeReviewPath(file) {
   return String(file || '').replace(/\\/g, '/').replace(/^\.\//, '');
@@ -807,14 +731,14 @@ function summarizeReviewTests(testResults) {
 
 const RELATED_PRE_EXISTING_PROMPT = 'Related pre-existing findings are in the same package or area as this task. Fix mechanical issues in this task, or escalate to Ko when the fix needs product, ownership, or architectural judgment.';
 
-function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities }) {
+function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, testSelection, confidenceResult, documentationCheckRan, documentationOpportunities }) {
   const yourFindings = yours.map((finding, index) => compactFinding(finding, index, 'your_change'));
   const relatedPreExistingFindings = relatedPreExisting.map((finding, index) => compactFinding(finding, index, 'related_pre_existing'));
   const preExistingFindings = preExisting.map((finding, index) => compactFinding(finding, index, 'pre_existing'));
   const testSummary = summarizeReviewTests(testResults);
   const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
   if (documentationCheckRan) checksRun.push('documentation_opportunities');
-  if (testResults.length > 0) checksRun.push('tests');
+  if (testSelection) checksRun.push('tests');
 
   return {
     schema: 'review.summary.v1',
@@ -848,6 +772,13 @@ function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours
     preExistingDigest: summarizeCompactFindings(preExistingFindings),
     ...(documentationCheckRan ? { documentationOpportunities } : {}),
     testSummary,
+    ...(testSelection ? { testSelection: {
+      passed: testSelection.passed,
+      level: testSelection.level,
+      selectedSuiteCount: testSelection.selectedSuiteCount,
+      matchedRuleIds: testSelection.matchedRuleIds,
+      zeroSuiteReason: testSelection.zeroSuiteReason,
+    } } : {}),
     fullEvidence: {
       command: `bun run review -- --base ${base} --json`,
       note: 'Full raw findings remain available from review --json. Summary finding IDs are stable within this summary output and map by owner/rule/file/line/message.',
@@ -878,8 +809,14 @@ async function main() {
       }
       writeStderr(`→ review scoped to: ${requestedWorktree}`);
       const passthrough = process.argv.slice(2).filter((argument) => argument !== "--mine");
+      const taskScript = path.join(requestedWorktree, 'packages/workspace/scripts/review.js');
+      if (!fs.existsSync(taskScript)) {
+        writeStderr(`task review script not found: ${taskScript}`);
+        process.exitCode = 1;
+        return;
+      }
       try {
-        execFileSync(process.execPath, [__filename, ...passthrough], { cwd: requestedWorktree, stdio: "inherit" });
+        execFileSync(process.execPath, [taskScript, ...passthrough], { cwd: requestedWorktree, stdio: "inherit" });
       } catch (error) { process.exitCode = error.status || 1; }
       return;
     }
@@ -921,8 +858,14 @@ async function main() {
     const taskRoot = task.path;
     writeStderr(`→ review scoped to: ${taskRoot}`);
     const passthrough = process.argv.slice(2).filter((argument) => argument !== "--mine");
+    const taskScript = path.join(taskRoot, 'packages/workspace/scripts/review.js');
+    if (!fs.existsSync(taskScript)) {
+      writeStderr(`task review script not found: ${taskScript}`);
+      process.exitCode = 1;
+      return;
+    }
     try {
-      execFileSync(process.execPath, [__filename, ...passthrough], { cwd: taskRoot, stdio: "inherit" });
+      execFileSync(process.execPath, [taskScript, ...passthrough], { cwd: taskRoot, stdio: "inherit" });
     } catch (error) { process.exitCode = error.status || 1; }
     return;
   }
@@ -1030,7 +973,7 @@ async function main() {
   // run eslint — always, on changed files or all
   if (!args.quiet && !structuredOutput) writeStdout('');
   if (!args.quiet && !structuredOutput) writeStdout('running eslint...');
-  const eslintFiles = files.length > 0 ? files : getAllTsFiles(root);
+  const eslintFiles = files;
   const eslintFindings = runEslint(eslintFiles, args.fix);
   allFindings.push(...eslintFindings);
   if (!args.quiet && !structuredOutput) {
@@ -1039,7 +982,7 @@ async function main() {
 
   // run typecheck — always, on affected packages
   if (!args.quiet && !structuredOutput) writeStdout('running typecheck...');
-  const typecheckFiles = files.length > 0 ? files : getAllTsFiles(root);
+  const typecheckFiles = files;
   const typecheckFindings = runTypecheck(typecheckFiles);
   allFindings.push(...typecheckFindings);
   if (!args.quiet && !structuredOutput) {
@@ -1098,9 +1041,11 @@ async function main() {
 
   // run tests — default on, skip with --no-tests
   let testResults = [];
+  let testSelection = null;
   if (!args.noTests) {
     if (!args.quiet && !structuredOutput) writeStdout('running tests...');
-    testResults = runTests(files);
+    testSelection = runSelectedReviewTests({ repoRoot: root, base, all: args.all });
+    testResults = testSelection.testResults;
     if (!args.quiet && !structuredOutput) {
       let totalPassed = 0;
       let totalFailed = 0;
@@ -1116,9 +1061,8 @@ async function main() {
         }
         if (r.passed) totalPassed++; else totalFailed++;
       }
-      if (testResults.length > 0) {
-        writeStdout(`  ${'TESTS' + ' '.repeat(13)} ${totalFailed === 0 ? `✓ PASS (${totalPassed} suites)` : `✗ FAIL (${totalFailed}/${testResults.length} suites failed)`}`);
-      }
+      writeStdout(`  ${'TESTS' + ' '.repeat(13)} ${testSelection.passed ? `✓ PASS (${totalPassed} suites)` : `✗ FAIL (${totalFailed}/${testResults.length} suites failed)`}`);
+      if (testSelection.zeroSuiteReason) writeStdout(`    ${testSelection.zeroSuiteReason}`);
     }
   } else {
     if (!args.quiet && !structuredOutput) {
@@ -1131,7 +1075,7 @@ async function main() {
   const { yours, relatedPreExisting, preExisting } = classifyFindings(allFindings, changedLines, relatedRoots);
 
   // include test failures in exit code
-  const testsFailed = testResults.some((r) => !r.passed);
+  const testsFailed = Boolean(testSelection && !testSelection.passed) || testResults.some((r) => !r.passed);
 
   if (args.json || args.summaryJson) {
     const fullPayload = {
@@ -1144,18 +1088,27 @@ async function main() {
       preExisting,
       ...(documentationCheckRan ? { documentationOpportunities } : {}),
       testResults,
+      ...(testSelection ? { testSelection: {
+        passed: testSelection.passed,
+        level: testSelection.level,
+        selectedSuiteCount: testSelection.selectedSuiteCount,
+        matchedRuleIds: testSelection.matchedRuleIds,
+        zeroSuiteReason: testSelection.zeroSuiteReason,
+      } } : {}),
       confidence: confidenceResult,
     };
     const payload = args.summaryJson
-      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities })
+      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, testSelection, confidenceResult, documentationCheckRan, documentationOpportunities })
       : fullPayload;
     writeStdout(JSON.stringify(payload, null, 2));
+    const structuredExitCode = yours.length + relatedPreExisting.length > 0 || testsFailed ? 1 : 0;
     if (reviewRun) {
       const captured = stopOutputCapture();
-      finishReviewRun(reviewRun, { ...captured, exitCode: 0 });
+      finishReviewRun(reviewRun, { ...captured, exitCode: structuredExitCode });
       activeReviewRun = null;
       emitCapturedOutput(captured);
     }
+    process.exitCode = structuredExitCode;
     return;
   }
 

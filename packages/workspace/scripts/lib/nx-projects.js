@@ -61,6 +61,8 @@ function readPackageProjects(repoRoot) {
 }
 
 const projectCache = new Map();
+const scopedCatalogCache = new Map();
+const scopedDetailCache = new Map();
 
 function readNxProjects(repoRoot) {
   const cachedProjects = projectCache.get(repoRoot);
@@ -102,8 +104,71 @@ function normalizeRepoPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
+// Changed-file reviews normally touch one package. Query Nx's project names once
+// and resolve inferred targets only for affected projects, not every project.
+function readScopedProjectCatalog(repoRoot) {
+  if (scopedCatalogCache.has(repoRoot)) return scopedCatalogCache.get(repoRoot);
+  const names = runNxJson(repoRoot, ['show', 'projects', '--json']);
+  if (!Array.isArray(names)) return null;
+
+  const knownNames = new Set(names);
+  const candidates = readPackageProjects(repoRoot)
+    .filter((project) => knownNames.has(project.name));
+  const mappedNames = new Set(candidates.map((project) => project.name));
+
+  // Nested/custom Nx projects cannot be inferred from package.json alone.
+  for (const name of names) {
+    if (mappedNames.has(name)) continue;
+    const project = runNxJson(repoRoot, ['show', 'project', name, '--json']);
+    if (!project || !project.root) return null;
+    const detail = {
+      name: project.name || name,
+      root: String(project.root).replace(/\\/g, '/').replace(/\/$/, ''),
+      targets: project.targets || {},
+      source: 'nx',
+    };
+    scopedDetailCache.set(repoRoot + ':' + name, detail);
+    candidates.push(detail);
+  }
+  candidates.sort((a, b) => b.root.length - a.root.length);
+  scopedCatalogCache.set(repoRoot, candidates);
+  return candidates;
+}
+
+function readScopedProjectDetail(repoRoot, candidate) {
+  const key = repoRoot + ':' + candidate.name;
+  if (scopedDetailCache.has(key)) return scopedDetailCache.get(key);
+  const project = runNxJson(repoRoot, ['show', 'project', candidate.name, '--json']);
+  if (!project || !project.root) return null;
+  const detail = {
+    name: project.name || candidate.name,
+    root: String(project.root).replace(/\\/g, '/').replace(/\/$/, ''),
+    targets: project.targets || {},
+    source: 'nx',
+  };
+  scopedDetailCache.set(key, detail);
+  return detail;
+}
+
+function getProjectsForFilesFromList(projects, files) {
+  const byName = new Map();
+  for (const file of files) {
+    const normalizedFile = normalizeRepoPath(file);
+    const project = projects.find((candidate) => (
+      normalizedFile === candidate.root || normalizedFile.startsWith(candidate.root + '/')
+    ));
+    if (!project) continue;
+    const existing = byName.get(project.name) || { ...project, files: [] };
+    existing.files.push(normalizedFile);
+    byName.set(project.name, existing);
+  }
+  return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 function getProjectsForFiles(repoRoot, files) {
-  const projects = readNxProjects(repoRoot);
+  if (files.length === 0) return [];
+  const catalog = readScopedProjectCatalog(repoRoot);
+  const projects = catalog || readNxProjects(repoRoot);
   const byName = new Map();
 
   for (const file of files) {
@@ -116,9 +181,14 @@ function getProjectsForFiles(repoRoot, files) {
       continue;
     }
 
-    const existing = byName.get(project.name) || { ...project, files: [] };
+    const detail = catalog ? readScopedProjectDetail(repoRoot, project) : project;
+    if (!detail || detail.root !== project.root) {
+      // If Nx's inferred root differs, use authoritative full discovery.
+      return getProjectsForFilesFromList(readNxProjects(repoRoot), files);
+    }
+    const existing = byName.get(detail.name) || { ...detail, files: [] };
     existing.files.push(normalizedFile);
-    byName.set(project.name, existing);
+    byName.set(detail.name, existing);
   }
 
   return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
