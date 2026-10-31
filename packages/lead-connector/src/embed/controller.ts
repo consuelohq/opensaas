@@ -862,10 +862,14 @@ export const createLeadConnectorEmbedController = (input: {
         throw normalizeAsyncError(cause);
       }
     },
-    openBillingPortal: async (): Promise<string | null> => {
+    openBillingPortal: async (
+      component: 'base' | 'numbers' | 'minutes' = 'base',
+    ): Promise<string | null> => {
       try {
         const result = await run(() =>
-          input.api.createCommercialBillingPortal(),
+          component !== 'base'
+            ? input.api.createCommercialBillingPortal({ component })
+            : input.api.createCommercialBillingPortal(),
         );
         return result?.url ?? null;
       } catch (cause: unknown) {

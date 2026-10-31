@@ -178,6 +178,12 @@ export type EmbedCommercialDashboard = {
     minutePack: number;
     numberPack: number;
     recurringCents: number;
+    baseRecurringCents?: number;
+    numberRecurringCents?: number;
+    numberBilling?: 'monthly' | 'annual';
+    separateInvoices?: boolean;
+    numberStatus?: string;
+    paymentPending?: boolean;
   } | null;
   workspaceId: string;
   catalog: {
