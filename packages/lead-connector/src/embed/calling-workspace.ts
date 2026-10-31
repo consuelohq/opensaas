@@ -24,6 +24,16 @@ export type CallingWorkspace = {
   mode: 'inbound' | 'outbound';
   compact: boolean;
 };
+/** Native sidebar is a launcher; the parent-owned overlay is the calling UI. */
+export const createCallingWorkspace = (
+  surface: 'admin' | 'overlay',
+): CallingWorkspace => ({
+  screen: 'calling',
+  mode: surface === 'admin' ? 'inbound' : 'outbound',
+  compact: false,
+  nativeFloating: surface === 'admin',
+});
+
 export type SessionPresentation = {
   active: boolean;
   status:

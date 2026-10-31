@@ -180,7 +180,7 @@
     var html = [
       '<div id="',
       hostId,
-      '">',
+      '" data-modern="true">',
       '<section class="consuelo-dialer-panel" ',
       'aria-label="Consuelo Dialer" hidden>',
       '<header class="consuelo-dialer-chrome">',
@@ -197,6 +197,12 @@
 
     var host = document.getElementById(hostId);
     panel = host.querySelector('.consuelo-dialer-panel');
+    host.addEventListener('click', function (event) {
+      if (event.target !== host) return;
+      event.preventDefault();
+      event.stopPropagation();
+      minimizeOverlay();
+    });
     host
       .querySelector('[data-action="minimize"]')
       .addEventListener('click', minimizeOverlay);
@@ -526,6 +532,11 @@
     ) {
       pendingWorkspace = null;
       workspaceLaunchSent = false;
+      post({
+        type: 'consuelo.leadconnector/workspace-presentation',
+        version: 1,
+        compact: minimized,
+      });
     }
     if (
       data.type === 'consuelo.leadconnector/presentation-request' &&
