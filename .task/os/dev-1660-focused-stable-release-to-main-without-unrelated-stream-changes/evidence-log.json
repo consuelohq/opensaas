@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes",
+  "events": [
+    {
+      "id": "3b0ae2fb-f872-4be6-a7f3-3d5e0a65043c",
+      "occurred_at": "2026-10-31T06:16:06.258Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-31T06:16:06.418Z"
+}

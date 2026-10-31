@@ -39,7 +39,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | google | 1 |
 | http | 1 |
 | lifecycle | 2 |
-| linear | 8 |
+| linear | 14 |
 | mac | 8 |
 | media | 25 |
 | memory | 1 |
@@ -3439,9 +3439,129 @@ await workspace.call({
 
 ## linear
 
+### workspace.linear.comments
+
+read Linear issue comments, authors, and pagination
+
+| Field | Value |
+| --- | --- |
+| Category | linear |
+| Signature | `workspace.linear.comments({ issueId: string; first?: number; after?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace linear.comments` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "linear.comments",
+  "input": {
+    "issueId": "DEV-123",
+    "first": 20
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.linear.createComment
+
+post a Linear comment as the authenticated application and verify its author
+
+| Field | Value |
+| --- | --- |
+| Category | linear |
+| Signature | `workspace.linear.createComment({ issueId: string; body: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace linear.createComment` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "linear.createComment",
+  "input": {
+    "issueId": "DEV-123",
+    "body": "Verified and ready for review"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### workspace.linear.createIssue
 
-create a Linear issue with DEV/open defaults and the opensaas label
+create a Linear issue with provider-configured workflow defaults, optional labels and projects
 
 | Field | Value |
 | --- | --- |
@@ -3457,10 +3577,127 @@ create a Linear issue with DEV/open defaults and the opensaas label
 await workspace.call({
   "tool": "linear.createIssue",
   "input": {
-    "title": "add Linear facade commands",
-    "labels": [
-      "opensaas"
-    ]
+    "title": "add Linear facade commands"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.linear.createRelation
+
+idempotently create a native Linear blocks, related, duplicate or similar issue relation
+
+| Field | Value |
+| --- | --- |
+| Category | linear |
+| Signature | `workspace.linear.createRelation({ issueId: string; relatedIssueId: string; type: "blocks" &#124; "related" &#124; "duplicate" &#124; "similar"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace linear.createRelation` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "linear.createRelation",
+  "input": {
+    "issueId": "DEV-123",
+    "relatedIssueId": "DEV-124",
+    "type": "blocks"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.linear.deleteRelation
+
+remove a native Linear issue relation by its id
+
+| Field | Value |
+| --- | --- |
+| Category | linear |
+| Signature | `workspace.linear.deleteRelation({ relationId: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace linear.deleteRelation` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "linear.deleteRelation",
+  "input": {
+    "relationId": "11111111-1111-4111-8111-111111111111"
   }
 });
 ```
@@ -3678,6 +3915,65 @@ await workspace.call({
 }
 ```
 
+### workspace.linear.relations
+
+read native incoming and outgoing issue dependencies and relations
+
+| Field | Value |
+| --- | --- |
+| Category | linear |
+| Signature | `workspace.linear.relations({ identifier: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace linear.relations` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "linear.relations",
+  "input": {
+    "identifier": "DEV-123"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### workspace.linear.search
 
 search Linear issues with DEV default team support
@@ -3855,6 +4151,66 @@ await workspace.call({
 }
 ```
 
+### workspace.linear.triageIssue
+
+move an issue through team Triage intake, accept, or decline using current team states
+
+| Field | Value |
+| --- | --- |
+| Category | linear |
+| Signature | `workspace.linear.triageIssue({ issueId: string; action: "intake" &#124; "accept" &#124; "decline"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace linear.triageIssue` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "linear.triageIssue",
+  "input": {
+    "issueId": "DEV-123",
+    "action": "accept"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### workspace.linear.updateIssue
 
 update Linear issue fields including labels, project, cycle, and parent
@@ -3873,10 +4229,7 @@ update Linear issue fields including labels, project, cycle, and parent
 await workspace.call({
   "tool": "linear.updateIssue",
   "input": {
-    "issueId": "DEV-123",
-    "labels": [
-      "opensaas"
-    ]
+    "issueId": "DEV-123"
   }
 });
 ```

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2743,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2743",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5a70ea614a49",
+  "tmuxSession": "opensaas-os-dev-1660-focused-stable-release-to-main-without--5a70ea61",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes/.task/session.json",
+  "createdAt": "2026-10-31T06:13:32.243Z"
+}
