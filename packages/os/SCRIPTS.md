@@ -1583,34 +1583,34 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && rg "TODO" packages/
 
 ## Linear facade
 
-Linear uses `packages/workspace/scripts/linear.js` as the source wrapper and typed facade entries in `packages/workspace/tooling/tool-manifest.json`.
+Linear uses byte-identical wrappers in `packages/os/scripts/linear.js` and `packages/workspace/scripts/linear.js`. The canonical typed tool definitions are in `packages/os/tools/linear/`, with generated OS manifests, type signatures, and TOOLS.md.
 
-Required workflow for issue creation:
+Issue workflow:
 
-1. Search first with `workspace linear.search '{"search":"<title keywords>"}'` to avoid duplicates.
-2. Create with `workspace linear.createIssue '{"title":"[task] description","description":"...","labels":["[task]","opensaas"]}'`.
-3. Use DEV by default. Pass `team:"growth"` only when Ko explicitly asks for non-engineering work.
-4. Every issue must include one bracket type label and one repository label. The wrapper defaults to the bracket type detected from the title plus `opensaas`; pass labels explicitly when creating non-default repository work.
-5. Use `linear.labels`, `linear.teams`, `linear.projects`, and `linear.states` to discover ids instead of guessing.
+1. Search existing issues before creating to prevent duplicate work.
+2. Choose the correct team and project; use `linear.projects`, `linear.teams`, `linear.labels`, and `linear.states` to discover valid names/ids.
+3. Issue creation defaults to DEV, with **no hardcoded label or state**. Linear decides the default intake workflow. Set `state: "Triage"` or another actual state deliberately.
+4. Select existing type/repository labels only when appropriate; an unknown label fails closed. Repeated `--labels` arguments accumulate and preserve all requested labels.
+5. Keep a durable progress trail: comment on issue milestones, record native dependencies, update state, and read back changes. A completed PR is not automatically a completed issue.
 
 Typed commands:
 
-- `linear.search` — search or list issues, DEV scoped by default when listing.
-- `linear.issue` — read one issue by identifier or id.
-- `linear.createIssue` — create an issue with `team`, `title`, `description`, `state`, `labels`, `assignee`, `priority`, `project`, `cycle`, and `parent`.
-- `linear.updateIssue` — update title, description, state, labels, assignee, priority, project, cycle, or parent.
-- `linear.labels` — list labels for type/repository consistency.
-- `linear.teams` — list teams and states.
-- `linear.projects` — list projects for project attachment.
-- `linear.states` — list workflow states for a team.
+- `linear.search`, `linear.issue` — find and read issues (including author-bearing comments and native relation listings).
+- `linear.createIssue`, `linear.updateIssue` — create or update issue fields; project and state accept existing exact names or IDs.
+- `linear.createComment`, `linear.comments` — post under the authenticated app identity with author verification; read paginated comments.
+- `linear.relations`, `linear.createRelation`, `linear.deleteRelation` — read incoming/outgoing relations and manage native `blocks`, `related`, `duplicate`, or `similar` links. `blocks` direction is from blocking issue to blocked issue. Refuse a conflicting type on the same pair rather than silently replacing it.
+- `linear.triageIssue` — explicitly `intake`, `accept`, or `decline` using configured team states.
+- `linear.labels`, `linear.teams`, `linear.projects`, `linear.states` — list provider IDs and configuration.
 
 Examples:
 
 ```bash
-workspace linear.search '{"search":"workspace facade linear"}'
-workspace linear.createIssue '{"title":"[bug] Workspace facade lacks Linear wrapper","labels":["[bug]","opensaas"]}'
-workspace linear.updateIssue '{"issueId":"DEV-123","parent":"<parent-issue-id>"}'
-workspace linear.projects '{"first":50}'
+bun packages/os/scripts/linear.js search --search "Linear workflow"
+bun packages/os/scripts/linear.js create "[task] Improve a workflow" --labels "[task]" --project OS --state Triage
+bun packages/os/scripts/linear.js comment DEV-123 "Validated the regression and PR head."
+bun packages/os/scripts/linear.js relation-create DEV-123 DEV-124 --type blocks
+bun packages/os/scripts/linear.js relations DEV-124
+bun packages/os/scripts/linear.js triage DEV-123 --action accept
 ```
 
 ---

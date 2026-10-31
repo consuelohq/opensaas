@@ -4426,12 +4426,98 @@
       "sessionRequired": false
     },
     {
+      "name": "linear.comments",
+      "methodPath": [
+        "linear",
+        "comments"
+      ],
+      "description": "read Linear issue comments, authors, and pagination",
+      "category": "linear",
+      "underlying": "workspace linear.comments",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "LinearIssueListInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "linear",
+        "subcommand": "comments",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "issueId",
+            "kind": "value"
+          },
+          {
+            "source": "first",
+            "flag": "--first",
+            "kind": "value"
+          },
+          {
+            "source": "after",
+            "flag": "--after",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "exampleInput": {
+        "issueId": "DEV-123",
+        "first": 20
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "linear.createComment",
+      "methodPath": [
+        "linear",
+        "createComment"
+      ],
+      "description": "post a Linear comment as the authenticated application and verify its author",
+      "category": "linear",
+      "underlying": "workspace linear.createComment",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "LinearCreateCommentInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "linear",
+        "subcommand": "comment",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "issueId",
+            "kind": "value"
+          },
+          {
+            "source": "body",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "exampleInput": {
+        "issueId": "DEV-123",
+        "body": "Verified and ready for review"
+      },
+      "sessionRequired": false
+    },
+    {
       "name": "linear.createIssue",
       "methodPath": [
         "linear",
         "createIssue"
       ],
-      "description": "create a Linear issue with DEV/open defaults and the opensaas label",
+      "description": "create a Linear issue with provider-configured workflow defaults, optional labels and projects",
       "category": "linear",
       "underlying": "workspace linear.createIssue",
       "capabilities": {
@@ -4501,10 +4587,88 @@
         "jsonFlag": "--json"
       },
       "exampleInput": {
-        "title": "add Linear facade commands",
-        "labels": [
-          "opensaas"
-        ]
+        "title": "add Linear facade commands"
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "linear.createRelation",
+      "methodPath": [
+        "linear",
+        "createRelation"
+      ],
+      "description": "idempotently create a native Linear blocks, related, duplicate or similar issue relation",
+      "category": "linear",
+      "underlying": "workspace linear.createRelation",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "LinearCreateRelationInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "linear",
+        "subcommand": "relation-create",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "issueId",
+            "kind": "value"
+          },
+          {
+            "source": "relatedIssueId",
+            "kind": "value"
+          },
+          {
+            "source": "type",
+            "flag": "--type",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "exampleInput": {
+        "issueId": "DEV-123",
+        "relatedIssueId": "DEV-124",
+        "type": "blocks"
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "linear.deleteRelation",
+      "methodPath": [
+        "linear",
+        "deleteRelation"
+      ],
+      "description": "remove a native Linear issue relation by its id",
+      "category": "linear",
+      "underlying": "workspace linear.deleteRelation",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "LinearDeleteRelationInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "linear",
+        "subcommand": "relation-delete",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "relationId",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "exampleInput": {
+        "relationId": "11111111-1111-4111-8111-111111111111"
       },
       "sessionRequired": false
     },
@@ -4622,6 +4786,41 @@
       },
       "exampleInput": {
         "first": 50
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "linear.relations",
+      "methodPath": [
+        "linear",
+        "relations"
+      ],
+      "description": "read native incoming and outgoing issue dependencies and relations",
+      "category": "linear",
+      "underlying": "workspace linear.relations",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "LinearIssueInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "linear",
+        "subcommand": "relations",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "identifier",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "exampleInput": {
+        "identifier": "DEV-123"
       },
       "sessionRequired": false
     },
@@ -4767,6 +4966,47 @@
       "sessionRequired": false
     },
     {
+      "name": "linear.triageIssue",
+      "methodPath": [
+        "linear",
+        "triageIssue"
+      ],
+      "description": "move an issue through team Triage intake, accept, or decline using current team states",
+      "category": "linear",
+      "underlying": "workspace linear.triageIssue",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "LinearTriageIssueInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "linear",
+        "subcommand": "triage",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "issueId",
+            "kind": "value"
+          },
+          {
+            "source": "action",
+            "flag": "--action",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "exampleInput": {
+        "issueId": "DEV-123",
+        "action": "accept"
+      },
+      "sessionRequired": false
+    },
+    {
       "name": "linear.updateIssue",
       "methodPath": [
         "linear",
@@ -4842,10 +5082,7 @@
         "jsonFlag": "--json"
       },
       "exampleInput": {
-        "issueId": "DEV-123",
-        "labels": [
-          "opensaas"
-        ]
+        "issueId": "DEV-123"
       },
       "sessionRequired": false
     },
