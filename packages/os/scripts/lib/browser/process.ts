@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { Effect } from 'effect';
 
+import { resolveAgentBrowserCommand } from './managed-cli';
 import type { BrowserProcess, BrowserProcessRequest, BrowserProcessResult } from './types';
 
 // The native agent-browser launcher can leave Chrome's own stderr pipe unread.
@@ -56,8 +57,9 @@ export function runAgentBrowser(
   options: AgentBrowserRunnerOptions = {},
 ): Promise<BrowserProcessResult> {
   return new Promise((resolve) => {
-    const child = spawn(options.command ?? 'agent-browser', request.args, {
-      env: browserChildEnvironment(options.env ?? process.env),
+    const env = options.env ?? process.env;
+    const child = spawn(options.command ?? resolveAgentBrowserCommand(env), request.args, {
+      env: browserChildEnvironment(env),
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let stdout = '';

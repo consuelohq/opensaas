@@ -29,6 +29,7 @@ import {
   type LifecycleServiceController,
 } from './lib/lifecycle';
 import { resolveVisibleUserRoot } from './lib/managed-user-content-release';
+import { ensureManagedAgentBrowser } from './lib/managed-agent-browser';
 import { revokeCurrentWorkspaceNode } from './lib/workspace-node-registration-client';
 import {
   createDetachedNativeLifecycleOperationLauncher,
@@ -687,6 +688,15 @@ export const createDefaultLifecycleEngine = (input: {
     runtime: createBunRuntimeMaterializer(),
     managedSites: {
       refresh: refreshManagedSitesFromAcceptedRelease,
+    },
+    managedAgentBrowser: {
+      async ensure({ home }) {
+        try {
+          await ensureManagedAgentBrowser({ home });
+        } catch (error: unknown) {
+          throw new Error('managed agent-browser reconciliation failed', { cause: error });
+        }
+      },
     },
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,

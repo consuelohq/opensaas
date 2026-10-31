@@ -443,6 +443,38 @@
       "reason": "Browser stderr backpressure, explicit CDP attach, helper cleanup, persistent-profile handoff and OS/workspace parity require the focused browser suites without selecting the broad package tests."
     },
     {
+      "id": "os-browser-managed-dependency",
+      "critical": true,
+      "source": [
+        "packages/os/scripts/lib/managed-agent-browser.ts",
+        "packages/os/scripts/lib/browser/managed-cli.ts",
+        "packages/workspace/scripts/lib/browser/managed-cli.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/scripts/doctor.js",
+        "packages/workspace/scripts/doctor.js",
+        "packages/os/tests/managed-agent-browser.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS pinned browser provisioner and lifecycle reconciliation",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-agent-browser.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
+          ]
+        }
+      ],
+      "reason": "Managed agent-browser assets, digest checking, first-install and accepted-release update repair, developer diagnostics, and OS/workspace parity need direct focused regression coverage."
+    },
+    {
       "id": "workspace-audit-docs",
       "critical": false,
       "source": [

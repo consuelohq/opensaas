@@ -1946,6 +1946,22 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('routes managed agent-browser install/update and diagnostics to focused critical coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file', 'packages/os/scripts/lib/managed-agent-browser.ts',
+      '--changed-file', 'packages/os/scripts/install.ts',
+      '--changed-file', 'packages/os/scripts/lib/browser/managed-cli.ts',
+      '--json',
+    ]));
+    expect(data.matchedRules.map((rule) => rule.id)).toContain('os-browser-managed-dependency');
+    const suite = data.selectedSuites.find((suite) => suite.ruleId === 'os-browser-managed-dependency');
+    expect(suite?.critical).toBe(true);
+    expect(suite?.command).toContain('packages/os/tests/managed-agent-browser.test.ts');
+    expect(data.selectedSuites.map((suite) => suite.name)).not.toContain('@consuelo/os package test');
+    expect(data.matchedRules.map((rule) => rule.id)).toContain('os-google-workspace');
+  });
+
   it('routes partial-install recovery CLI changes through focused critical coverage', () => {
     const data = json(run([
       'check',

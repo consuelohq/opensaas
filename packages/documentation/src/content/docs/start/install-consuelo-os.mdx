@@ -95,6 +95,8 @@ Skipping the service does not remove the OS files. It only skips user background
 
 The lifecycle updater stages and verifies a new runtime before switching `runtime/current`. Before refreshing service definitions, the activated runtime reconciles the checksum-pinned Caddy and Cloudflared binaries into Consuelo-managed paths. A stale global or Homebrew binary is not considered current merely because it exists.
 
+Consuelo also provisions **agent-browser v0.40.0** for browser tools on first install, with a checksum-verified binary stored under `~/.consuelo/managed/agent-browser/`. Updates repair missing or outdated managed browser dependencies, including when the OS release itself is already current. This does not replace a separately installed global CLI or erase existing browser profiles, cookies, or sign-ins. If the browser download is unavailable, OS remains installed and reports the dependency as deferred; retry with `consuelo update --yes`.
+
 Routine updates keep the supervisor-owned Caddy and Cloudflared processes running while the two local OS workers are replaced one at a time. The one-time migration from legacy sidecar LaunchAgents replaces the supervisor only after the existing HA worker pool is healthy, then verifies the new supervised Caddy process before retiring those legacy jobs. Before a worker closes its listener, it marks `/ready` unavailable and stays available for ordinary requests during a short propagation window so the local load balancer can stop choosing it for new work. Request accounting remains active until each response body finishes streaming or the client cancels it, so a worker does not exit merely because its handler has already returned a response object. After the replacement worker becomes directly ready, Consuelo waits another propagation window for Caddy to mark it healthy before draining the next worker, so the rolling handoff keeps at least one admitted upstream available.
 
 Activation and automatic rollback reconcile services from the exact immutable runtime release being activated, not whichever release the mutable `runtime/current` link happens to reference later. Recovery-capable operations still try the rolling path first and use supervisor replacement only if rolling recovery cannot restore a healthy pool.
@@ -109,7 +111,7 @@ Run the same doctor command printed by the installer:
 CONSUELO_HOME="$HOME/.consuelo" bun run --cwd "$HOME/.consuelo" doctor
 ```
 
-A healthy installation should find the runtime files, local database, steering, skills, tools, and server entrypoints. Agent-specific connection status is covered in [Connect your first agent](/start/connect-your-first-agent/).
+A healthy installation should find the runtime files, local database, steering, skills, tools, and server entrypoints. The doctor also reports the managed `agent-browser` version and whether the browser dependency requires repair. `consuelo update --check` only checks for an OS update; `consuelo update --yes` can retry browser dependency provisioning. Agent-specific connection status is covered in [Connect your first agent](/start/connect-your-first-agent/).
 
 ## Run it again safely
 

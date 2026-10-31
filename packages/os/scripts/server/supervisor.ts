@@ -5,6 +5,7 @@ import { createServer } from 'node:net';
 import path from 'node:path';
 
 import { resolveConsueloHomeLayout } from '../lib/consuelo-home';
+import { ensureManagedAgentBrowser } from '../lib/managed-agent-browser';
 import {
   startMacosSupervisedSidecars,
   type MacosSupervisedSidecars,
@@ -319,6 +320,13 @@ if (import.meta.main) {
   let macosSidecars: MacosSupervisedSidecars | undefined;
   try {
     await pool.start();
+    // The updater that activated this release may still be an older version
+    // without a managed-browser hook. Reconcile after worker startup without
+    // delaying health acceptance or interacting with active browser sessions.
+    void ensureManagedAgentBrowser({ home: layout.home }).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      process.stderr.write('[Consuelo OS] agent-browser dependency deferred: ' + message + '\n');
+    });
     if (process.platform === 'darwin') {
       macosSidecars = await startMacosSupervisedSidecars({
         consueloHome: layout.home,

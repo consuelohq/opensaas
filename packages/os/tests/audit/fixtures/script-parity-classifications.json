@@ -238,6 +238,10 @@
       "status": "same",
       "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
     },
+    "scripts/lib/browser/managed-cli.ts": {
+      "status": "same",
+      "reason": "Shared byte-identical managed agent-browser runtime resolver with safe legacy fallback."
+    },
     "scripts/lib/browser/process.ts": {
       "status": "same",
       "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
@@ -738,6 +742,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned macOS sidecar supervisor manages Caddy and Cloudflared child lifecycle for installed runtimes and intentionally has no workspace counterpart."
     },
+    "scripts/lib/managed-agent-browser.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned pinned, digest-verified agent-browser provisioner used during install and lifecycle updates."
+    },
     "scripts/lib/managed-cloud-node-enrollment.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/managed-cloud-node-enrollment.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -998,10 +1006,6 @@
       "status": "changed-needs-review",
       "reason": "The OS copy now lazy-loads yaml so scripts-only audit fixtures do not require index/config dependencies; keep the intentional runtime-specific divergence explicit."
     },
-    "scripts/lib/posthog-client.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-only privacy-checked PostHog provider client for optional per-node analytics; no workspace counterpart is needed."
-    },
     "scripts/lib/platform-cloudflare-provisioning.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1013,6 +1017,10 @@
     "scripts/lib/platforms/linux.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/platforms/linux.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/posthog-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only privacy-checked PostHog provider client for optional per-node analytics; no workspace counterpart is needed."
     },
     "scripts/lib/pr-links.js": {
       "status": "same",
@@ -1059,6 +1067,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned release promotion dispatch lock coordinates immutable runtime channel promotion and prevents concurrent release-state dispatch; no workspace counterpart is intended."
     },
+    "scripts/lib/review-changed-lines.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "Workspace reviewer changed-line attribution helper added in the stream review-run modernization; keep explicit parity tracking until OS mirroring or an intentional workspace-only ownership decision."
+    },
     "scripts/lib/review-documentation.js": {
       "status": "workspace-only-needs-port",
       "reason": "scripts/lib/review-documentation.js exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
@@ -1071,6 +1083,10 @@
       "status": "workspace-only-needs-port",
       "reason": "The stream/os reviewer modernization added this workspace-only test selection helper; retain explicit parity tracking until OS mirroring or an intentional workspace-only ownership decision is verified."
     },
+    "scripts/lib/review-typecheck-errors.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "Workspace reviewer typecheck-diagnostic normalization helper added in the stream review-run modernization; track parity until OS mirroring or intentional workspace-only ownership is verified."
+    },
     "scripts/lib/runtime-state.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1082,6 +1098,10 @@
     "scripts/lib/runtime-tool-registry.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned effective runtime tool registry that merges optional provider tools without mutating the generated manifest; it has no workspace-script counterpart."
+    },
+    "scripts/lib/search/explore-failure.js": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned bounded, secret-redacted explore failure and retry guidance helper added by DEV-1665; no workspace script counterpart is intended."
     },
     "scripts/lib/search/explore-output.js": {
       "status": "os-only-needs-review",

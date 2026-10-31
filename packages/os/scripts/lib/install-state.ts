@@ -16,6 +16,7 @@ import {
   writeYamlConfig,
 } from './consuelo-home';
 import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
+import { inspectManagedAgentBrowser } from './managed-agent-browser';
 import { createConnectorOriginHostname } from './connector-origin-hostname';
 import {
   configureLocalAgents,
@@ -2076,6 +2077,22 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     message:
       typeof Bun !== 'undefined' ? `Bun ${Bun.version}` : 'Bun is required',
   });
+
+  try {
+    const browser = await inspectManagedAgentBrowser({ home: resolvedHome });
+    checks.push({
+      name: 'agent-browser',
+      status: browser.status === 'ready' ? 'connected' :
+        browser.status === 'missing' ? 'not_configured' : 'unhealthy',
+      message: browser.message,
+    });
+  } catch (error: unknown) {
+    checks.push({
+      name: 'agent-browser',
+      status: 'unhealthy',
+      message: `Managed agent-browser health check failed: ${error instanceof Error ? error.message : String(error)}`,
+    });
+  }
 
   for (const requiredPath of requiredPaths) {
     checks.push({
