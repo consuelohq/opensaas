@@ -1,4 +1,9 @@
 import { createCoachingScripts } from '../coaching/scripts';
+import { createPublicCheckout } from '../billing/public-checkout';
+import {
+  createPublicCheckoutStore,
+  initializePublicCheckoutStore,
+} from '../billing/public-checkout-store';
 import { createLeadConnectorInboundEnrichment } from './inbound-enrichment';
 import { getInboundRuntime } from './inbound';
 import { randomUUID } from 'node:crypto';
@@ -43,7 +48,7 @@ import { Effect, Layer } from 'effect';
 import type StripeSdk from 'stripe';
 
 import type { DialerApplicationLayers } from '../application';
-import { createStripeCommercialBilling } from '../billing/stripe';
+import { createStripeCommercialBilling, createStripeCommercialWebhookVerifier } from '../billing/stripe';
 import { createCallOperationsApplication } from '../call-operations/application';
 import { createCommercialApplication } from '../commercial/application';
 import { initializeCommercialPersistence } from '../commercial/persistence';
@@ -543,14 +548,7 @@ export const createRailwayCommercialApplication = async (
             stripe.subscriptions.update(subscriptionId, parameters, options),
         },
         webhooks: {
-          constructEvent: (rawBody, signature, secret) => {
-            const event = stripe.webhooks.constructEvent(
-              rawBody,
-              signature,
-              secret,
-            );
-            return { id: event.id, type: event.type, data: event.data };
-          },
+          constructEvent: createStripeCommercialWebhookVerifier(stripe),
         },
       },
       webhookSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),
@@ -615,9 +613,126 @@ export const createRailwayCommercialApplication = async (
         };
       },
     });
+    const baseCatalog = loadDialerPlanCatalog(environment);
+    let publicCheckout;
+    if (environment.DIALER_PUBLIC_CHECKOUT_ENABLED === 'true') {
+      await initializePublicCheckoutStore(sqlClient);
+      const install = new URL(
+        environment.LEADCONNECTOR_AUTHORIZATION_URL ??
+          'https://marketplace.leadconnectorhq.com/oauth/chooselocation',
+      );
+      install.searchParams.set('response_type', 'code');
+      install.searchParams.set(
+        'client_id',
+        required(environment, 'LEADCONNECTOR_CLIENT_ID'),
+      );
+      install.searchParams.set(
+        'redirect_uri',
+        required(environment, 'LEADCONNECTOR_REDIRECT_URI'),
+      );
+      install.searchParams.set(
+        'scope',
+        required(environment, 'LEADCONNECTOR_SCOPES')
+          .split(',')
+          .map((s) => s.trim())
+          .join(' '),
+      );
+      publicCheckout = createPublicCheckout({
+        store: createPublicCheckoutStore(sqlClient),
+        baseCatalog,
+        websiteOrigin: environment.DIALER_CHECKOUT_WEBSITE_ORIGIN,
+        installUrl: install.href,
+        rateLimitSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),
+        provider: {
+          listPrices: async (lookupKeys) => {
+            try {
+              const pages = await Promise.all(
+                Array.from(
+                  { length: Math.ceil(lookupKeys.length / 10) },
+                  (_, index) =>
+                    stripe.prices.list({
+                      lookup_keys: lookupKeys.slice(
+                        index * 10,
+                        (index + 1) * 10,
+                      ),
+                      active: true,
+                      limit: 100,
+                    }),
+                ),
+              );
+              return pages.flatMap((page) =>
+                page.data.map((price) => ({
+                  id: price.id,
+                  lookupKey: price.lookup_key ?? '',
+                  unitAmount: price.unit_amount ?? -1,
+                  currency: price.currency,
+                  interval: price.recurring?.interval ?? null,
+                })),
+              );
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          },
+          createSession: async (parameters, idempotencyKey) => {
+            try {
+              const session = await stripe.checkout.sessions.create(
+                parameters as StripeSdk.Checkout.SessionCreateParams,
+                { idempotencyKey },
+              );
+              return { id: session.id, url: session.url };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          },
+          retrieveSession: async (id) => {
+            try {
+              const session = await stripe.checkout.sessions.retrieve(id, {
+                expand: ['subscription'],
+              });
+              const sub =
+                typeof session.subscription === 'string'
+                  ? await stripe.subscriptions.retrieve(session.subscription)
+                  : session.subscription;
+              return {
+                id: session.id,
+                status: session.status,
+                paymentStatus: session.payment_status,
+                metadata: session.metadata ?? {},
+                customerId:
+                  typeof session.customer === 'string'
+                    ? session.customer
+                    : (session.customer?.id ?? null),
+                subscription: sub
+                  ? {
+                      id: sub.id,
+                      customerId:
+                        typeof sub.customer === 'string'
+                          ? sub.customer
+                          : sub.customer.id,
+                      status: sub.status,
+                      cancelAtPeriodEnd: sub.cancel_at_period_end,
+                      metadata: sub.metadata,
+                      items: sub.items.data.map((item) => ({
+                        id: item.id,
+                        priceId: item.price.id,
+                        quantity: item.quantity ?? 0,
+                      })),
+                    }
+                  : null,
+              };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          },
+        },
+      });
+    }
     return createCommercialApplication({
       database: sqlClient,
-      catalog: loadDialerPlanCatalog(environment),
+      catalog: baseCatalog,
+      publicCheckout,
+      publicBillingPortalConfigurationId:
+        environment.STRIPE_PUBLIC_PORTAL_CONFIGURATION_ID,
       billing,
       billingReturnUrl: (
         environment.DIALER_BILLING_RETURN_URL ?? `${publicUrl}/admin`
@@ -782,7 +897,12 @@ export const createRailwayTransferApplication = async (
           { ...options, dialerSessionId: sessionId },
           {
             onCreationRejected: async (progress) => {
-              if (guarded) await guarded.creationRejected(options.workspaceId, sessionId, progress);
+              if (guarded)
+                await guarded.creationRejected(
+                  options.workspaceId,
+                  sessionId,
+                  progress,
+                );
             },
             onProgress: async (progress) => {
               try {
@@ -873,7 +993,12 @@ export const createRailwayDialerApplicationLayers = async (
           { ...options, dialerSessionId: sessionId },
           {
             onCreationRejected: async (progress) => {
-              if (guarded) await guarded.creationRejected(options.workspaceId, sessionId, progress);
+              if (guarded)
+                await guarded.creationRejected(
+                  options.workspaceId,
+                  sessionId,
+                  progress,
+                );
             },
             onProgress: async (progress) => {
               try {

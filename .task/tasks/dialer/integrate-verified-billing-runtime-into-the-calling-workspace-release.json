@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/integrate-verified-billing-runtime-into-the-calling-workspace-release",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2720,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2720",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-integrate-verified-billing-runtime-into-the-calling-workspace-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_50e43ceb2cdf",
+  "tmuxSession": "opensaas-dialer-integrate-verified-billing-runtime-into-the-call-50e43ceb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-integrate-verified-billing-runtime-into-the-calling-workspace-release/.task/session.json",
+  "createdAt": "2026-10-31T00:03:15.937Z"
+}
