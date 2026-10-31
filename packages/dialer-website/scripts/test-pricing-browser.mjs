@@ -478,7 +478,7 @@ try {
   assert.equal(await page.locator('[data-seat-count]').inputValue(), '2');
   assert.match(
     await page.locator('[data-team-total]').innerText(),
-    /4,512 \/ year.*50 once/,
+    /4,176 \/ year.*50 once/,
   );
   assert.equal(
     checkoutRequestsFor(context).length,
@@ -736,6 +736,195 @@ try {
   );
   emit({ flow: 'home FAQ pointer and keyboard disclosure', passed: true });
   await context.close();
+  for (const width of [375, 1440]) {
+    const nativeContext = await newCheckoutFixtureContext(browser, {
+      viewport: { width, height: 900 },
+    });
+    const nativePage = await nativeContext.newPage();
+    const nativeId = 'a9111111-1111-4111-8111-111111111111',
+      nativeToken = 'A'.repeat(43);
+    const stripeNumberUrl =
+      'https://billing.stripe.com/p/session/native-number-fixture';
+    let nativeResult = {
+      paid: true,
+      status: 'active',
+      claimed: false,
+      allSelectedPaid: false,
+      paymentPending: false,
+      nextPortalUrl: stripeNumberUrl,
+      installUrl:
+        'https://marketplace.leadconnectorhq.com/oauth/chooselocation?fixture=true',
+    };
+    let numberPosts = 0;
+    await nativeContext.addInitScript(
+      ({ id, token }) => {
+        sessionStorage.setItem(
+          'consuelo-checkout:' + id,
+          JSON.stringify({
+            id,
+            claimToken: token,
+            key: JSON.stringify({
+              plan: 'agency',
+              billing: 'annual',
+              seats: 2,
+              mercurySeats: 2,
+              minutePack: 600,
+              numberPack: 10,
+            }),
+          }),
+        );
+      },
+      { id: nativeId, token: nativeToken },
+    );
+    await nativeContext.route(
+      'https://calls.consuelohq.com/v1/public/billing/purchase/**',
+      async (route) => {
+        try {
+          const headers = {
+            'access-control-allow-origin': base,
+            'access-control-allow-headers': 'x-purchase-claim',
+            'access-control-allow-methods': 'GET,POST,OPTIONS',
+          };
+          if (route.request().method() === 'OPTIONS')
+            return route.fulfill({ status: 204, headers });
+          assert.equal(
+            route.request().headers()['x-purchase-claim'],
+            nativeToken,
+          );
+          const numbers = route.request().url().endsWith('/numbers');
+          if (numbers) {
+            assert.equal(route.request().method(), 'POST');
+            numberPosts++;
+          }
+          return route.fulfill({
+            headers,
+            contentType: 'application/json',
+            body: JSON.stringify(
+              numbers
+                ? { id: 'bps_fixture', url: stripeNumberUrl }
+                : nativeResult,
+            ),
+          });
+        } catch (cause) {
+          if (cause instanceof Error) throw cause;
+          throw new Error(String(cause));
+        }
+      },
+    );
+    await nativeContext.route(stripeNumberUrl, (route) =>
+      route.fulfill({
+        contentType: 'text/html',
+        body: '<h1>Native Stripe number confirmation fixture</h1>',
+      }),
+    );
+    await nativePage.goto(base + '/get-started?purchase=' + nativeId, {
+      waitUntil: 'networkidle',
+    });
+    await nativePage.waitForURL(stripeNumberUrl);
+    assert.equal(
+      numberPosts,
+      0,
+      'Initial handoff uses only the verified server-issued portal URL',
+    );
+    await nativePage.goto(
+      base + '/get-started?purchase=' + nativeId + '&checkout=cancelled',
+      { waitUntil: 'networkidle' },
+    );
+    assert.equal(
+      new URL(nativePage.url()).origin,
+      base,
+      'Cancellation never creates another checkout',
+    );
+    assert.equal(
+      await nativePage.locator('[data-number-confirmation]').isVisible(),
+      true,
+    );
+    assert.equal(
+      await nativePage.locator('[data-purchase-ready]').isVisible(),
+      true,
+      'Paid base can connect while number confirmation remains optional',
+    );
+    assert.equal(
+      await nativePage.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      ),
+      false,
+    );
+    await nativePage.screenshot({
+      path: join(artifacts, 'native-partial-' + width + '.png'),
+      animations: 'disabled',
+    });
+    nativeResult.claimed = true;
+    await nativePage.locator('[data-retry-purchase]').click();
+    await nativePage.waitForFunction(() =>
+      document
+        .querySelector('[data-purchase-status]')
+        .textContent.includes('finish the number pack'),
+    );
+    assert.ok(
+      await nativePage.evaluate(
+        (id) => sessionStorage.getItem('consuelo-checkout:' + id),
+        nativeId,
+      ),
+      'A claimed partial purchase retains its private recovery',
+    );
+    await nativePage.locator('[data-confirm-numbers]').click();
+    await nativePage.waitForURL(stripeNumberUrl);
+    assert.equal(numberPosts, 1);
+    nativeResult = {
+      ...nativeResult,
+      allSelectedPaid: true,
+      nextPortalUrl: null,
+    };
+    await nativePage.goto(
+      base + '/get-started?purchase=' + nativeId + '&numbers=done',
+      { waitUntil: 'networkidle' },
+    );
+    assert.equal(
+      await nativePage.evaluate(
+        (id) => sessionStorage.getItem('consuelo-checkout:' + id),
+        nativeId,
+      ),
+      null,
+      'Recovery is cleared only after claim and full completion',
+    );
+    nativeResult = {
+      ...nativeResult,
+      claimed: false,
+      allSelectedPaid: false,
+      paymentPending: true,
+    };
+    await nativePage.goto(
+      base + '/get-started?purchase=' + nativeId + '&numbers=done',
+      { waitUntil: 'networkidle' },
+    );
+    assert.equal(
+      await nativePage.locator('[data-confirm-numbers]').isDisabled(),
+      true,
+    );
+    nativeResult = {
+      ...nativeResult,
+      paymentPending: false,
+      nextPortalUrl: 'https://evil.test/',
+    };
+    await nativePage.locator('[data-retry-purchase]').click();
+    await nativePage.waitForFunction(() =>
+      document
+        .querySelector('[data-purchase-status]')
+        .textContent.includes('temporarily unavailable'),
+    );
+    assert.equal(
+      new URL(nativePage.url()).origin,
+      base,
+      'Hostile provider destinations are refused',
+    );
+    emit({
+      flow: 'native Stripe partial payment, one-time handoff, canceled return, claimed partial recovery, duplicate-payment prevention and hostile URL',
+      width,
+      passed: true,
+    });
+    await nativeContext.close();
+  }
   const nojs = await newCheckoutFixtureContext(browser, {
     javaScriptEnabled: false,
     viewport: { width: 375, height: 812 },

@@ -251,13 +251,14 @@ import '../styles/pricing.css';
             </div>
             <p class="team-planner__note">
               These choices start a new subscription. Already subscribed? <a
-                href={pricingAccountLink.href}>Manage billing</a
-              >. Changes to an existing plan are not available here yet.
+                href={pricingAccountLink.href}>Manage your plan in Stripe</a
+              > to change seats, add Mercury or update your payment details.
             </p>
           </details>
           <output data-team-total aria-live="polite"
             >$745 / month for 5 reps</output
           >
+          <p class="team-planner__invoices" data-team-invoices hidden></p>
           <a
             class="pricing-button pricing-button--solid"
             data-team-checkout
@@ -352,8 +353,22 @@ import '../styles/pricing.css';
     checkout?.removeAttribute('aria-disabled');
     if (checkout)
       checkout.href = '/get-started?' + selectionToQuery(selection).toString();
+    const numberRecurring =
+      (numberPacks.find((pack) => pack.numbers === selection.numberPack)
+        ?.priceCents ?? 0) * quote.months;
+    const invoiceNote = document.querySelector<HTMLElement>(
+      '[data-team-invoices]',
+    );
+    if (invoiceNote) {
+      invoiceNote.hidden = !numberRecurring;
+      invoiceNote.textContent =
+        'Number pool: ' +
+        currency(numberRecurring) +
+        (quote.months === 12 ? ' / year' : ' / month') +
+        ', invoiced separately after you confirm in Stripe.';
+    }
     output.textContent =
-      currency(quote.recurringCents) +
+      currency(quote.recurringCents - numberRecurring) +
       (quote.months === 12 ? ' / year' : ' / month') +
       ' for ' +
       count +

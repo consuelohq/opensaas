@@ -34,6 +34,19 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
       <p data-purchase-status role="status">
         Confirming your purchase with Stripe…
       </p>
+      <div data-number-confirmation hidden>
+        <p data-number-status>
+          Your calling plan is paid. Confirm your selected number pack in
+          Stripe.
+        </p>
+        <button type="button" class="checkout-button" data-confirm-numbers
+          >Confirm number pack in Stripe <PricingIcon /></button
+        >
+        <p>
+          Number packs have a separate subscription and invoice. You can connect
+          your team now and finish the number pack later.
+        </p>
+      </div>
       <div data-purchase-ready hidden>
         <p>
           Your payment is confirmed. Connect GoHighLevel, open Consuelo Dialer
@@ -75,6 +88,10 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
     createStripeRedirect,
     readCheckoutRequest,
   } from '../lib/direct-checkout';
+  import {
+    purchaseConfirmation,
+    numberConfirmationRedirect,
+  } from '../lib/purchase-confirmation';
   const query = new URLSearchParams(location.search);
   const purchaseId = query.get('purchase');
   const redirect = document.querySelector<HTMLElement>(
@@ -82,7 +99,7 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
   )!;
   const panel = document.querySelector<HTMLElement>('[data-purchase-panel]')!;
   if (
-    query.get('checkout') === 'cancelled' ||
+    (!purchaseId && query.get('checkout') === 'cancelled') ||
     (!purchaseId && !query.has('plan'))
   ) {
     const pricing = new URL('/pricing', location.origin);
@@ -139,13 +156,21 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
     } catch {
       /* Recovery message below handles unavailable storage. */
     }
+    let verifying = false;
     const verify = async () => {
+      if (verifying) return;
+      verifying = true;
       if (!saved) {
         message.textContent =
           'Open this confirmation in the browser where you checked out, or contact support with your Stripe receipt.';
+        verifying = false;
         return;
       }
       try {
+        panel.querySelector<HTMLElement>('[data-purchase-ready]')!.hidden =
+          true;
+        panel.querySelector<HTMLElement>('[data-number-confirmation]')!.hidden =
+          true;
         const response = await fetch(
           'https://calls.consuelohq.com/v1/public/billing/purchase/' +
             encodeURIComponent(purchaseId),
@@ -156,38 +181,76 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
         );
         if (!response.ok) throw new Error('Purchase unavailable');
         const result: unknown = await response.json();
-        if (
-          !result ||
-          typeof result !== 'object' ||
-          !('paid' in result) ||
-          typeof result.paid !== 'boolean'
-        )
-          throw new Error('Invalid purchase response');
-        if (!result.paid) {
+        const confirmation = purchaseConfirmation(result);
+        if (!confirmation.paid) {
           message.textContent =
-            'status' in result && result.status === 'expired'
+            confirmation.status === 'expired'
               ? 'This Checkout session expired. Return to pricing to start again.'
               : 'Stripe has not confirmed payment yet. You can check again in a moment.';
           return;
         }
-        if ('claimed' in result && result.claimed === true) {
-          message.textContent =
-            'Your purchase is connected to GoHighLevel. Open your dialer to manage the team.';
-          sessionStorage.removeItem('consuelo-checkout:' + purchaseId);
+        if (confirmation.needsNumbers) {
+          const numbers = panel.querySelector<HTMLElement>(
+            '[data-number-confirmation]',
+          )!;
+          numbers.hidden = false;
+          numbers.querySelector<HTMLElement>(
+            '[data-number-status]',
+          )!.textContent = confirmation.paymentPending
+            ? 'Stripe is waiting for the number-pack payment. Check again after resolving payment in Stripe.'
+            : 'Your calling plan is paid. Your selected number pack still needs confirmation.';
+          const button = numbers.querySelector<HTMLButtonElement>(
+            '[data-confirm-numbers]',
+          )!;
+          button.disabled =
+            !confirmation.canConnect || confirmation.paymentPending;
+          const next = numberConfirmationRedirect(
+            purchaseId,
+            confirmation,
+            query,
+            sessionStorage,
+          );
+          if (next) {
+            location.replace(next);
+            return;
+          }
+        }
+        if (confirmation.claimed) {
+          message.textContent = confirmation.needsNumbers
+            ? 'Your calling plan is connected to GoHighLevel. You can finish the number pack separately.'
+            : 'Your purchase is connected to GoHighLevel. Open your dialer to manage the team.';
+          if (confirmation.clearClaim) {
+            sessionStorage.removeItem('consuelo-checkout:' + purchaseId);
+            sessionStorage.removeItem(
+              'consuelo-number-confirmation:' + purchaseId,
+            );
+          }
           return;
         }
+        if (!confirmation.canConnect) {
+          message.textContent =
+            'Open Stripe billing to resolve your plan payment, then check again.';
+          return;
+        }
+        if (!result || typeof result !== 'object')
+          throw new Error('Invalid purchase response');
         if (!('installUrl' in result) || typeof result.installUrl !== 'string')
           throw new Error('Installation link unavailable');
         const install = new URL(result.installUrl);
         if (
           install.protocol !== 'https:' ||
+          install.username ||
+          install.password ||
+          install.port ||
           ![
             'marketplace.leadconnectorhq.com',
             'marketplace.gohighlevel.com',
           ].includes(install.hostname)
         )
           throw new Error('Invalid installation link');
-        message.textContent = 'Payment confirmed.';
+        message.textContent = confirmation.needsNumbers
+          ? 'Your calling-plan payment is confirmed.'
+          : 'Payment confirmed.';
         panel.querySelector<HTMLElement>('[data-purchase-ready]')!.hidden =
           false;
         panel.querySelector<HTMLInputElement>('[data-purchase-code]')!.value =
@@ -197,11 +260,55 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
       } catch {
         message.textContent =
           'Payment confirmation is temporarily unavailable. Check again; do not submit another payment.';
+      } finally {
+        verifying = false;
       }
     };
     panel
       .querySelector('[data-retry-purchase]')!
       .addEventListener('click', verify);
+    panel
+      .querySelector<HTMLButtonElement>('[data-confirm-numbers]')!
+      .addEventListener('click', async () => {
+        if (!saved) return;
+        const button = panel.querySelector<HTMLButtonElement>(
+          '[data-confirm-numbers]',
+        )!;
+        button.disabled = true;
+        try {
+          const response = await fetch(
+            'https://calls.consuelohq.com/v1/public/billing/purchase/' +
+              encodeURIComponent(purchaseId) +
+              '/numbers',
+            {
+              method: 'POST',
+              headers: { 'X-Purchase-Claim': saved.claimToken },
+              signal: AbortSignal.timeout(20000),
+            },
+          );
+          if (!response.ok) throw new Error('Stripe confirmation unavailable');
+          const value: unknown = await response.json();
+          if (!value || typeof value !== 'object' || !('url' in value))
+            throw new Error('Stripe confirmation unavailable');
+          const validated = purchaseConfirmation({
+            paid: true,
+            status: 'active',
+            allSelectedPaid: false,
+            nextPortalUrl: value.url,
+          });
+          if (!validated.portalUrl)
+            throw new Error('Stripe confirmation unavailable');
+          sessionStorage.setItem(
+            'consuelo-number-confirmation:' + purchaseId,
+            'opened',
+          );
+          location.assign(validated.portalUrl);
+        } catch {
+          message.textContent =
+            'Stripe confirmation could not open. Check payment again before trying once more.';
+          button.disabled = false;
+        }
+      });
     panel
       .querySelector('[data-copy-purchase]')!
       .addEventListener('click', async () => {

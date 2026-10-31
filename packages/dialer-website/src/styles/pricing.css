@@ -1272,3 +1272,10 @@
     grid-template-areas: 'intro' 'inputs' 'addons' 'total' 'action';
   }
 }
+
+.team-planner .team-planner__invoices {
+  grid-column: 1 / -1;
+  color: var(--site-color-muted);
+  font-size: var(--site-text-xs);
+  line-height: 1.6;
+}
