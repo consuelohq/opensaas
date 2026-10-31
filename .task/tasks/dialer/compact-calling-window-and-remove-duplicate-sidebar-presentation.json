@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/compact-calling-window-and-remove-duplicate-sidebar-presentation",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2730,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2730",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-compact-calling-window-and-remove-duplicate-sidebar-presentation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d78bf2f713c0",
+  "tmuxSession": "opensaas-dialer-compact-calling-window-and-remove-duplicate-side-d78bf2f7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-compact-calling-window-and-remove-duplicate-sidebar-presentation/.task/session.json",
+  "createdAt": "2026-10-31T03:33:33.407Z"
+}

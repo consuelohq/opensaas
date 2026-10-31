@@ -18,7 +18,7 @@
 .consuelo-dialer-panel {
   pointer-events: auto;
   width: 540px;
-  height: clamp(640px, 75dvh, 1100px);
+  height: 680px;
   max-width: calc(100vw - 32px);
   max-height: calc(100dvh - 48px);
   background: transparent;
@@ -118,8 +118,8 @@
     padding: 12px;
   }
   .consuelo-dialer-panel {
-    height: calc(100dvh - 24px);
-    max-height: calc(100dvh - 24px);
+    height: min(680px, calc(100dvh - 24px));
+    max-height: min(680px, calc(100dvh - 24px));
     max-width: calc(100vw - 24px);
   }
   #consuelo-dialer-overlay-host[data-minimized='true'] {
@@ -134,6 +134,7 @@
 #consuelo-dialer-overlay-host:has(.consuelo-dialer-panel:not([hidden])):not(
     [data-minimized='true']
   ) {
+  pointer-events: auto;
   background: rgb(18 18 18 / 34%);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);

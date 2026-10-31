@@ -208,40 +208,18 @@ const renderCallSetup = (
 
 const renderCallOptions = (state: LeadConnectorEmbedState): string => {
   const caller = state.commercialCaller;
-  const choices = (
-    field: string,
-    value: string,
-    options: ComboboxOption[],
-    disabled = false,
-  ) =>
-    options
-      .map(
-        (option) =>
-          `<label class="option-choice"><input type="radio" name="${field}" data-field="${field}" value="${escapeHtml(option.value)}"${option.value === value ? ' checked' : ''}${disabled ? ' disabled' : ''} /><span>${escapeHtml(option.label)}</span></label>`,
-      )
-      .join('');
   return (
     pageHeading(
       'Calling options',
       'Set up this calling session. Changes are saved as you choose.',
     ) +
     `<div class="calling-options-page">
-      <fieldset class="option-group"><legend>Caller ID</legend>${choices('caller-id', state.setup.callerIdNumber ?? '', [{ value: '', label: 'Choose automatically' }, ...state.callerIds.map((number) => ({ value: number, label: maskPhone(number) }))])}</fieldset>
+      ${renderCombobox({ field: 'caller-id', label: 'Caller ID', value: state.setup.callerIdNumber ?? '', placeholder: 'Choose automatically', options: [{ value: '', label: 'Choose automatically' }, ...state.callerIds.map((number) => ({ value: number, label: maskPhone(number) }))] })}
       <label class="option-toggle"><span><strong>Local presence</strong><small>Prefer a caller ID near the person you’re calling.</small></span><input type="checkbox" data-field="local-presence"${state.setup.preferLocalPresence ? ' checked' : ''} /></label>
       ${
         state.setup.mode === 'queue'
-          ? `<fieldset class="option-group"><legend>Calling mode</legend>${choices('calling-mode', state.setup.callingMode, [...(caller?.predictive === false ? [] : [{ value: 'predictive', label: 'Predictive dialing' }]), { value: 'single', label: 'One call at a time' }])}</fieldset>
-      <fieldset class="option-group"><legend>Calling lines</legend><div class="line-choices">${choices(
-        'line-count',
-        String(state.setup.requestedFanout),
-        (caller?.lineOptions.length ? caller.lineOptions : [1, 2, 3]).map(
-          (line) => ({
-            value: String(line),
-            label: line === 1 ? '1 line' : `${line} lines`,
-          }),
-        ),
-        state.setup.callingMode === 'single',
-      )}</div><p class="form-caption">${state.setup.callingMode === 'single' ? 'One call at a time uses one line.' : 'The maximum simultaneous calls in this session.'}</p></fieldset>`
+          ? `<div class="calling-options-grid">${renderCombobox({ field: 'calling-mode', label: 'Calling mode', value: state.setup.callingMode, placeholder: 'Choose mode', options: [...(caller?.predictive === false ? [] : [{ value: 'predictive', label: 'Predictive dialing' }]), { value: 'single', label: 'One call at a time' }] })}
+      ${renderCombobox({ field: 'line-count', label: 'Calling lines', value: String(state.setup.requestedFanout), placeholder: 'Choose lines', options: (caller?.lineOptions.length ? caller.lineOptions : [1, 2, 3]).map((line) => ({ value: String(line), label: line === 1 ? '1 line' : `${line} lines` })), disabled: state.setup.callingMode === 'single' })}</div>`
           : ''
       }
       <button type="button" class="button button--primary primary-wide" data-action="workspace-calling">Done</button>
@@ -352,7 +330,7 @@ export const renderLeadConnectorEmbed = (
     compact: false,
   };
   if (surface === 'admin' && requested.nativeFloating)
-    return `<main class="native-launcher" data-workspace data-workspace-screen="launcher"><img src="/consuelo-logo.svg" alt="" width="40" height="40" /><h1>Consuelo Dialer</h1><p>Your calling window floats above your CRM.</p><button type="button" class="button button--primary" data-action="workspace-open-floating">Open calling window</button></main>`;
+    return `<main class="native-launcher" data-workspace data-workspace-screen="launcher"><img src="/consuelo-logo.svg" alt="" width="40" height="40" /><h1>Consuelo Dialer</h1>${renderError(state)}<p>Open your calling window above the CRM.</p><button type="button" class="button button--primary" data-action="workspace-open-floating">Open calling window</button></main>`;
   const callMode = activeCallingMode(state);
   const workspace = { ...requested, mode: callMode ?? requested.mode };
   const status = sessionPresentation(state, workspace.mode);
