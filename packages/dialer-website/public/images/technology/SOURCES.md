@@ -1,0 +1,2 @@
+# Technology marks\n\nIcons are from Simple Icons 16.0.0, https://github.com/simple-icons/simple-icons/tree/16.0.0/icons . The upstream license is retained in LICENSE.md. Marks identify technologies used in Consuelo; they do not indicate customers, sponsorship or endorsement. Individual brand trademarks remain their owners.\n
+Twilio uses the retained Simple Icons 13.21.0 mark: https://github.com/simple-icons/simple-icons/blob/13.21.0/icons/twilio.svg (same upstream CC0 terms). Groq is named without a third-party icon. No Figma icons or artwork were copied.

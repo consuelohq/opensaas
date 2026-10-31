@@ -2,6 +2,12 @@
   color-scheme: light;
 
   --site-color-brand: #0000F2;
+  --site-color-stack-ink: #171717;
+  --dialer-page-top: clamp(10rem, 12vw, 12rem);
+  --dialer-logo-size: clamp(7rem, 10vw, 10rem);
+  --dialer-logo-height: clamp(2.5rem, 3.5vw, 3.5rem);
+  --dialer-returning-nav-height: 4.5rem;
+  --dialer-footer-cloud-opacity: 0.62;
   --site-mask-opaque: #000000;
   --site-color-paper: #0000F2;
   --site-color-on-brand: #FFFFFF;

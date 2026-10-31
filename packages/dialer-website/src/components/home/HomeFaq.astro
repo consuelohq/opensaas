@@ -1,16 +1,48 @@
 ---
 import { homeFaqItems } from '../../data/dialer-content';
+import PricingIcon from '../pricing/PricingIcon.astro';
+interface Props {
+  items?: typeof homeFaqItems;
+  title?: string;
+  id?: string;
+  variant?: 'home' | 'pricing';
+}
+const {
+  items = homeFaqItems,
+  title = 'FAQ',
+  id = 'faq',
+  variant = 'home',
+} = Astro.props;
 ---
 
-<section class="home-faq" id="faq" aria-labelledby="home-faq-title" data-section="faq">
-  <h2 id="home-faq-title">FAQ</h2>
-  <div class="home-faq__list" data-home-faq-list>
+<section
+  class:list={['home-faq', { 'home-faq--pricing': variant === 'pricing' }]}
+  id={id}
+  aria-labelledby={id + '-title'}
+  data-section="faq"
+>
+  <div class="home-faq__heading">
+    <h2 id={id + '-title'}>{title}</h2>{
+      variant === 'pricing' && (
+        <a class="home-faq__more" href="/#faq">
+          See more FAQs <PricingIcon />
+        </a>
+      )
+    }
+  </div>
+  <div
+    class="home-faq__list"
+    data-home-faq-list
+    data-faq-independent={variant === 'pricing' || undefined}
+  >
     {
-      homeFaqItems.map((item) => (
-        <details data-home-faq-item>
+      items.map((item) => (
+        <details data-home-faq-item open={variant === 'pricing'}>
           <summary>
             <span>{item.question}</span>
-            <span class="home-faq__icon" aria-hidden="true">+</span>
+            <span class="home-faq__icon" aria-hidden="true">
+              {variant === 'pricing' ? <PricingIcon name="chevron" /> : '+'}
+            </span>
           </summary>
           <div class="home-faq__answer">
             {item.details ? (
@@ -19,7 +51,9 @@ import { homeFaqItems } from '../../data/dialer-content';
                   <p>{block.text}</p>
                 ) : block.type === 'list' ? (
                   <ul class="home-faq__bullets">
-                    {block.items.map((entry) => <li>{entry}</li>)}
+                    {block.items.map((entry) => (
+                      <li>{entry}</li>
+                    ))}
                   </ul>
                 ) : (
                   <ol class="home-faq__steps">
@@ -36,7 +70,9 @@ import { homeFaqItems } from '../../data/dialer-content';
               <p>{item.answer}</p>
             )}
             {item.linkHref && item.linkLabel && (
-              <a class="home-faq__link" href={item.linkHref}>{item.linkLabel} →</a>
+              <a class="home-faq__link" href={item.linkHref}>
+                {item.linkLabel} →
+              </a>
             )}
           </div>
         </details>
@@ -46,28 +82,34 @@ import { homeFaqItems } from '../../data/dialer-content';
 </section>
 
 <script>
-  document.querySelectorAll<HTMLElement>('[data-home-faq-list]').forEach((list) => {
-    const items = Array.from(list.querySelectorAll<HTMLDetailsElement>('[data-home-faq-item]'));
+  document
+    .querySelectorAll<HTMLElement>('[data-home-faq-list]')
+    .forEach((list) => {
+      if (list.hasAttribute('data-faq-independent')) return;
+      const items = Array.from(
+        list.querySelectorAll<HTMLDetailsElement>('[data-home-faq-item]'),
+      );
 
-    items.forEach((item) => {
-      item.addEventListener('toggle', () => {
-        if (!item.open) {
-          return;
-        }
-
-        items.forEach((otherItem) => {
-          if (otherItem !== item) {
-            otherItem.open = false;
+      items.forEach((item) => {
+        item.addEventListener('toggle', () => {
+          if (!item.open) {
+            return;
           }
+
+          items.forEach((otherItem) => {
+            if (otherItem !== item) {
+              otherItem.open = false;
+            }
+          });
         });
       });
     });
-  });
 </script>
 
 <style>
   .home-faq {
-    padding: clamp(7.5rem, 12vw, 11rem) clamp(1rem, 5vw, 5rem) clamp(7rem, 12vw, 11rem);
+    padding: clamp(7.5rem, 12vw, 11rem) clamp(1rem, 5vw, 5rem)
+      clamp(7rem, 12vw, 11rem);
   }
 
   .home-faq h2 {
@@ -112,6 +154,16 @@ import { homeFaqItems } from '../../data/dialer-content';
     font-weight: 400;
     line-height: 1.05;
     list-style: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .home-faq summary:focus-visible {
+    outline: none;
+    background: var(--site-color-panel-strong);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
   }
 
   .home-faq summary::-webkit-details-marker {
@@ -235,6 +287,89 @@ import { homeFaqItems } from '../../data/dialer-content';
     .home-faq details,
     .home-faq__icon {
       transition: none;
+    }
+  }
+</style>
+
+<style>
+  .home-faq--pricing {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr);
+    gap: var(--site-space-8);
+    padding: var(--site-space-8) var(--site-panel-pad);
+    background: var(--site-color-panel);
+  }
+  .home-faq--pricing .home-faq__heading {
+    position: sticky;
+    top: var(--site-space-7);
+    align-self: start;
+  }
+  .home-faq--pricing h2 {
+    text-align: left;
+    font: 450 clamp(2.5rem, 4vw, 4rem)/1 var(--site-font-display);
+    letter-spacing: -0.035em;
+    margin: 0 0 var(--site-space-6);
+  }
+  .home-faq--pricing .home-faq__list {
+    width: 100%;
+    border-top: 1px solid var(--site-color-line-strong);
+  }
+  .home-faq--pricing details {
+    padding: 0;
+    border-bottom: 1px solid var(--site-color-line-strong);
+  }
+  .home-faq--pricing details:hover,
+  .home-faq--pricing details:focus-within,
+  .home-faq--pricing details[open] {
+    background: transparent;
+  }
+  .home-faq--pricing summary {
+    padding: var(--site-space-5) 0;
+    font: 450 clamp(1.15rem, 1.6vw, 1.5rem)/1.35 var(--site-font-body);
+    align-items: flex-start;
+  }
+  .home-faq--pricing .home-faq__answer {
+    font-size: var(--site-text-sm);
+    line-height: 1.8;
+    margin: 0 0 var(--site-space-5);
+    padding-right: var(--site-space-6);
+  }
+  .home-faq--pricing .home-faq__icon {
+    display: flex;
+    transform: rotate(90deg);
+    padding-top: 0.1rem;
+  }
+  .home-faq--pricing details[open] .home-faq__icon {
+    transform: rotate(-90deg);
+  }
+  .home-faq__more {
+    display: inline-flex;
+    gap: var(--site-space-2);
+    align-items: center;
+    font-size: var(--site-text-sm);
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+  .home-faq__more :global(svg),
+  .home-faq--pricing .home-faq__icon :global(svg) {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+  @media (max-width: 760px) {
+    .home-faq--pricing {
+      grid-template-columns: 1fr;
+      gap: var(--site-space-6);
+      padding: var(--site-space-7) var(--site-space-4);
+    }
+    .home-faq--pricing .home-faq__heading {
+      position: static;
+    }
+  }
+  @media (max-height: 500px) {
+    .home-faq--pricing .home-faq__heading {
+      position: static;
     }
   }
 </style>

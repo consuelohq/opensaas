@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/release-approved-dialer-website-preview-to-production-without-backend-stream-conflicts",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2745,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2745",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-release-approved-dialer-website-preview-to-production-without-backend-stream-conflicts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_25117ab98df1",
+  "tmuxSession": "opensaas-website-release-approved-dialer-website-preview-to-produ-25117ab9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-release-approved-dialer-website-preview-to-production-without-backend-stream-conflicts/.task/session.json",
+  "createdAt": "2026-10-31T06:38:10.777Z"
+}

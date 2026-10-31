@@ -1,0 +1,147 @@
+---
+import PricingIcon from './PricingIcon.astro';
+import { siteLinks } from '../../data/site-links';
+import { minutePacks, numberPacks } from '../../data/pricing-content';
+const money = (cents: number) => '$' + (cents / 100).toLocaleString('en-US');
+const purchase = (addon: string) =>
+  '/pricing?' + new URLSearchParams({ addon }).toString() + '#team-planner';
+---
+
+<section
+  class="pricing-split pricing-addons"
+  id="addons"
+  aria-labelledby="addons-heading"
+>
+  <div class="pricing-sticky-heading">
+    <p class="pricing-eyebrow">MAKE IT YOURS</p><h2 id="addons-heading">
+      Add-ons
+    </h2><p>
+      Add coaching, minutes or numbers.<br />Keep the plan that fits.
+    </p><a class="pricing-text-link" href="/contact"
+      >Find the right setup <PricingIcon /></a
+    >
+  </div>
+  <div class="addon-list">
+    <article class="addon mercury-addon">
+      <div class="addon__title">
+        <PricingIcon name="mercury" /><span class="pricing-eyebrow"
+          >A LITTLE HELP ON EVERY CALL</span
+        >
+      </div>
+      <h3>
+        Mercury coaching <span class="addon-price"
+          >$25 <small>/ rep / month</small></span
+        >
+      </h3><p>Keep your playbook in the conversation.</p>
+      <div class="mercury-modes">
+        <div>
+          <span>01 / SCRIPT MODE</span><h4>
+            Your script.<br />Right on cue.
+          </h4><p>
+            Upload the playbook. Mercury brings up the part your rep needs as
+            the call develops.
+          </p>
+        </div><div>
+          <span>02 / AI MODE</span><h4>
+            A better response.<br />In the moment.
+          </h4><p>
+            Get suggestions shaped by the live conversation. Review transcripts
+            together after the call.
+          </p>
+        </div>
+      </div>
+      <a class="pricing-text-link" href={purchase('mercury')}
+        >Choose Mercury <PricingIcon /></a
+      >
+      <p class="addon-note">
+        Already subscribed? <a href={siteLinks.billing}
+          >Add Mercury in Stripe <PricingIcon /></a>
+      </p>
+    </article>
+    <article class="addon" aria-labelledby="minute-pack-heading">
+      <div class="addon__title">
+        <PricingIcon name="outbound" /><span class="pricing-eyebrow"
+          >KEEP TALKING</span
+        >
+      </div>
+      <h3 id="minute-pack-heading">Extra connected minutes</h3><p>
+        A little extra or a busy month. Add the room you need.
+      </p>
+      <div class="minute-packs">
+        {
+          minutePacks.map((pack) => (
+            <a class="minute-pack" href={purchase('minutes-' + pack.minutes)}>
+              <>
+                <span class="minute-pack__price">{money(pack.priceCents)}</span>
+                <strong>
+                  {pack.minutes.toLocaleString('en-US')} <small>minutes</small>
+                </strong>
+                <span>{pack.label}</span>
+                <PricingIcon />
+              </>
+            </a>
+          ))
+        }
+      </div>
+      <p class="addon-note">
+        One-time packs. Include one with your new plan, or buy a top-up in
+        Stripe from your dialer’s billing page. <a href="/contact"
+          >Need more? Talk to us <PricingIcon /></a
+        >
+      </p>
+    </article>
+    <article class="addon" aria-labelledby="number-pack-heading">
+      <div class="addon__title">
+        <PricingIcon name="number" /><span class="pricing-eyebrow"
+          >GROW YOUR REACH</span
+        >
+      </div>
+      <h3 id="number-pack-heading">More phone numbers</h3><p>
+        Build the local number pool your team needs.
+      </p>
+      <table class="number-packs">
+        <caption class="sr-only">Additional US local phone number packs</caption
+        ><thead
+          ><tr
+            ><th scope="col">Numbers</th><th scope="col">Monthly total</th><th
+              scope="col"><span class="sr-only">Choose pack</span></th
+            ></tr
+          ></thead
+        ><tbody
+          >{
+            numberPacks.map((pack) => (
+              <tr>
+                <>
+                  <th scope="row">
+                    {pack.numbers === 1
+                      ? 'One number'
+                      : pack.numbers + ' numbers'}
+                  </th>
+                  <td>
+                    {money(pack.priceCents)}
+                    <span> / month</span>
+                  </td>
+                  <td>
+                    <a
+                      aria-label={
+                        'Choose ' + pack.numbers + ' additional numbers'
+                      }
+                      href={purchase('numbers-' + pack.numbers)}
+                    >
+                      <PricingIcon />
+                    </a>
+                  </td>
+                </>
+              </tr>
+            ))
+          }</tbody
+        >
+      </table>
+      <p class="addon-note">
+        Single numbers are $3/month. Number packs expand the pool; parallel call
+        capacity follows your plan. Number packs have their own subscription and
+        invoice.
+      </p>
+    </article>
+  </div>
+</section>
