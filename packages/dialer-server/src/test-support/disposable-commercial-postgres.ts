@@ -73,7 +73,7 @@ export const withDisposableCommercialPostgres = async (
         '-l',
         join(root, 'postgres.log'),
         '-o',
-        `-h 127.0.0.1 -p ${port} -F`,
+        `-h 127.0.0.1 -p ${port} -F -c unix_socket_directories=''`,
         '-w',
         'start',
       ]);
