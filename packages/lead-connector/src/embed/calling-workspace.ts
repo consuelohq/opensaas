@@ -10,8 +10,11 @@ export type CallingWorkspace = {
     | 'team'
     | 'numbers'
     | 'billing'
+    | 'queue-details'
+    | 'call-options'
     | 'appearance'
     | 'mercury';
+  nativeFloating?: boolean;
   theme?: 'system' | 'light' | 'dark';
   answeringEndpointIds?: string[];
   coachingLibrary?: CoachingLibrary;

@@ -5,9 +5,9 @@
   pointer-events: none;
   background: transparent;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: 76px 24px 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   box-sizing: border-box;
 }
 #consuelo-dialer-overlay-host[hidden],
@@ -17,12 +17,12 @@
 }
 .consuelo-dialer-panel {
   pointer-events: auto;
-  width: 520px;
-  height: min(720px, calc(100dvh - 96px));
+  width: 540px;
+  height: clamp(640px, 75dvh, 1100px);
   max-width: calc(100vw - 32px);
-  max-height: calc(100dvh - 32px);
-  background: #fff;
-  border: 1px solid #deded9;
+  max-height: calc(100dvh - 48px);
+  background: transparent;
+  border: 1px solid rgb(128 128 128 / 25%);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 12px 60px #1a1a1440;
@@ -62,11 +62,12 @@
   width: 100%;
   flex: 1 1 auto;
   min-height: 0;
-  background: #fff;
+  background: transparent;
   display: block;
 }
 #consuelo-dialer-overlay-host[data-minimized='true'] {
   align-items: flex-end;
+  justify-content: flex-end;
   padding-bottom: 24px;
 }
 #consuelo-dialer-overlay-host[data-minimized='true'] .consuelo-dialer-panel {
@@ -133,21 +134,13 @@
 #consuelo-dialer-overlay-host:has(.consuelo-dialer-panel:not([hidden])):not(
     [data-minimized='true']
   ) {
-  background: rgb(18 18 16 / 26%);
-  backdrop-filter: blur(1.5px);
+  background: rgb(18 18 18 / 34%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .consuelo-dialer-launcher__icon {
   width: 21px;
   height: 21px;
   border-radius: 5px;
   object-fit: contain;
-}
-@media (prefers-color-scheme: dark) {
-  .consuelo-dialer-panel {
-    border-color: #44443e;
-    background: #222221;
-  }
-  .consuelo-dialer-frame {
-    background: #222221;
-  }
 }

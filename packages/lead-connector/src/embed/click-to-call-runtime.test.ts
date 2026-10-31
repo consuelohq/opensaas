@@ -370,6 +370,74 @@ describe('LeadConnector click-to-call runtime', () => {
     ]);
   });
 
+  it('acknowledges sidebar presentation and retains the same idle frame on its route', () => {
+    const { dom } = boot({
+      path: '/v2/location/location-1/custom-menu-link/test',
+      body: '<iframe id="native" src="https://calls.consuelohq.com/admin"></iframe>',
+    });
+    const doc = dom.window.document;
+    const native = doc.querySelector<HTMLIFrameElement>('#native')!;
+    const ack = mock(() => undefined);
+    Object.defineProperty(native.contentWindow!, 'postMessage', {
+      value: ack,
+      configurable: true,
+    });
+    const launch = { id: 'present-only', mode: 'inbound', action: 'open' };
+    dom.window.dispatchEvent(
+      new dom.window.MessageEvent('message', {
+        origin: embedOrigin,
+        source: native.contentWindow,
+        data: {
+          type: 'consuelo.leadconnector/open-workspace',
+          version: 1,
+          launch,
+        },
+      }),
+    );
+    const frame = doc.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    )!;
+    expect(frame).not.toBeNull();
+    expect(ack).toHaveBeenCalledWith(
+      {
+        type: 'consuelo.leadconnector/workspace-opened',
+        version: 1,
+        id: launch.id,
+      },
+      embedOrigin,
+    );
+    const dispatch = (data: unknown) =>
+      dom.window.dispatchEvent(
+        new dom.window.MessageEvent('message', {
+          origin: embedOrigin,
+          source: frame.contentWindow,
+          data,
+        }),
+      );
+    dispatch({
+      type: 'consuelo.leadconnector/launch-accepted',
+      version: 1,
+      id: launch.id,
+    });
+    dispatch({
+      type: 'consuelo.leadconnector/session-status',
+      version: 1,
+      active: false,
+      mode: 'inbound',
+      status: 'idle',
+    });
+    dom.window.dispatchEvent(new dom.window.Event('routeLoaded'));
+    expect(doc.querySelector('iframe[name="consuelo-dialer"]')).toBe(frame);
+    expect(
+      doc.querySelector<HTMLElement>('.consuelo-dialer-panel')!.hidden,
+    ).toBe(false);
+    expect(
+      doc
+        .getElementById('consuelo-dialer-overlay-host')!
+        .getAttribute('data-live'),
+    ).toBe('false');
+  });
+
   it('raises a new incoming offer once and then respects minimization of repeated offer snapshots', () => {
     const { dom } = boot({
       path: '/v2/location/location-1/contacts',

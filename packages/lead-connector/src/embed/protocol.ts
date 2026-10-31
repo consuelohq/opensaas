@@ -26,6 +26,7 @@ export type LeadConnectorClickToCallTarget = {
 };
 
 export type LeadConnectorEmbedMessage =
+  | { type: 'workspace-opened'; id: string }
   | { type: 'workspace-presentation'; compact: boolean }
   | { type: 'workspace-launch'; launch: WorkspaceLaunch }
   | { type: 'bootstrap'; encryptedData: string }
@@ -123,11 +124,18 @@ export const createLeadConnectorParentBridge = (
       data.type !== 'consuelo.leadconnector/handshake' &&
       data.type !== 'consuelo.leadconnector/click-to-call' &&
       data.type !== 'consuelo.leadconnector/workspace-presentation' &&
-      data.type !== 'consuelo.leadconnector/workspace-launch'
+      data.type !== 'consuelo.leadconnector/workspace-launch' &&
+      data.type !== 'consuelo.leadconnector/workspace-opened'
     )
       return;
     if (data.version !== LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION) {
       options.onProtocolError?.('PROTOCOL_VERSION_MISMATCH');
+      return;
+    }
+    if (data.type === 'consuelo.leadconnector/workspace-opened') {
+      const id = readOptionalString(data, 'id');
+      if (event.origin === activeOrigin && id && id.length <= 200)
+        options.onMessage({ type: 'workspace-opened', id });
       return;
     }
     if (data.type === 'consuelo.leadconnector/workspace-presentation') {

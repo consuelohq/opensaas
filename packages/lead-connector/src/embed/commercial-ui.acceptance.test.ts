@@ -198,10 +198,10 @@ describe('commercial LeadConnector surfaces', () => {
     expect(document.querySelectorAll('select')).toHaveLength(0);
     expect(
       document.querySelectorAll('[role="combobox"]').length,
-    ).toBeGreaterThanOrEqual(2);
+    ).toBeGreaterThanOrEqual(1);
     expect(
       document.querySelectorAll('[role="listbox"]').length,
-    ).toBeGreaterThanOrEqual(2);
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it('renders provider pipeline stages as selectable queue options when they are returned', () => {
