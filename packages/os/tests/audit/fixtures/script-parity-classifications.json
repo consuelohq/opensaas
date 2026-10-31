@@ -1061,7 +1061,7 @@
     },
     "scripts/lib/review-changed-lines.js": {
       "status": "workspace-only-needs-port",
-      "reason": "Workspace-only review changed-line attribution added in stream reviewer modernization; track parity until an intentional ownership decision."
+      "reason": "Workspace reviewer changed-line attribution helper was introduced in the concurrent review optimization wave; keep explicit parity tracking until the OS counterpart is reviewed."
     },
     "scripts/lib/review-documentation.js": {
       "status": "workspace-only-needs-port",
@@ -1077,7 +1077,7 @@
     },
     "scripts/lib/review-typecheck-errors.js": {
       "status": "workspace-only-needs-port",
-      "reason": "Workspace-only reviewer TypeScript diagnostics parser added in stream reviewer modernization; track parity until an intentional ownership decision."
+      "reason": "Workspace reviewer fail-closed typecheck error helper is part of the review optimization wave; track separately until reviewed for OS mirroring."
     },
     "scripts/lib/runtime-state.ts": {
       "status": "os-only-intentional",
@@ -1092,8 +1092,8 @@
       "reason": "OS-owned effective runtime tool registry that merges optional provider tools without mutating the generated manifest; it has no workspace-script counterpart."
     },
     "scripts/lib/search/explore-failure.js": {
-      "status": "os-only-intentional",
-      "reason": "OS-only secret-redacted explore error guidance helper, no workspace counterpart needed."
+      "status": "os-only-needs-review",
+      "reason": "The new OS Explore failure classification helper has no workspace sibling; retain explicit parity review pending the independent Explore reliability task."
     },
     "scripts/lib/search/explore-output.js": {
       "status": "os-only-needs-review",
@@ -1221,7 +1221,7 @@
     },
     "scripts/lib/stream-context-compact.js": {
       "status": "workspace-only-needs-port",
-      "reason": "Workspace-only stream context compaction bridge, explicit parity tracking until OS ownership is reconciled."
+      "reason": "The concurrent stream context compaction helper exists only in workspace scripts; track for deliberate OS mirroring or ownership decision."
     },
     "scripts/lib/stream-instructions.js": {
       "status": "workspace-only-needs-port",
@@ -1249,8 +1249,8 @@
       "reason": "scripts/lib/streams/cli.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
     },
     "scripts/lib/streams/context-compact.js": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned stream context compaction helper, intentionally distinct from the workspace entrypoint."
+      "status": "os-only-needs-review",
+      "reason": "OS-only stream context compaction helper is currently distinct from the workspace script; keep under explicit parity review during active context work."
     },
     "scripts/lib/streams/context-runtime.ts": {
       "status": "os-only-intentional",

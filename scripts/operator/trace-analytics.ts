@@ -1,35 +1,24 @@
 #!/usr/bin/env bun
-import { spawnSync } from 'node:child_process';
+import { Database } from 'bun:sqlite';
 import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { resolveTraceAnalyticsDb, traceWindowStartUtc } from './trace-analytics-db';
 
 type Row = Record<string, unknown>;
 
-const defaultTraceDb = join(
-  homedir(),
-  'Library/Application Support/OpenWorkspace/traces/e8425497c3ee20bf0a28e9da/traces.db',
-);
-
-const traceDb =
-  process.env.TRACE_DB ||
-  Bun.argv.find((arg) => arg.startsWith('--db='))?.slice(5) ||
-  defaultTraceDb;
+const traceDb = resolveTraceAnalyticsDb({ argv: Bun.argv });
 
 if (!existsSync(traceDb)) {
   console.error(`trace db not found: ${traceDb}`);
   process.exit(1);
 }
 
-function sqlJson(sql: string): Row[] {
-  const result = spawnSync('sqlite3', ['-json', traceDb, sql], { encoding: 'utf8' });
-  if (result.status !== 0) {
-    console.error(result.stderr || result.stdout);
-    process.exit(result.status || 1);
-  }
+// Keep a single read-only connection rather than opening a new sqlite3 process
+// for every table. The live OS store is actively written by parallel agents.
+const db = new Database(traceDb, { readonly: true });
+db.exec('PRAGMA busy_timeout = 12000');
 
-  const text = result.stdout.trim();
-  return text ? (JSON.parse(text) as Row[]) : [];
+function sqlJson(sql: string): Row[] {
+  return db.query(sql).all() as Row[];
 }
 
 const integerFormatter = new Intl.NumberFormat('en-US');
@@ -162,6 +151,12 @@ function printTable(title: string, rows: Row[], columns: string[]) {
   }
 }
 
+// Trace rows store UTC ISO-8601 timestamps. SQLite datetime('now') returns
+// space-separated text; direct lexical comparison would overcount rolling windows.
+const sinceDaySql = `'${traceWindowStartUtc(1)}'`;
+const sinceWeekSql = `'${traceWindowStartUtc(7)}'`;
+const sinceMonthSql = `'${traceWindowStartUtc(30)}'`;
+
 const estimatedInput = `CAST(round((length(coalesce(input_json, '')) + length(coalesce(resolved_input_json, ''))) / 4.0) AS INTEGER)`;
 const estimatedOutput = `CAST(round((length(coalesce(result_json, '')) + length(coalesce(stderr, ''))) / 4.0) AS INTEGER)`;
 const inputMixed = `coalesce(input_tokens, ${estimatedInput})`;
@@ -173,12 +168,12 @@ SELECT
   min(ts) AS first_row,
   max(ts) AS latest_row,
   count(*) AS rows,
-  sum(CASE WHEN ts >= datetime('now', '-7 days') THEN 1 ELSE 0 END) AS rows_in_past_week,
-  sum(CASE WHEN ts >= datetime('now', '-30 days') THEN 1 ELSE 0 END) AS rows_in_past_month,
-  sum(CASE WHEN ts < datetime('now', '-7 days') THEN 1 ELSE 0 END) AS rows_older_than_week,
+  sum(CASE WHEN ts >= ${sinceWeekSql} THEN 1 ELSE 0 END) AS rows_in_past_week,
+  sum(CASE WHEN ts >= ${sinceMonthSql} THEN 1 ELSE 0 END) AS rows_in_past_month,
+  sum(CASE WHEN ts < ${sinceWeekSql} THEN 1 ELSE 0 END) AS rows_older_than_week,
   CASE
     WHEN count(*) = 0 THEN 'no trace rows found'
-    WHEN sum(CASE WHEN ts < datetime('now', '-7 days') THEN 1 ELSE 0 END) = 0 THEN 'past_week and past_month match because this trace DB has no rows older than 7 days'
+    WHEN sum(CASE WHEN ts < ${sinceWeekSql} THEN 1 ELSE 0 END) = 0 THEN 'past_week and past_month match because this trace DB has no rows older than 7 days'
     ELSE 'past_month includes rows older than 7 days'
   END AS window_note
 FROM tool_traces;
@@ -187,9 +182,9 @@ FROM tool_traces;
 const windowsSql = `
 WITH windows(label, since, sort) AS (
   VALUES
-    ('past_day', datetime('now', '-1 day'), 1),
-    ('past_week', datetime('now', '-7 days'), 2),
-    ('past_month', datetime('now', '-30 days'), 3)
+    ('past_day', ${sinceDaySql}, 1),
+    ('past_week', ${sinceWeekSql}, 2),
+    ('past_month', ${sinceMonthSql}, 3)
 )
 SELECT
   label AS window,
@@ -230,7 +225,7 @@ SELECT
   printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
   sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
 GROUP BY tool
 ORDER BY total_tokens DESC, calls DESC
 LIMIT 20;
@@ -247,7 +242,7 @@ SELECT
   printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
   sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
 GROUP BY tool
 ORDER BY mixed_total DESC, calls DESC
 LIMIT 20;
@@ -264,7 +259,7 @@ SELECT
   printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
   sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
 GROUP BY branch
 ORDER BY total_tokens DESC, calls DESC
 LIMIT 20;
@@ -281,7 +276,7 @@ SELECT
   printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
   sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
 GROUP BY branch
 ORDER BY mixed_total DESC, calls DESC
 LIMIT 20;
@@ -295,7 +290,7 @@ SELECT
   printf('%.2fs', avg(duration_ms) / 1000.0) AS avg_duration,
   max(ts) AS last_seen
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
   AND (status != 'ok' OR code != 'OK')
 GROUP BY tool, code
 ORDER BY errors DESC, last_seen DESC
@@ -311,7 +306,7 @@ SELECT
   printf('%.2fs', duration_ms / 1000.0) AS duration,
   replace(substr(coalesce(stderr, ''), 1, 180), char(10), ' ') AS reason_preview
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
   AND (status != 'ok' OR code != 'OK')
 ORDER BY ts DESC
 LIMIT 20;
@@ -326,7 +321,7 @@ SELECT
   printf('%.2fs', duration_ms / 1000.0) AS duration,
   ${totalMixed} AS mixed_total
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
 ORDER BY duration_ms DESC
 LIMIT 20;
 `;
@@ -341,7 +336,7 @@ SELECT
   ${totalMixed} AS mixed_total,
   printf('%.2fs', duration_ms / 1000.0) AS duration
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
 ORDER BY mixed_output DESC
 LIMIT 20;
 `;
@@ -355,7 +350,7 @@ SELECT
   coalesce(sum(${totalMixed}), 0) AS mixed_total,
   sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
 FROM tool_traces
-WHERE ts >= datetime('now', '-1 day')
+WHERE ts >= ${sinceDaySql}
   AND branch LIKE 'task/%'
 GROUP BY branch
 ORDER BY last_seen DESC
@@ -475,3 +470,6 @@ printTable('Active traced task branches — past day', sqlJson(activeBranchesSql
   'mixed_total',
   'errors',
 ]);
+
+// Release the read connection after all reports finish.
+db.close();

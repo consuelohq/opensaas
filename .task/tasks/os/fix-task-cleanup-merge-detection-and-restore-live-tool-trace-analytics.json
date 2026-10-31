@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2758,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2758",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b47fa724c082",
+  "tmuxSession": "opensaas-os-fix-task-cleanup-merge-detection-and-restore-liv-b47fa724",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-task-cleanup-merge-detection-and-restore-live-tool-trace-analytics/.task/session.json",
+  "createdAt": "2026-10-31T07:45:24.841Z"
+}

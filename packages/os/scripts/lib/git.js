@@ -103,7 +103,20 @@ function isAncestor(repoRoot, ancestor, descendant) {
 }
 
 function isBranchMerged(repoRoot, branch, into) {
-  return isAncestor(repoRoot, `refs/heads/${branch}`, into);
+  const taskBranch = String(branch || '');
+  if (into) return isAncestor(repoRoot, `refs/heads/${taskBranch}`, into);
+
+  // Automatic cleanup must compare against the task's owning stream or main.
+  // Missing/unavailable refs must never be interpreted as merged.
+  const parts = taskBranch.split('/');
+  if (parts[0] !== 'task' || !parts[1]) return false;
+  const targetRefs = [
+    `refs/remotes/origin/stream/${parts[1]}`,
+    'refs/remotes/origin/main',
+  ];
+  return targetRefs.some((target) =>
+    refExists(repoRoot, target) && isAncestor(repoRoot, `refs/heads/${taskBranch}`, target)
+  );
 }
 
 function parseGitHubRepositoryFromRemote(remoteUrl) {
