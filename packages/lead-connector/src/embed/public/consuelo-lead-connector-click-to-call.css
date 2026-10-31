@@ -22,7 +22,7 @@
   max-width: calc(100vw - 32px);
   max-height: calc(100dvh - 48px);
   background: transparent;
-  border: 1px solid rgb(128 128 128 / 25%);
+  border: 0;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 12px 60px #1a1a1440;

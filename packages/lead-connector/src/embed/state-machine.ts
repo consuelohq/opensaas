@@ -354,6 +354,8 @@ export type EmbedStateEvent =
   | { type: 'FAILED'; code: string; message: string; recoverable: boolean }
   | { type: 'RETRY_REQUESTED' }
   | { type: 'SESSION_EXPIRED' }
+  | { type: 'SESSION_RECOVERY_REQUIRED' }
+  | { type: 'SESSION_RENEWED'; token: string; expiresAt: string }
   | { type: 'RETURN_HOME' }
   | { type: 'RESET' };
 
@@ -447,6 +449,37 @@ export const reduceEmbedState = (
   event: EmbedStateEvent,
 ): LeadConnectorEmbedState => {
   switch (event.type) {
+    case 'SESSION_RENEWED':
+      return {
+        ...state,
+        phase: ['booting', 'authenticating'].includes(state.phase)
+          ? state.selectedTargets.length
+            ? 'target-selected'
+            : 'ready'
+          : state.phase,
+        sessionToken: event.token,
+        sessionExpiresAt: event.expiresAt,
+        error: state.error?.code === 'SESSION_EXPIRED' ? null : state.error,
+      };
+    case 'SESSION_RECOVERY_REQUIRED':
+      return {
+        ...state,
+        phase:
+          !state.activeSessionId &&
+          ['booting', 'authenticating', 'starting'].includes(state.phase)
+            ? state.selectedTargets.length
+              ? 'target-selected'
+              : 'ready'
+            : state.phase,
+        sessionToken: null,
+        sessionExpiresAt: null,
+        error: {
+          code: 'SESSION_EXPIRED',
+          message:
+            'Your secure session needs to reconnect. Your call state is preserved.',
+          recoverable: true,
+        },
+      };
     case 'AUTHENTICATION_STARTED':
       return { ...state, phase: 'authenticating', error: null };
     case 'AUTHENTICATED':
@@ -491,6 +524,7 @@ export const reduceEmbedState = (
             : 'single',
           requestedFanout: event.caller.predictive ? requestedFanout : 1,
           callerIdNumber:
+            !state.setup.preferLocalPresence &&
             state.setup.callerIdNumber &&
             event.caller.callerIds.includes(state.setup.callerIdNumber)
               ? state.setup.callerIdNumber
@@ -519,6 +553,9 @@ export const reduceEmbedState = (
       };
     case 'SETUP_CHANGED': {
       const setup = { ...state.setup, ...event.setup };
+      if (setup.preferLocalPresence) setup.callerIdNumber = null;
+      if (state.commercialCaller?.predictive === false)
+        setup.callingMode = 'single';
       if (setup.mode === 'single' || setup.callingMode === 'single') {
         setup.callingMode = 'single';
         setup.requestedFanout = 1;

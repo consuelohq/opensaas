@@ -45,13 +45,6 @@ const personOptions = (state: LeadConnectorEmbedState, current?: string) =>
         `<option value="${e(p.id)}"${p.id === current ? ' selected' : ''}>${e(p.label)}</option>`,
     )
     .join('');
-const planOptions = (state: LeadConnectorEmbedState) =>
-  Object.entries(state.commercialDashboard?.catalog.plans ?? {})
-    .map(
-      ([key, p]) =>
-        `<option value="${key}">${e(p.name ?? { single: 'Professional', standard: 'Agency', power: 'Enterprise' }[key] ?? 'Plan')}</option>`,
-    )
-    .join('');
 const loading = () =>
   '<p class="page-empty" role="status">Loading workspace…</p>';
 
@@ -90,20 +83,38 @@ const billing = (state: LeadConnectorEmbedState): string => {
 const team = (state: LeadConnectorEmbedState): string => {
   const d = state.commercialDashboard;
   if (!d) return loading();
-  const rows = d.seats
-    .map(
-      (s) =>
-        `<li class="member-row"><span class="member-avatar">${e(repName(state, s.user_id ?? s.userId).slice(0, 1))}</span><span><strong>${e(repName(state, s.user_id ?? s.userId))}</strong><small>${e(d.catalog.plans[String(s.plan_code ?? s.planCode) as 'single']?.name ?? planName(state))}</small></span><span class="quiet-chip">${e(titleCase(String(s.status ?? 'active')))}</span></li>`,
-    )
-    .join('');
+  const seats = d.seats;
+  const capacity = d.publicPurchase?.seats;
   return (
-    pageHeading('Team & seats', 'Choose who can call with your workspace.') +
-    `<ul class="member-list">${rows || '<li class="page-empty">No paid seats assigned yet.</li>'}</ul><section class="settings-section"><h2>Assign a seat</h2><form data-form="commercial-seat"><label>Team member<select name="userId" required>${personOptions(state)}</select></label><label>Plan<select name="planCode">${planOptions(state)}</select></label><button type="submit" class="button button--primary"${people(state).length ? '' : ' disabled'}>Save seat</button></form></section>`
+    pageHeading('Team & seats', 'People with access to your Dialer.') +
+    `<p class="team-summary">${state.commercialCaller?.trial ? 'Starter includes your access.' : `${seats.length} assigned${capacity ? ' of ' + capacity + ' paid seats' : ''}.`}</p><ul class="member-list">${seats.length ? seats.map((s) => `<li class="member-row"><span class="member-avatar">${e(repName(state, s.user_id ?? s.userId).slice(0, 1))}</span><span><strong>${e(repName(state, s.user_id ?? s.userId))}</strong><small>${e(planName(state))}</small></span><span class="quiet-chip">${e(titleCase(String(s.status ?? 'active')))}</span></li>`).join('') : '<li class="member-row"><span class="member-avatar">Y</span><span><strong>You</strong><small>Starter access</small></span></li>'}</ul><section class="settings-section"><h2>Growing your team</h2><p>Team membership belongs to your CRM location. Your paid plan and seat quantity are managed in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">${d.subscription ? 'Manage paid seats' : 'Choose a team plan'}</button></section>`
   );
 };
-const numbers = (state: LeadConnectorEmbedState): string => {
+const numbers = (
+  state: LeadConnectorEmbedState,
+  workspace: CallingWorkspace,
+): string => {
   const d = state.commercialDashboard;
   if (!d) return loading();
+  const tabs = `<div class="setup-tabs" role="tablist" aria-label="Phone number purpose"><button type="button" role="tab" aria-selected="${workspace.numberTab !== 'call-from'}" data-action="numbers-receive">Receive calls</button><button type="button" role="tab" aria-selected="${workspace.numberTab === 'call-from'}" data-action="numbers-call-from">Call from</button></div>`;
+  if (workspace.numberTab !== 'call-from')
+    return (
+      pageHeading('Phone numbers', 'Choose how callers reach you.') +
+      tabs +
+      `<section class="settings-section"><h2>Your team’s inbound number</h2><p>${e(state.inboundOperator.configuration.maskedNumber || 'Not configured yet')}</p><p class="form-caption">Customers call this number to reach your team.</p></section><section class="settings-section"><h2>Your answering devices</h2><div class="navigation-list">${[
+        ...state.inboundOperator.rep.endpoints,
+      ]
+        .sort(
+          (a, b) => Number(b.kind === 'browser') - Number(a.kind === 'browser'),
+        )
+        .map(
+          (device) =>
+            `<div class="navigation-row"><span class="navigation-icon">${icon(device.kind === 'browser' ? 'browser' : 'phone')}</span><span><strong>${device.kind === 'browser' ? 'This browser' : 'Forwarding phone'}</strong><small>${device.kind === 'browser' ? 'Use your microphone and speakers' : 'Your personal phone that rings for incoming calls'}</small></span><span class="quiet-chip">${device.healthy ? 'Configured' : 'Unavailable'}</span></div>`,
+        )
+        .join(
+          '',
+        )}</div><p class="form-caption">Forwarding phone changes are managed by your workspace administrator. Selecting a device on Inbound does not change your Call from numbers.</p></section>`
+    );
   const rows = d.numbers
     .map((n) => {
       const phone = String(recordValue(n, 'phone_number', 'phoneNumber') ?? ''),
@@ -118,7 +129,8 @@ const numbers = (state: LeadConnectorEmbedState): string => {
     })
     .join('');
   return (
-    pageHeading('Phone numbers', 'Your calling numbers, in one place.') +
+    pageHeading('Phone numbers', 'Numbers customers see when you call.') +
+    tabs +
     `<ul class="number-list">${rows || '<li class="page-empty">No calling numbers yet.</li>'}</ul><section class="settings-section"><h2>Add a number</h2><form data-form="commercial-number-search"><label>Area code<input name="query" inputmode="numeric" placeholder="e.g. 212" required /></label><label>Assign to<select name="userId" required>${personOptions(state, state.commercialNumberTargetUserId)}</select></label><button type="submit" class="button button--secondary"${people(state).length ? '' : ' disabled'}>Find numbers</button></form><p class="form-caption">An additional number slot is ${money(d.catalog.additionalNumberPriceCents)}/month. Included slots follow your plan.</p><ul class="number-list">${results}</ul></section>`
   );
 };
@@ -126,6 +138,7 @@ const mercury = (
   state: LeadConnectorEmbedState,
   workspace: CallingWorkspace,
 ): string => {
+  const preferences = `<div class="coaching-modes" role="group" aria-label="Mercury mode">${(['off', 'script'] as const).map((mode) => `<button type="button" data-action="coaching-mode" data-mode="${mode}" aria-pressed="${(workspace.coachingMode ?? 'off') === mode}">${mode === 'off' ? 'Off' : 'Script mode'}</button>`).join('')}<button type="button" disabled>AI mode · coming soon</button></div>${workspace.coachingMode === 'script' ? `<label class="active-script-field">Call script<select data-field="active-script"><option value="">Choose a saved script</option>${(workspace.coachingLibrary?.scripts ?? []).map((s) => `<option value="${e(s.id)}"${s.id === workspace.activeScriptId ? ' selected' : ''}>${e(s.title)}</option>`).join('')}</select></label><p class="form-caption">Your script appears one cue at a time during connected calls.</p>` : ''}`;
   const lib = workspace.coachingLibrary,
     draft = workspace.scriptDraft,
     active = workspace.scriptId
@@ -146,6 +159,7 @@ const mercury = (
     );
   return (
     pageHeading('Mercury', 'Keep your team’s playbook close.') +
+    preferences +
     `<section class="mercury-intro"><span class="mercury-symbol">${icon('script')}</span><h2>Scripts for your calling day.</h2><p>Upload a playbook or write one here. Open a script whenever you need it.</p><button type="button" class="button button--primary" data-action="script-new"${lib ? '' : ' disabled'}>${icon('upload')} Add a script</button></section><section class="settings-section"><h2>Your scripts</h2>${lib ? (lib.scripts.length ? `<div class="navigation-list">${lib.scripts.map((s) => `<button type="button" class="navigation-row" data-action="script-open" data-script-id="${e(s.id)}"><span class="navigation-icon">${icon('script')}</span><span><strong>${e(s.title)}</strong><small>Team script</small></span>${icon('arrow')}</button>`).join('')}</div>` : '<p>No scripts yet. Add your first playbook above.</p>') : '<p class="page-empty">Loading your script library…</p>'}</section>`
   );
 };
@@ -155,7 +169,7 @@ export const renderWorkspacePage = (
 ): string => {
   if (workspace.screen === 'billing') return billing(state);
   if (workspace.screen === 'team') return team(state);
-  if (workspace.screen === 'numbers') return numbers(state);
+  if (workspace.screen === 'numbers') return numbers(state, workspace);
   if (workspace.screen === 'mercury') return mercury(state, workspace);
   if (workspace.screen === 'appearance')
     return (
@@ -164,6 +178,6 @@ export const renderWorkspacePage = (
     );
   return (
     pageHeading('Settings', 'A few things to make calling yours.') +
-    `<section class="settings-plan"><span class="section-label">YOUR PLAN</span><div><h2>${e(planName(state))}</h2><button type="button" class="text-button" data-action="workspace-billing">Manage plan ${icon('arrow')}</button></div></section><div class="navigation-list">${row('team', 'Team & seats', 'People who call with you', 'team')}${row('numbers', 'Phone numbers', 'Manage your calling numbers', 'phone')}${row('billing', 'Plan & billing', 'Minutes, subscription and invoices', 'card')}${row('mercury', 'Mercury', 'Call scripts for your team', 'script')}${row('appearance', 'Appearance', 'Light, dark or system theme', 'sun')}</div>`
+    `<section class="settings-plan"><span class="section-label">YOUR PLAN</span><div><h2>${e(planName(state))}</h2><button type="button" class="text-button" data-action="workspace-billing">Manage plan ${icon('arrow')}</button></div></section><div class="navigation-list">${row('numbers', 'Phone numbers', 'Answering devices and calling numbers', 'phone')}${row('mercury', 'Mercury', 'Call scripts for your team', 'script')}${row('team', 'Team & seats', 'People with Dialer access', 'team')}${row('billing', 'Plan & billing', 'Minutes, subscription and invoices', 'card')}${row('appearance', 'Appearance', 'Light, dark or system theme', 'sun')}</div>`
   );
 };

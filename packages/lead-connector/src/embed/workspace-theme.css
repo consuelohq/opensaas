@@ -1409,3 +1409,239 @@ body[data-surface='admin']:has([data-workspace]) {
 [data-workspace-screen='settings'] .page-heading {
   margin-bottom: 20px;
 }
+
+/* Rep workspace: typography and spacing carry the hierarchy. */
+.calling-workspace,
+.workspace-header,
+.workspace-footer,
+.direction-tabs,
+.calling-workspace
+  :is(
+    .settings-section,
+    .settings-plan,
+    .navigation-row,
+    .member-row,
+    .number-row,
+    .history-row,
+    .history-metrics > div,
+    .plan-summary,
+    .inbound-endpoint-row,
+    .device-unavailable,
+    .session-banner,
+    .calling-options-entry,
+    .detail-list > div,
+    .resource-row,
+    .target-row,
+    .progress-row,
+    .workspace-details,
+    .mercury-intro,
+    .mercury-symbol
+  ),
+.calling-workspace
+  :is(input, select, textarea, .button, .combobox__trigger, .setup-tabs) {
+  border: 0;
+}
+.calling-workspace .workspace-footer a {
+  text-decoration: underline;
+}
+.direction-tabs {
+  background: transparent;
+  padding: 0;
+}
+.direction-tabs button,
+.direction-tabs button[aria-selected='true'] {
+  background: transparent;
+  box-shadow: none;
+}
+.direction-tabs button {
+  font-weight: 450;
+}
+.direction-tabs button[aria-selected='true'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+.calling-workspace :is(.direction-tabs button, .setup-tab):focus-visible {
+  outline: 0;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.calling-workspace .setup-tab {
+  border: 0;
+}
+.calling-workspace .setup-tab.is-active {
+  text-decoration: underline;
+  text-underline-offset: 8px;
+}
+.calling-workspace .inbound-endpoint-row {
+  background: var(--soft);
+}
+.calling-workspace .inbound-endpoint-row strong {
+  color: var(--muted);
+}
+.calling-workspace .inbound-endpoint-row:has(:checked) {
+  background: transparent;
+}
+.calling-workspace .inbound-endpoint-row:has(:checked) strong {
+  color: var(--ink);
+}
+.calling-workspace .button--primary:disabled {
+  background: var(--soft);
+  color: var(--muted);
+  opacity: 1;
+}
+.calling-workspace .combobox__trigger {
+  background: var(--soft);
+}
+[data-workspace-screen='calling'] .workspace-content,
+[data-workspace-screen='call-options'] .workspace-content {
+  display: flex;
+  flex-direction: column;
+}
+.calling-workspace
+  :is(.call-setup, .inbound-operator-panel, .calling-options-page) {
+  display: flex !important;
+  flex: 1;
+  flex-direction: column;
+  min-height: min-content;
+}
+.calling-workspace .setup-actions {
+  margin-top: auto;
+  padding-top: 20px;
+  flex-shrink: 0;
+}
+.calling-options-page .setup-actions {
+  width: 100%;
+}
+.calling-options-entry {
+  margin-top: 12px !important;
+  padding: 16px 0 !important;
+}
+.target-field {
+  display: block !important;
+}
+.target-field > span {
+  display: block;
+  margin-bottom: 9px;
+}
+.target-picker {
+  position: relative;
+}
+.calling-workspace .target-picker input,
+.calling-workspace input[type='tel'],
+.calling-workspace [data-form='commercial-number-search'] input {
+  border: 1px solid var(--line);
+  width: 100%;
+}
+.target-picker__menu {
+  position: absolute;
+  inset: calc(100% + 6px) 0 auto;
+  z-index: 20;
+  max-height: 220px;
+  overflow: auto;
+  padding: 7px;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 10px 32px #0003;
+}
+.target-picker__menu[hidden] {
+  display: none;
+}
+.target-picker__menu button {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: flex-start;
+  gap: 3px;
+  border: 0;
+  border-radius: 6px;
+  padding: 10px;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+}
+.target-picker__menu button[aria-selected='true'],
+.target-picker__menu button:hover {
+  background: var(--soft);
+}
+.target-picker__menu strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.target-picker__menu small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.calling-workspace .target-picker__menu p {
+  padding: 12px;
+}
+.calling-workspace .navigation-icon,
+.calling-workspace .device-icon {
+  background: transparent;
+}
+.coaching-modes {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.coaching-modes button {
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  padding: 7px 0;
+  font-size: 11px;
+}
+.coaching-modes button[aria-pressed='true'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+.active-script-field {
+  margin: 0 0 8px;
+}
+.live-script {
+  margin: 18px 0;
+}
+.calling-workspace .live-script__cue {
+  font-size: 23px;
+  line-height: 1.4;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.script-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+.inbound-operator-panel:has(.live-script) .session-banner,
+.inbound-operator-panel:has(.live-script) .setup-actions,
+.inbound-operator-panel:has(.live-script) .calling-options-entry,
+.inbound-operator-panel:has(.live-script) .calling-heading p {
+  display: none;
+}
+.inbound-operator-panel:has(.live-script) > .primary-wide {
+  margin-top: auto;
+}
+
+/* One shared action baseline; secondary details remain above the action. */
+.calling-workspace .inbound-operator-panel {
+  gap: 0;
+}
+.calling-workspace .answering-devices {
+  margin-bottom: 0;
+}
+.calling-workspace .inbound-operator-panel .calling-heading {
+  margin-bottom: 20px;
+}
+.calling-workspace
+  :is(
+    .setup-source-tabs,
+    .inbound-offer,
+    .notice,
+    .button-row,
+    .script-navigation,
+    .progress-list,
+    .number-list,
+    .navigation-list,
+    .resource-row__action
+  ) {
+  border: 0;
+}

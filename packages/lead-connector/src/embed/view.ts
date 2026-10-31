@@ -1,9 +1,9 @@
+import { renderTargetPicker } from './target-picker.js';
+import { renderLiveScript } from './script-presentation.js';
 import { renderWorkspacePage, pageHeading } from './workspace-pages.js';
 import { renderHistory, renderHistoryDetail } from './workspace-history.js';
 import { planName } from './workspace-format.js';
 import { icon } from './workspace-icons.js';
-import type { LeadConnectorContact } from '../contracts/index.js';
-import { resolveLeadConnectorContactName } from './contact-label.js';
 import type { LeadConnectorSurface } from './surface.js';
 import type { LeadConnectorEmbedState } from './state-machine.js';
 import {
@@ -37,9 +37,6 @@ const targetLabel = (
 ): string =>
   escapeHtml(target?.name ?? (target ? maskPhone(target.phone) : 'Contact'));
 
-const contactLabel = (contact: LeadConnectorContact): string =>
-  escapeHtml(resolveLeadConnectorContactName(contact) ?? 'Unnamed contact');
-
 const renderError = (state: LeadConnectorEmbedState): string =>
   state.error
     ? `<section class="notice notice--error" role="alert">
@@ -55,16 +52,6 @@ const renderError = (state: LeadConnectorEmbedState): string =>
         }
       </section>`
     : '';
-
-const renderSelectedTargets = (state: LeadConnectorEmbedState): string =>
-  state.selectedTargets
-    .map(
-      (target) => `<div class="target-row">
-        <div><strong>${targetLabel(target)}</strong><span>${maskPhone(target.phone)}</span></div>
-        <button type="button" class="icon-button" data-action="remove-target" data-dedupe-key="${escapeHtml(target.dedupeKey)}" aria-label="Remove ${targetLabel(target)}">×</button>
-      </div>`,
-    )
-    .join('');
 
 const renderCallProgress = (state: LeadConnectorEmbedState): string => {
   const legs = state.callLegs.length
@@ -89,28 +76,6 @@ const renderCallProgress = (state: LeadConnectorEmbedState): string => {
         <span class="phase-label">${escapeHtml(phaseLabel(leg.status))}</span>
       </div>`;
     })
-    .join('');
-};
-
-const renderContactRows = (
-  state: LeadConnectorEmbedState,
-  limit: number,
-): string => {
-  const contacts = state.contacts
-    .filter((contact) => Boolean(contact.phone))
-    .slice(0, limit);
-  if (contacts.length === 0) {
-    return '<p class="resource-empty">No callable contacts match this view.</p>';
-  }
-  return contacts
-    .map(
-      (
-        contact,
-      ) => `<button type="button" class="resource-row" data-action="select-contact" data-contact-id="${escapeHtml(contact.id)}" data-phone="${escapeHtml(contact.phone)}">
-        <span class="resource-row__identity"><strong>${contactLabel(contact)}</strong><small>${maskPhone(contact.phone ?? '')}${contact.email ? ` · ${escapeHtml(contact.email)}` : ''}</small></span>
-        <span class="resource-row__action">Select</span>
-      </button>`,
-    )
     .join('');
 };
 
@@ -161,6 +126,7 @@ const renderQueueSummary = (state: LeadConnectorEmbedState): string => {
 const renderCallSetup = (
   state: LeadConnectorEmbedState,
   surface: 'admin' | 'overlay',
+  workspace?: CallingWorkspace,
 ): string => {
   const queueMode = state.setup.mode === 'queue';
   const caller = state.commercialCaller;
@@ -190,15 +156,23 @@ const renderCallSetup = (
               placeholder: '— Select a pipeline stage —',
               options: queueOptions(state),
             })}${renderQueueSummary(state)}`
-          : `<div class="single-dial-panel">
-              <label class="setup-field setup-field--wide"><span>Phone number</span><div class="input-action"><input type="tel" data-field="single-phone" placeholder="(555) 555-0123" autocomplete="tel" /><button type="button" class="button button--secondary" data-action="select-single-number">Use number</button></div></label>
-              <label class="setup-field setup-field--wide"><span>Find a contact</span><input type="search" data-field="search" value="${escapeHtml(state.filters.query)}" placeholder="Name, email, or phone" autocomplete="off" /></label>
-              <div class="single-contact-list">${renderContactRows(state, surface === 'overlay' ? 4 : 8)}</div>
-            </div>`
+          : renderTargetPicker({
+              contacts: state.contacts,
+              query: workspace?.contactQuery ?? '',
+              open: workspace?.contactPickerOpen ?? false,
+              active: workspace?.contactActiveIndex ?? 0,
+              selected: state.selectedTargets[0],
+              selectedLabel:
+                state.selectedTargets.length > 1
+                  ? state.selectedTargets
+                      .map((t) => t.name ?? maskPhone(t.phone))
+                      .join(', ')
+                  : undefined,
+            })
       }
       <button type="button" class="calling-options-entry" data-action="workspace-call-options"><span>${icon('settings')}<strong>Calling options</strong></span><span>${state.setup.callerIdNumber ? maskPhone(state.setup.callerIdNumber) : 'Automatic caller ID'} ${icon('arrow')}</span></button>
     </div>
-    ${state.selectedTargets.length ? '<div class="target-list">' + renderSelectedTargets(state) + '</div>' : ''}
+
     ${caller && !caller.canStartCall ? `<p class="notice notice--error" role="status">Calling is unavailable: ${escapeHtml(phaseLabel(caller.denialCode ?? 'commercial access blocked'))}.</p>` : ''}
     <div class="setup-actions">
       <button type="button" class="button button--primary" data-action="start-configured"${canStart ? '' : ' disabled'}>Start calling</button>
@@ -214,15 +188,28 @@ const renderCallOptions = (state: LeadConnectorEmbedState): string => {
       'Set up this calling session. Changes are saved as you choose.',
     ) +
     `<div class="calling-options-page">
-      ${renderCombobox({ field: 'caller-id', label: 'Caller ID', value: state.setup.callerIdNumber ?? '', placeholder: 'Choose automatically', options: [{ value: '', label: 'Choose automatically' }, ...state.callerIds.map((number) => ({ value: number, label: maskPhone(number) }))] })}
+      ${renderCombobox({
+        field: 'caller-id',
+        label: 'Call from',
+        value: state.setup.callerIdNumber ?? '',
+        placeholder: 'Choose automatically',
+        disabled: state.setup.preferLocalPresence,
+        options: [
+          { value: '', label: 'Choose automatically' },
+          ...state.callerIds.map((number) => ({
+            value: number,
+            label: maskPhone(number),
+          })),
+        ],
+      })}
       <label class="option-toggle"><span><strong>Local presence</strong><small>Prefer a caller ID near the person you’re calling.</small></span><input type="checkbox" data-field="local-presence"${state.setup.preferLocalPresence ? ' checked' : ''} /></label>
       ${
         state.setup.mode === 'queue'
-          ? `<div class="calling-options-grid">${renderCombobox({ field: 'calling-mode', label: 'Calling mode', value: state.setup.callingMode, placeholder: 'Choose mode', options: [...(caller?.predictive === false ? [] : [{ value: 'predictive', label: 'Predictive dialing' }]), { value: 'single', label: 'One call at a time' }] })}
-      ${renderCombobox({ field: 'line-count', label: 'Calling lines', value: String(state.setup.requestedFanout), placeholder: 'Choose lines', options: (caller?.lineOptions.length ? caller.lineOptions : [1, 2, 3]).map((line) => ({ value: String(line), label: line === 1 ? '1 line' : `${line} lines` })), disabled: state.setup.callingMode === 'single' })}</div>`
+          ? `<div class="calling-options-grid">${renderCombobox({ field: 'calling-mode', label: 'Calling mode', value: state.setup.callingMode, placeholder: 'Choose mode', options: [...(caller?.predictive === false ? [] : [{ value: 'predictive', label: 'Predictive dialing (recommended)' }]), { value: 'single', label: 'Sequential dialing' }] })}
+      ${renderCombobox({ field: 'line-count', label: 'Calling lines', value: String(state.setup.requestedFanout), placeholder: 'Choose lines', options: (caller?.lineOptions.length ? caller.lineOptions.filter((line) => line <= 3) : [1, 2, 3]).map((line) => ({ value: String(line), label: line === 1 ? '1 line' : `${line} lines` })), disabled: state.setup.callingMode === 'single' })}</div>`
           : ''
       }
-      <button type="button" class="button button--primary primary-wide" data-action="workspace-calling">Done</button>
+      <div class="setup-actions"><button type="button" class="button button--primary primary-wide" data-action="workspace-calling">Done</button></div>
     </div>`
   );
 };
@@ -276,16 +263,19 @@ const renderTransferControls = (state: LeadConnectorEmbedState): string => {
   );
 };
 
-const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
+const renderOverlayStage = (
+  state: LeadConnectorEmbedState,
+  workspace?: CallingWorkspace,
+): string => {
   if (state.phase === 'failed') return renderError(state);
   if (['booting', 'authenticating'].includes(state.phase)) {
     return `<section class="overlay-stage overlay-stage--loading"><span class="spinner" aria-hidden="true"></span><div><p class="eyebrow">Secure session</p><h1>Connecting…</h1><p>Loading the current location and operator context.</p></div></section>`;
   }
   if (state.phase === 'ready') {
-    return renderCallSetup(state, 'overlay');
+    return renderCallSetup(state, 'overlay', workspace);
   }
   if (state.phase === 'target-selected')
-    return renderCallSetup(state, 'overlay');
+    return renderCallSetup(state, 'overlay', workspace);
   if (state.phase === 'starting') {
     const count = Math.max(state.selectedTargets.length, 1);
     return `<section class="overlay-stage overlay-stage--active"><span class="spinner" aria-hidden="true"></span><div class="stage-heading"><p class="eyebrow">Starting</p><h1>Preparing ${count} ${count === 1 ? 'line' : 'lines'}…</h1><p>Getting your calls ready. Keep this window open.</p></div><button type="button" class="button button--secondary" data-action="stop">Cancel</button></section>`;
@@ -307,7 +297,7 @@ const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
     const loserCount = state.callLegs.filter(
       (leg) => leg.role === 'loser',
     ).length;
-    return `<section class="overlay-stage overlay-stage--connected"><div class="connection-badge" data-session-status>${sessionPresentation(state, 'outbound').label}</div><div class="winner-card"><p class="eyebrow">Speaking with</p><h1>${targetLabel(target ?? state.selectedTargets[0])}</h1><p>${winner ? maskPhone(winner.customerNumber) : 'Private number'}</p></div>${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}<details class="workspace-details" data-disclosure="transfer"><summary>Transfer call</summary>${renderTransferControls(state)}</details><button type="button" class="button button--danger" data-action="hang-up">Hang up</button></section>`;
+    return `<section class="overlay-stage overlay-stage--connected"><div class="connection-badge" data-session-status>${sessionPresentation(state, 'outbound').label}</div><div class="winner-card"><p class="eyebrow">Speaking with</p><h1>${targetLabel(target ?? state.selectedTargets[0])}</h1><p>${winner ? maskPhone(winner.customerNumber) : 'Private number'}</p></div>${workspace ? renderLiveScript(workspace) : ''}${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}<details class="workspace-details" data-disclosure="transfer"><summary>Transfer call</summary>${renderTransferControls(state)}</details><button type="button" class="button button--danger" data-action="hang-up">Hang up</button></section>`;
   }
   if (state.phase === 'paused') {
     return `<section class="overlay-stage"><div class="stage-heading"><p class="eyebrow">Queue paused</p><h1>Calling is paused</h1><p>The active queue is preserved.</p></div><div class="split-actions"><button type="button" class="button button--primary" data-action="resume">Resume</button><button type="button" class="button button--secondary" data-action="stop">Stop queue</button></div></section>`;
@@ -340,14 +330,18 @@ export const renderLeadConnectorEmbed = (
   const body =
     workspace.screen === 'calling'
       ? loading
-        ? renderOverlayStage(state)
+        ? renderOverlayStage(state, workspace)
         : state.phase === 'failed'
           ? renderError(state)
           : workspace.mode === 'inbound'
             ? renderInboundOperatorPanel(state.inboundOperator, {
                 selectedEndpointIds: workspace.answeringEndpointIds,
+                scriptHtml:
+                  state.inboundOperator.rep.assignment?.phase === 'connected'
+                    ? renderLiveScript(workspace)
+                    : '',
               })
-            : renderOverlayStage(state)
+            : renderOverlayStage(state, workspace)
       : workspace.screen === 'queue-details'
         ? pageHeading('Queue details', 'Incoming calls for your team.') +
           renderInboundQueueDetails(state.inboundOperator)
@@ -371,7 +365,7 @@ export const renderLeadConnectorEmbed = (
           : 'calling';
   const remaining = state.commercialCaller?.remainingMinutes;
   return `<main class="calling-workspace" data-workspace data-workspace-screen="${workspace.screen}" data-workspace-compact="false" data-surface="${surface}" data-phase="${state.phase}">
-  <header class="workspace-header"><a class="workspace-brand" href="https://consuelohq.com/" target="_blank" rel="noopener noreferrer" aria-label="Consuelo Dialer"><img src="/consuelo-logo.svg" data-brand-logo width="36" height="36" alt="" /><span class="workspace-wordmark"><span>CONSUELO</span><span>DIALER</span></span></a><nav aria-label="Workspace"><button type="button" class="header-action" data-action="workspace-history" aria-label="Call history" aria-pressed="${workspace.screen === 'history' || workspace.screen === 'call-detail'}">${icon('history')}<span>History</span></button><button type="button" class="icon-button" data-action="workspace-settings" aria-label="Settings">${icon('settings')}</button>${surface === 'overlay' || status.active ? `<button type="button" class="icon-button" data-action="workspace-minimize" aria-label="Minimize calling window">${icon('minus')}</button>` : ''}</nav></header>
+  <header class="workspace-header"><a class="workspace-brand" href="https://consuelohq.com/" target="_blank" rel="noopener noreferrer" aria-label="Consuelo Dialer"><img src="/consuelo-logo.svg" data-brand-logo width="36" height="36" alt="" /><span class="workspace-wordmark"><span>CONSUELO</span><span>DIALER</span></span></a><nav aria-label="Workspace"><button type="button" class="header-action" data-action="workspace-history" aria-label="Call history" aria-pressed="${workspace.screen === 'history' || workspace.screen === 'call-detail'}">${icon('history')}<span>History</span></button><button type="button" class="icon-button" data-action="workspace-settings" aria-label="Settings">${icon('settings')}</button>${surface === 'overlay' || status.active ? `<button type="button" class="icon-button" data-action="workspace-minimize" aria-label="Close calling window">${icon('close')}</button>` : ''}</nav></header>
   ${workspace.screen === 'calling' ? `<div class="direction-tabs" role="tablist" aria-label="Calling direction"><button type="button" role="tab" aria-selected="${workspace.mode === 'inbound'}" data-action="workspace-inbound"${callMode === 'outbound' ? ' disabled' : ''}>${icon('incoming')} Inbound</button><button type="button" role="tab" aria-selected="${workspace.mode === 'outbound'}" data-action="workspace-outbound"${callMode === 'inbound' ? ' disabled' : ''}>${icon('outgoing')} Outbound</button></div>` : `<div class="page-breadcrumb"><button type="button" class="text-button" data-action="workspace-${parentScreen}">${icon('back')} ${parentScreen === 'settings' ? 'Settings' : parentScreen === 'history' ? 'Call history' : 'Back to calling'}</button>${status.active ? `<button type="button" class="live-indicator" data-action="workspace-calling"><span class="session-dot"></span>${escapeHtml(status.label)}</button>` : ''}</div>`}
   <div class="workspace-content">${workspace.screen !== 'calling' ? renderError(state) : ''}${body}</div>
   ${!loading ? `<footer class="workspace-footer"><button type="button" class="plan-entry" data-action="workspace-billing" aria-label="Open plan and billing"><strong>${escapeHtml(planName(state))}</strong><span>${remaining == null ? (remaining === null ? 'Unlimited minutes' : '') : escapeHtml(remaining.toLocaleString('en-US')) + ' minutes left'}</span>${icon('arrow')}</button><a href="https://docs.consuelohq.com/" target="_blank" rel="noopener noreferrer">Learn more</a></footer>` : ''}

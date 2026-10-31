@@ -14,6 +14,22 @@ const escapeHtml = (value: unknown): string =>
     .replaceAll("'", '&#039;');
 const title = (value: string) =>
   value.replaceAll(/[-_]/g, ' ').replace(/^./, (c) => c.toUpperCase());
+export const selectedAnsweringEndpoints = (
+  state: InboundOperatorState,
+  selected?: readonly string[],
+): readonly string[] => {
+  if (state.rep.ready)
+    return state.rep.endpoints.filter((e) => e.active).map((e) => e.endpointId);
+  if (selected) return selected;
+  const browser = state.rep.endpoints.find(
+    (e) => e.kind === 'browser' && e.healthy,
+  );
+  return browser
+    ? [browser.endpointId]
+    : state.rep.endpoints
+        .filter((e) => e.kind === 'phone' && e.active && e.healthy)
+        .map((e) => e.endpointId);
+};
 const endpointRow = (
   endpoint: InboundOperatorEndpoint,
   ready: boolean,
@@ -40,9 +56,16 @@ const renderWrapUp = (state: InboundOperatorState): string => {
 };
 export const renderInboundOperatorPanel = (
   state: InboundOperatorState,
-  options: { selectedEndpointIds?: readonly string[] } = {},
+  options: {
+    selectedEndpointIds?: readonly string[];
+    scriptHtml?: string;
+  } = {},
 ): string => {
   const status = inboundPresentation(state);
+  const selected = selectedAnsweringEndpoints(
+    state,
+    options.selectedEndpointIds,
+  );
   const fresh =
     state.phase === 'ready' ||
     (state.phase === 'loading' && state.lastSyncAt !== null);
@@ -50,19 +73,36 @@ export const renderInboundOperatorPanel = (
     fresh &&
     !state.pendingAction &&
     !state.rep.assignment &&
-    (state.rep.ready || state.rep.endpoints.some((e) => e.healthy));
+    (state.rep.ready ||
+      state.rep.endpoints.some(
+        (e) => e.healthy && selected.includes(e.endpointId),
+      ));
   const busy = state.rep.assignment !== null || state.offers.length > 0;
   return `<section class="inbound-operator-panel" aria-label="Incoming calls" data-inbound-phase="${state.phase}"${state.rep.assignment ? ` data-assignment-id="${escapeHtml(state.rep.assignment.assignmentId)}"` : ''}>
     <div class="calling-heading"><h1>${status.active ? status.label : 'Inbound calls'}</h1><p>${status.detail}</p></div>
     ${status.active ? `<div class="session-banner" data-status="${status.status}"><span class="session-dot" aria-hidden="true"></span><span data-session-status role="status">${status.label}</span>${status.active ? '<button type="button" class="text-button" data-action="workspace-minimize">Minimize ↘</button>' : ''}</div>` : ''}
     ${state.error ? `<div class="notice notice--error" role="alert">${escapeHtml(state.error.message)}</div>` : ''}
     ${status.status === 'reconnecting' ? '<div class="recovery-note"><p>Your place is protected while we check the connection.</p><button type="button" class="button button--secondary" data-action="inbound-reconnect">Reconnect</button></div>' : ''}
-    ${!state.rep.assignment || state.rep.assignment.phase === 'offering' ? renderOffers(state) : ''}${renderWrapUp(state)}
+    ${!state.rep.assignment || state.rep.assignment.phase === 'offering' ? renderOffers(state) : ''}${renderWrapUp(state)}${options.scriptHtml ?? ''}
     ${state.rep.assignment?.phase === 'connected' ? (state.rep.endpoints.find((e) => e.endpointId === state.rep.assignment?.endpointId)?.kind === 'browser' ? '<button type="button" class="button button--danger primary-wide" data-action="inbound-hang-up">End call</button>' : '<p class="form-footnote">End the call on your phone. We’ll show wrap-up here when it finishes.</p>') : ''}
-    ${!busy ? `<fieldset class="answering-devices"><legend>Answer calls on</legend>${state.rep.endpoints.map((e) => endpointRow(e, state.rep.ready, state.rep.ready ? undefined : options.selectedEndpointIds)).join('') || '<p class="resource-empty">No answering device is set up yet.</p>'}${!state.rep.endpoints.some((e) => e.kind === 'browser') ? `<div class="device-unavailable"><span class="device-icon">${icon('browser')}</span><span><strong>This browser</strong><small>Browser answering isn’t enabled for this workspace yet.</small></span></div>` : ''}</fieldset>` : ''}
-    <button type="button" class="button ${state.rep.ready ? 'button--secondary' : 'button--primary'} primary-wide" data-action="inbound-readiness" data-ready="${!state.rep.ready}"${canToggle ? '' : ' disabled'}>${state.pendingAction ? 'Updating…' : state.rep.ready ? 'Stop receiving calls' : 'Start receiving calls'}</button>
+    ${
+      !busy
+        ? `<fieldset class="answering-devices"><legend>Answer calls on</legend>${
+            [...state.rep.endpoints]
+              .sort(
+                (a, b) =>
+                  Number(b.kind === 'browser') - Number(a.kind === 'browser'),
+              )
+              .map((e) => endpointRow(e, state.rep.ready, selected))
+              .join('') ||
+            '<p class="resource-empty">No answering device is set up yet.</p>'
+          }${!state.rep.endpoints.some((e) => e.kind === 'browser') ? `<div class="device-unavailable"><span class="device-icon">${icon('browser')}</span><span><strong>This browser</strong><small>Browser answering isn’t enabled for this workspace yet.</small></span></div>` : ''}</fieldset>`
+        : ''
+    }
+
     
     <button type="button" class="calling-options-entry" data-action="workspace-queue-details"><span><strong>Queue details</strong></span><span>${state.queue.waitingCount} waiting ${icon('arrow')}</span></button>
+    <div class="setup-actions"><button type="button" class="button ${state.rep.ready ? 'button--secondary' : 'button--primary'} primary-wide" data-action="inbound-readiness" data-ready="${!state.rep.ready}"${canToggle ? '' : ' disabled'}>${state.pendingAction ? 'Updating…' : state.rep.ready ? 'Stop receiving calls' : 'Start receiving calls'}</button></div>
   </section>`;
 };
 

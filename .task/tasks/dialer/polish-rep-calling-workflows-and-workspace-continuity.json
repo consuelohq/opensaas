@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/polish-rep-calling-workflows-and-workspace-continuity",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2732,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2732",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-polish-rep-calling-workflows-and-workspace-continuity",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9b76aa047bd2",
+  "tmuxSession": "opensaas-dialer-polish-rep-calling-workflows-and-workspace-conti-9b76aa04",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-polish-rep-calling-workflows-and-workspace-continuity/.task/session.json",
+  "createdAt": "2026-10-31T04:33:39.530Z"
+}

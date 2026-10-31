@@ -331,7 +331,7 @@ describe('LeadConnector embed view', () => {
     });
     expect(options).toContain('Local presence');
     expect(options).toContain('Predictive dialing');
-    expect(options).toContain('One call at a time');
+    expect(options).toContain('Sequential dialing');
     expect(options).toContain('Calling lines');
     expect(html).not.toContain('Choose someone to call');
     expect(html).not.toContain('<h3>Deals</h3>');

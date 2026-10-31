@@ -171,3 +171,24 @@ it('keeps the selected radio and focus associated with its own option across a s
     root.querySelector<HTMLInputElement>('input[value="predictive"]')!.checked,
   ).toBe(true);
 });
+
+it('retains keyboard focus while a controlled contact query changes', () => {
+  const document = new JSDOM('<main></main>', { pretendToBeVisual: true })
+    .window.document;
+  const root = document.querySelector('main')!;
+  replaceWorkspace(
+    root,
+    '<input type="search" data-field="target-query" value="">',
+  );
+  const field = root.querySelector('input')!;
+  field.focus();
+  field.value = 'Ada';
+  field.setSelectionRange(3, 3);
+  replaceWorkspace(
+    root,
+    '<input type="search" data-field="target-query" value="Ada">',
+  );
+  expect(document.activeElement).toBe(root.querySelector('input'));
+  expect(root.querySelector('input')!.selectionStart).toBe(3);
+  document.defaultView!.close();
+});

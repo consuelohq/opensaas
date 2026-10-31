@@ -33,10 +33,13 @@ export const createLeadConnectorEmbedController = (input: {
   voice: LeadConnectorAgentVoice;
   surface?: 'admin' | 'overlay';
   inboundObserver?: boolean;
+  onSessionExpired?: () => void;
   initialState?: LeadConnectorEmbedState;
   inboundOperatorApi?: InboundOperatorApi;
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
+  let hasAuthenticated = Boolean(state.sessionToken);
+  let authenticationPromise: Promise<void> | null = null;
   if (!state.inboundOperator) {
     state = {
       ...state,
@@ -123,7 +126,8 @@ export const createLeadConnectorEmbedController = (input: {
     } catch (error: unknown) {
       if (error instanceof EmbedSessionExpiredError) {
         input.inboundOperatorApi?.setSessionToken(null);
-        input.voice.rejectIncoming();
+        if (!input.onSessionExpired) input.voice.rejectIncoming();
+        input.onSessionExpired?.();
         dispatchInbound({
           type: 'FAILED',
           code: 'SESSION_EXPIRED',
@@ -239,7 +243,12 @@ export const createLeadConnectorEmbedController = (input: {
       if (error instanceof EmbedSessionExpiredError) {
         input.api.setSessionToken(null);
         input.inboundOperatorApi?.setSessionToken(null);
-        dispatch({ type: 'SESSION_EXPIRED' });
+        dispatch({
+          type: input.onSessionExpired
+            ? 'SESSION_RECOVERY_REQUIRED'
+            : 'SESSION_EXPIRED',
+        });
+        input.onSessionExpired?.();
         return null;
       }
       const message =
@@ -508,34 +517,53 @@ export const createLeadConnectorEmbedController = (input: {
 
   return {
     getState: (): LeadConnectorEmbedState => state,
+    // On bounded renewal exhaustion, stop only a ringing browser invitation.
+    // Rejecting an invite does not disconnect a connected conference leg.
+    onSessionRenewalExhausted: (): void => input.voice.rejectIncoming(),
     subscribe: (listener: (next: LeadConnectorEmbedState) => void) => {
       listeners.add(listener);
       listener(state);
       return () => listeners.delete(listener);
     },
-    authenticate: async (encryptedData: string): Promise<void> => {
-      try {
-        dispatch({ type: 'AUTHENTICATION_STARTED' });
-        const session = await run(() =>
-          input.api.createEmbedSession(encryptedData),
-        );
-        if (!session) return;
-        input.api.setSessionToken(session.token);
-        input.inboundOperatorApi?.setSessionToken(session.token);
-        dispatch({
-          type: 'AUTHENTICATED',
-          token: session.token,
-          expiresAt: session.expiresAt,
-        });
-        await Promise.all([
-          refreshResources({ force: true }),
-          loadCallOperations(),
-          loadCommercial(),
-          loadInboundOperator(),
-        ]);
-      } catch (error: unknown) {
-        reportUnexpectedFailure(error);
-      }
+    authenticate: (encryptedData: string): Promise<void> => {
+      if (authenticationPromise) return authenticationPromise;
+      const renewing = hasAuthenticated;
+      authenticationPromise = (async () => {
+        try {
+          if (!renewing) dispatch({ type: 'AUTHENTICATION_STARTED' });
+          const session = renewing
+            ? await input.api.createEmbedSession(encryptedData)
+            : await run(() => input.api.createEmbedSession(encryptedData));
+          if (!session) return;
+          input.api.setSessionToken(session.token);
+          input.inboundOperatorApi?.setSessionToken(session.token);
+          hasAuthenticated = true;
+          dispatch({
+            type: renewing ? 'SESSION_RENEWED' : 'AUTHENTICATED',
+            token: session.token,
+            expiresAt: session.expiresAt,
+          });
+          await Promise.all([
+            refreshResources({ force: true }),
+            loadCallOperations(),
+            loadCommercial(),
+            loadInboundOperator(),
+          ]);
+        } catch (error: unknown) {
+          if (renewing) {
+            // A transient 5xx/network failure must not revoke a still-valid token.
+            if (error instanceof EmbedSessionExpiredError) {
+              input.api.setSessionToken(null);
+              input.inboundOperatorApi?.setSessionToken(null);
+              dispatch({ type: 'SESSION_RECOVERY_REQUIRED' });
+              input.onSessionExpired?.();
+            }
+          } else reportUnexpectedFailure(error);
+        } finally {
+          authenticationPromise = null;
+        }
+      })();
+      return authenticationPromise;
     },
     loadResources: () => refreshResources({ force: true }),
     refreshResources,
