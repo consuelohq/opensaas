@@ -975,8 +975,8 @@
       "reason": "scripts/lib/nodes-site.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/nx-projects.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Recent stream reviewer modernization introduced scoped Nx catalog caching only in the workspace version; preserve both implementations while tracking deliberate OS mirror reconciliation separately."
     },
     "scripts/lib/observability-traces-site.ts": {
       "status": "os-only-needs-review",
@@ -1066,6 +1066,10 @@
     "scripts/lib/review-run-state.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/review-tests.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "The stream/os reviewer modernization added this workspace-only test selection helper; retain explicit parity tracking until OS mirroring or an intentional workspace-only ownership decision is verified."
     },
     "scripts/lib/runtime-state.ts": {
       "status": "os-only-intentional",

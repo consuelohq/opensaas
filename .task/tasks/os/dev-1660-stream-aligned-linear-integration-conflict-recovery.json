@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2742,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2742",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1660-stream-aligned-linear-integration-conflict-recovery",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d2010135694c",
+  "tmuxSession": "opensaas-os-dev-1660-stream-aligned-linear-integration-confl-d2010135",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1660-stream-aligned-linear-integration-conflict-recovery/.task/session.json",
+  "createdAt": "2026-10-31T05:59:55.764Z"
+}
