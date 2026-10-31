@@ -443,6 +443,22 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('selects focused bundled-skill validation when the skill registry helper changes', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/skills.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    expect(matchedRuleIds).toContain('os-bundled-skill-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS bundled skill contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('uses the focused native OS workflow contracts for Windows workflow assertions', () => {
     const result = run([
       'check',
