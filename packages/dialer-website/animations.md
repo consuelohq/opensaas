@@ -34,3 +34,4 @@ Use motion tokens from `src/styles/tokens.css`:
 ## Validation
 
 For motion changes, use browser verification on desktop and mobile widths. Confirm that navigation, reading, forms, and CTA paths remain usable with reduced motion enabled.
+Dialer refinement: compact returning navigation fades and moves less than16px at the feature threshold. The closing copy uses a one-time24px rise/fade on intersection, while the document-flow footer remains reachable on short screens. Reduced motion shows the same content immediately. The approved stack carousel pauses on hover/focus and document hide; reduced motion disables autoplay.

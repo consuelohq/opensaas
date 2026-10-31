@@ -1,0 +1,123 @@
+---
+const enabled = import.meta.env.PUBLIC_DIALER_CHECKOUT_ENABLED === 'true';
+---
+
+<div
+  data-stripe-checkout-settings
+  data-stripe-checkout-enabled={String(enabled)}
+  hidden
+>
+</div>
+<p class="checkout-notice" data-stripe-checkout-notice role="status" hidden></p>
+<script>
+  import { selectionFromQuery } from '../../lib/checkout-selection';
+  import { createStripeRedirect } from '../../lib/direct-checkout';
+  const settings = document.querySelector<HTMLElement>(
+    '[data-stripe-checkout-settings]',
+  );
+  const notice = document.querySelector<HTMLElement>(
+    '[data-stripe-checkout-notice]',
+  );
+  let busy = false;
+  let active: HTMLAnchorElement | undefined;
+  let pending: AbortController | undefined;
+  let generation = 0;
+  const reset = (clear = true) => {
+    generation++;
+    busy = false;
+    active?.removeAttribute('aria-busy');
+    active?.removeAttribute('aria-disabled');
+    active = undefined;
+    pending = undefined;
+    if (clear && notice) notice.hidden = true;
+  };
+  window.addEventListener('pageshow', () => reset());
+  window.addEventListener('pagehide', () => {
+    pending?.abort();
+    reset();
+  });
+  document.addEventListener('click', async (event) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const anchor =
+      event.target instanceof Element
+        ? event.target.closest<HTMLAnchorElement>('a[href]')
+        : null;
+    if (
+      !anchor ||
+      anchor.target === '_blank' ||
+      anchor.hasAttribute('download')
+    )
+      return;
+    const url = new URL(anchor.href, location.href);
+    if (
+      url.origin !== location.origin ||
+      !/^\/get-started\/?$/.test(url.pathname) ||
+      !url.searchParams.has('plan') ||
+      url.searchParams.has('purchase')
+    )
+      return;
+    event.preventDefault();
+    if (busy) return;
+    const ticket = ++generation;
+    try {
+      const selection = selectionFromQuery(url.searchParams);
+      if (selection.plan === 'starter') {
+        location.assign('https://app.gohighlevel.com/');
+        return;
+      }
+      if (settings?.dataset.stripeCheckoutEnabled !== 'true')
+        throw new Error('Checkout is not available in this preview.');
+      busy = true;
+      active = anchor;
+      pending = new AbortController();
+      anchor.setAttribute('aria-busy', 'true');
+      anchor.setAttribute('aria-disabled', 'true');
+      if (notice) {
+        notice.textContent = 'Opening secure Stripe Checkout…';
+        notice.hidden = false;
+      }
+      const destination = await createStripeRedirect(selection, {
+        storage: sessionStorage,
+        signal: pending.signal,
+      });
+      if (ticket !== generation) return;
+      location.assign(destination);
+    } catch (cause: unknown) {
+      if (ticket === generation && !pending?.signal.aborted && notice) {
+        notice.textContent =
+          cause instanceof Error &&
+          cause.message === 'Checkout is not available in this preview.'
+            ? cause.message
+            : 'Stripe Checkout could not open. Please try again.';
+        notice.hidden = false;
+      }
+    } finally {
+      if (ticket === generation) reset(false);
+    }
+  });
+</script>
+<style>
+  .checkout-notice {
+    position: fixed;
+    left: 50%;
+    bottom: 1.25rem;
+    transform: translateX(-50%);
+    z-index: 20;
+    width: max-content;
+    max-width: calc(100% - 2rem);
+    margin: 0;
+    padding: 0.8rem 1.1rem;
+    border-radius: 0.4rem;
+    background: var(--site-color-surface);
+    color: var(--site-color-ink);
+    box-shadow: 0 4px 24px #0002;
+    font-size: 0.85rem;
+  }
+</style>

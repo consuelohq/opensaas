@@ -1,24 +1,388 @@
 ---
-import { siteLinks } from '../data/site-links';
-import InfoPage from '../components/site/InfoPage.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import PricingIcon from '../components/pricing/PricingIcon.astro';
 ---
-<InfoPage title="Put Consuelo to work." description="Set up a calling workflow for your GoHighLevel team." eyebrow="EARLY ACCESS">
- <h2>Start with your team.</h2>
- <p data-selected-plan>Tell us how your team calls today. We will help you choose a plan and confirm setup availability.</p>
- <ol><li><strong>Choose your calling motion.</strong> Start with outbound, discuss inbound routing, or plan for both.</li><li><strong>Connect your GoHighLevel location.</strong> An administrator will need to authorize the integration and set up your reps and numbers.</li><li><strong>Test the call flow.</strong> Check rep readiness, answering, routing and cleanup before your team starts using it.</li></ol>
- <a class="setup-action" data-setup-request href="mailto:support@consuelohq.com?subject=Set%20up%20Consuelo%20Dialer">REQUEST SETUP →</a>
- <p>This opens an email to support@consuelohq.com. No subscription or payment is started from this preview.</p>
- <h2>Already installed?</h2><p><a href="https://app.gohighlevel.com/">Open GoHighLevel</a>, choose your location, and select Consuelo Dialer from its menu.</p>
- <h2>Before you choose a plan</h2><p><a href="/pricing">Compare pricing</a> or <a href={siteLinks.docs + 'start/'}>read the setup guide</a>. Inbound is in controlled rollout. Live coaching and transcript-upload feedback are in development.</p>
-</InfoPage>
+
+<MarketingLayout
+  title="Connect your team"
+  description="Complete secure Stripe Checkout, then connect your team to GoHighLevel."
+  canonicalPath="/get-started"
+>
+  <SiteHeader pageSections={[]} />
+  <main class="checkout-page">
+    <section class="checkout-panel" data-checkout-redirect>
+      <h1>Opening Stripe Checkout…</h1>
+      <p data-checkout-status role="status">Taking you to secure checkout.</p>
+      <button type="button" data-retry-checkout hidden
+        >Try again <PricingIcon /></button
+      >
+      <a href="/pricing">Back to pricing <PricingIcon /></a>
+      <noscript
+        ><p>
+          Enable JavaScript to open Stripe Checkout and confirm your payment.
+        </p></noscript
+      >
+    </section>
+    <section
+      class="checkout-panel"
+      data-purchase-panel
+      hidden
+      aria-labelledby="purchase-heading"
+    >
+      <h2 id="purchase-heading">Connect your team</h2>
+      <p data-purchase-status role="status">
+        Confirming your purchase with Stripe…
+      </p>
+      <div data-number-confirmation hidden>
+        <p data-number-status>
+          Your calling plan is paid. Confirm your selected number pack in
+          Stripe.
+        </p>
+        <button type="button" class="checkout-button" data-confirm-numbers
+          >Confirm number pack in Stripe <PricingIcon /></button
+        >
+        <p>
+          Number packs have a separate subscription and invoice. You can connect
+          your team now and finish the number pack later.
+        </p>
+      </div>
+      <div data-purchase-ready hidden>
+        <p>
+          Your payment is confirmed. Connect GoHighLevel, open Consuelo Dialer
+          settings, and enter this setup code.
+        </p>
+        <label class="setup-code-label"
+          >Your private setup code<input
+            data-purchase-code
+            type="password"
+            readonly
+            autocomplete="off"
+          /></label
+        >
+        <button type="button" class="checkout-button" data-copy-purchase
+          >Copy setup code <PricingIcon /></button
+        >
+        <a
+          class="checkout-button"
+          data-connect-ghl
+          href="https://app.gohighlevel.com/"
+          target="_blank"
+          rel="noopener noreferrer">Connect GoHighLevel <PricingIcon /></a
+        >
+      </div>
+      <button type="button" class="checkout-button" data-retry-purchase
+        >Check payment again <PricingIcon /></button
+      >
+      <p>
+        Keep this confirmation tab until your team is connected. <a
+          href="/support">Get setup help</a
+        >
+      </p>
+    </section>
+  </main>
+</MarketingLayout>
 <script>
- const plans = {single: 'Single — $59 per seat / month',standard: 'Standard — $99 per seat / month',power: 'Power — $159 per seat / month'} as const;
- const requested = new URLSearchParams(location.search).get('plan');
- if (requested && Object.hasOwn(plans, requested)) {
-  const plan = plans[requested as keyof typeof plans];
-  const selected = document.querySelector('[data-selected-plan]');
-  const request = document.querySelector<HTMLAnchorElement>('[data-setup-request]');
-  if (selected) selected.textContent = 'You selected ' + plan + '. We will confirm your team configuration and availability before any subscription starts.';
-  if (request) request.href = 'mailto:support@consuelohq.com?' + new URLSearchParams({subject: 'Set up Consuelo Dialer — ' + plan}).toString();
- }
+  import { selectionFromQuery } from '../lib/checkout-selection';
+  import {
+    createStripeRedirect,
+    readCheckoutRequest,
+  } from '../lib/direct-checkout';
+  import {
+    purchaseConfirmation,
+    numberConfirmationRedirect,
+  } from '../lib/purchase-confirmation';
+  const query = new URLSearchParams(location.search);
+  const purchaseId = query.get('purchase');
+  const redirect = document.querySelector<HTMLElement>(
+    '[data-checkout-redirect]',
+  )!;
+  const panel = document.querySelector<HTMLElement>('[data-purchase-panel]')!;
+  if (
+    (!purchaseId && query.get('checkout') === 'cancelled') ||
+    (!purchaseId && !query.has('plan'))
+  ) {
+    const pricing = new URL('/pricing', location.origin);
+    if (query.has('addon')) {
+      pricing.searchParams.set('addon', query.get('addon')!);
+      pricing.hash = 'team-planner';
+    }
+    location.replace(pricing.href);
+  } else if (!purchaseId) {
+    let busy = false;
+    const launch = async () => {
+      if (busy) return;
+      const message = redirect.querySelector<HTMLElement>(
+        '[data-checkout-status]',
+      )!;
+      const retry = redirect.querySelector<HTMLButtonElement>(
+        '[data-retry-checkout]',
+      )!;
+      try {
+        const selection = selectionFromQuery(query);
+        if (selection.plan === 'starter') {
+          location.replace('https://app.gohighlevel.com/');
+          return;
+        }
+        if (
+          document.querySelector<HTMLElement>('[data-stripe-checkout-settings]')
+            ?.dataset.stripeCheckoutEnabled !== 'true'
+        )
+          throw new Error('Checkout is not available in this preview.');
+        busy = true;
+        retry.hidden = true;
+        location.replace(
+          await createStripeRedirect(selection, { storage: sessionStorage }),
+        );
+      } catch {
+        message.textContent =
+          'Stripe Checkout could not open. Please try again or return to pricing.';
+        retry.hidden = false;
+      } finally {
+        busy = false;
+      }
+    };
+    redirect
+      .querySelector('[data-retry-checkout]')!
+      .addEventListener('click', launch);
+    void launch();
+  } else {
+    redirect.hidden = true;
+    panel.hidden = false;
+    const message = panel.querySelector<HTMLElement>('[data-purchase-status]')!;
+    let saved: ReturnType<typeof readCheckoutRequest>;
+    try {
+      saved = readCheckoutRequest(purchaseId, sessionStorage);
+    } catch {
+      /* Recovery message below handles unavailable storage. */
+    }
+    let verifying = false;
+    const verify = async () => {
+      if (verifying) return;
+      verifying = true;
+      if (!saved) {
+        message.textContent =
+          'Open this confirmation in the browser where you checked out, or contact support with your Stripe receipt.';
+        verifying = false;
+        return;
+      }
+      try {
+        panel.querySelector<HTMLElement>('[data-purchase-ready]')!.hidden =
+          true;
+        panel.querySelector<HTMLElement>('[data-number-confirmation]')!.hidden =
+          true;
+        const response = await fetch(
+          'https://calls.consuelohq.com/v1/public/billing/purchase/' +
+            encodeURIComponent(purchaseId),
+          {
+            headers: { 'X-Purchase-Claim': saved.claimToken },
+            signal: AbortSignal.timeout(20000),
+          },
+        );
+        if (!response.ok) throw new Error('Purchase unavailable');
+        const result: unknown = await response.json();
+        const confirmation = purchaseConfirmation(result);
+        if (!confirmation.paid) {
+          message.textContent =
+            confirmation.status === 'expired'
+              ? 'This Checkout session expired. Return to pricing to start again.'
+              : 'Stripe has not confirmed payment yet. You can check again in a moment.';
+          return;
+        }
+        if (confirmation.needsNumbers) {
+          const numbers = panel.querySelector<HTMLElement>(
+            '[data-number-confirmation]',
+          )!;
+          numbers.hidden = false;
+          numbers.querySelector<HTMLElement>(
+            '[data-number-status]',
+          )!.textContent = confirmation.paymentPending
+            ? 'Stripe is waiting for the number-pack payment. Check again after resolving payment in Stripe.'
+            : 'Your calling plan is paid. Your selected number pack still needs confirmation.';
+          const button = numbers.querySelector<HTMLButtonElement>(
+            '[data-confirm-numbers]',
+          )!;
+          button.disabled =
+            !confirmation.canConnect || confirmation.paymentPending;
+          const next = numberConfirmationRedirect(
+            purchaseId,
+            confirmation,
+            query,
+            sessionStorage,
+          );
+          if (next) {
+            location.replace(next);
+            return;
+          }
+        }
+        if (confirmation.claimed) {
+          message.textContent = confirmation.needsNumbers
+            ? 'Your calling plan is connected to GoHighLevel. You can finish the number pack separately.'
+            : 'Your purchase is connected to GoHighLevel. Open your dialer to manage the team.';
+          if (confirmation.clearClaim) {
+            sessionStorage.removeItem('consuelo-checkout:' + purchaseId);
+            sessionStorage.removeItem(
+              'consuelo-number-confirmation:' + purchaseId,
+            );
+          }
+          return;
+        }
+        if (!confirmation.canConnect) {
+          message.textContent =
+            'Open Stripe billing to resolve your plan payment, then check again.';
+          return;
+        }
+        if (!result || typeof result !== 'object')
+          throw new Error('Invalid purchase response');
+        if (!('installUrl' in result) || typeof result.installUrl !== 'string')
+          throw new Error('Installation link unavailable');
+        const install = new URL(result.installUrl);
+        if (
+          install.protocol !== 'https:' ||
+          install.username ||
+          install.password ||
+          install.port ||
+          ![
+            'marketplace.leadconnectorhq.com',
+            'marketplace.gohighlevel.com',
+          ].includes(install.hostname)
+        )
+          throw new Error('Invalid installation link');
+        message.textContent = confirmation.needsNumbers
+          ? 'Your calling-plan payment is confirmed.'
+          : 'Payment confirmed.';
+        panel.querySelector<HTMLElement>('[data-purchase-ready]')!.hidden =
+          false;
+        panel.querySelector<HTMLInputElement>('[data-purchase-code]')!.value =
+          purchaseId + '.' + saved.claimToken;
+        panel.querySelector<HTMLAnchorElement>('[data-connect-ghl]')!.href =
+          install.href;
+      } catch {
+        message.textContent =
+          'Payment confirmation is temporarily unavailable. Check again; do not submit another payment.';
+      } finally {
+        verifying = false;
+      }
+    };
+    panel
+      .querySelector('[data-retry-purchase]')!
+      .addEventListener('click', verify);
+    panel
+      .querySelector<HTMLButtonElement>('[data-confirm-numbers]')!
+      .addEventListener('click', async () => {
+        if (!saved) return;
+        const button = panel.querySelector<HTMLButtonElement>(
+          '[data-confirm-numbers]',
+        )!;
+        button.disabled = true;
+        try {
+          const response = await fetch(
+            'https://calls.consuelohq.com/v1/public/billing/purchase/' +
+              encodeURIComponent(purchaseId) +
+              '/numbers',
+            {
+              method: 'POST',
+              headers: { 'X-Purchase-Claim': saved.claimToken },
+              signal: AbortSignal.timeout(20000),
+            },
+          );
+          if (!response.ok) throw new Error('Stripe confirmation unavailable');
+          const value: unknown = await response.json();
+          if (!value || typeof value !== 'object' || !('url' in value))
+            throw new Error('Stripe confirmation unavailable');
+          const validated = purchaseConfirmation({
+            paid: true,
+            status: 'active',
+            allSelectedPaid: false,
+            nextPortalUrl: value.url,
+          });
+          if (!validated.portalUrl)
+            throw new Error('Stripe confirmation unavailable');
+          sessionStorage.setItem(
+            'consuelo-number-confirmation:' + purchaseId,
+            'opened',
+          );
+          location.assign(validated.portalUrl);
+        } catch {
+          message.textContent =
+            'Stripe confirmation could not open. Check payment again before trying once more.';
+          button.disabled = false;
+        }
+      });
+    panel
+      .querySelector('[data-copy-purchase]')!
+      .addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(
+            panel.querySelector<HTMLInputElement>('[data-purchase-code]')!
+              .value,
+          );
+          message.textContent =
+            'Setup code copied. Paste it in Consuelo Dialer settings.';
+        } catch {
+          message.textContent =
+            'Copy is unavailable. Select the setup code and copy it manually.';
+          panel.querySelector<HTMLInputElement>('[data-purchase-code]')!.type =
+            'text';
+        }
+      });
+    void verify();
+  }
 </script>
+<style>
+  .checkout-page {
+    width: min(48rem, calc(100% - 2rem));
+    margin: auto;
+    padding: 12rem 0 5rem;
+    color: var(--site-color-ink);
+  }
+  .checkout-panel {
+    padding: clamp(1.5rem, 5vw, 3rem);
+    border-radius: 0.5rem;
+    background: var(--site-color-surface);
+  }
+  .checkout-panel h1,
+  .checkout-panel h2 {
+    font: 450 clamp(2rem, 5vw, 3.5rem)/1.05 var(--site-font-display);
+    margin: 0 0 1.5rem;
+  }
+  .checkout-panel p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+  .checkout-panel a,
+  .checkout-panel button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: inherit;
+    font: inherit;
+    margin: 0.5rem 1rem 0.5rem 0;
+  }
+  .checkout-panel button {
+    padding: 0.8rem 1rem;
+    border: 1px solid currentColor;
+    background: transparent;
+    cursor: pointer;
+  }
+  .checkout-panel :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+  }
+  .setup-code-label {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+  }
+  .setup-code-label input {
+    width: 100%;
+    padding: 0.9rem;
+    border: 1px solid var(--site-color-line-strong);
+    border-radius: 0.25rem;
+    font: inherit;
+  }
+  .checkout-panel [hidden] {
+    display: none;
+  }
+</style>

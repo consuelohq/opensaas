@@ -3,6 +3,7 @@ import bodoniLatinUrl from '@fontsource-variable/bodoni-moda/files/bodoni-moda-l
 import interLatinUrl from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import SeoHead from '../components/SeoHead.astro';
 import SiteSmoothScroll from '../components/site/SiteSmoothScroll.astro';
+import StripeCheckoutLauncher from '../components/site/StripeCheckoutLauncher.astro';
 import { siteMetadata } from '../lib/site-seo';
 import { posthogKey, posthogHost } from '../config/analytics';
 import '../styles/tokens.css';
@@ -129,10 +130,13 @@ const landingFontFaces = `
           }
         });
         // custom tracking — section visibility
-        if (window.IntersectionObserver) {
+        function observeSections() {
+          if (!window.IntersectionObserver || window.__consueloSectionObserver) return;
+          var viewedSections = new WeakSet();
           var obs = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
-              if (entry.isIntersecting) {
+              if (entry.isIntersecting && !viewedSections.has(entry.target)) {
+                viewedSections.add(entry.target);
                 posthog.capture('section_viewed', {
                   section: entry.target.getAttribute('data-section') || entry.target.id,
                   page: window.location.pathname
@@ -141,13 +145,20 @@ const landingFontFaces = `
               }
             });
           }, { threshold: 0.3 });
+          window.__consueloSectionObserver = obs;
           document.querySelectorAll('[data-section], section[id]').forEach(function(el) { obs.observe(el); });
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', observeSections, { once: true });
+        } else {
+          observeSections();
         }
       </script>
     )}
   </head>
   <body>
     <SiteSmoothScroll />
+    <StripeCheckoutLauncher />
     <div class="launch-shell">
       <slot />
     </div>

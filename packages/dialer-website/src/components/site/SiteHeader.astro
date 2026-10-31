@@ -3,53 +3,225 @@ import { Icon } from 'astro-icon/components';
 import { siteLinks } from '../../data/site-links';
 import { osSiteHeaderLinks } from '../../data/site-navigation';
 
-const [consueloLink, docsLink, pricingLink, cloudLink] = osSiteHeaderLinks.desktop;
+const [consueloLink, docsLink, pricingLink, cloudLink] =
+  osSiteHeaderLinks.desktop;
 const [mobileDocsLink, mobileCloudLink] = osSiteHeaderLinks.mobile;
 ---
 
 <header class="os-header" data-os-header>
-  <nav class="os-header__desktop" aria-label={osSiteHeaderLinks.primaryAriaLabel}>
-    <a class="os-header__desktop-link" href={consueloLink.href}>{consueloLink.label}</a>
+  <nav
+    class="os-header__desktop"
+    aria-label={osSiteHeaderLinks.primaryAriaLabel}
+  >
+    <a class="os-header__desktop-link" href={consueloLink.href}
+      >{consueloLink.label}</a
+    >
     <a class="os-header__desktop-link" href={docsLink.href}>{docsLink.label}</a>
 
     <div class="os-header__identity">
-      <a class="os-header__wordmark" href="/" aria-label={osSiteHeaderLinks.wordmarkAriaLabel}>
+      <a
+        class="os-header__wordmark"
+        href="/"
+        aria-label={osSiteHeaderLinks.wordmarkAriaLabel}
+      >
         <span>CONSUELO</span>
         <span>DIALER</span>
       </a>
-      <div class="os-header__socials" aria-label={osSiteHeaderLinks.communityAriaLabel}>
-        <a href={siteLinks.discord} target="_blank" rel="noreferrer" aria-label="Discord">
+      <div
+        class="os-header__socials"
+        aria-label={osSiteHeaderLinks.communityAriaLabel}
+      >
+        <a
+          href={siteLinks.discord}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Discord"
+        >
           <Icon name="tabler:brand-discord-filled" />
         </a>
-        <a href={siteLinks.github} target="_blank" rel="noreferrer" aria-label="GitHub">
+        <a
+          href={siteLinks.github}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="GitHub"
+        >
           <Icon name="tabler:brand-github" />
         </a>
       </div>
     </div>
 
-    <a class="os-header__desktop-link" href={pricingLink.href}>{pricingLink.label}</a>
-    <a class="os-header__desktop-link" href={cloudLink.href}>{cloudLink.label}</a>
+    <a class="os-header__desktop-link" href={pricingLink.href}
+      >{pricingLink.label}</a
+    >
+    <a class="os-header__desktop-link" href={cloudLink.href}
+      >{cloudLink.label}</a
+    >
   </nav>
 
-  <nav class="os-header__mobile" aria-label={osSiteHeaderLinks.mobilePrimaryAriaLabel}>
-    <a class="os-header__side-link" href={mobileDocsLink.href}>{mobileDocsLink.label}</a>
+  <nav
+    class="os-header__mobile"
+    aria-label={osSiteHeaderLinks.mobilePrimaryAriaLabel}
+  >
+    <a class="os-header__side-link" href={mobileDocsLink.href}
+      >{mobileDocsLink.label}</a
+    >
     <div class="os-header__mobile-identity">
-      <a class="os-header__mobile-wordmark" href="/" aria-label={osSiteHeaderLinks.wordmarkAriaLabel}>
+      <a
+        class="os-header__mobile-wordmark"
+        href="/"
+        aria-label={osSiteHeaderLinks.wordmarkAriaLabel}
+      >
         <span>CONSUELO</span>
         <span>DIALER</span>
       </a>
-      <div class="os-header__socials os-header__mobile-socials" aria-label={osSiteHeaderLinks.communityAriaLabel}>
-        <a href={siteLinks.discord} target="_blank" rel="noreferrer" aria-label="Discord">
+      <div
+        class="os-header__socials os-header__mobile-socials"
+        aria-label={osSiteHeaderLinks.communityAriaLabel}
+      >
+        <a
+          href={siteLinks.discord}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Discord"
+        >
           <Icon name="tabler:brand-discord-filled" />
         </a>
-        <a href={siteLinks.github} target="_blank" rel="noreferrer" aria-label="GitHub">
+        <a
+          href={siteLinks.github}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="GitHub"
+        >
           <Icon name="tabler:brand-github" />
         </a>
       </div>
     </div>
-    <a class="os-header__side-link" href={mobileCloudLink.href}>{mobileCloudLink.label}</a>
+    <a class="os-header__side-link" href={mobileCloudLink.href}
+      >{mobileCloudLink.label}</a
+    >
   </nav>
 </header>
+
+<nav
+  class="returning-nav"
+  aria-label="Quick navigation"
+  data-returning-nav
+  inert
+  aria-hidden="true"
+>
+  <a class="returning-nav__brand" href="/" aria-label="Consuelo Dialer home"
+    >CONSUELO <span>DIALER</span></a
+  >
+  <div class="returning-nav__links">
+    <a href="/#features">Features</a>
+    <a href={siteLinks.docs}>Docs</a>
+    <a href="/pricing">Pricing</a>
+  </div>
+  <a class="returning-nav__start" href="/get-started"
+    >Get started <span aria-hidden="true">↗</span></a
+  >
+</nav>
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-returning-nav]');
+  const target = document.querySelector<HTMLElement>('[data-feature-story]');
+  if (nav && target) {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const shown =
+        target.getBoundingClientRect().top <= window.innerHeight * 0.75;
+      nav.dataset.visible = String(shown);
+      nav.toggleAttribute('inert', !shown);
+      nav.setAttribute('aria-hidden', String(!shown));
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    window.addEventListener('pageshow', schedule);
+    update();
+  }
+</script>
+<style>
+  .returning-nav {
+    position: fixed;
+    z-index: var(--site-z-header);
+    inset: var(--site-space-3) var(--site-frame-inset) auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--site-space-5);
+    min-height: var(--dialer-returning-nav-height);
+    padding: var(--site-space-3) var(--site-space-5);
+    background: var(--site-color-brand);
+    color: var(--site-color-on-brand);
+    box-shadow: var(--site-shadow-dropdown);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(calc(-1 * var(--site-space-4)));
+    transition:
+      opacity var(--site-motion-medium) var(--site-ease-standard),
+      transform var(--site-motion-medium) var(--site-ease-emphasized),
+      visibility var(--site-motion-medium);
+  }
+  .returning-nav[data-visible='true'] {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .returning-nav a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .returning-nav a:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: var(--site-space-1);
+  }
+  .returning-nav__brand {
+    font: 500 var(--site-text-lg)/1 var(--site-font-display);
+  }
+  .returning-nav__brand span {
+    display: block;
+  }
+  .returning-nav__links {
+    display: flex;
+    gap: var(--site-space-6);
+    font-size: var(--site-text-sm);
+  }
+  .returning-nav__start {
+    padding: var(--site-space-3) var(--site-space-4);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand) !important;
+    font: 600 var(--site-text-xs)/1 var(--site-font-mono);
+  }
+  @media (max-width: 760px) {
+    .returning-nav {
+      gap: var(--site-space-3);
+      padding-inline: var(--site-space-3);
+    }
+    .returning-nav__links {
+      gap: var(--site-space-3);
+      font-size: var(--site-text-xs);
+    }
+    .returning-nav__brand {
+      font-size: var(--site-text-sm);
+    }
+    .returning-nav__start {
+      padding-inline: var(--site-space-2);
+      font-size: var(--site-text-xs);
+    }
+    .returning-nav__links a:first-child {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .returning-nav {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>
 
 <style>
   .os-header {
