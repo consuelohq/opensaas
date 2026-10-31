@@ -2,6 +2,32 @@
   "version": 1,
   "rules": [
     {
+      "id": "os-stream-context-compact",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/streams/cli.ts",
+        "packages/os/scripts/lib/streams/context-runtime.ts",
+        "packages/os/scripts/lib/streams/context-compact.js",
+        "packages/os/tools/stream/handler.ts",
+        "packages/workspace/scripts/stream-context.js",
+        "packages/workspace/scripts/lib/stream-context-compact.js",
+        "packages/workspace/tests/stream-context-compact.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS and Workspace stream.context compact and complete contracts",
+          "command": [
+            "bun", "x", "vitest", "run",
+            "packages/workspace/tests/stream-context-compact.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/tool-manifest.test.ts"
+          ]
+        }
+      ],
+      "reason": "Stream context changes must retain complete task metadata, critical tool contracts, and parity without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "workspace-facade",
       "critical": true,
       "source": [

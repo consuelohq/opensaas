@@ -2,17 +2,17 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 717,
-    "mappedTestCount": 634,
+    "testFileCount": 719,
+    "mappedTestCount": 636,
     "unmappedTestCount": 83,
-    "ruleCount": 84,
-    "explicitRuleCount": 71,
+    "ruleCount": 85,
+    "explicitRuleCount": 72,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 329,
-      "packages/workspace/tests": 68,
+      "packages/os/tests": 330,
+      "packages/workspace/tests": 69,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -99,7 +99,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 653,
+      "test": 655,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -109,6 +109,36 @@
     }
   },
   "rules": [
+    {
+      "id": "os-stream-context-compact",
+      "source": [
+        "packages/os/scripts/lib/streams/cli.ts",
+        "packages/os/scripts/lib/streams/context-runtime.ts",
+        "packages/os/scripts/lib/streams/context-compact.js",
+        "packages/os/tools/stream/handler.ts",
+        "packages/workspace/scripts/stream-context.js",
+        "packages/workspace/scripts/lib/stream-context-compact.js",
+        "packages/workspace/tests/stream-context-compact.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS and Workspace stream.context compact and complete contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/stream-context-compact.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/tool-manifest.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Stream context changes must retain complete task metadata, critical tool contracts, and parity without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
     {
       "id": "workspace-facade",
       "source": [
@@ -5236,6 +5266,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/linear-tooling-regression.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/linux-ingress-continuity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6722,6 +6757,11 @@
     },
     {
       "path": "packages/workspace/tests/session-start-compatibility.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/stream-context-compact.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
