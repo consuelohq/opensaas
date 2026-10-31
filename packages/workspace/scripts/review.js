@@ -14,6 +14,8 @@ const { computeVerificationState } = require('./lib/verification');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
 const { findDocumentationOpportunities } = require('./lib/review-documentation');
 const { runSelectedReviewTests } = require('./lib/review-tests');
+const { getChangedLinesByFile } = require('./lib/review-changed-lines');
+const { parseTypecheckFailure } = require('./lib/review-typecheck-errors');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 let outputCapture = null;
 let activeReviewRun = null;
@@ -198,26 +200,6 @@ function getChangedRepoFiles(base) {
 
 function getChangedFiles(base) {
   return getChangedRepoFiles(base).filter(isReviewableFile);
-}
-
-function addChangedLineNumbers(lines, args) {
-  const diff = run('git', args);
-  for (const line of diff.split('\n')) {
-    const m = line.match(/^@@\s+-\d+(?:,\d+)?\s+\+(\d+)(?:,(\d+))?\s+@@/);
-    if (m) {
-      const start = parseInt(m[1], 10);
-      const count = m[2] ? parseInt(m[2], 10) : 1;
-      for (let i = start; i < start + count; i++) lines.add(i);
-    }
-  }
-}
-
-function getChangedLineNumbers(base, file) {
-  const lines = new Set();
-  addChangedLineNumbers(lines, ['diff', '-U0', `${base}...HEAD`, '--', file]);
-  addChangedLineNumbers(lines, ['diff', '-U0', 'HEAD', '--', file]);
-  addChangedLineNumbers(lines, ['diff', '-U0', '--staged', '--', file]);
-  return lines;
 }
 
 function getAllTsFiles(root) {
@@ -541,26 +523,7 @@ function runTypecheck(files) {
         stdio: ['pipe', 'pipe', 'pipe'],
       });
     } catch (err) {
-      const output = (err.stdout || '') + (err.stderr || '');
-      const errorLines = output.split('\n').filter((line) => /error TS\d+/.test(line));
-
-      for (const errLine of errorLines) {
-        const m = errLine.match(/([^(]+)\((\d+),\d+\):\s*error\s+(TS\d+):\s*(.*)/);
-        if (m) {
-          const relFile = path.relative(root, m[1].trim()).split(path.sep).join('/');
-          findings.push({ file: relFile, line: parseInt(m[2], 10), rule: 'TYPECHECK', msg: `${m[3]}: ${m[4]}` });
-        } else {
-          const m2 = errLine.match(/([^:]+):(\d+):\d+\s*-\s*error\s+(TS\d+):\s*(.*)/);
-          if (m2) {
-            const relFile = path.relative(root, m2[1].trim()).split(path.sep).join('/');
-            findings.push({ file: relFile, line: parseInt(m2[2], 10), rule: 'TYPECHECK', msg: `${m2[3]}: ${m2[4]}` });
-          }
-        }
-      }
-
-      if (errorLines.length === 0 && output.includes('error')) {
-        findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: `typecheck failed for ${project.name}: ${output}` });
-      }
+      findings.push(...parseTypecheckFailure({ repoRoot: root, projectName: project.name, error: err }));
     }
   }
 
@@ -930,10 +893,9 @@ async function main() {
   }
 
   // get changed line numbers for yours/not-yours split
-  const changedLines = new Map();
-  for (const file of files) {
-    changedLines.set(file, getChangedLineNumbers(base, file));
-  }
+  const changedLines = args.all
+    ? new Map(files.map((file) => [file, new Set()]))
+    : getChangedLinesByFile(base, files);
 
   // run static checks on changed files
   const allFindings = [];

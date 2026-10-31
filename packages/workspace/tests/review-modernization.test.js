@@ -196,6 +196,8 @@ test('review implementation and test changes select the dedicated critical revie
       'packages/workspace/scripts/review.js',
       'packages/workspace/scripts/lib/review-tests.js',
       'packages/workspace/scripts/lib/nx-projects.js',
+      'packages/workspace/scripts/lib/review-changed-lines.js',
+      'packages/workspace/scripts/lib/review-typecheck-errors.js',
       'packages/workspace/tests/review-modernization.test.js',
     ]) {
       expect(review.source).toContain(file);
@@ -257,4 +259,134 @@ test('test selector all-mode selects unchanged code across packages, rather than
   const report = JSON.parse(child.stdout);
   expect(report.changedFiles).toContain('packages/dialer/src/runtime.ts');
   expect(report.selectedSuites.map((suite) => suite.name)).toEqual(['dialer Bun test']);
+});
+
+
+describe('batched changed-line attribution', () => {
+  test('merges committed, unstaged and staged hunks in just three Git calls for multiple files', () => {
+    const { getChangedLinesByFile } = require('../scripts/lib/review-changed-lines.js');
+    const files = [
+      'packages/workspace/scripts/one.ts',
+      'packages/workspace/scripts/space file.ts',
+      'packages/workspace/scripts/new-name.ts',
+    ];
+    const committed = [
+      'diff --git a/packages/workspace/scripts/one.ts b/packages/workspace/scripts/one.ts',
+      '--- a/packages/workspace/scripts/one.ts',
+      '+++ b/packages/workspace/scripts/one.ts',
+      '@@ -2,0 +3,2 @@',
+      '+one', '+two',
+      'diff --git a/packages/workspace/scripts/old-name.ts b/packages/workspace/scripts/new-name.ts',
+      '--- a/packages/workspace/scripts/old-name.ts',
+      '+++ b/packages/workspace/scripts/new-name.ts',
+      '@@ -8,1 +8 @@',
+      '+renamed',
+    ].join('\n');
+    const working = [
+      'diff --git a/packages/workspace/scripts/space file.ts b/packages/workspace/scripts/space file.ts',
+      '--- a/packages/workspace/scripts/space file.ts',
+      '+++ b/packages/workspace/scripts/space file.ts',
+      '@@ -5,0 +6 @@',
+      '+working',
+    ].join('\n');
+    const staged = [
+      'diff --git a/packages/workspace/scripts/one.ts b/packages/workspace/scripts/one.ts',
+      '--- a/packages/workspace/scripts/one.ts',
+      '+++ b/packages/workspace/scripts/one.ts',
+      '@@ -10,0 +11 @@',
+      '+staged',
+    ].join('\n');
+    const calls = [];
+    const exec = (cmd, args) => {
+      calls.push([cmd, ...args]);
+      if (args.includes('--staged')) return staged;
+      if (args.includes('HEAD')) return working;
+      return committed;
+    };
+    const changed = getChangedLinesByFile('origin/stream/os', files, { exec });
+    expect(calls).toHaveLength(3);
+    expect([...changed.get(files[0])].sort((a, b) => a - b)).toEqual([3, 4, 11]);
+    expect([...changed.get(files[1])]).toEqual([6]);
+    expect([...changed.get(files[2])]).toEqual([8]);
+  });
+
+  test('does not invoke Git for an empty file selection', () => {
+    const { getChangedLinesByFile } = require('../scripts/lib/review-changed-lines.js');
+    expect(getChangedLinesByFile('origin/stream/os', [], {
+      exec: () => { throw new Error('should never spawn Git'); },
+    }).size).toBe(0);
+  });
+
+  test('chunks large file selections instead of exceeding process argv limits', () => {
+    const { getChangedLinesByFile } = require('../scripts/lib/review-changed-lines.js');
+    const calls = [];
+    const files = ['a.ts', 'b.ts', 'c.ts', 'd.ts', 'e.ts'];
+    const changed = getChangedLinesByFile('origin/main', files, {
+      batchSize: 2,
+      exec: (cmd, args) => { calls.push(args); return ''; },
+    });
+    expect(changed.size).toBe(5);
+    expect(calls).toHaveLength(9);
+    expect(calls.every((args) => args.includes('--'))).toBe(true);
+  });
+
+  test('Git failures fail closed instead of treating files as having no changed lines', () => {
+    const { getChangedLinesByFile } = require('../scripts/lib/review-changed-lines.js');
+    expect(() => getChangedLinesByFile('not-a-real-ref', ['a.ts'], {
+      exec: () => { throw new Error('fatal: bad revision'); },
+    })).toThrow(/bad revision|Git diff failed/);
+  });
+});
+
+describe('failed typecheck diagnostics', () => {
+  test('normalizes absolute and relative TypeScript diagnostics without dropping errors', () => {
+    const { parseTypecheckFailure } = require('../scripts/lib/review-typecheck-errors.js');
+    const repoRoot = fixture();
+    const absolute = path.join(repoRoot, 'packages/os/src/a.ts');
+    const failures = parseTypecheckFailure({
+      repoRoot, projectName: '@consuelo/os',
+      error: {
+        stdout: [
+          absolute + '(13,5): error TS2322: absolute path type mismatch',
+          'packages/os/src/b.ts(20,4): error TS2551: relative path error',
+          'packages/os/src/c.ts:8:3 - error TS7006: colon style issue',
+        ].join('\n'),
+        stderr: '',
+      },
+    });
+    expect(failures).toHaveLength(3);
+    expect(failures.map((f) => f.file)).toEqual([
+      'packages/os/src/a.ts', 'packages/os/src/b.ts', 'packages/os/src/c.ts',
+    ]);
+    expect(failures.map((f) => f.line)).toEqual([13, 20, 8]);
+    expect(failures.every((f) => f.rule === 'TYPECHECK')).toBe(true);
+  });
+
+  test('failed compiler with empty output is a blocking diagnostic', () => {
+    const { parseTypecheckFailure } = require('../scripts/lib/review-typecheck-errors.js');
+    const findings = parseTypecheckFailure({
+      repoRoot: fixture(), projectName: 'workspace',
+      error: { stdout: '', stderr: '', message: 'process exited with code 1' },
+    });
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({ file: '', line: 0, rule: 'TYPECHECK' });
+    expect(findings[0].msg).toMatch(/workspace|exited/i);
+  });
+
+  test('unknown TypeScript diagnostic output is surfaced, never silently swallowed', () => {
+    const { parseTypecheckFailure } = require('../scripts/lib/review-typecheck-errors.js');
+    const findings = parseTypecheckFailure({
+      repoRoot: fixture(), projectName: '@consuelo/dialer',
+      error: { stdout: 'error TS9999: compiler plugin failed before file attribution', stderr: '' },
+    });
+    expect(findings.some((f) => /TS9999/.test(f.msg))).toBe(true);
+    expect(findings.every((f) => f.rule === 'TYPECHECK')).toBe(true);
+  });
+
+  test('reviewer integrates batched changed lines and explicit compiler-error parser', () => {
+    const source = fs.readFileSync(path.resolve(import.meta.dirname, '../scripts/review.js'), 'utf8');
+    expect(source).toContain('getChangedLinesByFile(base, files)');
+    expect(source).toContain('parseTypecheckFailure({ repoRoot: root, projectName: project.name, error: err })');
+    expect(source).not.toContain('changedLines.set(file, getChangedLineNumbers(base, file))');
+  });
 });
