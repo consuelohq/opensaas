@@ -975,7 +975,27 @@ export const createNativeCheckout = (input: {
             await minuteCheckout.reconcile(
               (await minuteStore.get(String(intent.id)))!,
             );
-          } else await reconcile(purchase!);
+          } else {
+            if (
+              !purchase!.provider_session_id &&
+              metadata.component === 'base' &&
+              metadata.catalogVersion === nativeBillingVersion &&
+              typeof object.id === 'string' &&
+              object.id.startsWith('cs_')
+            ) {
+              const recovered = await input.provider.retrieveSession(object.id);
+              if (
+                recovered.mode !== 'subscription' ||
+                recovered.metadata.enrollmentId !== purchase!.id ||
+                recovered.metadata.catalogVersion !== nativeBillingVersion ||
+                recovered.metadata.component !== 'base'
+              )
+                throw new Error('PURCHASE_PROVIDER_MISMATCH');
+              await input.store.saveSession(String(purchase!.id), recovered.id);
+              purchase = (await input.store.get(String(purchase!.id)))!;
+            }
+            await reconcile(purchase!);
+          }
           await input.store.database.query(
             'UPDATE dialer_public_purchase_events SET processed_at=now(),last_error_code=NULL WHERE provider_event_id=$1',
             [event.id],

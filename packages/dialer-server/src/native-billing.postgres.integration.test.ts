@@ -616,6 +616,44 @@ suite(
         );
         expect(Number(oldMonth.quota)).toBe(1000);
         expect(Number(oldMonth.debit_minutes)).toBe(250);
+        // A signed provider fact recovers a base session whose response was lost before persistence.
+        loseBaseResponse = true;
+        const recoveryId = randomUUID(),
+          recoveryToken = randomBytes(32).toString('base64url');
+        await expect(
+          checkout.create(
+            {
+              version: 1,
+              requestId: recoveryId,
+              claimToken: recoveryToken,
+              selection: {
+                plan: 'professional',
+                billing: 'monthly',
+                seats: 1,
+                mercurySeats: 0,
+                minutePack: 0,
+                numberPack: 0,
+              },
+            },
+            context,
+          ),
+        ).rejects.toThrow('NETWORK_TIMEOUT');
+        const lost = [...sessions.values()].find(
+          (session) => session.metadata.enrollmentId === recoveryId,
+        )!;
+        pay(lost.id);
+        expect((await store.get(recoveryId))?.provider_session_id).toBeNull();
+        await checkout.webhook({
+          id: 'evt_lost_base_completed',
+          type: 'checkout.session.completed',
+          data: { object: { id: lost.id, metadata: lost.metadata } },
+        });
+        expect((await checkout.status(recoveryId, recoveryToken)).paid).toBe(
+          true,
+        );
+        expect((await store.get(recoveryId))?.provider_session_id).toBe(
+          lost.id,
+        );
       });
     }, 60000);
   },

@@ -15,7 +15,32 @@ started: 2026-10-31
 
 ## files changed
 
-- none yet
+- `packages/dialer-server/src/billing/public-checkout.ts`
+- `packages/dialer-server/src/commercial/application.ts`
+- `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/routes/public-checkout.ts`
+- `packages/dialer-server/src/runtime/railway.ts`
+- `packages/lead-connector/src/embed/api-client.ts`
+- `packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts`
+- `packages/lead-connector/src/embed/controller.ts`
+- `packages/lead-connector/src/embed/internal-main.ts`
+- `packages/lead-connector/src/embed/state-machine.ts`
+- `packages/lead-connector/src/embed/workspace-pages.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/dialer-server/scripts/verify-native-billing.ts`
+- `packages/dialer-server/src/billing/native-billing-catalog.ts`
+- `packages/dialer-server/src/billing/native-billing-store.ts`
+- `packages/dialer-server/src/billing/native-checkout.ts`
+- `packages/dialer-server/src/billing/native-minute-checkout.ts`
+- `packages/dialer-server/src/billing/native-minute-store.ts`
+- `packages/dialer-server/src/billing/stripe-public-provider.ts`
+- `packages/dialer-server/src/native-billing.acceptance.test.ts`
+- `packages/dialer-server/src/native-billing.postgres.integration.test.ts`
+- `packages/dialer-server/src/test-support/disposable-commercial-postgres.ts`
+
 
 ## key decisions
 
@@ -78,3 +103,5 @@ A selected initial paid number pack continues through Stripe's native subscripti
 - Strict review and full verify passed; native SQL scenarios are also added to critical test selection so their opt-in gates cannot be silently skipped for billing edits.
 - Creation flag stays disabled until live versioned catalog, native-aware backend and website consumer are all validated. Current production UI/source e64cfa preserved.
 - 2026-10-31 01:36:32 `verify`: passed — OK
+- 2026-10-31 01:38:14 `verify`: passed — OK
+- 2026-10-31 01:40:06 `verify`: passed — OK
