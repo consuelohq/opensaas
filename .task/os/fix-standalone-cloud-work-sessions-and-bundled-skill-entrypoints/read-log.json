@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/fix-standalone-cloud-work-sessions-and-bundled-skill-entrypoints/workpad.md",
+    "packages/os/definitely-missing.json",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/code-call/service.ts",
+    "packages/os/scripts/lib/workspace-project-cwd.ts",
+    "packages/workspace/scripts/lib/verify-run-state.js"
+  ],
+  "updatedAt": "2026-10-31T07:27:13.668Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-standalone-cloud-work-sessions-and-bundled-skill-entrypoints",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2750,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2750",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-standalone-cloud-work-sessions-and-bundled-skill-entrypoints",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_95381b17c142",
+  "tmuxSession": "opensaas-os-fix-standalone-cloud-work-sessions-and-bundled-s-95381b17",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-standalone-cloud-work-sessions-and-bundled-skill-entrypoints/.task/session.json",
+  "createdAt": "2026-10-31T06:59:00.904Z"
+}

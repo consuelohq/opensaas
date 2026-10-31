@@ -257,6 +257,36 @@ describe('session.start foundation', () => {
     expect(existsSync(metadata.path)).toBe(true);
   });
 
+  it('should start a work session from a signed runtime without a Git checkout', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
+    tempRoots.push(root);
+    const home = join(root, '.consuelo');
+    const runtimeRoot = join(root, 'signed-release', 'runtime');
+    mkdirSync(join(runtimeRoot, 'skills'), { recursive: true });
+    const layout = resolveConsueloHomeLayout(home);
+    writeYamlConfig(
+      layout.nodeConfigPath,
+      createDefaultNodeYamlConfig({
+        nodeId: 'node_cloud_test',
+        nodeName: 'Cloud Test',
+        workspaceId: 'workspace_cloud_test',
+      }),
+      false,
+    );
+
+    const metadata = startWorkSession({
+      home,
+      userHome: root,
+      managedRepoRoot: runtimeRoot,
+      title: 'Signed Runtime',
+      randomUUID: () => '12345678-1234-4234-9234-123456789abc',
+    });
+
+    expect(metadata.ownerNodeId).toBe('node_cloud_test');
+    expect(existsSync(metadata.path)).toBe(true);
+    expect(metadata.path).not.toContain(runtimeRoot);
+  });
+
   it('should create a missing explicit ordinary directory before starting a work session', () => {
     const root = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
     tempRoots.push(root);
