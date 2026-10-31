@@ -27,10 +27,6 @@ type SteeringSnapshotCacheEntry = {
 
 const snapshotCache = new Map<string, SteeringSnapshotCacheEntry>();
 
-function safeJson(value: unknown): string {
-  return JSON.stringify(value, null, 2);
-}
-
 function isMissingPathError(error: unknown): boolean {
   return Boolean(
     error
@@ -153,33 +149,32 @@ function buildSteeringSnapshot(input: SteeringSnapshotInput): SteeringSnapshotCa
   }
 
   dependencies.track(manifestOverlayPath(input.home));
+  const catalog = readSteeringSkillCatalog({
+    home: input.home,
+    packageRoot: input.packageRoot,
+    onDependency: dependencies.track,
+  });
   sections.push(
     '',
     '## Installed skills',
     '',
-    'These compact entries describe the active skill catalog. When a request matches a skill trigger, load its entrypoint before proceeding. Skill bodies are not inlined here.',
+    'When a description matches the request, load that skill from the installed Skills directory before using it. Skill bodies are not inlined.',
     '',
-    '```json',
-    safeJson(readSteeringSkillCatalog({
-      home: input.home,
-      packageRoot: input.packageRoot,
-      onDependency: dependencies.track,
-    })),
-    '```',
+    ...catalog.skills.map((skill) =>
+      `- **${skill.title ?? skill.name}**${skill.description ? ` — ${skill.description}` : ''}`
+    ),
+    ...(catalog.truncated ? [`- ${catalog.truncated} more installed skills omitted`] : []),
   );
 
   dependencies.track(path.join(input.packageRoot, 'manifests', 'generated', 'core.manifest.json'));
+  const coreNames = readEffectiveCoreManifest(input.home).tools.map((tool) => tool.name);
   sections.push(
     '',
-    '# tool discovery routing',
+    '## Core tools',
     '',
-    'Use core tools directly when present. Use tools.search when a tool, provider, deployment surface, product area, or workflow is mentioned but is not in core steering.',
+    'Call tools through os.call. Use tools.search with an exact tool name to retrieve its current input signature before an unfamiliar call; use tools.search to discover additional tools by domain.',
     '',
-    '# raw core tool manifest',
-    '',
-    '```json',
-    safeJson(readEffectiveCoreManifest(input.home)),
-    '```',
+    coreNames.join(', '),
   );
 
   return {
