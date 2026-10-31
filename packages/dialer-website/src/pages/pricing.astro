@@ -1,4 +1,5 @@
 ---
+import HomeCloudCta from '../components/home/HomeCloudCta.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import HomeFaq from '../components/home/HomeFaq.astro';
 import PricingIcon from '../components/pricing/PricingIcon.astro';
@@ -277,17 +278,7 @@ import '../styles/pricing.css';
       />
       <PricingTechnology />
     </div>
-    <section class="pricing-close" aria-labelledby="pricing-close-title">
-      <p class="pricing-eyebrow">YOUR NEXT CALLING DAY</p><h2
-        id="pricing-close-title"
-      >
-        Give your team<br />more room to sell.
-      </h2><a class="pricing-button" href="/get-started"
-        >Get started <PricingIcon /></a
-      ><a class="pricing-close__contact" href="/contact"
-        >Plan it with us <PricingIcon /></a
-      >
-    </section>
+    <HomeCloudCta variant="pricing" />
   </main>
 </MarketingLayout>
 <script>

@@ -26,7 +26,7 @@ const technologies = [
     data-technology-strip
     tabindex="0"
     role="region"
-    aria-label="Tools in our stack"
+    aria-label="Tools in our stack — pause on hover or focus"
   >
     <div class="technology-track" data-logo-track>
       {
@@ -52,38 +52,26 @@ const technologies = [
       }
     </div>
   </div>
-  <button
-    class="technology-pause"
-    type="button"
-    data-logo-pause
-    hidden
-    aria-pressed="false">Pause logos</button
-  >
 </section>
 <script>
   const root = document.querySelector<HTMLElement>('[data-logo-carousel]');
   const track = root?.querySelector<HTMLElement>('[data-logo-track]');
-  const button = root?.querySelector<HTMLButtonElement>('[data-logo-pause]');
-  if (root && track && button) {
+  if (root && track) {
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     let animation: Animation | undefined;
-    let paused = false;
     let visible = false;
     let hovering = false;
     const sync = () => {
       if (motion.matches) {
         animation?.cancel();
         animation = undefined;
-        button.hidden = true;
         return;
       }
-      button.hidden = false;
       animation ??= track.animate(
         [{ transform: 'translateX(0)' }, { transform: 'translateX(-50%)' }],
         { duration: 48000, iterations: Infinity, easing: 'linear' },
       );
       if (
-        paused ||
         hovering ||
         !visible ||
         document.hidden ||
@@ -97,12 +85,6 @@ const technologies = [
       sync();
     });
     observer.observe(root);
-    button.addEventListener('click', () => {
-      paused = !paused;
-      button.setAttribute('aria-pressed', String(paused));
-      button.textContent = paused ? 'Play logos' : 'Pause logos';
-      sync();
-    });
     root.addEventListener('mouseenter', () => {
       hovering = true;
       sync();

@@ -1,3 +1,4 @@
+import type { HomeFaqItem } from './dialer-content';
 import { siteLinks } from './site-links';
 export type BillingPeriod = 'monthly' | 'annual';
 export type PlanCode = 'starter' | 'professional' | 'agency' | 'enterprise';
@@ -418,56 +419,241 @@ export const comparisonGroups: ComparisonGroup[] = [
     ],
   },
 ];
-export const pricingFaqItems = [
+export const pricingFaqItems: HomeFaqItem[] = [
   {
     question: 'What is a seat?',
     answer:
       'A seat is one rep using Consuelo. The same seat can make outbound calls and receive routed inbound calls. Choose a plan for your team, then add the reps who need calling access. An administrator can help arrange a team with different requirements.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'A seat is one rep using Consuelo.',
+      },
+      {
+        type: 'list',
+        items: [
+          'The same seat can make outbound calls and receive routed inbound calls.',
+          'Choose a plan for your team, then add the reps who need calling access.',
+          'An administrator can help arrange a team with different requirements.',
+        ],
+      },
+    ],
   },
   {
     question: 'What does Starter include?',
     answer:
       'Starter gives you 100 connected calling minutes in total, one calling line and number, the GoHighLevel integration, and call history. The 100 minutes do not reset each month. Upgrade when you are ready to keep calling.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'A simple way to try a calling day, with no subscription required.',
+      },
+      {
+        type: 'list',
+        items: [
+          '100 connected calling minutes in total — these do not reset each month.',
+          'One calling line and number.',
+          'GoHighLevel integration and call history.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: 'Upgrade when you are ready to keep calling.',
+      },
+    ],
   },
   {
     question: 'Are calling lines and phone numbers charged twice?',
     answer:
       'No. The plan lists them together: Professional includes 3, Agency includes 10, and Enterprise includes 30 per seat. An active number supplies a caller ID for a calling line. A fixed caller ID uses one line. Additional number packs expand your number pool; they do not automatically raise your plan’s parallel calling limit.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'No. Calling lines and numbers are listed together.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Professional: 3 per seat.',
+          'Agency: 10 per seat.',
+          'Enterprise: 30 per seat.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: 'An active number supplies a caller ID for a calling line. A fixed caller ID uses one line. Extra number packs expand your number pool; they do not automatically raise the plan’s parallel calling limit.',
+      },
+    ],
   },
   {
     question: 'How are connected minutes counted?',
     answer:
       'Minutes measure connected customer-call time, rounded up to a whole minute for each call. Paid allowances are per seat and renew monthly. An annual payment does not put all twelve monthly allowances into one pool. The prices shown cover contiguous US local calling; other destinations and number types need a quote.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Minutes measure connected customer-call time, rounded up to a whole minute for each call.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Paid allowances are per seat and renew monthly.',
+          'Annual billing does not combine all twelve monthly allowances into one pool.',
+          'Prices shown cover contiguous US local calling; other destinations and number types need a quote.',
+        ],
+      },
+    ],
   },
   {
     question: 'What if we use all our minutes?',
     answer:
       'Add a minute pack: $10 for 100 minutes, $50 for 600, or $100 for 1,400. Select a pack with your plan, or buy a one-time top-up in Stripe from your dialer’s billing page. Larger packs give you more minutes for the same spend. Contact us for higher-volume calling.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Add a one-time connected-minute pack.',
+      },
+      {
+        type: 'list',
+        items: [
+          '100 minutes — $10.',
+          '600 minutes — $50.',
+          '1,400 minutes — $100.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: 'Select a pack with your plan, or buy a top-up in Stripe from the dialer’s billing page. Larger packs give you more minutes for the same spend. Contact us for higher-volume calling.',
+      },
+    ],
   },
   {
     question: 'Can we use inbound and outbound together?',
     answer:
       'Yes. Your rep’s seat covers both. Outbound helps the team work a contact list; inbound routes customers who call your number. Filter the comparison above to see the features for each calling motion.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Yes. Your rep’s seat covers both.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Outbound: work through a contact list and connect live answers.',
+          'Inbound: route customers who call your number to an eligible rep.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: 'Use the calling-focus filter in the comparison above to see each motion on its own or both together.',
+      },
+    ],
   },
   {
     question: 'What is included in Mercury coaching?',
     answer:
       'Mercury is an optional coaching add-on at $25 per rep per month. Script mode brings up the relevant part of your uploaded playbook. AI mode suggests what to say based on the conversation. Reps and leaders can also upload transcripts for review. Mercury applies to every rep on the selected calling plan. Add or remove it in Stripe.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Mercury is an optional $25 per rep per month coaching add-on.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Script mode: bring up the relevant part of your uploaded playbook.',
+          'AI mode: get a suggested response based on the conversation.',
+          'Transcript review: upload transcripts for reps and leaders to review.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: 'Mercury applies to every rep on the selected calling plan. Add or remove it in Stripe.',
+      },
+    ],
   },
   {
     question: 'How do monthly and annual billing work?',
     answer:
       'Monthly billing covers one month at a time. Annual billing covers twelve months, paid up front. Both views show the per-seat monthly equivalent and the annual view shows the full yearly amount. No annual discount is applied to the prices shown. Extra number packs have a separate subscription and invoice; confirm them in Stripe after the calling-plan payment. Manage or cancel each subscription separately in Stripe.',
+    details: [
+      {
+        type: 'list',
+        items: [
+          'Monthly: pay for one month at a time.',
+          'Annual: pay twelve months upfront, with no annual discount. The page shows both the per-seat monthly equivalent and the full yearly amount.',
+          'Included minutes still renew monthly.',
+        ],
+      },
+      {
+        type: 'steps',
+        items: [
+          {
+            label: 'Confirm the calling plan.',
+            text: 'Pay for your selected plan and rep seats in Stripe.',
+          },
+          {
+            label: 'Confirm any extra number pack.',
+            text: 'Number packs have a separate subscription and invoice, confirmed in Stripe after the calling-plan payment.',
+          },
+          {
+            label: 'Manage billing in Stripe.',
+            text: 'Manage or cancel each subscription separately in the hosted Stripe portal.',
+          },
+        ],
+      },
+    ],
   },
   {
     question: 'Does Consuelo work with GoHighLevel?',
     answer:
       'Yes. GoHighLevel is included in every plan. Your administrator connects the location and sets up the reps and phone numbers. Calling activity stays close to your customer records.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Yes. GoHighLevel is included in every plan.',
+      },
+      {
+        type: 'steps',
+        items: [
+          {
+            label: 'Connect your location.',
+            text: 'Your administrator connects the GoHighLevel location after checkout.',
+          },
+          {
+            label: 'Set up the team.',
+            text: 'Configure the reps and phone numbers for your workspace.',
+          },
+          {
+            label: 'Open Consuelo Dialer.',
+            text: 'Work from the GoHighLevel menu and keep calling activity close to the customer record.',
+          },
+        ],
+      },
+    ],
   },
   {
     question: 'Can our organization get help choosing?',
     answer:
       'Yes. Tell us your rep count, calling volume, inbound queues and integration needs. We will help choose the plan, numbers and coaching setup that fit. Taxes, specialized numbers and international calling are quoted separately.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Yes. Tell us what your team needs.',
+      },
+      {
+        type: 'list',
+        items: [
+          'How many reps need calling access.',
+          'Your calling volume and inbound queues.',
+          'Your integration, phone-number and coaching needs.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: 'We will help choose the plan, numbers and coaching setup that fit. Taxes, specialized numbers and international calling are quoted separately.',
+      },
+    ],
     linkHref: '/contact',
     linkLabel: 'Talk to our team',
   },

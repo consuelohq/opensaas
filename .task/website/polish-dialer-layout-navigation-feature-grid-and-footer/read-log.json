@@ -1,0 +1,24 @@
+{
+  "files": [
+    ".task/website/polish-dialer-layout-navigation-feature-grid-and-footer/verify.json",
+    "/tmp/consuelo-layout-capture.mjs",
+    "packages/dialer-website/public/images/technology/wordmarks/pi.svg",
+    "packages/dialer-website/scripts/checkout-browser-fixture.mjs",
+    "packages/dialer-website/scripts/test-marketing-browser.mjs",
+    "packages/dialer-website/scripts/test-pricing-browser.mjs",
+    "packages/dialer-website/src/components/home/HomeCloudCta.astro",
+    "packages/dialer-website/src/components/site/SiteFooter.astro",
+    "packages/dialer-website/src/data/dialer-content.ts",
+    "packages/dialer-website/src/data/pricing-content.ts",
+    "packages/dialer-website/src/data/site-navigation.ts",
+    "packages/dialer-website/src/lib/site-smooth-scroll.ts",
+    "packages/dialer-website/src/pages/pricing.astro",
+    "packages/dialer-website/src/styles/pricing.css",
+    "packages/dialer-website/src/styles/primitives.css",
+    "packages/dialer-website/src/styles/tokens.css",
+    "packages/dialer-website/tests/interaction-lifecycle.test.ts",
+    "packages/dialer-website/tests/pricing-refinement.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-10-31T05:25:50.916Z"
+}
