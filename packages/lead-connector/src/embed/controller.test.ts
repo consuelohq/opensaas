@@ -1017,6 +1017,13 @@ describe('LeadConnector embed controller', () => {
 
   it('starts a selected GHL stage as one predictive queue with fanout independent from candidate count', async () => {
     const api = createApi();
+    const starter = await api.getCommercialCallerContext();
+    api.getCommercialCallerContext = mock(async () => ({
+      ...starter,
+      predictive: true,
+      trial: false,
+      lineOptions: [1, 2, 3],
+    }));
     const controller = createLeadConnectorEmbedController({
       api,
       voice: createVoice(),
@@ -1387,4 +1394,48 @@ describe('LeadConnector embed controller', () => {
     });
     expect(api.setSessionToken).toHaveBeenLastCalledWith(null);
   });
+});
+
+it('renews secure context without resetting a connected call or replaying call creation', async () => {
+  const api = createApi(),
+    voice = createVoice();
+  const state = createInitialEmbedState();
+  state.phase = 'connected';
+  state.sessionToken = 'old';
+  state.activeSessionId = 'active-call';
+  const controller = createLeadConnectorEmbedController({
+    api,
+    voice,
+    initialState: state,
+  });
+  const phases: string[] = [];
+  controller.subscribe((s) => phases.push(s.phase));
+  await controller.authenticate('fresh-context');
+  expect(controller.getState().phase).toBe('connected');
+  expect(controller.getState().activeSessionId).toBe('active-call');
+  expect(phases).not.toContain('authenticating');
+  expect(voice.disconnect).not.toHaveBeenCalled();
+});
+it('keeps active media state during a renewal failure and requests bounded context recovery', async () => {
+  const api = createApi(),
+    voice = createVoice(),
+    recover = mock(() => undefined);
+  api.createEmbedSession = mock(async () => {
+    throw new EmbedSessionExpiredError();
+  });
+  const state = createInitialEmbedState();
+  state.phase = 'connected';
+  state.sessionToken = 'old';
+  state.activeSessionId = 'active-call';
+  const controller = createLeadConnectorEmbedController({
+    api,
+    voice,
+    initialState: state,
+    onSessionExpired: recover,
+  });
+  await controller.authenticate('fresh-context');
+  expect(controller.getState().phase).toBe('connected');
+  expect(controller.getState().activeSessionId).toBe('active-call');
+  expect(voice.disconnect).not.toHaveBeenCalled();
+  expect(recover).toHaveBeenCalledTimes(1);
 });

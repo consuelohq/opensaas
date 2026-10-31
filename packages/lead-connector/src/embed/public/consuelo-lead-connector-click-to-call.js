@@ -126,6 +126,7 @@
       type: 'consuelo.leadconnector/workspace-presentation',
       version: 1,
       compact: compact,
+      locationId: ownedLocation,
     });
   }
 
@@ -300,14 +301,20 @@
   }
 
   function sendSessionContext() {
+    var targetFrame = frame,
+      targetLocation = ownedLocation;
+    if (!targetFrame || targetLocation !== currentLocation()) return;
     loadSessionContext()
       .then(function (encryptedData) {
-        if (!frame || !frame.contentWindow) return;
-        frame.contentWindow.postMessage(
-          {
-            message: 'REQUEST_USER_DATA_RESPONSE',
-            payload: encryptedData,
-          },
+        if (
+          frame !== targetFrame ||
+          ownedLocation !== targetLocation ||
+          currentLocation() !== targetLocation ||
+          !targetFrame.contentWindow
+        )
+          return;
+        targetFrame.contentWindow.postMessage(
+          { message: 'REQUEST_USER_DATA_RESPONSE', payload: encryptedData },
           origin,
         );
       })
@@ -497,6 +504,7 @@
     if (event.source !== frame.contentWindow) return;
     if (event.origin !== origin) return;
     if (data && data.message === 'REQUEST_USER_DATA') {
+      sessionContextPromise = null;
       sendSessionContext();
       return;
     }
@@ -518,6 +526,7 @@
         type: 'consuelo.leadconnector/workspace-presentation',
         version: 1,
         compact: minimized,
+        locationId: ownedLocation,
       });
       if (pendingWorkspace && !workspaceLaunchSent) {
         workspaceLaunchSent = true;
@@ -536,6 +545,7 @@
         type: 'consuelo.leadconnector/workspace-presentation',
         version: 1,
         compact: minimized,
+        locationId: ownedLocation,
       });
     }
     if (

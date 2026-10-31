@@ -91,24 +91,26 @@ export const replaceWorkspace = (root: HTMLElement, html: string): void => {
     'input, textarea, select',
   )) {
     const old = drafts.get(key(field));
-    if (!old || old.original !== originalValue(field)) continue;
-    const checkable =
-      'checked' in field && ['checkbox', 'radio'].includes(field.type);
-    if (
-      !checkable &&
-      (field.tagName !== 'SELECT' ||
-        [...(field as HTMLSelectElement).options].some(
-          (o) => o.value === old.value,
-        ))
-    )
-      field.value = old.value;
-    if (
-      'checked' in field &&
-      !field.disabled &&
-      field.defaultChecked === old.defaultChecked &&
-      old.checked !== null
-    )
-      field.checked = old.checked;
+    if (!old) continue;
+    if (old.original === originalValue(field)) {
+      const checkable =
+        'checked' in field && ['checkbox', 'radio'].includes(field.type);
+      if (
+        !checkable &&
+        (field.tagName !== 'SELECT' ||
+          [...(field as HTMLSelectElement).options].some(
+            (o) => o.value === old.value,
+          ))
+      )
+        field.value = old.value;
+      if (
+        'checked' in field &&
+        !field.disabled &&
+        field.defaultChecked === old.defaultChecked &&
+        old.checked !== null
+      )
+        field.checked = old.checked;
+    }
     if (old.focused) {
       field.focus({ preventScroll: true });
       if (

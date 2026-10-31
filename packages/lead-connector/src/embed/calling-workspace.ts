@@ -15,6 +15,14 @@ export type CallingWorkspace = {
     | 'appearance'
     | 'mercury';
   nativeFloating?: boolean;
+  locationId?: string;
+  contactQuery?: string;
+  contactPickerOpen?: boolean;
+  contactActiveIndex?: number;
+  numberTab?: 'receive' | 'call-from';
+  coachingMode?: 'off' | 'script';
+  activeScriptId?: string;
+  scriptStep?: number;
   theme?: 'system' | 'light' | 'dark';
   answeringEndpointIds?: string[];
   coachingLibrary?: CoachingLibrary;

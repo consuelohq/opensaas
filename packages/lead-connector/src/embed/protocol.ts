@@ -27,7 +27,7 @@ export type LeadConnectorClickToCallTarget = {
 
 export type LeadConnectorEmbedMessage =
   | { type: 'workspace-opened'; id: string }
-  | { type: 'workspace-presentation'; compact: boolean }
+  | { type: 'workspace-presentation'; compact: boolean; locationId?: string }
   | { type: 'workspace-launch'; launch: WorkspaceLaunch }
   | { type: 'bootstrap'; encryptedData: string }
   | { type: 'handshake'; bootstrapToken: string }
@@ -143,6 +143,10 @@ export const createLeadConnectorParentBridge = (
         options.onMessage({
           type: 'workspace-presentation',
           compact: data.compact,
+          ...(typeof data.locationId === 'string' &&
+          data.locationId.length <= 200
+            ? { locationId: data.locationId }
+            : {}),
         });
       return;
     }

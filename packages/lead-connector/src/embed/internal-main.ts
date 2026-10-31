@@ -1,3 +1,10 @@
+import { createSessionRenewal } from './session-renewal.js';
+import {
+  readWorkspacePreferences,
+  writeWorkspacePreferences,
+} from './workspace-preferences.js';
+import { targetChoices } from './target-picker.js';
+import { scriptSteps } from './script-presentation.js';
 import { createNativeWorkspaceLauncher } from './native-workspace.js';
 import { createLeadConnectorEmbedApi } from './api-client.js';
 import { createLeadConnectorInboundOperatorApi } from './inbound-operator.js';
@@ -48,6 +55,7 @@ const controller = createLeadConnectorEmbedController({
   surface,
   inboundOperatorApi,
   inboundObserver: surface === 'admin',
+  onSessionExpired: () => sessionRenewal.request(),
 });
 let workspace: CallingWorkspace = createCallingWorkspace(surface);
 try {
@@ -56,7 +64,18 @@ try {
 } catch {
   /* Embedded storage can be unavailable. */
 }
+const preferenceStorage = (() => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+})();
+let preferenceScope: string | null = null;
+let restoredView = false;
+let presentationOpened = false;
 let focusPageAfterPaint = false;
+let restoringWorkspaceFocus = false;
 let managementError: string | null = null;
 let pendingLaunch: WorkspaceLaunch | null = null;
 const consumedLaunches = new Set<string>();
@@ -73,6 +92,14 @@ const applyLaunch = async (): Promise<void> => {
     }
     consumedLaunches.add(launch.id);
     bridge.acknowledgeLaunch(launch.id); // Accepted locally; never replay an uncertain external effect.
+    if (launch.action === 'open') {
+      if (!presentationOpened && !restoredView)
+        workspace.mode = activeCallingMode(state) ?? launch.mode;
+      presentationOpened = true;
+      workspace.compact = false;
+      render();
+      return;
+    }
     workspace = {
       ...workspace,
       screen: 'calling',
@@ -80,7 +107,6 @@ const applyLaunch = async (): Promise<void> => {
       compact: false,
     };
     render();
-    if (launch.action === 'open') return;
     if (launch.action === 'inbound-readiness') {
       await controller.loadInboundOperator();
       if (!controller.getState().inboundOperator.rep.assignment)
@@ -182,6 +208,7 @@ const bridge = createLeadConnectorParentBridge(window, {
     if (message.type === 'workspace-presentation') {
       if (surface !== 'overlay') return;
       workspace.compact = message.compact;
+      if (message.locationId) workspace.locationId = message.locationId;
       render();
       return;
     }
@@ -195,7 +222,8 @@ const bridge = createLeadConnectorParentBridge(window, {
       completeBootstrap();
       void controller.authenticate(message.encryptedData).then(() => {
         const phase = controller.getState().phase;
-        if (phase === 'ready' || phase === 'target-selected') {
+        if (controller.getState().sessionToken && phase !== 'authenticating') {
+          sessionRenewal.succeeded(controller.getState().sessionExpiresAt);
           bridge.sendReady();
           if (surface === 'admin') nativeLauncher.requestOnce();
           void applyLaunch();
@@ -207,7 +235,8 @@ const bridge = createLeadConnectorParentBridge(window, {
       completeBootstrap();
       void controller.authenticate(message.bootstrapToken).then(() => {
         const phase = controller.getState().phase;
-        if (phase === 'ready' || phase === 'target-selected') {
+        if (controller.getState().sessionToken && phase !== 'authenticating') {
+          sessionRenewal.succeeded(controller.getState().sessionExpiresAt);
           bridge.sendReady();
           if (surface === 'admin') nativeLauncher.requestOnce();
           void applyLaunch();
@@ -233,6 +262,21 @@ const bridge = createLeadConnectorParentBridge(window, {
   },
   onProtocolError: failBootstrap,
 });
+
+const sessionRenewal = createSessionRenewal({
+  now: () => Date.now(),
+  schedule: (fn, delay) => window.setTimeout(fn, delay),
+  cancel: (id) => window.clearTimeout(id),
+  requestContext: () => bridge.requestUserContext(),
+  onExhausted: () => {
+    managementError =
+      'Your secure session could not reconnect. Use Retry to reconnect your dialer.';
+    render();
+  },
+});
+const checkSecureSession = () => sessionRenewal.check();
+window.addEventListener('focus', checkSecureSession);
+document.addEventListener('visibilitychange', checkSecureSession);
 
 const nativeLauncher = createNativeWorkspaceLauncher({
   open: (launch) => bridge.openWorkspace(launch),
@@ -355,21 +399,68 @@ const mountComboboxes = (): void => {
 
 const paint = (): void => {
   const state = controller.getState();
+  sessionRenewal.observe(state.sessionExpiresAt);
+  const scope =
+    surface === 'overlay' &&
+    workspace.locationId &&
+    state.inboundOperator.rep.repId
+      ? workspace.locationId + ':' + state.inboundOperator.rep.repId
+      : null;
+  if (scope && scope !== preferenceScope) {
+    preferenceScope = scope;
+    const saved = preferenceStorage
+      ? readWorkspacePreferences(preferenceStorage, scope)
+      : null;
+    if (saved && !activeCallingMode(state)) {
+      restoredView = true;
+      Object.assign(workspace, {
+        screen: saved.screen,
+        mode: saved.mode,
+        coachingMode: saved.coachingMode,
+        activeScriptId: saved.scriptId,
+      });
+      queueMicrotask(() => {
+        controller.updateSetup({ mode: saved.setupMode });
+        if (saved.screen === 'mercury' || saved.coachingMode === 'script')
+          void loadScripts();
+      });
+    }
+  }
+  if (preferenceScope && state.sessionToken && preferenceStorage)
+    writeWorkspacePreferences(
+      preferenceStorage,
+      preferenceScope,
+      workspace,
+      state.setup.mode,
+    );
   const callMode = activeCallingMode(state);
   if (callMode) workspace.mode = callMode;
   if (state.inboundOperator.offers.length) workspace.screen = 'calling';
   document.documentElement.dataset.theme = workspace.theme ?? 'system';
   for (const combobox of comboboxes) combobox.destroy();
   comboboxes.length = 0;
-  replaceWorkspace(
-    root,
-    renderLeadConnectorEmbed(state, { surface, workspace }),
-  );
+  restoringWorkspaceFocus = true;
+  try {
+    replaceWorkspace(
+      root,
+      renderLeadConnectorEmbed(state, { surface, workspace }),
+    );
+  } finally {
+    restoringWorkspaceFocus = false;
+  }
   if (managementError && !workspace.compact) {
     const notice = document.createElement('p');
     notice.className = 'notice notice--error';
     notice.setAttribute('role', 'alert');
     notice.textContent = managementError;
+    if (managementError.includes('secure session')) {
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'text-button';
+      retry.dataset.action = 'retry';
+      retry.textContent = 'Retry';
+      notice.append(retry);
+    }
     root.querySelector('.workspace-content')?.prepend(notice);
   }
   mountComboboxes();
@@ -418,6 +509,13 @@ const loadScripts = async (): Promise<void> => {
   if (!controller.getState().sessionToken) return;
   try {
     workspace.coachingLibrary = await api.listCoachingScripts();
+    if (
+      workspace.coachingMode === 'script' &&
+      !workspace.coachingLibrary.scripts.some(
+        (s) => s.id === workspace.activeScriptId,
+      )
+    )
+      workspace.activeScriptId = workspace.coachingLibrary.scripts[0]?.id;
     managementError = null;
   } catch (error: unknown) {
     managementError =
@@ -464,6 +562,57 @@ root.addEventListener('click', (event) => {
     (actionElement instanceof HTMLButtonElement && actionElement.disabled)
   )
     return;
+  if (action === 'choose-target') {
+    const target = targetChoices(
+      controller.getState().contacts,
+      workspace.contactQuery ?? '',
+    )[Number(actionElement.dataset.choiceIndex)];
+    if (target) {
+      workspace.contactPickerOpen = false;
+      workspace.contactQuery = '';
+      for (const old of controller.getState().selectedTargets)
+        controller.removeTarget(old.dedupeKey);
+      controller.selectTarget(target);
+      render();
+    }
+    return;
+  }
+  if (action === 'coaching-mode') {
+    const mode = actionElement.dataset.mode;
+    if (mode === 'off' || mode === 'script') {
+      workspace.coachingMode = mode;
+      workspace.scriptStep = 0;
+      if (mode === 'script') void loadScripts();
+      render();
+    }
+    return;
+  }
+  if (action === 'script-next' || action === 'script-previous') {
+    const script = workspace.coachingLibrary?.scripts.find(
+      (s) => s.id === workspace.activeScriptId,
+    );
+    const count = script ? scriptSteps(script.content).length : 0;
+    workspace.scriptStep = Math.max(
+      0,
+      Math.min(
+        count - 1,
+        (workspace.scriptStep ?? 0) + (action === 'script-next' ? 1 : -1),
+      ),
+    );
+    render();
+    return;
+  }
+  if (action === 'numbers-receive' || action === 'numbers-call-from') {
+    workspace.numberTab =
+      action === 'numbers-receive' ? 'receive' : 'call-from';
+    render();
+    return;
+  }
+  if (action === 'inbound-reconnect' && !controller.getState().sessionToken) {
+    managementError = null;
+    sessionRenewal.retry();
+    return;
+  }
   if (action === 'workspace-open-floating') {
     nativeLauncher.open();
     return;
@@ -628,12 +777,23 @@ root.addEventListener('click', (event) => {
     return;
   }
   if (action === 'retry') {
-    controller.retry();
-    bootstrapTimer = setTimeout(failBootstrap, 5000);
-    bridge.requestUserContext();
+    managementError = null;
+    if (controller.getState().sessionExpiresAt || preferenceScope) {
+      sessionRenewal.retry();
+    } else {
+      controller.retry();
+      bootstrapTimer = setTimeout(failBootstrap, 5000);
+      bridge.requestUserContext();
+    }
   }
   if (action === 'setup-queue') {
-    controller.updateSetup({ mode: 'queue', callingMode: 'predictive' });
+    controller.updateSetup({
+      mode: 'queue',
+      callingMode:
+        controller.getState().commercialCaller?.predictive === false
+          ? 'single'
+          : 'predictive',
+    });
   }
   if (action === 'setup-single') {
     controller.updateSetup({
@@ -857,6 +1017,7 @@ root.addEventListener('change', (event) => {
     ]
       .filter((e) => e.checked && !e.disabled)
       .map((e) => e.dataset.endpointId!);
+    render();
   }
   if (
     target.dataset.field === 'script-file' &&
@@ -880,6 +1041,11 @@ root.addEventListener('change', (event) => {
               : 'Script could not be imported.';
           render();
         });
+  }
+  if (target.dataset.field === 'active-script') {
+    workspace.activeScriptId = target.value || undefined;
+    workspace.scriptStep = 0;
+    render();
   }
   if (target.dataset.field === 'queue') {
     const [pipelineId, stageId] = target.value.split(':');
@@ -943,6 +1109,20 @@ root.addEventListener('input', (event) => {
   )
     workspace.scriptDraft.content = target.value;
   if (
+    target instanceof HTMLInputElement &&
+    target.dataset.field === 'target-query'
+  ) {
+    workspace.contactQuery = target.value;
+    workspace.contactPickerOpen = true;
+    workspace.contactActiveIndex = 0;
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      void controller.searchContacts(workspace.contactQuery ?? '');
+    }, 250);
+    render();
+    return;
+  }
+  if (
     !(target instanceof HTMLInputElement) ||
     target.dataset.field !== 'search'
   )
@@ -959,6 +1139,72 @@ root.addEventListener('input', (event) => {
     ]);
   }, 250);
 });
+
+root.addEventListener('focusin', (event) => {
+  const target = event.target;
+  if (
+    target instanceof HTMLInputElement &&
+    target.dataset.field === 'target-query' &&
+    !restoringWorkspaceFocus &&
+    !workspace.contactPickerOpen
+  ) {
+    workspace.contactPickerOpen = true;
+    workspace.contactQuery = '';
+    workspace.contactActiveIndex = 0;
+    render();
+  }
+});
+root.addEventListener('keydown', (event) => {
+  const target = event.target;
+  if (
+    !(target instanceof HTMLInputElement) ||
+    target.dataset.field !== 'target-query'
+  )
+    return;
+  const choices = targetChoices(
+    controller.getState().contacts,
+    workspace.contactQuery ?? '',
+  );
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    workspace.contactPickerOpen = false;
+    render();
+    return;
+  }
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    workspace.contactPickerOpen = true;
+    workspace.contactActiveIndex = Math.max(
+      0,
+      Math.min(
+        choices.length - 1,
+        (workspace.contactActiveIndex ?? 0) +
+          (event.key === 'ArrowDown' ? 1 : -1),
+      ),
+    );
+    render();
+    return;
+  }
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    root
+      .querySelector<HTMLButtonElement>(
+        '[data-choice-index="' + (workspace.contactActiveIndex ?? 0) + '"]',
+      )
+      ?.click();
+  }
+});
+const closeTargetPicker = (event: Event) => {
+  if (
+    workspace.contactPickerOpen &&
+    event.target instanceof Node &&
+    !root.querySelector('.target-picker')?.contains(event.target)
+  ) {
+    workspace.contactPickerOpen = false;
+    render();
+  }
+};
+document.addEventListener('pointerdown', closeTargetPicker);
 
 root.addEventListener('submit', (event) => {
   const form = event.target;
@@ -1115,6 +1361,10 @@ window.addEventListener('beforeunload', () => {
   if (inboundHeartbeatTimer) clearInterval(inboundHeartbeatTimer);
   idleRefreshScheduler.stop();
   interactionRenderer.dispose();
+  sessionRenewal.dispose();
+  window.removeEventListener('focus', checkSecureSession);
+  document.removeEventListener('visibilitychange', checkSecureSession);
+  document.removeEventListener('pointerdown', closeTargetPicker);
   for (const combobox of comboboxes) combobox.destroy();
   nativeLauncher.dispose();
   voice.disconnect();

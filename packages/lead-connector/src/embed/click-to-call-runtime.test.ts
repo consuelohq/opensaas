@@ -556,6 +556,110 @@ describe('LeadConnector click-to-call runtime', () => {
       type: 'consuelo.leadconnector/workspace-presentation',
       version: 1,
       compact: true,
+      locationId: 'location-1',
     });
   });
+  it('never renews a live iframe into a different HighLevel location', async () => {
+    const { dom, exposeSessionDetails } = boot({
+      path: '/v2/location/location-1/contacts',
+      body: '<a id="tb_lists">Smart Lists</a>',
+    });
+    const doc = dom.window.document;
+    doc.getElementById('consuelo-dialer-launcher')!.click();
+    const frame = doc.querySelector('iframe')!;
+    const posts: unknown[] = [];
+    Object.defineProperty(frame.contentWindow!, 'postMessage', {
+      configurable: true,
+      value: (v: unknown) => posts.push(v),
+    });
+    const dispatch = (data: unknown) =>
+      dom.window.dispatchEvent(
+        new dom.window.MessageEvent('message', {
+          origin: embedOrigin,
+          source: frame.contentWindow,
+          data,
+        }),
+      );
+    dispatch({ message: 'REQUEST_USER_DATA' });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(exposeSessionDetails).toHaveBeenCalledTimes(1);
+    dispatch({
+      type: 'consuelo.leadconnector/session-status',
+      version: 1,
+      active: true,
+      mode: 'inbound',
+      status: 'connected',
+    });
+    posts.length = 0;
+    dom.window.history.pushState({}, '', '/v2/location/location-2/contacts');
+    dom.window.dispatchEvent(new dom.window.Event('routeLoaded'));
+    dispatch({ message: 'REQUEST_USER_DATA' });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(exposeSessionDetails).toHaveBeenCalledTimes(1);
+    expect(
+      posts.filter(
+        (v) =>
+          typeof v === 'object' &&
+          v !== null &&
+          'message' in v &&
+          v.message === 'REQUEST_USER_DATA_RESPONSE',
+      ),
+    ).toHaveLength(0);
+    expect(doc.querySelector('iframe[name="consuelo-dialer"]')).toBe(frame);
+  });
+});
+
+it('drops a late secure context response after the parent location changes', async () => {
+  const { dom, exposeSessionDetails } = boot({
+    path: '/v2/location/location-1/contacts',
+    body: '<a id="tb_lists">Smart Lists</a>',
+  });
+  let resolveContext!: (v: string) => void;
+  exposeSessionDetails.mockImplementation(
+    () =>
+      new Promise<string>((resolve) => {
+        resolveContext = resolve;
+      }),
+  );
+  dom.window.document.getElementById('consuelo-dialer-launcher')!.click();
+  const frame = dom.window.document.querySelector('iframe')!;
+  const posts: unknown[] = [];
+  Object.defineProperty(frame.contentWindow!, 'postMessage', {
+    configurable: true,
+    value: (v: unknown) => posts.push(v),
+  });
+  const dispatch = (data: unknown) =>
+    dom.window.dispatchEvent(
+      new dom.window.MessageEvent('message', {
+        origin: embedOrigin,
+        source: frame.contentWindow,
+        data,
+      }),
+    );
+  dispatch({
+    type: 'consuelo.leadconnector/session-status',
+    version: 1,
+    active: true,
+    mode: 'inbound',
+    status: 'connected',
+  });
+  dispatch({ message: 'REQUEST_USER_DATA' });
+  await new Promise((r) => setTimeout(r, 0));
+  dom.window.history.pushState({}, '', '/v2/location/location-2/contacts');
+  dom.window.dispatchEvent(new dom.window.Event('routeLoaded'));
+  posts.length = 0;
+  resolveContext('late-private-context');
+  await new Promise((r) => setTimeout(r, 0));
+  expect(
+    posts.some(
+      (v) =>
+        typeof v === 'object' &&
+        v !== null &&
+        'message' in v &&
+        v.message === 'REQUEST_USER_DATA_RESPONSE',
+    ),
+  ).toBe(false);
+  expect(
+    dom.window.document.querySelector('iframe[name="consuelo-dialer"]'),
+  ).toBe(frame);
 });
