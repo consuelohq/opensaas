@@ -2,21 +2,21 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 742,
-    "mappedTestCount": 658,
+    "testFileCount": 745,
+    "mappedTestCount": 661,
     "unmappedTestCount": 84,
-    "ruleCount": 87,
-    "explicitRuleCount": 73,
+    "ruleCount": 88,
+    "explicitRuleCount": 74,
     "autoRuleCount": 14,
     "projectCount": 10,
     "packageTestScriptCount": 22,
     "byGroup": {
       "packages/os/tests": 335,
-      "packages/workspace/tests": 66,
+      "packages/workspace/tests": 67,
       "packages/os/tests/media": 34,
       "packages/dialer-server/src": 24,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
-      "packages/lead-connector/src/embed": 19,
+      "packages/lead-connector/src/embed": 21,
       "packages/dialer/src/services": 18,
       "packages/consuelo-design/upstream/open-design": 14,
       "packages/consuelo-website/tests": 14,
@@ -102,7 +102,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 674,
+      "test": 677,
       "spec": 29,
       "integration": 13,
       "__tests__": 11,
@@ -185,6 +185,32 @@
       ],
       "critical": true,
       "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-review-run-modernization",
+      "source": [
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/lib/review-tests.js",
+        "packages/workspace/scripts/lib/nx-projects.js",
+        "packages/workspace/tests/review-modernization.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace review and selector regression tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/review-modernization.test.js",
+            "packages/workspace/tests/review-run-state.test.js",
+            "packages/workspace/tests/review-documentation-opportunity.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Changes to review execution, scoped Nx discovery, and review summarization must preserve modern Bun/Vitest selection, fail-closed test reporting, and review state caching.",
       "origin": "explicit"
     },
     {
@@ -4621,6 +4647,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/lead-connector/src/embed/combobox.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
       "path": "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
@@ -4652,6 +4683,11 @@
     },
     {
       "path": "packages/lead-connector/src/embed/inbound-operator.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/native-workspace.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },
@@ -6982,6 +7018,11 @@
     },
     {
       "path": "packages/workspace/tests/review-generated-artifact-contract.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/review-modernization.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
