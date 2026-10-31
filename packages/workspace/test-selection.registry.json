@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 717,
-    "mappedTestCount": 634,
+    "testFileCount": 718,
+    "mappedTestCount": 635,
     "unmappedTestCount": 83,
     "ruleCount": 84,
     "explicitRuleCount": 71,
@@ -11,7 +11,7 @@
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 329,
+      "packages/os/tests": 330,
       "packages/workspace/tests": 68,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
@@ -99,7 +99,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 653,
+      "test": 654,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -2315,6 +2315,7 @@
       "id": "os-bundled-skill-contract",
       "source": [
         "packages/os/skills/**",
+        "packages/os/scripts/lib/skills.ts",
         "packages/os/tests/fixtures/skills/**",
         "packages/os/tests/branch-skill.test.ts",
         "packages/os/tests/cli-skill-routing.test.ts",
@@ -5232,6 +5233,11 @@
     },
     {
       "path": "packages/os/tests/lifecycle-tool-surface.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/linear-tooling-regression.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

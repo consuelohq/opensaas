@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/integrate-verified-cloud-session-and-guidance-fixes-with-current-os-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2754,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2754",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-integrate-verified-cloud-session-and-guidance-fixes-with-current-os-stream",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_784c6d3a1b8a",
+  "tmuxSession": "opensaas-os-integrate-verified-cloud-session-and-guidance-fi-784c6d3a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-integrate-verified-cloud-session-and-guidance-fixes-with-current-os-stream/.task/session.json",
+  "createdAt": "2026-10-31T07:30:54.739Z"
+}

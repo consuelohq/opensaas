@@ -1077,4 +1077,32 @@ describe('local OS install state', () => {
 
     expect(issues).toEqual([]);
   });
+
+  it('validates guidance skill paths inside a relocated signed runtime bundle', () => {
+    const packageRoot = join(tempHome, 'runtime', 'releases', 'sha256-test-bundle');
+    const skillDir = join(packageRoot, 'skills', 'debugger');
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(
+      join(skillDir, 'skill.json'),
+      readFileSync(join(process.cwd(), 'skills', 'debugger', 'skill.json'), 'utf8'),
+    );
+
+    const validate = () => JSON.parse(runBunEval(`
+      const { validateBundledSkills } = await import('./scripts/lib/skills.ts');
+      process.stdout.write(JSON.stringify(validateBundledSkills({ packageRoot: ${JSON.stringify(packageRoot)} })));
+    `)) as Array<{ skill: string; code: string }>;
+
+    expect(validate()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ skill: 'debugger', code: 'GUIDANCE_ENTRYPOINT_MISSING' }),
+    ]));
+    writeFileSync(join(skillDir, 'SKILL.md'), '# Debugger\n');
+    expect(validate()).toEqual([]);
+
+    const metadata = JSON.parse(readFileSync(join(skillDir, 'skill.json'), 'utf8'));
+    metadata.load.path = 'packages/os/skills/debugger/missing.md';
+    writeFileSync(join(skillDir, 'skill.json'), JSON.stringify(metadata));
+    expect(validate()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ skill: 'debugger', code: 'GUIDANCE_ENTRYPOINT_MISSING' }),
+    ]));
+  });
 });

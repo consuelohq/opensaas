@@ -39,8 +39,8 @@ export function getSkillsRoot(): string {
   return path.join(getPackageRoot(), 'skills');
 }
 
-export function listBundledSkills(): SkillMetadata[] {
-  const skillsRoot = getSkillsRoot();
+export function listBundledSkills(packageRoot = getPackageRoot()): SkillMetadata[] {
+  const skillsRoot = path.join(packageRoot, 'skills');
   if (!fs.existsSync(skillsRoot)) return [];
   return fs.readdirSync(skillsRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -49,11 +49,20 @@ export function listBundledSkills(): SkillMetadata[] {
     .map(readSkillMetadata);
 }
 
-function validateGuidanceSkill(skill: SkillMetadata): SkillValidationIssue[] {
+function validateGuidanceSkill(skill: SkillMetadata, packageRoot: string): SkillValidationIssue[] {
   const issues: SkillValidationIssue[] = [];
   const entrypoint = skill.entrypoint ?? 'SKILL.md';
   const loadPath = skill.load?.path ?? path.join('packages/os/skills', skill.name, entrypoint);
-  const markdownPath = path.isAbsolute(loadPath) ? loadPath : path.join(getPackageRoot(), '..', '..', loadPath);
+  const sourceTreePath = path.isAbsolute(loadPath)
+    ? loadPath
+    : path.join(packageRoot, '..', '..', loadPath);
+  const canonicalLoadPath = path.join('packages', 'os', 'skills', skill.name, entrypoint);
+  const bundledRuntimePath = path.join(packageRoot, 'skills', skill.name, entrypoint);
+  const markdownPath = fs.existsSync(sourceTreePath)
+    ? sourceTreePath
+    : !path.isAbsolute(loadPath) && loadPath === canonicalLoadPath
+      ? bundledRuntimePath
+      : sourceTreePath;
 
   if (!fs.existsSync(markdownPath)) {
     issues.push({ skill: skill.name, code: 'GUIDANCE_ENTRYPOINT_MISSING', message: 'guidance skill entrypoint does not exist' });
@@ -67,13 +76,14 @@ function validateGuidanceSkill(skill: SkillMetadata): SkillValidationIssue[] {
   return issues;
 }
 
-export function validateBundledSkills(): SkillValidationIssue[] {
+export function validateBundledSkills(options: { packageRoot?: string } = {}): SkillValidationIssue[] {
+  const packageRoot = options.packageRoot ?? getPackageRoot();
   const manifestByName = new Map(readManifest().map((entry) => [entry.name, entry]));
   const issues: SkillValidationIssue[] = [];
 
-  for (const skill of listBundledSkills()) {
+  for (const skill of listBundledSkills(packageRoot)) {
     if (skill.permission === 'guidance') {
-      issues.push(...validateGuidanceSkill(skill));
+      issues.push(...validateGuidanceSkill(skill, packageRoot));
       continue;
     }
 
