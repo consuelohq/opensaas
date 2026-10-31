@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/steering-snapshot-cache.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/os/tests/steering-canonical-source.test.ts"
+  ],
+  "updatedAt": "2026-10-31T06:27:44.164Z"
+}

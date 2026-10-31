@@ -168,13 +168,57 @@ function buildSteeringSnapshot(input: SteeringSnapshotInput): SteeringSnapshotCa
 
   dependencies.track(path.join(input.packageRoot, 'manifests', 'generated', 'core.manifest.json'));
   const coreNames = readEffectiveCoreManifest(input.home).tools.map((tool) => tool.name);
+  const enabled = new Set(coreNames);
+  // Keep the first-call shape near steering, not the entire generated manifest.
+  // Each example is an os.call transport contract (not a shell command). All
+  // detailed, evolving schemas and additional examples live in tools.search.
+  // Filtering against the effective manifest prevents advertising disabled tools.
+  const quickCalls: Array<{ tool: string; text: string }> = [
+    {
+      tool: 'tools.search',
+      text: `Discover exact typed contract: \`os.call({tool:"tools.search",input:{query:"${enabled.has('code.call') ? 'code.call' : (coreNames.find((name) => name !== 'tools.search') ?? 'tools.search')}",detail:"full"}})\`. Use returned inputSignature and exampleInput; search non-core tools by domain.`,
+    },
+    {
+      tool: 'session.start',
+      text: 'Start isolated repo work: `os.call({tool:"session.start",input:{kind:"task",area:"os",title:"Fix bug",startFrom:"main"}})`. For local files use kind:"work" instead. Carry returned session ID.',
+    },
+    {
+      tool: 'code.call',
+      text: 'Read/verify/edit with bounded code: `os.call({tool:"code.call",input:{language:"bun",mode:"read",code:"process.stdout.write(String(1))",maxResultChars:2000},taskSession:"tsk_..."})`. Use mode:"verify" for tests; codeFile:"path/to/script.ts" for larger programs.',
+    },
+    {
+      tool: 'fs.apply_patch',
+      text: 'Modify scoped source: `os.call({tool:"fs.apply_patch",input:{patchText:"*** Begin Patch\\n..."},taskSession:"tsk_..."})`. Prefer typed file or stdin transport to shell-escaped payloads.',
+    },
+    {
+      tool: 'batch',
+      text: 'Group bounded calls: `os.call({tool:"batch",input:{steps:[{tool:"tools.search",input:{query:"google"}},{tool:"tools.search",input:{query:"linear"}}]}})`. Parallelize independent reads; serialize dependent writes.',
+    },
+    {
+      tool: 'github',
+      text: 'Read normalized review findings: `os.call({tool:"github",input:{operation:"pr.reviews",pr:123}})`. Do not substitute raw CLI for typed operations without a reason.',
+    },
+    {
+      tool: 'review.run',
+      text: 'Review a managed task: `os.call({tool:"review.run",input:{strict:true},taskSession:"tsk_..."})`. Discover verify and task.push when publishing; preserve CI checks.',
+    },
+  ];
   sections.push(
     '',
     '## Core tools',
     '',
-    'Call tools through os.call. Use tools.search with an exact tool name to retrieve its current input signature before an unfamiliar call; use tools.search to discover additional tools by domain.',
+    'Available core tool names (disabled tools excluded):',
     '',
     coreNames.join(', '),
+    '',
+    '### Reliable tool transport',
+    '',
+    'Use `os.call({tool:"NAME",input:{...},taskSession:"tsk_..."})` or the equivalent host wrapper. Tool name, taskSession/workSession and optional nodeId are top-level call fields, never nested inside input. Scope repo edits to task sessions; use work sessions for ordinary local files. Unknown target nodes fail closed.',
+    '',
+    ...quickCalls
+      .filter((call) => enabled.has(call.tool)
+        && (call.tool !== 'batch' || enabled.has('tools.search')))
+      .map((call) => `- ${call.text}`),
   );
 
   return {

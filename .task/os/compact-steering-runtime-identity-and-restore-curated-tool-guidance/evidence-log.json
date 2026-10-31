@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance",
+  "events": [
+    {
+      "id": "efd0d1e3-769a-47ea-9532-13adf886a4e0",
+      "occurred_at": "2026-10-31T06:27:35.275Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/steering-snapshot-cache.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance"
+      }
+    },
+    {
+      "id": "32c1ca61-326d-4602-bb6b-8b0f58f09481",
+      "occurred_at": "2026-10-31T06:27:44.159Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/steering-snapshot-cache.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance"
+      }
+    },
+    {
+      "id": "c3916c31-11d4-4d7f-987b-aada36429030",
+      "occurred_at": "2026-10-31T06:27:44.294Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/steering-canonical-source.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-31T06:27:44.398Z"
+}

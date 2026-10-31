@@ -52,6 +52,48 @@ function safeJson(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
 
+// Human-facing steering is not a transport payload. Keep the original structured
+// runtime identity authoritative, but avoid JSON punctuation in its display.
+// Only unambiguous single-line scalars may omit quotes; delimiters, fences and
+// control characters remain JSON-escaped to prevent steering injection.
+export function formatSteeringRuntimeIdentity(value: unknown): string {
+  const render = (item: unknown, depth: number): string => {
+    const pad = '  '.repeat(depth);
+    if (item === null) return 'null';
+    if (typeof item === 'string') {
+      const safePlainScalar = item.length > 0
+        && item.trim() === item
+        && /^[A-Za-z0-9_./:@~ -]+$/.test(item)
+        && !/^(?:true|false|null|undefined)$/i.test(item)
+        && !/^-?\d+(?:\.\d+)?$/.test(item);
+      return safePlainScalar
+        ? item
+        : JSON.stringify(item).replaceAll('`', '\\u0060').replaceAll('<', '\\u003c');
+    }
+    if (typeof item === 'number' || typeof item === 'boolean') {
+      return JSON.stringify(item);
+    }
+    if (Array.isArray(item)) {
+      if (item.length === 0) return '[]';
+      return `[\n${item.map((entry, i) =>
+        `${'  '.repeat(depth + 1)}${render(entry, depth + 1)}${i < item.length - 1 ? ',' : ''}`
+      ).join('\n')}\n${pad}]`;
+    }
+    if (typeof item === 'object') {
+      const fields = Object.entries(item as Record<string, unknown>);
+      if (fields.length === 0) return '{}';
+      return `{\n${fields.map(([name, entry], i) => {
+        const key = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)
+          ? name
+          : JSON.stringify(name);
+        return `${'  '.repeat(depth + 1)}${key}: ${render(entry, depth + 1)}${i < fields.length - 1 ? ',' : ''}`;
+      }).join('\n')}\n${pad}}`;
+    }
+    return 'null';
+  };
+  return render(value, 0);
+}
+
 function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
@@ -533,8 +575,8 @@ export function getSteering(options: {
     '',
     '## Runtime identity',
     '',
-    '```json',
-    safeJson(runtimeIdentity),
+    '```text',
+    formatSteeringRuntimeIdentity(runtimeIdentity),
     '```',
   ];
   if (Object.hasOwn(runtimeIdentity, 'routing')) {
