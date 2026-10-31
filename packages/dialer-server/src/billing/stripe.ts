@@ -1,8 +1,29 @@
 import { Effect } from 'effect';
+import type StripeSdk from 'stripe';
 
 import { normalizeAsyncError } from '../errors/normalize-async-error';
 
-export type StripeCommercialEvent = { id: string; type: string; data?: unknown };
+export type StripeCommercialEvent = {
+  id: string;
+  type: string;
+  data?: unknown;
+};
+
+// Bun selects Stripe's WebCrypto build, which requires asynchronous verification.
+export const createStripeCommercialWebhookVerifier = (
+  client: Pick<StripeSdk, 'webhooks'>,
+) => async (
+  rawBody: string,
+  signature: string,
+  secret: string,
+): Promise<StripeCommercialEvent> => {
+  try {
+    const event = await client.webhooks.constructEventAsync(rawBody, signature, secret);
+    return { id: event.id, type: event.type, data: event.data };
+  } catch (cause: unknown) {
+    throw normalizeAsyncError(cause);
+  }
+};
 
 type StripeSession = { id: string; url: string | null };
 
@@ -51,11 +72,15 @@ export type StripeCommercialClient = {
       rawBody: string,
       signature: string,
       secret: string,
-    ) => StripeCommercialEvent;
+     ) => StripeCommercialEvent | Promise<StripeCommercialEvent>;
   };
 };
 
-type CommercialBillingItem = { code: string; priceId: string; quantity: number };
+type CommercialBillingItem = {
+  code: string;
+  priceId: string;
+  quantity: number;
+};
 
 const providerEffect = <T>(operation: () => Promise<T>) =>
   Effect.tryPromise({ try: operation, catch: (cause) => cause });
@@ -69,7 +94,9 @@ const projectionKey = (items: CommercialBillingItem[]): string =>
   items.map((item) => item.code + ':' + item.quantity).join('|');
 
 const canonicalProjectionKey = (items: CommercialBillingItem[]): string =>
-  projectionKey([...items].sort((left, right) => left.code.localeCompare(right.code)));
+  projectionKey(
+    [...items].sort((left, right) => left.code.localeCompare(right.code)),
+  );
 
 export const createStripeCommercialBilling = (input: {
   client: StripeCommercialClient;
@@ -135,13 +162,18 @@ export const createStripeCommercialBilling = (input: {
               canonicalProjectionKey(request.items),
           },
         );
-        if (!session.url) throw new Error('Stripe Checkout session URL is missing');
+        if (!session.url)
+          throw new Error('Stripe Checkout session URL is missing');
         return { id: session.id, url: session.url };
       } catch (cause: unknown) {
         throw normalizeAsyncError(cause);
       }
     }),
-  createPortalSession: (request: { customerId: string; returnUrl: string }) =>
+  createPortalSession: (request: {
+    customerId: string;
+    returnUrl: string;
+    configurationId?: string;
+  }) =>
     providerEffect(async () => {
       try {
         const portal = requiredResource(
@@ -151,8 +183,12 @@ export const createStripeCommercialBilling = (input: {
         const session = await portal.sessions.create({
           customer: request.customerId,
           return_url: request.returnUrl,
+          ...(request.configurationId
+            ? { configuration: request.configurationId }
+            : {}),
         });
-        if (!session.url) throw new Error('Stripe portal session URL is missing');
+        if (!session.url)
+          throw new Error('Stripe portal session URL is missing');
         return { id: session.id, url: session.url };
       } catch (cause: unknown) {
         throw normalizeAsyncError(cause);
@@ -222,13 +258,17 @@ export const createStripeCommercialBilling = (input: {
         const existingByPrice = new Map(
           subscription.items.data.map((item) => [item.price.id, item]),
         );
-        const desiredPrices = new Set(request.items.map((item) => item.priceId));
-        const items: Array<Record<string, unknown>> = request.items.map((item) => {
-          const existing = existingByPrice.get(item.priceId);
-          return existing
-            ? { id: existing.id, quantity: item.quantity }
-            : { price: item.priceId, quantity: item.quantity };
-        });
+        const desiredPrices = new Set(
+          request.items.map((item) => item.priceId),
+        );
+        const items: Array<Record<string, unknown>> = request.items.map(
+          (item) => {
+            const existing = existingByPrice.get(item.priceId);
+            return existing
+              ? { id: existing.id, quantity: item.quantity }
+              : { price: item.priceId, quantity: item.quantity };
+          },
+        );
         for (const existing of subscription.items.data) {
           if (!desiredPrices.has(existing.price.id)) {
             items.push({ id: existing.id, deleted: true });
@@ -245,7 +285,9 @@ export const createStripeCommercialBilling = (input: {
           parameters.proration_date = request.prorationDate;
         }
         const prorationKey =
-          request.prorationDate === undefined ? '' : ':' + request.prorationDate;
+          request.prorationDate === undefined
+            ? ''
+            : ':' + request.prorationDate;
         await input.client.subscriptions.update(
           request.subscriptionId,
           parameters,

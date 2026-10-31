@@ -1,3 +1,4 @@
+import { COACHING_SCRIPTS_MIGRATION_ID } from '../coaching/scripts';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../inbound/callback-booking-attempt-migration';
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
@@ -65,27 +66,42 @@ describe('dialer database migrations', () => {
       CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
       CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
     ] as const;
-    const upgradeId = DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID;
+    const upgradeId =
+      DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID;
     const harness = createDatabaseHarness(oldMigrations);
 
     await migrateDialerDatabase(harness.database);
     const migrationInserts = harness.calls
-      .filter((call) => call.text.includes('INSERT INTO consuelo_dialer_schema_migrations'))
+      .filter((call) =>
+        call.text.includes('INSERT INTO consuelo_dialer_schema_migrations'),
+      )
       .map((call) => call.values[0]);
-    expect(migrationInserts).toEqual([upgradeId]);
-    expect(harness.applied).toEqual(new Set([...oldMigrations, upgradeId]));
+    expect(migrationInserts).toEqual([
+      upgradeId,
+      COACHING_SCRIPTS_MIGRATION_ID,
+    ]);
+    expect(harness.applied).toEqual(
+      new Set([...oldMigrations, upgradeId, COACHING_SCRIPTS_MIGRATION_ID]),
+    );
     const sql = harness.calls.map((call) => call.text).join('\n');
-    expect(sql).toContain('CREATE TABLE IF NOT EXISTS consuelo_lead_connector_company_credentials');
-    expect(sql).not.toMatch(/DROP TABLE|TRUNCATE TABLE|DELETE FROM consuelo_lead_connector/i);
+    expect(sql).toContain(
+      'CREATE TABLE IF NOT EXISTS consuelo_lead_connector_company_credentials',
+    );
+    expect(sql).not.toMatch(
+      /DROP TABLE|TRUNCATE TABLE|DELETE FROM consuelo_lead_connector/i,
+    );
 
     await migrateDialerDatabase(harness.database);
     expect(
       harness.calls
-        .filter((call) => call.text.includes('INSERT INTO consuelo_dialer_schema_migrations'))
+        .filter((call) =>
+          call.text.includes('INSERT INTO consuelo_dialer_schema_migrations'),
+        )
         .map((call) => call.values[0]),
-    ).toEqual([upgradeId]);
-    await expect(rollbackDialerDatabaseMigration(harness.database, upgradeId))
-      .rejects.toThrow('This migration has no supported rollback');
+    ).toEqual([upgradeId, COACHING_SCRIPTS_MIGRATION_ID]);
+    await expect(
+      rollbackDialerDatabaseMigration(harness.database, upgradeId),
+    ).rejects.toThrow('This migration has no supported rollback');
   });
 
   it('owns the complete standalone Postgres schema without Twenty compatibility tables', async () => {
@@ -132,6 +148,7 @@ describe('dialer database migrations', () => {
         CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
         CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
         DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+        COACHING_SCRIPTS_MIGRATION_ID,
       ]),
     );
   });
@@ -229,7 +246,7 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(14);
+    expect(migrationInserts).toHaveLength(15);
   });
 
   it('upgrades an RD7B schema with only the additive booking evidence migrations', async () => {
@@ -251,15 +268,22 @@ describe('dialer database migrations', () => {
     await migrateDialerDatabase(harness.database);
 
     const sql = harness.calls.map((call) => call.text).join('\n');
-    expect(sql).toContain('CREATE TABLE IF NOT EXISTS dialer_callback_booking_events');
-    expect(sql).not.toContain('CREATE TABLE IF NOT EXISTS dialer_callback_obligations');
-    expect(sql).not.toContain('CREATE TABLE IF NOT EXISTS dialer_customer_callback_admission');
+    expect(sql).toContain(
+      'CREATE TABLE IF NOT EXISTS dialer_callback_booking_events',
+    );
+    expect(sql).not.toContain(
+      'CREATE TABLE IF NOT EXISTS dialer_callback_obligations',
+    );
+    expect(sql).not.toContain(
+      'CREATE TABLE IF NOT EXISTS dialer_customer_callback_admission',
+    );
     expect(harness.applied).toEqual(
       new Set([
         ...previousMigrations,
         CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
         CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
         DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+        COACHING_SCRIPTS_MIGRATION_ID,
       ]),
     );
   });

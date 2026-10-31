@@ -21,6 +21,7 @@ import {
   createInteractionRenderer,
 } from './workspace-dom.js';
 import type { WorkspaceLaunch } from './workspace-launch.js';
+import { readScriptFile } from './coaching-scripts.js';
 import { renderLeadConnectorEmbed } from './view.js';
 
 import { normalizeAsyncError } from '../errors/normalize-async-error';
@@ -51,6 +52,13 @@ let workspace: CallingWorkspace = {
   mode: surface === 'admin' ? 'inbound' : 'outbound',
   compact: false,
 };
+try {
+  const saved = localStorage.getItem('consuelo-calling-theme');
+  if (saved === 'light' || saved === 'dark') workspace.theme = saved;
+} catch {
+  /* Embedded storage can be unavailable. */
+}
+let focusPageAfterPaint = false;
 let managementError: string | null = null;
 let pendingLaunch: WorkspaceLaunch | null = null;
 const consumedLaunches = new Set<string>();
@@ -68,6 +76,7 @@ const applyLaunch = async (): Promise<void> => {
     consumedLaunches.add(launch.id);
     bridge.acknowledgeLaunch(launch.id); // Accepted locally; never replay an uncertain external effect.
     workspace = {
+      ...workspace,
       screen: 'calling',
       mode: activeCallingMode(state) ?? launch.mode,
       compact: false,
@@ -202,7 +211,7 @@ const bridge = createLeadConnectorParentBridge(window, {
       });
       return;
     }
-    workspace = { screen: 'calling', mode: 'outbound', compact: false };
+    workspace = { ...workspace, screen: 'calling', mode: 'outbound', compact: false };
     controller.updateSetup({
       mode: 'single',
       callingMode: 'single',
@@ -238,10 +247,11 @@ const updateRefresh = (): void => {
   if (surface === 'overlay') {
     const inbound = sessionPresentation(state, 'inbound');
     const outbound = sessionPresentation(state, 'outbound');
-    const current = inbound.active ? inbound : outbound;
+    const mode=activeCallingMode(state)??(inbound.active?'inbound':'outbound');
+    const current=mode==='inbound'?inbound:outbound;
     bridge.sendWorkspaceStatus({
       active: inbound.active || outbound.active,
-      mode: inbound.active ? 'inbound' : 'outbound',
+      mode,
       status: current.status,
     });
   }
@@ -319,18 +329,12 @@ const mountComboboxes = (): void => {
   }
 };
 
-const reportHeight = (): void => {
-  if (surface === 'overlay' && !workspace.compact && root.firstElementChild)
-    bridge.sendWorkspaceHeight(
-      Math.ceil(root.firstElementChild.getBoundingClientRect().height),
-    );
-};
-const heightObserver = new ResizeObserver(reportHeight);
 const paint = (): void => {
   const state = controller.getState();
   const callMode = activeCallingMode(state);
   if (callMode) workspace.mode = callMode;
   if (state.inboundOperator.offers.length) workspace.screen = 'calling';
+  document.documentElement.dataset.theme = workspace.theme ?? 'system';
   replaceWorkspace(
     root,
     renderLeadConnectorEmbed(state, { surface, workspace }),
@@ -343,9 +347,12 @@ const paint = (): void => {
     root.querySelector('.workspace-content')?.prepend(notice);
   }
   mountComboboxes();
-  heightObserver.disconnect();
-  if (root.firstElementChild) heightObserver.observe(root.firstElementChild);
-  reportHeight();
+  if (focusPageAfterPaint) {
+    root
+      .querySelector<HTMLElement>('#workspace-page-title')
+      ?.focus({ preventScroll: true });
+    focusPageAfterPaint = false;
+  }
   updateRefresh();
 };
 const interactionRenderer = createInteractionRenderer(root, paint);
@@ -381,6 +388,20 @@ const openHostedBilling = async (
   }
 };
 
+const loadScripts = async (): Promise<void> => {
+  if (!controller.getState().sessionToken) return;
+  try {
+    workspace.coachingLibrary = await api.listCoachingScripts();
+    managementError = null;
+  } catch (error: unknown) {
+    managementError =
+      error instanceof Error
+        ? error.message
+        : 'Your script library is unavailable. Please try again.';
+  }
+  render();
+};
+
 const currentBillingQuantities = () => {
   const dashboard = controller.getState().commercialDashboard;
   const quantities = { single: 0, standard: 0, power: 0, additionalNumber: 0 };
@@ -404,7 +425,7 @@ const billingQuantitiesFromFormData = (data: FormData) => ({
 });
 
 const readElement = (target: EventTarget | null): HTMLElement | null =>
-  target instanceof HTMLElement
+  target instanceof Element
     ? target.closest<HTMLElement>('[data-action]')
     : null;
 
@@ -429,12 +450,43 @@ root.addEventListener('click', (event) => {
       return;
     }
     workspace.compact = false;
+    focusPageAfterPaint = true;
+    managementError = null;
     if (action === 'workspace-inbound' || action === 'workspace-outbound') {
       workspace.screen = 'calling';
       workspace.mode = action === 'workspace-inbound' ? 'inbound' : 'outbound';
     }
-    if (action === 'workspace-settings') {
-      workspace.screen = 'settings';
+    if (action === 'workspace-theme') {
+      const theme = actionElement.dataset.themeValue;
+      if (theme === 'system' || theme === 'light' || theme === 'dark') {
+        workspace.theme = theme;
+        try {
+          localStorage.setItem('consuelo-calling-theme', theme);
+        } catch {}
+      }
+      render();
+      return;
+    }
+    const page = action.slice('workspace-'.length);
+    if (
+      [
+        'settings',
+        'team',
+        'numbers',
+        'billing',
+        'appearance',
+        'mercury',
+      ].includes(page)
+    )
+      workspace.screen = page as CallingWorkspace['screen'];
+    if (
+      [
+        'workspace-settings',
+        'workspace-team',
+        'workspace-numbers',
+        'workspace-billing',
+      ].includes(action)
+    ) {
       managementError = null;
       void controller.loadAdministration().then((error) => {
         managementError = error;
@@ -442,6 +494,11 @@ root.addEventListener('click', (event) => {
       });
     }
     if (action === 'workspace-history') workspace.screen = 'history';
+    if (action === 'workspace-mercury') {
+      workspace.scriptId = undefined;
+      workspace.scriptDraft = undefined;
+      void loadScripts();
+    }
     if (action === 'workspace-calling') workspace.screen = 'calling';
     render();
     return;
@@ -501,6 +558,43 @@ root.addEventListener('click', (event) => {
     bridge.openWorkspace(launch);
     return;
   }
+  if (action === 'script-new') {
+    if (workspace.scriptSaving) return;
+    workspace.scriptId = undefined;
+    workspace.scriptDraft = {
+      id: crypto.randomUUID(),
+      title: '',
+      content: '',
+      expectedRevision: 0,
+    };
+    render();
+    return;
+  }
+  if (action === 'script-open' || action === 'script-edit') {
+    if (workspace.scriptSaving) return;
+    const script = workspace.coachingLibrary?.scripts.find(
+      (s) => s.id === actionElement.dataset.scriptId,
+    );
+    if (script) {
+      workspace.scriptId = script.id;
+      workspace.scriptDraft =
+        action === 'script-edit' && script.canEdit
+          ? {
+              id: script.id,
+              title: script.title,
+              content: script.content,
+              expectedRevision: script.revision,
+            }
+          : undefined;
+      render();
+    }
+    return;
+  }
+  if (action === 'script-cancel') {
+    workspace.scriptDraft = undefined;
+    render();
+    return;
+  }
   if (action === 'retry') {
     controller.retry();
     bootstrapTimer = setTimeout(failBootstrap, 5000);
@@ -555,8 +649,9 @@ root.addEventListener('click', (event) => {
     controller.clearBillingPreview();
   }
   if (action === 'manage-billing') {
-    const hasSubscription =
-      controller.getState().commercialDashboard?.subscription !== null;
+    const hasSubscription = Boolean(
+      controller.getState().commercialDashboard?.subscription,
+    );
     void openHostedBilling(() =>
       hasSubscription
         ? controller.openBillingPortal()
@@ -564,6 +659,8 @@ root.addEventListener('click', (event) => {
     );
   }
   if (action === 'select-call' && actionElement.dataset.callId) {
+    workspace.screen = 'call-detail';
+    render();
     void controller.selectCall(actionElement.dataset.callId);
   }
   if (action === 'load-more-history') {
@@ -619,6 +716,34 @@ root.addEventListener('click', (event) => {
         reason: 'rep_declined',
       });
     }
+  }
+  if (
+    action === 'request-release-number' &&
+    actionElement.dataset.phoneNumber
+  ) {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'workspace-dialog';
+    const title = document.createElement('h2');
+    title.textContent = 'Remove this number?';
+    const description = document.createElement('p');
+    description.textContent =
+      'This number will stop receiving calls for your workspace. This cannot be undone.';
+    const cancel = document.createElement('button');
+    cancel.className = 'button button--secondary';
+    cancel.textContent = 'Keep number';
+    cancel.onclick = () => dialog.close();
+    const confirm = document.createElement('button');
+    confirm.className = 'button button--danger';
+    confirm.textContent = 'Remove number';
+    confirm.onclick = () => {
+      dialog.close();
+      void controller.releaseNumber(actionElement.dataset.phoneNumber!);
+    };
+    dialog.append(title, description, cancel, confirm);
+    dialog.addEventListener('close', () => dialog.remove());
+    document.body.append(dialog);
+    dialog.showModal();
+    return;
   }
   if (action === 'release-number' && actionElement.dataset.phoneNumber) {
     void controller.releaseNumber(actionElement.dataset.phoneNumber);
@@ -682,6 +807,38 @@ root.addEventListener('change', (event) => {
     !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)
   )
     return;
+  if (target.dataset.field === 'inbound-endpoint') {
+    workspace.answeringEndpointIds = [
+      ...root.querySelectorAll<HTMLInputElement>(
+        '[data-field="inbound-endpoint"]',
+      ),
+    ]
+      .filter((e) => e.checked && !e.disabled)
+      .map((e) => e.dataset.endpointId!);
+  }
+  if (
+    target.dataset.field === 'script-file' &&
+    target instanceof HTMLInputElement &&
+    target.files?.[0]
+  ) {
+    const draft = workspace.scriptDraft;
+    if (draft)
+      void readScriptFile(target.files[0])
+        .then((imported) => {
+          if (workspace.scriptDraft === draft) {
+            Object.assign(draft, imported);
+            managementError = null;
+            render();
+          }
+        })
+        .catch((error) => {
+          managementError =
+            error instanceof Error
+              ? error.message
+              : 'Script could not be imported.';
+          render();
+        });
+  }
   if (target.dataset.field === 'queue') {
     const [pipelineId, stageId] = target.value.split(':');
     if (pipelineId && stageId) {
@@ -732,6 +889,18 @@ let searchTimer: ReturnType<typeof setTimeout> | null = null;
 root.addEventListener('input', (event) => {
   const target = event.target;
   if (
+    workspace.scriptDraft &&
+    target instanceof HTMLInputElement &&
+    target.name === 'title'
+  )
+    workspace.scriptDraft.title = target.value;
+  if (
+    workspace.scriptDraft &&
+    target instanceof HTMLTextAreaElement &&
+    target.name === 'content'
+  )
+    workspace.scriptDraft.content = target.value;
+  if (
     !(target instanceof HTMLInputElement) ||
     target.dataset.field !== 'search'
   )
@@ -754,6 +923,38 @@ root.addEventListener('submit', (event) => {
   if (!(form instanceof HTMLFormElement)) return;
   event.preventDefault();
   const data = new FormData(form);
+  if (
+    form.dataset.form === 'coaching-script' &&
+    workspace.scriptDraft &&
+    !workspace.scriptSaving
+  ) {
+    const draft = {
+      ...workspace.scriptDraft,
+      title: String(data.get('title') ?? ''),
+      content: String(data.get('content') ?? ''),
+    };
+    workspace.scriptSaving = true;
+    managementError = null;
+    render();
+    void api
+      .saveCoachingScript(draft)
+      .then((saved) => {
+        if (workspace.scriptDraft?.id === draft.id) {
+          workspace.scriptId = saved.id;
+          workspace.scriptDraft = undefined;
+        }
+        return loadScripts();
+      })
+      .catch((error) => {
+        managementError =
+          error instanceof Error ? error.message : 'Script could not be saved.';
+      })
+      .finally(() => {
+        workspace.scriptSaving = false;
+        render();
+      });
+    return;
+  }
   if (form.dataset.form === 'commercial-seat') {
     void controller.saveSeat({
       userId: String(data.get('userId') ?? '').trim(),
@@ -872,7 +1073,6 @@ window.addEventListener('beforeunload', () => {
   if (inboundHeartbeatTimer) clearInterval(inboundHeartbeatTimer);
   idleRefreshScheduler.stop();
   interactionRenderer.dispose();
-  heightObserver.disconnect();
   voice.disconnect();
   bridge.stop();
 });

@@ -114,6 +114,13 @@ const createInboundApi = (): InboundOperatorApi => {
 
 const createApi = () =>
   ({
+    listCoachingScripts: mock(async () => ({ scripts: [] })),
+    saveCoachingScript: mock(async (draft) => ({
+      ...draft,
+      revision: 1,
+      updatedAt: new Date().toISOString(),
+      canEdit: true,
+    })),
     setSessionToken: mock(() => undefined),
     createEmbedSession: mock(async () => ({
       token: 'embed-token',

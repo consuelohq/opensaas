@@ -17,7 +17,6 @@
   var ready = false;
   var busy = false;
   var minimized = false;
-  var expandedHeight = 640;
   var pendingWorkspace = null;
   var workspaceLaunchSent = false;
   var ownedLocation = null;
@@ -117,7 +116,7 @@
     if (host) host.setAttribute('data-minimized', compact ? 'true' : 'false');
     if (panel) {
       panel.hidden = false;
-      panel.style.height = compact ? '72px' : expandedHeight + 'px';
+      panel.style.height = compact ? '72px' : '';
     }
     post({
       type: 'consuelo.leadconnector/workspace-presentation',
@@ -153,7 +152,7 @@
     button.className = 'consuelo-dialer-launcher';
     button.setAttribute('aria-label', 'Open Consuelo Dialer');
     button.innerHTML =
-      '<span aria-hidden="true" class="consuelo-dialer-launcher__icon">C</span>' +
+      '<img src="'+origin+'/consuelo-logo.svg" alt="" class="consuelo-dialer-launcher__icon" />' +
       '<span>Dial</span>';
     button.addEventListener('click', openOverlay);
     document.body.appendChild(button);
@@ -480,8 +479,7 @@
     ) {
       var modernHost = document.getElementById(hostId);
       if (modernHost) modernHost.setAttribute('data-modern', 'true');
-      expandedHeight = data.height + 2;
-      if (panel) panel.style.height = expandedHeight + 'px';
+      // The host owns a stable viewport; child content scrolls inside it.
     }
     if (data.type === 'consuelo.leadconnector/ready') {
       ready = true;
@@ -524,7 +522,7 @@
       var previouslyBusy = busy;
       busy = data.active || pendingWorkspace !== null;
       var host = document.getElementById(hostId);
-      if (host) host.setAttribute('data-live', busy ? 'true' : 'false');
+      if(host){host.setAttribute('data-modern','true');host.setAttribute('data-live',busy?'true':'false');}
       // Raise incoming calls once, while repeated snapshots respect a deliberate minimize.
       var incoming = data.status === 'offering';
       if (

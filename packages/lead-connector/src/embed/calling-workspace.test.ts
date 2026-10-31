@@ -160,4 +160,63 @@ describe('rep-first calling workspace', () => {
       doc.querySelector('[data-form="commercial-billing-checkout"]'),
     ).toBeNull();
   });
+  it('opens management as dedicated pages and makes Starter minutes the billing entry', () => {
+    const state = rep();
+    const doc = dom(
+      renderLeadConnectorEmbed(state, {
+        surface: 'admin',
+        workspace: { screen: 'settings', mode: 'inbound', compact: false },
+      }),
+    );
+    expect(doc.querySelector('[data-action="workspace-team"]')).not.toBeNull();
+    expect(
+      doc.querySelector('[data-action="workspace-numbers"]'),
+    ).not.toBeNull();
+    expect(
+      doc.querySelector('[data-action="workspace-mercury"]'),
+    ).not.toBeNull();
+    expect(doc.querySelector('details[data-disclosure="team"]')).toBeNull();
+    expect(
+      doc.querySelector('.workspace-footer [data-action="workspace-billing"]')
+        ?.textContent,
+    ).toContain('Starter');
+    expect(doc.querySelector('.workspace-footer a')?.getAttribute('href')).toBe(
+      'https://docs.consuelohq.com/',
+    );
+  });
+  it('keeps idle inbound quiet while making browser setup discoverable', () => {
+    const doc = dom(renderLeadConnectorEmbed(rep(), { surface: 'admin' }));
+    expect(doc.querySelector('[data-session-status]')).toBeNull();
+    expect(doc.body.textContent).toContain('This browser');
+    expect(
+      doc.querySelector('[data-action="inbound-readiness"]')?.textContent,
+    ).toContain('Start receiving calls');
+  });
+  it('renders a real brand asset and hides opaque references in history', () => {
+    const state = rep();
+    state.callHistory = [
+      {
+        id: 'session-internal',
+        contactId: 'J4Aei7h8V9qALyAADYI4',
+        contactName: 'J4Aei7h8V9qALyAADYI4',
+        representative: '0h7yfqyVzjJv0oYz01q3',
+        status: 'completed',
+        durationSeconds: 9,
+        calls: [],
+        transcriptStatus: null,
+      },
+    ];
+    const doc = dom(
+      renderLeadConnectorEmbed(state, {
+        surface: 'overlay',
+        workspace: { screen: 'history', mode: 'outbound', compact: false },
+      }),
+    );
+    expect(doc.querySelector('img[data-brand-logo]')).not.toBeNull();
+    expect(doc.body.textContent).not.toContain('J4Aei7h8V9qALyAADYI4');
+    expect(doc.body.textContent).not.toContain('0h7yfqyVzjJv0oYz01q3');
+    expect(
+      doc.querySelector('[data-action="select-call"]')?.textContent,
+    ).toContain('Call');
+  });
 });

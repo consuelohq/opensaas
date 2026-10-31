@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import {COACHING_SCRIPTS_MIGRATION_ID} from '../src/coaching/scripts';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../src/inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../src/inbound/callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../src/inbound/callback-booking-event-migration';
@@ -338,8 +339,8 @@ const main = async () => {
     // rollback test is confined to this disposable local database; remove
     // only its ledger entry to exercise the pre-014 down chain.
     await database.query(
-      'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = $1',
-      [DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID],
+      'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = ANY($1::text[])',
+      [[DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,COACHING_SCRIPTS_MIGRATION_ID]],
     );
     await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);

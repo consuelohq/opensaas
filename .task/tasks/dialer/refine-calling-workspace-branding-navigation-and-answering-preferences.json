@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/refine-calling-workspace-branding-navigation-and-answering-preferences",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2716,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2716",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-refine-calling-workspace-branding-navigation-and-answering-preferences",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4e996bafa195",
+  "tmuxSession": "opensaas-dialer-refine-calling-workspace-branding-navigation-and-4e996baf",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-refine-calling-workspace-branding-navigation-and-answering-preferences/.task/session.json",
+  "createdAt": "2026-10-30T23:22:23.152Z"
+}

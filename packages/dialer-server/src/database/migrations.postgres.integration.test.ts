@@ -1,3 +1,4 @@
+import {COACHING_SCRIPTS_MIGRATION_ID} from '../coaching/scripts';
 import { describe, expect, it } from 'bun:test';
 import { createCipheriv, createHash, randomBytes } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -126,8 +127,8 @@ suite('LeadConnector company credential upgrades with isolated PostgreSQL', () =
         ],
       );
       await pool.query(
-        'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = $1',
-        [DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID],
+        'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = ANY($1::text[])',
+        [[DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,COACHING_SCRIPTS_MIGRATION_ID]],
       );
       await pool.query('DROP TABLE consuelo_lead_connector_company_credentials');
 
@@ -153,7 +154,7 @@ suite('LeadConnector company credential upgrades with isolated PostgreSQL', () =
       const ledgerAfterUpgrade = (await pool.query(
         'SELECT migration_id, applied_at FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
       )).rows;
-      expect(ledgerAfterUpgrade).toHaveLength(14);
+      expect(ledgerAfterUpgrade).toHaveLength(15);
       expect(ledgerAfterUpgrade.slice(0, 13)).toEqual(oldLedger);
 
       await migrateDialerDatabase(pool);
@@ -189,7 +190,7 @@ suite('LeadConnector company credential upgrades with isolated PostgreSQL', () =
       expect((await pool.query(
         'SELECT migration_id, applied_at FROM consuelo_dialer_schema_migrations WHERE migration_id <> $1 ORDER BY migration_id',
         [DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID],
-      )).rows).toEqual(oldLedger);
+      )).rows).toEqual(ledgerAfterUpgrade.filter(row=>row.migration_id!==DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID));
 
       const secret = 'fixture-only-leadconnector-context-secret';
       const layer = Layer.mergeAll(

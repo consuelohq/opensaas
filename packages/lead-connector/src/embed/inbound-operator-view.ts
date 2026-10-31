@@ -2,6 +2,7 @@ import type {
   InboundOperatorEndpoint,
   InboundOperatorState,
 } from './inbound-operator.js';
+import { icon } from './workspace-icons.js';
 import { inboundPresentation } from './calling-workspace.js';
 
 const escapeHtml = (value: unknown): string =>
@@ -16,8 +17,9 @@ const title = (value: string) =>
 const endpointRow = (
   endpoint: InboundOperatorEndpoint,
   ready: boolean,
+  selected?: readonly string[],
 ): string =>
-  `<label class="inbound-endpoint-row"><input type="checkbox" data-field="inbound-endpoint" data-endpoint-id="${escapeHtml(endpoint.endpointId)}" data-endpoint-kind="${endpoint.kind}"${(endpoint.active ?? ready) ? ' checked' : ''}${endpoint.healthy && !ready ? '' : ' disabled'} /><span class="device-icon" aria-hidden="true">${endpoint.kind === 'phone' ? '↗' : '◉'}</span><span><strong>${endpoint.kind === 'phone' ? 'My phone' : 'This browser'}</strong><small>${endpoint.healthy ? (endpoint.kind === 'phone' ? 'Answer on your forwarding phone' : 'Use your microphone and speakers') : 'Unavailable — check your device settings'}</small></span></label>`;
+  `<label class="inbound-endpoint-row"><input type="checkbox" data-field="inbound-endpoint" data-endpoint-id="${escapeHtml(endpoint.endpointId)}" data-endpoint-kind="${endpoint.kind}"${(selected ? selected.includes(endpoint.endpointId) : (endpoint.active ?? ready)) ? ' checked' : ''}${endpoint.healthy && !ready ? '' : ' disabled'} /><span class="device-icon" aria-hidden="true">${icon(endpoint.kind === 'phone' ? 'phone' : 'browser')}</span><span><strong>${endpoint.kind === 'phone' ? 'My phone' : 'This browser'}</strong><small>${endpoint.healthy ? (endpoint.kind === 'phone' ? 'Answer on your forwarding phone' : 'Use your microphone and speakers') : 'Unavailable — check your device settings'}</small></span></label>`;
 
 const renderOffers = (state: InboundOperatorState): string =>
   state.offers
@@ -38,6 +40,7 @@ const renderWrapUp = (state: InboundOperatorState): string => {
 };
 export const renderInboundOperatorPanel = (
   state: InboundOperatorState,
+  options: { selectedEndpointIds?: readonly string[] } = {},
 ): string => {
   const status = inboundPresentation(state);
   const fresh =
@@ -50,15 +53,15 @@ export const renderInboundOperatorPanel = (
     (state.rep.ready || state.rep.endpoints.some((e) => e.healthy));
   const busy = state.rep.assignment !== null || state.offers.length > 0;
   return `<section class="inbound-operator-panel" aria-label="Incoming calls" data-inbound-phase="${state.phase}"${state.rep.assignment ? ` data-assignment-id="${escapeHtml(state.rep.assignment.assignmentId)}"` : ''}>
-    <div class="calling-heading"><p class="eyebrow">Consuelo Inbound</p><h1>${status.active ? status.label : 'Be there for the next call.'}</h1><p>${status.detail}</p></div>
-    <div class="session-banner" data-status="${status.status}"><span class="session-dot" aria-hidden="true"></span><span data-session-status role="status">${status.label}</span>${status.active ? '<button type="button" class="text-button" data-action="workspace-minimize">Minimize ↘</button>' : ''}</div>
+    <div class="calling-heading"><h1>${status.active ? status.label : 'Inbound calls'}</h1><p>${status.detail}</p></div>
+    ${status.active ? `<div class="session-banner" data-status="${status.status}"><span class="session-dot" aria-hidden="true"></span><span data-session-status role="status">${status.label}</span>${status.active ? '<button type="button" class="text-button" data-action="workspace-minimize">Minimize ↘</button>' : ''}</div>` : ''}
     ${state.error ? `<div class="notice notice--error" role="alert">${escapeHtml(state.error.message)}</div>` : ''}
     ${status.status === 'reconnecting' ? '<div class="recovery-note"><p>Your place is protected while we check the connection.</p><button type="button" class="button button--secondary" data-action="inbound-reconnect">Reconnect</button></div>' : ''}
     ${!state.rep.assignment || state.rep.assignment.phase === 'offering' ? renderOffers(state) : ''}${renderWrapUp(state)}
     ${state.rep.assignment?.phase === 'connected' ? (state.rep.endpoints.find((e) => e.endpointId === state.rep.assignment?.endpointId)?.kind === 'browser' ? '<button type="button" class="button button--danger primary-wide" data-action="inbound-hang-up">End call</button>' : '<p class="form-footnote">End the call on your phone. We’ll show wrap-up here when it finishes.</p>') : ''}
-    ${!busy ? `<fieldset class="answering-devices"><legend>Answer calls on</legend>${state.rep.endpoints.map((e) => endpointRow(e, state.rep.ready)).join('') || '<p class="resource-empty">No answering device is set up yet. Ask your administrator to add one.</p>'}</fieldset>` : ''}
+    ${!busy ? `<fieldset class="answering-devices"><legend>Answer calls on</legend>${state.rep.endpoints.map((e) => endpointRow(e, state.rep.ready, state.rep.ready ? undefined : options.selectedEndpointIds)).join('') || '<p class="resource-empty">No answering device is set up yet.</p>'}${!state.rep.endpoints.some((e) => e.kind === 'browser') ? `<div class="device-unavailable"><span class="device-icon">${icon('browser')}</span><span><strong>This browser</strong><small>Browser answering isn’t enabled for this workspace yet.</small></span></div>` : ''}</fieldset>` : ''}
     <button type="button" class="button ${state.rep.ready ? 'button--secondary' : 'button--primary'} primary-wide" data-action="inbound-readiness" data-ready="${!state.rep.ready}"${canToggle ? '' : ' disabled'}>${state.pendingAction ? 'Updating…' : state.rep.ready ? 'Stop receiving calls' : 'Start receiving calls'}</button>
-    ${!status.active ? '<p class="form-footnote">Incoming calls are routed to you while you’re receiving calls.</p>' : ''}
+    
     <details class="workspace-details" data-disclosure="inbound-queue"><summary>Queue details <span>${state.queue.waitingCount} waiting</span></summary><dl class="detail-list"><div><dt>Queue</dt><dd>${escapeHtml(state.queue.queueName || 'Your team')}</dd></div><div><dt>Longest wait</dt><dd>${state.queue.oldestWaitSeconds}s</dd></div><div><dt>Business hours</dt><dd>${title(state.queue.businessHours)}</dd></div><div><dt>Overflow</dt><dd>${title(state.queue.overflow)}</dd></div><div><dt>Number</dt><dd>${escapeHtml(state.configuration.maskedNumber)}</dd></div></dl></details>
   </section>`;
 };

@@ -2,12 +2,14 @@ export type DialerPlanCode = 'single' | 'standard' | 'power';
 
 export type DialerPlanDefinition = {
   code: DialerPlanCode;
+  name?: string;
   priceCents: number;
   stripePriceId: string;
   maxNumbersPerSeat: number;
   includedMinutes: number | null;
   providerBudgetCents: number | null;
   predictive: boolean;
+  parallelDialing?: boolean;
   recordings: boolean;
   transcripts: boolean;
 };
@@ -85,7 +87,9 @@ export const loadDialerPlanCatalog = (
       'STRIPE_PRICE_ADDITIONAL_NUMBER_MONTHLY',
     ),
   };
-  if (new Set(Object.values(priceIds)).size !== Object.values(priceIds).length) {
+  if (
+    new Set(Object.values(priceIds)).size !== Object.values(priceIds).length
+  ) {
     throw new Error('Commercial Stripe price IDs must be unique');
   }
 

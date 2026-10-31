@@ -1,7 +1,23 @@
+import type { CoachingLibrary, ScriptDraft } from './coaching-scripts.js';
 import type { LeadConnectorEmbedState } from './state-machine.js';
 
 export type CallingWorkspace = {
-  screen: 'calling' | 'settings' | 'history';
+  screen:
+    | 'calling'
+    | 'settings'
+    | 'history'
+    | 'call-detail'
+    | 'team'
+    | 'numbers'
+    | 'billing'
+    | 'appearance'
+    | 'mercury';
+  theme?: 'system' | 'light' | 'dark';
+  answeringEndpointIds?: string[];
+  coachingLibrary?: CoachingLibrary;
+  scriptDraft?: ScriptDraft;
+  scriptId?: string;
+  scriptSaving?: boolean;
   mode: 'inbound' | 'outbound';
   compact: boolean;
 };

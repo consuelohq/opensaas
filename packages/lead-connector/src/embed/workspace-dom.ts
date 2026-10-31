@@ -24,7 +24,7 @@ export const replaceWorkspace = (root: HTMLElement, html: string): void => {
     ...root.querySelectorAll<DraftField>('input, textarea, select'),
   ];
   const drafts = new Map(
-    fields.map((e) => [
+    fields.filter(e=>!(e.tagName==='INPUT'&&(e as HTMLInputElement).type==='file')).map((e) => [
       key(e),
       {
         value: e.value,
@@ -64,17 +64,33 @@ export const replaceWorkspace = (root: HTMLElement, html: string): void => {
   );
   const focusedAction = (root.ownerDocument.activeElement as HTMLElement | null)
     ?.dataset.action;
+  const oldScreen =
+    root.querySelector<HTMLElement>('[data-workspace]')?.dataset
+      .workspaceScreen;
+  const oldContent = root.querySelector<HTMLElement>('.workspace-content');
+  const oldScroll = oldContent?.scrollTop ?? 0;
   root.innerHTML = html;
+  if (
+    oldScreen &&
+    root.querySelector<HTMLElement>('[data-workspace]')?.dataset
+      .workspaceScreen === oldScreen
+  ) {
+    const content = root.querySelector<HTMLElement>('.workspace-content');
+    if (content) content.scrollTop = oldScroll;
+  }
   for (const field of root.querySelectorAll<DraftField>(
     'input, textarea, select',
   )) {
     const old = drafts.get(key(field));
     if (!old || old.original !== originalValue(field)) continue;
+    const checkable =
+      'checked' in field && ['checkbox', 'radio'].includes(field.type);
     if (
-      field.tagName !== 'SELECT' ||
-      [...(field as HTMLSelectElement).options].some(
-        (o) => o.value === old.value,
-      )
+      !checkable &&
+      (field.tagName !== 'SELECT' ||
+        [...(field as HTMLSelectElement).options].some(
+          (o) => o.value === old.value,
+        ))
     )
       field.value = old.value;
     if (
