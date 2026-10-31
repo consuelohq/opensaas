@@ -84,3 +84,20 @@ describe('pay first checkout selection', () => {
       expect(() => stripeCheckoutUrl(url)).toThrow();
   });
 });
+
+describe('combined pricing selections', () => {
+  it('preserves explicit base plan and all add-ons without a guessed subscription', async () => {
+    const { selectionToQuery } = await import('../src/lib/checkout-selection');
+    const chosen = {
+      plan: 'agency',
+      billing: 'annual',
+      seats: 2,
+      mercurySeats: 2,
+      minutePack: 600,
+      numberPack: 10,
+    } as const;
+    const restored = selectionFromQuery(selectionToQuery(chosen));
+    expect(restored).toEqual(chosen);
+    expect(quoteCheckout(restored).dueCents).toBe(456200);
+  });
+});

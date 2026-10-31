@@ -9,6 +9,8 @@ import {
   pricingPlans,
   pricingFaqItems,
   pricingAccountLink,
+  minutePacks,
+  numberPacks,
 } from '../data/pricing-content';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
 import '../styles/pricing.css';
@@ -176,10 +178,10 @@ import '../styles/pricing.css';
             >
           </p>
         </div>
-        <div class="team-planner" data-team-planner hidden>
-          <div>
+        <div class="team-planner" id="team-planner" data-team-planner hidden>
+          <div class="team-planner__intro">
             <p class="pricing-eyebrow">BUYING FOR YOUR TEAM?</p><p>
-              See the seat cost before you start.
+              Choose a new plan for your team.
             </p>
           </div>
           <div class="team-planner__inputs">
@@ -207,6 +209,52 @@ import '../styles/pricing.css';
               /></label
             >
           </div>
+          <details class="team-planner__addons" data-team-addons-details>
+            <summary
+              >Add coaching, minutes or numbers <PricingIcon
+                name="chevron"
+              /></summary
+            >
+            <div class="team-planner__options">
+              <label class="team-planner__mercury"
+                ><input type="checkbox" data-team-mercury /><span
+                  >Mercury coaching<br /><small
+                    >$25 per rep / month · all selected reps</small
+                  ></span
+                ></label
+              >
+              <label
+                >Extra connected minutes<select data-team-minutes
+                  ><option value="0">No extra minutes</option>{
+                    minutePacks.map((pack) => (
+                      <option value={pack.minutes}>
+                        {pack.minutes.toLocaleString('en-US')} minutes · $
+                        {pack.priceCents / 100} once
+                      </option>
+                    ))
+                  }</select
+                ></label
+              >
+              <label
+                >Extra numbers<select data-team-numbers
+                  ><option value="0">No extra numbers</option>{
+                    numberPacks.map((pack) => (
+                      <option value={pack.numbers}>
+                        {pack.numbers}{' '}
+                        {pack.numbers === 1 ? 'number' : 'numbers'} · $
+                        {pack.priceCents / 100} / month
+                      </option>
+                    ))
+                  }</select
+                ></label
+              >
+            </div>
+            <p class="team-planner__note">
+              These choices start a new subscription. Already subscribed? <a
+                href={pricingAccountLink.href}>Manage billing</a
+              >. Changes to an existing plan are not available here yet.
+            </p>
+          </details>
           <output data-team-total aria-live="polite"
             >$745 / month for 5 reps</output
           >
@@ -242,7 +290,16 @@ import '../styles/pricing.css';
   </main>
 </MarketingLayout>
 <script>
-  import { pricingPlans, quotePlan } from '../data/pricing-content';
+  import {
+    pricingPlans,
+    minutePacks,
+    numberPacks,
+  } from '../data/pricing-content';
+  import {
+    quoteCheckout,
+    selectionToQuery,
+    type CheckoutSelection,
+  } from '../lib/checkout-selection';
   const currency = (cents: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -252,6 +309,18 @@ import '../styles/pricing.css';
   const seats = document.querySelector<HTMLInputElement>('[data-seat-count]');
   const plan = document.querySelector<HTMLSelectElement>('[data-team-plan]');
   const output = document.querySelector<HTMLOutputElement>('[data-team-total]');
+  const mercury = document.querySelector<HTMLInputElement>(
+    '[data-team-mercury]',
+  );
+  const minutes = document.querySelector<HTMLSelectElement>(
+    '[data-team-minutes]',
+  );
+  const numbers = document.querySelector<HTMLSelectElement>(
+    '[data-team-numbers]',
+  );
+  const addonDetails = document.querySelector<HTMLDetailsElement>(
+    '[data-team-addons-details]',
+  );
   const currentBilling = () =>
     document.querySelector<HTMLInputElement>('input[name="billing"]:checked')
       ?.value === 'annual'
@@ -271,22 +340,27 @@ import '../styles/pricing.css';
       return;
     }
     seats.removeAttribute('aria-invalid');
-    const quote = quotePlan(plan.value, currentBilling(), count);
+    const selection: CheckoutSelection = {
+      plan: plan.value as CheckoutSelection['plan'],
+      billing: currentBilling(),
+      seats: count,
+      mercurySeats: mercury?.checked ? count : 0,
+      minutePack: Number(minutes?.value ?? 0),
+      numberPack: Number(numbers?.value ?? 0),
+    };
+    const quote = quoteCheckout(selection);
     checkout?.removeAttribute('aria-disabled');
     if (checkout)
-      checkout.href =
-        '/get-started?' +
-        new URLSearchParams({
-          plan: plan.value,
-          billing: currentBilling(),
-          seats: String(count),
-        });
+      checkout.href = '/get-started?' + selectionToQuery(selection).toString();
     output.textContent =
-      currency(quote.totalCents) +
+      currency(quote.recurringCents) +
       (quote.months === 12 ? ' / year' : ' / month') +
       ' for ' +
       count +
-      (count === 1 ? ' rep' : ' reps');
+      (count === 1 ? ' rep' : ' reps') +
+      (quote.oneTimeCents
+        ? ' + ' + currency(quote.oneTimeCents) + ' once'
+        : '');
   };
   const updateBilling = () => {
     const billing = currentBilling();
@@ -315,6 +389,61 @@ import '../styles/pricing.css';
   document
     .querySelectorAll('[data-billing-control] input')
     .forEach((input) => input.addEventListener('change', updateBilling));
+  const selectAddon = (addon: string | null) => {
+    if (addon === 'mercury' && mercury) mercury.checked = true;
+    else if (
+      addon?.startsWith('minutes-') &&
+      minutes &&
+      minutePacks.some((pack) => String(pack.minutes) === addon.slice(8))
+    )
+      minutes.value = addon.slice(8);
+    else if (
+      addon?.startsWith('numbers-') &&
+      numbers &&
+      numberPacks.some((pack) => String(pack.numbers) === addon.slice(8))
+    )
+      numbers.value = addon.slice(8);
+    else return false;
+    if (addonDetails) addonDetails.open = true;
+    updateTeam();
+    return true;
+  };
+  document.addEventListener('click', (event) => {
+    if (
+      event.button ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const link =
+      event.target instanceof Element
+        ? event.target.closest<HTMLAnchorElement>('a[href]')
+        : null;
+    if (!link || link.target === '_blank' || link.hasAttribute('download'))
+      return;
+    const url = new URL(link.href, location.href);
+    if (
+      url.origin !== location.origin ||
+      !/^\/pricing\/?$/.test(url.pathname) ||
+      !url.searchParams.has('addon')
+    )
+      return;
+    event.preventDefault();
+    if (selectAddon(url.searchParams.get('addon'))) {
+      document.querySelector('[data-team-planner]')?.scrollIntoView({
+        block: 'center',
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'instant'
+          : 'smooth',
+      });
+      plan?.focus({ preventScroll: true });
+    }
+  });
+  mercury?.addEventListener('change', updateTeam);
+  minutes?.addEventListener('change', updateTeam);
+  numbers?.addEventListener('change', updateTeam);
   seats?.addEventListener('input', updateTeam);
   plan?.addEventListener('change', updateTeam);
   document
@@ -324,4 +453,5 @@ import '../styles/pricing.css';
     .querySelector<HTMLElement>('[data-team-planner]')
     ?.removeAttribute('hidden');
   updateBilling();
+  selectAddon(new URLSearchParams(location.search).get('addon'));
 </script>

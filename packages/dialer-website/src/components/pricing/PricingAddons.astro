@@ -3,7 +3,7 @@ import PricingIcon from './PricingIcon.astro';
 import { minutePacks, numberPacks } from '../../data/pricing-content';
 const money = (cents: number) => '$' + (cents / 100).toLocaleString('en-US');
 const purchase = (addon: string) =>
-  '/get-started?' + new URLSearchParams({ addon }).toString();
+  '/pricing?' + new URLSearchParams({ addon }).toString() + '#team-planner';
 ---
 
 <section
@@ -29,7 +29,8 @@ const purchase = (addon: string) =>
       </div>
       <h3>
         Mercury coaching <span class="addon-price"
-          >$25 <small>/ rep / month</small></span>
+          >$25 <small>/ rep / month</small></span
+        >
       </h3><p>Keep your playbook in the conversation.</p>
       <div class="mercury-modes">
         <div>
@@ -49,7 +50,7 @@ const purchase = (addon: string) =>
         </div>
       </div>
       <a class="pricing-text-link" href={purchase('mercury')}
-        >Add Mercury to your team <PricingIcon /></a
+        >Choose Mercury <PricingIcon /></a
       >
     </article>
     <article class="addon" aria-labelledby="minute-pack-heading">
@@ -78,7 +79,7 @@ const purchase = (addon: string) =>
         }
       </div>
       <p class="addon-note">
-        One-time packs. Choose the quantity at checkout. <a href="/contact"
+        One-time packs. Include a pack with your new plan. <a href="/contact"
           >Need more? Talk to us <PricingIcon /></a
         >
       </p>

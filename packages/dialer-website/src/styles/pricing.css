@@ -1178,3 +1178,97 @@
     justify-content: flex-start;
   }
 }
+
+.team-planner__addons {
+  grid-area: addons;
+  min-width: 0;
+}
+.team-planner__addons summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: fit-content;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  font-size: var(--site-text-sm);
+}
+.team-planner__addons summary::-webkit-details-marker {
+  display: none;
+}
+.team-planner__addons summary:focus-visible {
+  outline: none;
+  background: var(--site-color-panel);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.team-planner__addons summary svg {
+  width: 1rem;
+  height: 1rem;
+}
+.team-planner__addons[open] summary svg {
+  transform: rotate(90deg);
+}
+.team-planner__options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--site-space-4);
+  align-items: center;
+  margin-top: var(--site-space-5);
+}
+.team-planner label.team-planner__mercury {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.team-planner__mercury input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--site-color-ink);
+}
+.team-planner__mercury small {
+  display: inline-block;
+  margin-top: 0.4rem;
+  color: var(--site-color-muted);
+}
+.team-planner p.team-planner__note {
+  margin-top: var(--site-space-4);
+  font-size: var(--site-text-xs);
+  color: var(--site-color-muted);
+}
+.team-planner__note a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+@media (max-width: 700px) {
+  .team-planner__options {
+    grid-template-columns: 1fr;
+  }
+}
+
+.team-planner {
+  grid-template-areas: 'intro inputs total' 'addons addons action';
+}
+.team-planner__intro {
+  grid-area: intro;
+}
+.team-planner__inputs {
+  grid-area: inputs;
+}
+.team-planner output {
+  grid-area: total;
+}
+.team-planner > [data-team-checkout] {
+  grid-area: action;
+  align-self: start;
+}
+@media (max-width: 1050px) {
+  .team-planner {
+    grid-template-areas: 'intro inputs' 'total action' 'addons addons';
+  }
+}
+@media (max-width: 600px) {
+  .team-planner {
+    grid-template-areas: 'intro' 'inputs' 'addons' 'total' 'action';
+  }
+}

@@ -57,10 +57,32 @@ export const selectionFromQuery = (
     plan,
     billing: query.get('billing') === 'annual' ? 'annual' : 'monthly',
     seats,
-    mercurySeats: addon === 'mercury' ? seats : 0,
-    minutePack: addon?.startsWith('minutes-') ? Number(addon.slice(8)) : 0,
-    numberPack: addon?.startsWith('numbers-') ? Number(addon.slice(8)) : 0,
+    mercurySeats: query.has('mercurySeats')
+      ? Number(query.get('mercurySeats'))
+      : addon === 'mercury'
+        ? seats
+        : 0,
+    minutePack: query.has('minutePack')
+      ? Number(query.get('minutePack'))
+      : addon?.startsWith('minutes-')
+        ? Number(addon.slice(8))
+        : 0,
+    numberPack: query.has('numberPack')
+      ? Number(query.get('numberPack'))
+      : addon?.startsWith('numbers-')
+        ? Number(addon.slice(8))
+        : 0,
   });
+};
+export const selectionToQuery = (
+  selection: CheckoutSelection,
+): URLSearchParams => {
+  const value = validateSelection(selection);
+  return new URLSearchParams(
+    Object.fromEntries(
+      Object.entries(value).map(([key, value]) => [key, String(value)]),
+    ),
+  );
 };
 export const quoteCheckout = (selection: CheckoutSelection) => {
   const value = validateSelection(selection);
