@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery",
+  "events": [
+    {
+      "id": "45ac1ee6-7525-4aea-81ea-e6bf2eabd288",
+      "occurred_at": "2026-10-31T06:02:16.744Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/mcp-central-proxy-scope.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery"
+      }
+    },
+    {
+      "id": "1b400381-ace6-44ea-b9b6-3d0fb85a1377",
+      "occurred_at": "2026-10-31T06:02:30.076Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/tool-scope-authorization.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery"
+      }
+    },
+    {
+      "id": "58b760bf-c9ae-4d93-b828-d478b2305512",
+      "occurred_at": "2026-10-31T06:04:03.512Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery"
+      }
+    },
+    {
+      "id": "542d6ef2-1bf5-4787-a1bc-37576a045625",
+      "occurred_at": "2026-10-31T06:04:49.421Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-fluid-layout.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery"
+      }
+    },
+    {
+      "id": "02df9016-99d1-4e32-84c5-56cae08f27c5",
+      "occurred_at": "2026-10-31T06:07:34.743Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1660-stream-aligned-linear-integration-conflict-recovery"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-31T06:07:35.029Z"
+}

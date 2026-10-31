@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/tool-scope-authorization.ts",
+    "packages/os/tests/mcp-central-proxy-scope.test.ts",
+    "packages/os/tests/workspace-fluid-layout.test.ts"
+  ],
+  "updatedAt": "2026-10-31T06:07:34.439Z"
+}
