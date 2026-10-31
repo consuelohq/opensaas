@@ -2468,6 +2468,24 @@ describe('test selection registry', () => {
     );
   });
 
+  it('routes Linux work-session containment and its native test through critical serial Code Call coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file', 'packages/os/scripts/lib/code-call/linux-containment.ts',
+      '--changed-file', 'packages/os/tests/linux-work-session-containment.test.ts',
+      '--json',
+    ]));
+    const ids = data.matchedRules.map((rule) => rule.id);
+    expect(ids).toContain('os-work-session-code-call');
+    expect(ids).not.toContain('auto:@consuelo/os:package-test');
+    const selected = data.selectedSuites.find(
+      (suite) => suite.name === 'OS work-session Code Call and MCP authority contracts',
+    );
+    expect(selected?.command).toContain('packages/os/tests/linux-work-session-containment.test.ts');
+    expect(selected?.command).toContain('--no-file-parallelism');
+    expect(data.level).toBe('pass');
+  });
+
 
   it('uses focused GitHub source-control contracts instead of the broad OS package suite', () => {
     const result = run([

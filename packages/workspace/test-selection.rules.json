@@ -2720,6 +2720,7 @@
       "exclusive": true,
       "source": [
         "packages/os/scripts/lib/code-call/**",
+        "packages/os/tests/linux-work-session-containment.test.ts",
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/tests/generated-error-code-parity.test.ts",
         "packages/os/tests/mcp-gateway.test.ts",
@@ -2736,6 +2737,8 @@
             "x",
             "vitest",
             "run",
+            "--no-file-parallelism",
+            "packages/os/tests/linux-work-session-containment.test.ts",
             "packages/os/tests/work-session-code-call.test.ts",
             "packages/os/tests/session-start-foundation.test.ts",
             "packages/os/tests/generated-error-code-parity.test.ts",

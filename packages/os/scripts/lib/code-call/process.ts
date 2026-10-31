@@ -6,6 +6,7 @@ import { Effect } from 'effect';
 
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from '../facade/process-tree';
 import { resolveConsueloHomeLayout } from '../consuelo-home';
+import { BUBBLEWRAP_EXECUTABLE, buildContainedRuntimeEnv, planLinuxWorkSessionContainment } from './linux-containment';
 
 export type RunResult = {
   stdout: string;
@@ -72,13 +73,9 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   let spawnCommand = command;
   let spawnArgs = args;
   let spawnEnv = options.env;
+  let linuxContainment = false;
   if (options.requireContainment === true) {
-    if (
-      process.platform !== 'darwin'
-      || !existsSync(DARWIN_SANDBOX_EXEC)
-      || !options.writeBoundaryRoot
-      || !options.scratchRoot
-    ) {
+    if (!options.writeBoundaryRoot || !options.scratchRoot) {
       resolve({
         stdout: '',
         stderr: 'edit containment is unavailable on this node',
@@ -100,33 +97,91 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
     const keysRoot = canonicalPath(join(consueloHome, 'node', 'keys'));
     const securityRoot = canonicalPath(join(consueloHome, 'node', 'security', 'generated'));
     const tunnelsRoot = canonicalPath(join(consueloHome, 'node', 'tunnels'));
-    spawnCommand = DARWIN_SANDBOX_EXEC;
-    spawnArgs = [
-      '-p',
-      options.allowBoundaryWrites === true
-        ? DARWIN_WRITE_CONTAINMENT_PROFILE
-        : DARWIN_READ_CONTAINMENT_PROFILE,
-      '-D',
-      `WRITE_ROOT=${writeBoundaryRoot}`,
-      '-D',
-      `SCRATCH_ROOT=${scratchRoot}`,
-      '-D',
-      `CONSUELO_KEYS_ROOT=${keysRoot}`,
-      '-D',
-      `CONSUELO_SECURITY_ROOT=${securityRoot}`,
-      '-D',
-      `CONSUELO_TUNNELS_ROOT=${tunnelsRoot}`,
-      command,
-      ...args,
-    ];
-    spawnEnv = {
-      ...options.env,
-      TMPDIR: scratchRoot + '/',
-      TMP: scratchRoot,
-      TEMP: scratchRoot,
-      XDG_CACHE_HOME: scratchRoot,
-      PYTHONPYCACHEPREFIX: scratchRoot,
-    };
+    if (process.platform === 'darwin' && existsSync(DARWIN_SANDBOX_EXEC)) {
+      spawnCommand = DARWIN_SANDBOX_EXEC;
+      spawnArgs = [
+        '-p',
+        options.allowBoundaryWrites === true
+          ? DARWIN_WRITE_CONTAINMENT_PROFILE
+          : DARWIN_READ_CONTAINMENT_PROFILE,
+        '-D',
+        `WRITE_ROOT=${writeBoundaryRoot}`,
+        '-D',
+        `SCRATCH_ROOT=${scratchRoot}`,
+        '-D',
+        `CONSUELO_KEYS_ROOT=${keysRoot}`,
+        '-D',
+        `CONSUELO_SECURITY_ROOT=${securityRoot}`,
+        '-D',
+        `CONSUELO_TUNNELS_ROOT=${tunnelsRoot}`,
+        command,
+        ...args,
+      ];
+    } else if (process.platform === 'linux' && existsSync(BUBBLEWRAP_EXECUTABLE)) {
+      // Mask OS identity and common local CLI credential stores. Work-session
+      // commands must use authorized typed tools for credentialed operations.
+      const userHome = options.env.HOME;
+      const protectedRoots = [
+        keysRoot,
+        securityRoot,
+        tunnelsRoot,
+        ...(userHome
+          ? [
+              join(userHome, '.ssh'),
+              join(userHome, '.codex'),
+              join(userHome, '.aws'),
+              join(userHome, '.config', 'gh'),
+              join(userHome, '.config', 'gcloud'),
+              join(userHome, '.config', 'google-cloud-sdk'),
+            ]
+          : []),
+      ].filter((root) => existsSync(root)).map(canonicalPath);
+      try {
+        const planned = planLinuxWorkSessionContainment({
+          command,
+          args,
+          writeBoundaryRoot,
+          scratchRoot,
+          protectedReadRoots: protectedRoots,
+          allowBoundaryWrites: options.allowBoundaryWrites === true,
+        });
+        spawnCommand = planned.command;
+        spawnArgs = planned.args;
+        linuxContainment = true;
+      } catch {
+        resolve({
+          stdout: '',
+          stderr: 'edit containment is unavailable on this node',
+          exitCode: 1,
+          timedOut: false,
+          runtimeMissing: false,
+          containmentUnavailable: true,
+        });
+        return;
+      }
+    } else {
+      resolve({
+        stdout: '',
+        stderr: 'edit containment is unavailable on this node',
+        exitCode: 1,
+        timedOut: false,
+        runtimeMissing: false,
+        containmentUnavailable: true,
+      });
+      return;
+    }
+    // Preserve the established Darwin sandbox environment. Linux sessions
+    // additionally strip daemon credentials before launching Bubblewrap.
+    spawnEnv = linuxContainment
+      ? buildContainedRuntimeEnv(options.env, scratchRoot)
+      : {
+          ...options.env,
+          TMPDIR: scratchRoot + '/',
+          TMP: scratchRoot,
+          TEMP: scratchRoot,
+          XDG_CACHE_HOME: scratchRoot,
+          PYTHONPYCACHEPREFIX: scratchRoot,
+        };
   }
 
   const child = spawn(spawnCommand, spawnArgs, {
@@ -184,7 +239,7 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
       exitCode: 1,
       timedOut: false,
       runtimeMissing: error.code === 'ENOENT',
-      containmentUnavailable: false,
+      containmentUnavailable: linuxContainment && error.code === 'ENOENT',
     });
   });
   child.on('close', (code) => {
@@ -194,7 +249,7 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
       exitCode: timedOut || stdinFailure ? 1 : code ?? 0,
       timedOut,
       runtimeMissing: false,
-      containmentUnavailable: false,
+      containmentUnavailable: linuxContainment && code !== 0 && /^bwrap:/mu.test(stderr.trimStart()),
     });
   });
   const stdinEndError = Effect.runSync(

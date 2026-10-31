@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/integrate-verified-linux-work-session-sandbox-on-current-os-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2762,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2762",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-integrate-verified-linux-work-session-sandbox-on-current-os-stream",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e5d072f40172",
+  "tmuxSession": "opensaas-os-integrate-verified-linux-work-session-sandbox-on-e5d072f4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-integrate-verified-linux-work-session-sandbox-on-current-os-stream/.task/session.json",
+  "createdAt": "2026-10-31T07:57:22.086Z"
+}

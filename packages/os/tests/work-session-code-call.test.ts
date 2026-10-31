@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -196,7 +196,7 @@ describe('work-session code.call authority', () => {
     expect(readFileSync(join(workPath, 'created-bun.txt'), 'utf8')).toBe('bun');
   });
 
-  it.runIf(process.platform !== 'darwin')('fails work-session edits closed when filesystem containment is unavailable', async () => {
+  it.runIf(process.platform !== 'darwin' && (process.platform !== 'linux' || !existsSync('/usr/bin/bwrap')))('fails work-session edits closed when filesystem containment is unavailable', async () => {
     const home = tempRoot('consuelo-code-call-home-');
     const mainRepo = tempRoot('consuelo-code-call-main-');
     const workPath = tempRoot('consuelo-code-call-work-');

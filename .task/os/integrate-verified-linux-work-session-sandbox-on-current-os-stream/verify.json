@@ -1,0 +1,190 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/integrate-verified-linux-work-session-sandbox-on-current-os-stream",
+  "base": "origin/stream/os",
+  "headSha": "dcf13b3c1cae8df366ec5915efb3673cad042bdb",
+  "changeHash": "9c168e470fd143685964a3a345664122f61826c74afd758e333bb214cb7389c9",
+  "changedFiles": [
+    "packages/os/scripts/lib/code-call/linux-containment.ts",
+    "packages/os/scripts/lib/code-call/process.ts",
+    "packages/os/tests/linux-work-session-containment.test.ts",
+    "packages/os/tests/work-session-code-call.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-10-31T08:02:47.241Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/integrate-verified-linux-work-session-sandbox-on-current-os-stream/evidence-log.json",
+        ".task/os/integrate-verified-linux-work-session-sandbox-on-current-os-stream/read-log.json",
+        ".task/os/integrate-verified-linux-work-session-sandbox-on-current-os-stream/workpad.md",
+        ".task/tasks/os/integrate-verified-linux-work-session-sandbox-on-current-os-stream.json",
+        "packages/os/scripts/lib/code-call/linux-containment.ts",
+        "packages/os/scripts/lib/code-call/process.ts",
+        "packages/os/tests/linux-work-session-containment.test.ts",
+        "packages/os/tests/work-session-code-call.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-code-call",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, generated error-code parity, and child-process stdin/exit lifecycle behavior without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/code-call/linux-containment.ts",
+            "packages/os/scripts/lib/code-call/process.ts",
+            "packages/os/tests/linux-work-session-containment.test.ts",
+            "packages/os/tests/work-session-code-call.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/linux-work-session-containment.test.ts",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/code-call.test.ts",
+            "packages/os/tests/code-call-process-regressions.test.ts"
+          ],
+          "ruleId": "os-work-session-code-call",
+          "critical": true
+        },
+        {
+          "name": "OS work-session Code Call syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-work-session-code-call",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 10411,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-integrate-verified-linux-work-session-sandbox-on-current-os-stream\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m95 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 9763\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1761\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves explicit selector ownership after registry regeneration \u001b[33m 2394\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m95 passed\u001b[39m\u001b[22m\u001b[90m (95)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:02:24\n\u001b[2m   Duration \u001b[22m 9.95s\u001b[2m (transform 47ms, setup 0ms, import 67ms, tests 9.76s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/linux-work-session-containment.test.ts",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/code-call.test.ts",
+            "packages/os/tests/code-call-process-regressions.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-work-session-code-call",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 10947,
+          "outputTail": "l-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"7bb602a5-b7c1-4186-baa0-962a0b31e763\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"nonce-session-alpha-2\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-10-31T08:02:43.928Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"7bb602a5-b7c1-4186-baa0-962a0b31e763\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":200,\"durationMs\":4,\"jsonRpcId\":\"nonce-session-alpha-2\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-10-31T08:02:43.932Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"aea4e24d-ae1f-406c-8dc2-20aaa2aa8c78\",\"route\":\"/mcp\",\"method\":\"initialize\",\"jsonRpcId\":\"initialize-session\"},\"ts\":\"2026-10-31T08:02:43.934Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"aea4e24d-ae1f-406c-8dc2-20aaa2aa8c78\",\"route\":\"/mcp\",\"method\":\"initialize\",\"status\":200,\"durationMs\":4,\"jsonRpcId\":\"initialize-session\"},\"ts\":\"2026-10-31T08:02:43.938Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"3ee9113d-ef3f-49c6-8af1-4e40e247e134\",\"route\":\"/mcp\",\"method\":\"tools/list\",\"jsonRpcId\":\"tools\"},\"ts\":\"2026-10-31T08:02:43.941Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"3ee9113d-ef3f-49c6-8af1-4e40e247e134\",\"route\":\"/mcp\",\"method\":\"tools/list\",\"status\":200,\"durationMs\":3,\"jsonRpcId\":\"tools\"},\"ts\":\"2026-10-31T08:02:43.944Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"0b40fe2b-0726-41fa-a7eb-8b895daa1da8\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"unknown-browser-tool\",\"publicTool\":\"call\",\"facadeTool\":\"browser.login.profile\"},\"ts\":\"2026-10-31T08:02:43.947Z\"}\n{\"level\":\"error\",\"tool\":\"browser.login.profile\",\"command\":\"workspace browser.login.profile\",\"durationMs\":55,\"exitCode\":1,\"traceId\":\"trc_78d10e3e084a\",\"requestId\":\"0b40fe2b-0726-41fa-a7eb-8b895daa1da8\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T08:02:44.019Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"0b40fe2b-0726-41fa-a7eb-8b895daa1da8\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":200,\"durationMs\":77,\"jsonRpcId\":\"unknown-browser-tool\",\"publicTool\":\"call\",\"facadeTool\":\"browser.login.profile\"},\"ts\":\"2026-10-31T08:02:44.024Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"21eb7d1b-8074-444c-a183-1bd3a3411a26\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"call\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-10-31T08:02:44.027Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"21eb7d1b-8074-444c-a183-1bd3a3411a26\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":403,\"durationMs\":0,\"jsonRpcId\":\"call\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-10-31T08:02:44.027Z\"}\n(node:1275) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:1411) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS work-session Code Call syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-work-session-code-call",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2118,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
