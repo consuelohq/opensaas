@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2744,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2744",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compact-steering-runtime-identity-and-restore-curated-tool-guidance",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6090852bf90d",
+  "tmuxSession": "opensaas-os-compact-steering-runtime-identity-and-restore-cu-6090852b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compact-steering-runtime-identity-and-restore-curated-tool-guidance/.task/session.json",
+  "createdAt": "2026-10-31T06:27:28.754Z"
+}

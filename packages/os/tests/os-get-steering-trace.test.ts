@@ -100,11 +100,14 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('"workspace"');
-    expect(steering).toContain('"id": "workspace_authoritative"');
-    expect(steering).toContain('"node"');
-    expect(steering).toContain('"id": "node_authoritative"');
-    expect(steering).toContain('"name": "Cloud Node"');
+    expect(steering).toContain('## Runtime identity\n\n```text\n{');
+    expect(steering).toContain('workspace: {');
+    expect(steering).toContain('id: workspace_authoritative,');
+    expect(steering).toContain('node: {');
+    expect(steering).toContain('id: node_authoritative,');
+    expect(steering).toContain('name: Cloud Node,');
+    expect(steering).not.toContain('"workspace":');
+    expect(steering).not.toContain('"node":');
     expect(steering).not.toContain('workspace_stale_env');
     expect(steering).not.toContain('user_stale_env');
     expect(steering).not.toContain('"userId"');
@@ -174,17 +177,17 @@ describe('OS steering execution recording', () => {
       }));
     `);
 
-    expect(steering).toContain('"id": "node_local"');
-    expect(steering).toContain('"defaultNodeId": "node_cloud"');
-    expect(steering).toContain('"routeSource": "explicit"');
-    expect(steering).toContain('"displayName": "Cloud Node"');
-    expect(steering).toContain('"presence": "online"');
-    expect(steering).toContain('"osVersion": "0.1.85"');
-    expect(steering).toContain('"channel": "canary"');
-    expect(steering).toContain('"mcpProtocolVersion": "2026-07-28"');
-    expect(steering).toContain('"readiness": "ready"');
-    expect(steering).toContain('"compatibility": "compatible"');
-    expect(steering).toContain('"offlineNodeCount": 2');
+    expect(steering).toContain('id: node_local,');
+    expect(steering).toContain('defaultNodeId: node_cloud,');
+    expect(steering).toContain('routeSource: explicit,');
+    expect(steering).toContain('displayName: Cloud Node,');
+    expect(steering).toContain('presence: online');
+    expect(steering).toContain('osVersion: 0.1.85,');
+    expect(steering).toContain('channel: canary,');
+    expect(steering).toContain('mcpProtocolVersion: 2026-07-28,');
+    expect(steering).toContain('readiness: ready,');
+    expect(steering).toContain('compatibility: compatible,');
+    expect(steering).toContain('offlineNodeCount: 2,');
     expect(steering).not.toContain('node_offline_one');
     expect(steering).not.toContain('node_offline_two');
     expect(steering).not.toContain('Dormant Mac');
@@ -231,8 +234,83 @@ describe('OS steering execution recording', () => {
     expect(steering).toContain('## Core tools');
     expect(steering).toContain('tools.search');
     expect(steering).toContain('code.call');
+    const toolsSection = steering.slice(steering.indexOf('## Core tools'));
+    expect(toolsSection).toContain('os.call({tool:"tools.search",input:{query:"code.call",detail:"full"}})');
+    expect(toolsSection).toContain('tool:"session.start"');
+    expect(toolsSection).toContain('tool:"code.call"');
+    expect(toolsSection).toContain('tool:"fs.apply_patch"');
+    expect(toolsSection).toContain('tool:"batch"');
+    expect(toolsSection).toContain('tool:"github"');
+    expect(toolsSection).toContain('tool:"review.run"');
+    expect(toolsSection).toContain('taskSession:"tsk_..."');
+    expect(toolsSection).toContain('codeFile:');
+    expect(toolsSection).toContain('Prefer typed file or stdin transport');
+    expect(toolsSection.length).toBeLessThan(2_800);
     expect(steering).not.toContain('# raw core tool manifest');
     expect(steering).not.toContain('"sourceManifest":');
+  });
+
+  it('keeps compact runtime identity delimiters and safely escapes ambiguous values', () => {
+    const home = makeHome();
+    const result = runOsSnippet<{ formatted: string }>(home, `
+      const { formatSteeringRuntimeIdentity } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({
+        formatted: formatSteeringRuntimeIdentity({
+          name: 'Cloud node',
+          hostile: 'a, b',
+          multiline: 'before\\n' + String.fromCharCode(96).repeat(3),
+          literal: 'true',
+          available: true,
+          missing: null,
+          nodes: [{ id: 'node_a', version: '0.1.144' }],
+        }),
+      }));
+    `);
+    expect(result.formatted).toContain('name: Cloud node,');
+    expect(result.formatted).toContain('hostile: "a, b",');
+    expect(result.formatted).toContain('multiline: "before\\n\\u0060\\u0060\\u0060",');
+    expect(result.formatted).toContain('literal: "true",');
+    expect(result.formatted).toContain('available: true,');
+    expect(result.formatted).toContain('missing: null,');
+    expect(result.formatted).toContain('nodes: [');
+    expect(result.formatted).toContain('version: 0.1.144');
+    expect(result.formatted).not.toContain('\n```');
+  });
+
+  it('does not advertise curated call examples for disabled core tools', () => {
+    const home = makeHome();
+    const overrides = path.join(home, 'security', 'overrides');
+    fs.mkdirSync(overrides, { recursive: true });
+    fs.writeFileSync(path.join(overrides, 'manifest.overlay.json'), JSON.stringify({
+      version: 1,
+      disabledTools: ['code.call', 'fs.apply_patch'],
+      disabledSkills: [],
+      disabledWorkflows: [],
+      updatedAt: '2026-10-31T00:00:00.000Z',
+    }));
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+    const core = steering.slice(steering.indexOf('## Core tools'));
+    expect(core).not.toContain('tool:"code.call"');
+    expect(core).not.toContain('tool:"fs.apply_patch"');
+    expect(core).toContain('tool:"tools.search"');
+
+    fs.writeFileSync(path.join(overrides, 'manifest.overlay.json'), JSON.stringify({
+      version: 1,
+      disabledTools: ['code.call', 'fs.apply_patch', 'tools.search'],
+      disabledSkills: [],
+      disabledWorkflows: [],
+      updatedAt: '2026-10-31T00:01:00.000Z',
+    }));
+    const { steering: withoutSearch } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+    const limitedCore = withoutSearch.slice(withoutSearch.indexOf('## Core tools'));
+    expect(limitedCore).not.toContain('tool:"tools.search"');
+    expect(limitedCore).not.toContain('tool:"batch"');
   });
 
   it('prefers the current selected-skill index over legacy or bundled catalogs', () => {
