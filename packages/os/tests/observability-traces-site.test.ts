@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { chromium } from 'playwright';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -25,6 +26,8 @@ const assetHash = (name: string) =>
   createHash('sha256')
     .update(readFileSync(resolve(canonicalAssetDir, name)))
     .digest('hex');
+
+const browserTest = existsSync(chromium.executablePath()) ? it : it.skip;
 
 describe('Observability Traces canonical Trace Burn surface', () => {
   it('renders the established v38 table shell instead of the Observability cockpit reimplementation', () => {
@@ -275,6 +278,18 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(packageJson).toContain('\"@tanstack/virtual-core\"');
   });
 
+  it('ships the actionable trace-label parser in the compiled browser HTML, not just TypeScript source', () => {
+    const runtime = readFileSync(resolve(canonicalAssetDir, 'inspector.js'), 'utf8');
+    const html = buildObservabilityTracesSite();
+
+    // Regression: the managed site inlines a checked-in browser bundle. Changes
+    // to table-formatters.ts are invisible until this bundle is rebuilt.
+    for (const field of ['patchText', 'codeFile', 'issueId']) {
+      expect(runtime, field).toContain(field);
+      expect(html, field).toContain(field);
+    }
+  });
+
   it('keeps the copied v38 visual shell assets byte-identical while OS owns the rebuilt browser runtime', () => {
     expect(assetHash('template.html')).toBe(
       '07ac31363ae72831ae79b3785e65630b1e67ee0eee1542acb93a2f56c005bda7',
@@ -324,3 +339,62 @@ describe('Observability Traces canonical Trace Burn surface', () => {
   });
 
 });
+
+browserTest(
+  'renders actionable patch, code, and Linear labels from the shipped browser bundle',
+  async () => {
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const page = await browser.newPage({ viewport: { width: 1700, height: 950 } });
+      const fixtureRows = [
+        {
+          id: 'patch-label', traceId: 'patch-label', name: 'fs.apply_patch',
+          status: 'success', ok: true, branch: 'task/os/release-trace-labels',
+          startTime: '2026-10-31T07:30:00Z',
+          rawInputJson: { patchText: '*** Begin Patch\n*** Update File: packages/os/scripts/cli.ts\n*** End Patch' },
+          rawResultJson: { ok: true, code: 'OK' },
+        },
+        {
+          id: 'code-label', traceId: 'code-label', name: 'code.call',
+          status: 'success', ok: true, branch: 'task/os/release-trace-labels',
+          startTime: '2026-10-31T07:30:01Z',
+          rawInputJson: { language: 'bash', mode: 'read', code: "sed -n '1,25p' packages/os/scripts/cli.ts" },
+          rawResultJson: { ok: true, code: 'OK' },
+        },
+        {
+          id: 'linear-label', traceId: 'linear-label', name: 'linear.issue',
+          status: 'success', ok: true, branch: 'task/os/release-trace-labels',
+          startTime: '2026-10-31T07:30:02Z',
+          rawInputJson: { identifier: 'DEV-1665' },
+          rawResultJson: { ok: true, code: 'OK' },
+        },
+      ];
+      const html = buildObservabilityTracesSite();
+      await page.route('**/*', (route) => {
+        const path = new URL(route.request().url()).pathname;
+        if (path === '/traces') return route.fulfill({ contentType: 'text/html', body: html });
+        if (path === '/gateway/traces/recent') {
+          return route.fulfill({ json: { ok: true, data: { direction: 'older', rows: fixtureRows, nextCursor: null } } });
+        }
+        if (path === '/gateway/traces/events') {
+          return route.fulfill({ contentType: 'text/event-stream', body: 'event: heartbeat\ndata: {}\n\n' });
+        }
+        return route.fulfill({ status: 404, body: '' });
+      });
+      await page.goto('https://trace.test/traces', { waitUntil: 'domcontentloaded' });
+      const labels: Array<[string, string]> = [
+        ['patch-label', 'patch 1 file · cli.ts'],
+        ['code-label', 'read cli.ts'],
+        ['linear-label', 'DEV-1665'],
+      ];
+      for (const [key, expected] of labels) {
+        const cell = page.locator(`.trxRow[data-trace-key="${key}"] .trxInputCell`);
+        await cell.waitFor({ state: 'visible' });
+        expect(await cell.textContent()).toContain(expected);
+      }
+    } finally {
+      await browser.close();
+    }
+  },
+  20000,
+);

@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+  "events": [
+    {
+      "id": "e45f742b-84f0-4882-9461-c58bfff199c9",
+      "occurred_at": "2026-10-31T07:36:24.202Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-site-renderer.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "bfad4089-22d4-460c-9a81-2bc1cf11c5d3",
+      "occurred_at": "2026-10-31T07:36:24.314Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "f7f09f26-f3e8-4860-af79-a44847db6746",
+      "occurred_at": "2026-10-31T07:36:39.433Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/observability-traces-site.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "a77ffcc0-9afc-48de-a88b-0d2ed7b1b297",
+      "occurred_at": "2026-10-31T07:37:02.749Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "46e736aa-6c0e-4b41-bcc9-34167143433a",
+      "occurred_at": "2026-10-31T07:37:03.112Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-site-inspector-batch-polish.browser.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "affb3d7e-2199-478e-b0bd-8c05b76fd7d7",
+      "occurred_at": "2026-10-31T07:39:12.597Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-site-inspector-batch-polish.browser.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "acc893b8-ac14-4bf8-b5eb-838b0138807d",
+      "occurred_at": "2026-10-31T07:39:12.786Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-site-table-polish.browser.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "ca764d29-b109-49c6-8fe1-7719261842ef",
+      "occurred_at": "2026-10-31T07:41:31.579Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-edge-site-publisher.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "0392adaa-1ca2-4142-b176-2362bd4043ac",
+      "occurred_at": "2026-10-31T07:43:17.038Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "a0337a80-070a-45a4-a767-6e3d87135da3",
+      "occurred_at": "2026-10-31T07:44:56.092Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "56fe8bc0-a332-48bf-ae34-aaaeea0472c2",
+      "occurred_at": "2026-10-31T07:45:08.473Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "699815d1-d803-4f7f-bcbd-4e1e542d535a",
+      "occurred_at": "2026-10-31T07:45:54.096Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "0c3250ab-e042-4d33-a158-c46bea02589d",
+      "occurred_at": "2026-10-31T07:45:54.269Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "621b78ce-bffb-4bc8-b2a1-07516bc592d6",
+      "occurred_at": "2026-10-31T07:46:17.702Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/observability-traces-site.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    },
+    {
+      "id": "4a43b625-b7b6-458a-9ce9-30966fe78342",
+      "occurred_at": "2026-10-31T07:46:31.846Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-31T07:46:32.185Z"
+}

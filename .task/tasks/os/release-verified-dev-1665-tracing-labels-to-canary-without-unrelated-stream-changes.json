@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2757,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2757",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_07b46c697b35",
+  "tmuxSession": "opensaas-os-release-verified-dev-1665-tracing-labels-to-cana-07b46c69",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes/.task/session.json",
+  "createdAt": "2026-10-31T07:35:41.823Z"
+}
