@@ -1,4 +1,5 @@
 import { createCoachingRoutes } from './routes/coaching';
+import { createPublicCheckoutRoutes } from './routes/public-checkout';
 import { createInboundOperatorRoutes } from './routes/inbound-operator';
 import {
   createInboundCustomerRoutes,
@@ -42,6 +43,7 @@ export function createDialerServer(dependencies: DialerServerDependencies) {
   if (dependencies.commercial) {
     app.route('/', createCommercialPublicRoutes(dependencies.commercial));
   }
+  if(dependencies.commercial?.publicCheckout) app.route('/',createPublicCheckoutRoutes(dependencies.commercial.publicCheckout));
   app.route('/', createEmbedRoutes(dependencies));
   app.use('/v1/*', createAuthenticationMiddleware(dependencies));
   if (dependencies.coachingScripts)
