@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/accept-canonical-pricing-urls-in-hosted-browser-verification",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2721,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2721",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-accept-canonical-pricing-urls-in-hosted-browser-verification",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_831990758bf4",
+  "tmuxSession": "opensaas-website-accept-canonical-pricing-urls-in-hosted-browser--83199075",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-accept-canonical-pricing-urls-in-hosted-browser-verification/.task/session.json",
+  "createdAt": "2026-10-31T00:05:57.668Z"
+}

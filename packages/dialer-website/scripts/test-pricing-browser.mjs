@@ -400,11 +400,9 @@ try {
       'expanded pricing selections must fit the viewport',
     );
     if ([375, 1440].includes(width))
-      await page
-        .locator('[data-team-planner]')
-        .screenshot({
-          path: join(artifacts, 'pricing-selection-' + width + '.png'),
-        });
+      await page.locator('[data-team-planner]').screenshot({
+        path: join(artifacts, 'pricing-selection-' + width + '.png'),
+      });
     await page.locator('[data-team-addons-details] > summary').click();
     assert.deepEqual(errors, [], 'Browser errors ' + width + 'x' + height);
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -487,7 +485,7 @@ try {
     beforeAddons,
     'choosing an add-on must not create a subscription',
   );
-  assert.equal(new URL(page.url()).pathname, '/pricing');
+  assert.match(new URL(page.url()).pathname, /^\/pricing\/?$/);
   await page.locator('[data-team-checkout]').click();
   await page.waitForURL('https://checkout.stripe.com/**');
   assert.deepEqual(checkoutRequestsFor(context).at(-1).selection, {
@@ -501,7 +499,12 @@ try {
   await page.goto(base + '/get-started?addon=minutes-600', {
     waitUntil: 'networkidle',
   });
-  await page.waitForURL('**/pricing?addon=minutes-600#team-planner');
+  await page.waitForURL(
+    (url) =>
+      /^\/pricing\/?$/.test(url.pathname) &&
+      url.searchParams.get('addon') === 'minutes-600' &&
+      url.hash === '#team-planner',
+  );
   assert.equal(await page.locator('[data-team-minutes]').inputValue(), '600');
   assert.equal(checkoutRequestsFor(context).length, beforeAddons + 1);
   await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
