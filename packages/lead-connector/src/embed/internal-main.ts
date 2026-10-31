@@ -13,6 +13,7 @@ import {
 } from './protocol.js';
 import { resolveLeadConnectorSurface } from './surface.js';
 import {
+  createCallingWorkspace,
   sessionPresentation,
   activeCallingMode,
   type CallingWorkspace,
@@ -48,11 +49,7 @@ const controller = createLeadConnectorEmbedController({
   inboundOperatorApi,
   inboundObserver: surface === 'admin',
 });
-let workspace: CallingWorkspace = {
-  screen: 'calling',
-  mode: surface === 'admin' ? 'inbound' : 'outbound',
-  compact: false,
-};
+let workspace: CallingWorkspace = createCallingWorkspace(surface);
 try {
   const saved = localStorage.getItem('consuelo-calling-theme');
   if (saved === 'light' || saved === 'dark') workspace.theme = saved;
@@ -307,6 +304,7 @@ const updateRefresh = (): void => {
   }
 };
 
+const comboboxes: ReturnType<typeof createCombobox>[] = [];
 const mountComboboxes = (): void => {
   for (const comboboxRoot of root.querySelectorAll<HTMLElement>(
     '[data-combobox-field]',
@@ -318,38 +316,40 @@ const mountComboboxes = (): void => {
       value: option.dataset.comboboxValue ?? '',
       label: option.textContent?.trim() ?? '',
     }));
-    createCombobox({
-      root: comboboxRoot,
-      options,
-      value: comboboxRoot.dataset.comboboxValue || null,
-      activeValue: comboboxRoot.dataset.activeValue,
-      onChange: (value) => {
-        if (field === 'queue') {
-          const [pipelineId, stageId] = value.split(':');
-          if (pipelineId && stageId) {
-            void controller.selectQueue({ pipelineId, stageId });
+    comboboxes.push(
+      createCombobox({
+        root: comboboxRoot,
+        options,
+        value: comboboxRoot.dataset.comboboxValue ?? null,
+        activeValue: comboboxRoot.dataset.activeValue,
+        onChange: (value) => {
+          if (field === 'queue') {
+            const [pipelineId, stageId] = value.split(':');
+            if (pipelineId && stageId) {
+              void controller.selectQueue({ pipelineId, stageId });
+            }
           }
-        }
-        if (field === 'caller-id') {
-          controller.updateSetup({ callerIdNumber: value || null });
-        }
-        if (field === 'calling-mode') {
-          controller.updateSetup({
-            callingMode: value === 'single' ? 'single' : 'predictive',
-          });
-        }
-        if (field === 'line-count') {
-          const requestedFanout = Number(value);
-          if (
-            requestedFanout === 1 ||
-            requestedFanout === 2 ||
-            requestedFanout === 3
-          ) {
-            controller.updateSetup({ requestedFanout });
+          if (field === 'caller-id') {
+            controller.updateSetup({ callerIdNumber: value || null });
           }
-        }
-      },
-    });
+          if (field === 'calling-mode') {
+            controller.updateSetup({
+              callingMode: value === 'single' ? 'single' : 'predictive',
+            });
+          }
+          if (field === 'line-count') {
+            const requestedFanout = Number(value);
+            if (
+              requestedFanout === 1 ||
+              requestedFanout === 2 ||
+              requestedFanout === 3
+            ) {
+              controller.updateSetup({ requestedFanout });
+            }
+          }
+        },
+      }),
+    );
   }
 };
 
@@ -359,6 +359,8 @@ const paint = (): void => {
   if (callMode) workspace.mode = callMode;
   if (state.inboundOperator.offers.length) workspace.screen = 'calling';
   document.documentElement.dataset.theme = workspace.theme ?? 'system';
+  for (const combobox of comboboxes) combobox.destroy();
+  comboboxes.length = 0;
   replaceWorkspace(
     root,
     renderLeadConnectorEmbed(state, { surface, workspace }),
@@ -1113,6 +1115,7 @@ window.addEventListener('beforeunload', () => {
   if (inboundHeartbeatTimer) clearInterval(inboundHeartbeatTimer);
   idleRefreshScheduler.stop();
   interactionRenderer.dispose();
+  for (const combobox of comboboxes) combobox.destroy();
   nativeLauncher.dispose();
   voice.disconnect();
   bridge.stop();

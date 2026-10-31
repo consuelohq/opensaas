@@ -63,9 +63,10 @@ export const createCombobox = (input: ComboboxInput) => {
     if (!option) return;
     value = option.value;
     activeIndex = index;
-    input.onChange(option.value);
+    input.root.dataset.comboboxValue = value;
     setOpen(false);
     trigger.focus();
+    input.onChange(option.value);
   };
 
   const move = (index: number): void => {
@@ -127,6 +128,15 @@ export const createCombobox = (input: ComboboxInput) => {
     }
   };
 
+  const onOutsidePointer = (event: Event): void => {
+    if (!input.root.contains(event.target as Node | null)) setOpen(false);
+  };
+  const onFocusOut = (event: FocusEvent): void => {
+    if (!input.root.contains(event.relatedTarget as Node | null))
+      setOpen(false);
+  };
+  input.root.ownerDocument.addEventListener('pointerdown', onOutsidePointer);
+  input.root.addEventListener('focusout', onFocusOut);
   trigger.addEventListener('click', onTriggerClick);
   trigger.addEventListener('keydown', onKeyDown);
   input.root.addEventListener('click', onRootClick);
@@ -144,6 +154,11 @@ export const createCombobox = (input: ComboboxInput) => {
       render();
     },
     destroy: () => {
+      input.root.ownerDocument.removeEventListener(
+        'pointerdown',
+        onOutsidePointer,
+      );
+      input.root.removeEventListener('focusout', onFocusOut);
       trigger.removeEventListener('click', onTriggerClick);
       trigger.removeEventListener('keydown', onKeyDown);
       input.root.removeEventListener('click', onRootClick);

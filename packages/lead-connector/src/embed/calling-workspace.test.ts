@@ -4,6 +4,7 @@ import {
   createInitialEmbedState,
   type LeadConnectorEmbedState,
 } from './state-machine';
+import { createCallingWorkspace } from './calling-workspace';
 import { renderLeadConnectorEmbed } from './view';
 
 const rep = (): LeadConnectorEmbedState => {
@@ -254,7 +255,7 @@ describe('floating workspace pages', () => {
       detail.querySelector('[data-action="inbound-readiness"]'),
     ).toBeNull();
   });
-  it('gives calling options their own page without nested dropdowns', () => {
+  it('uses compact accessible choice menus on the calling-options page', () => {
     const state = rep();
     state.callerIds = ['+15550103891'];
     const doc = dom(
@@ -267,8 +268,38 @@ describe('floating workspace pages', () => {
       'Calling options',
     );
     expect(doc.querySelector('details')).toBeNull();
-    expect(doc.querySelector('[data-field="caller-id"]')).not.toBeNull();
-    expect(doc.querySelector('[data-field="calling-mode"]')).not.toBeNull();
+    expect(
+      doc.querySelector(
+        '[data-combobox-field="caller-id"] [role="option"][data-combobox-value="+15550103891"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      doc.querySelector(
+        '[data-combobox-field="calling-mode"] [role="combobox"]',
+      ),
+    ).not.toBeNull();
+    expect(doc.querySelectorAll('input[type=radio]')).toHaveLength(0);
     expect(doc.querySelector('[data-action="start-configured"]')).toBeNull();
   });
+});
+
+it('starts the actual sidebar runtime on a launcher, never a second calling form', () => {
+  for (const phase of ['booting', 'authenticating', 'ready'] as const) {
+    const state = { ...rep(), phase };
+    const doc = dom(
+      renderLeadConnectorEmbed(state, {
+        surface: 'admin',
+        workspace: createCallingWorkspace('admin'),
+      }),
+    );
+    expect(
+      doc.querySelector('[data-workspace-screen="launcher"]'),
+    ).not.toBeNull();
+    expect(
+      doc.querySelector(
+        '.calling-workspace, [data-action="inbound-readiness"]',
+      ),
+    ).toBeNull();
+  }
+  expect(createCallingWorkspace('overlay').nativeFloating).not.toBe(true);
 });

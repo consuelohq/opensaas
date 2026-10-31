@@ -68,7 +68,7 @@ body[data-surface='overlay']:has([data-workspace]) {
 }
 .calling-workspace {
   width: min(520px, calc(100% - 32px));
-  height: min(clamp(640px, 75dvh, 1100px), calc(100dvh - 48px));
+  height: min(680px, calc(100dvh - 48px));
   margin: 24px auto;
   padding: 0;
   display: flex;
@@ -1363,38 +1363,6 @@ body[data-surface='admin']:has([data-workspace]) {
   display: grid;
   gap: 26px;
 }
-.option-group {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  min-width: 0;
-}
-.option-group legend {
-  margin-bottom: 12px;
-  font-size: 12px;
-  font-weight: 550;
-}
-.calling-workspace .option-choice {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 14px;
-  margin: 0 0 8px;
-  font-size: 12px;
-  color: var(--ink);
-}
-.option-choice:has(:checked) {
-  background: var(--soft);
-  border-color: var(--muted);
-}
-.calling-workspace .option-choice input {
-  width: 15px;
-  height: 15px;
-  padding: 0;
-  flex: 0 0 auto;
-}
 .calling-workspace .option-toggle {
   display: flex;
   justify-content: space-between;
@@ -1411,11 +1379,33 @@ body[data-surface='admin']:has([data-workspace]) {
   color: var(--muted);
   margin-top: 5px;
 }
-.line-choices {
+/* Calling mode and line count stay side by side when space permits. */
+.calling-options-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 14px;
 }
-.calling-workspace .line-choices .option-choice {
-  margin: 0;
+.calling-options-grid .setup-field--wide {
+  grid-column: auto;
+}
+@media (max-width: 380px) {
+  .calling-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Keep the settings index within the same compact viewport as call setup. */
+[data-workspace-screen='settings'] .workspace-content {
+  padding-top: 24px;
+  padding-bottom: 20px;
+}
+[data-workspace-screen='settings'] .navigation-row {
+  padding: 10px 0;
+}
+[data-workspace-screen='settings'] .settings-plan {
+  padding: 14px;
+  margin-bottom: 8px;
+}
+[data-workspace-screen='settings'] .page-heading {
+  margin-bottom: 20px;
 }
