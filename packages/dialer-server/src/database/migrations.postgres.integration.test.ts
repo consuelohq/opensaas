@@ -99,7 +99,7 @@ suite('LeadConnector company credential upgrades with isolated PostgreSQL', () =
       await run([initDb, '-D', dataDirectory, '--auth=trust', '--username=postgres', '--no-locale']);
       await run([
         pgCtl, '-D', dataDirectory, '-l', join(root, 'postgres.log'),
-        '-o', `-h 127.0.0.1 -p ${port} -F`, '-w', 'start',
+        '-o', `-h 127.0.0.1 -p ${port} -F -c unix_socket_directories=''`, '-w', 'start',
       ]);
       started = true;
       pool = new Pool({
