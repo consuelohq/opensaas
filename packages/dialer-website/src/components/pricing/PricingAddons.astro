@@ -1,5 +1,6 @@
 ---
 import PricingIcon from './PricingIcon.astro';
+import { siteLinks } from '../../data/site-links';
 import { minutePacks, numberPacks } from '../../data/pricing-content';
 const money = (cents: number) => '$' + (cents / 100).toLocaleString('en-US');
 const purchase = (addon: string) =>
@@ -52,6 +53,10 @@ const purchase = (addon: string) =>
       <a class="pricing-text-link" href={purchase('mercury')}
         >Choose Mercury <PricingIcon /></a
       >
+      <p class="addon-note">
+        Already subscribed? <a href={siteLinks.billing}
+          >Add Mercury in Stripe <PricingIcon /></a>
+      </p>
     </article>
     <article class="addon" aria-labelledby="minute-pack-heading">
       <div class="addon__title">
@@ -79,7 +84,8 @@ const purchase = (addon: string) =>
         }
       </div>
       <p class="addon-note">
-        One-time packs. Include a pack with your new plan. <a href="/contact"
+        One-time packs. Include one with your new plan, or buy a top-up in
+        Stripe from your dialer’s billing page. <a href="/contact"
           >Need more? Talk to us <PricingIcon /></a
         >
       </p>
@@ -133,7 +139,8 @@ const purchase = (addon: string) =>
       </table>
       <p class="addon-note">
         Single numbers are $3/month. Number packs expand the pool; parallel call
-        capacity follows your plan.
+        capacity follows your plan. Number packs have their own subscription and
+        invoice.
       </p>
     </article>
   </div>

@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2726,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2726",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2726",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2726/complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2726",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2726/complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9ec9b238c72a",
+  "tmuxSession": "opensaas-website-complete-hosted-stripe-purchase-and-separate-inv-9ec9b238",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-hosted-stripe-purchase-and-separate-invoice-confirmation/.task/website/complete-hosted-stripe-purchase-and-separate-invoice-confirmation/session.json",
+  "createdAt": "2026-10-31T01:46:15.396Z"
+}

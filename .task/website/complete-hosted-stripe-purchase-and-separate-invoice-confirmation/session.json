@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_9ec9b238c72a",
+  "tmuxSession": "opensaas-website-complete-hosted-stripe-purchase-and-separate-inv-9ec9b238",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "branch": "task/website/complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-hosted-stripe-purchase-and-separate-invoice-confirmation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2726,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2726",
+  "createdAt": "2026-10-31T01:46:15.381Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-hosted-stripe-purchase-and-separate-invoice-confirmation/.task/website/complete-hosted-stripe-purchase-and-separate-invoice-confirmation/session.json"
+}
