@@ -96,7 +96,9 @@
         "packages/os/tests/verify-status-facade.test.ts",
         "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/facade/schemas.ts",
-        "packages/workspace/scripts/lib/facade/schemas.ts"
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/paths.js",
+        "packages/workspace/tests/audit/audit.test.ts"
       ],
       "tests": [
         {
@@ -116,7 +118,8 @@
             "packages/workspace/tests/verify-status.test.js",
             "packages/os/tests/verify-status-facade.test.ts",
             "packages/os/tools/review/handler.test.ts",
-            "packages/os/tests/audit/script-parity-audit.test.ts"
+            "packages/os/tests/audit/script-parity-audit.test.ts",
+            "packages/workspace/tests/audit/audit.test.ts"
           ]
         }
       ],

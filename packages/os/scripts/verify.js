@@ -19,6 +19,7 @@ const {
   finishVerifyRun,
   makeVerifyRunIdentity,
   markVerifyRunLaunched,
+  markVerifyRunPhase,
   readCompletedResult,
   waitForVerifyRun,
   selectVerifyBase,
@@ -611,8 +612,11 @@ async function main() {
       return;
     }
 
+    markVerifyRunPhase(verifyRun, 'review');
     const review = runReview(repoRoot, base, args);
+    markVerifyRunPhase(verifyRun, 'db');
     const db = createDbResult(files, args);
+    markVerifyRunPhase(verifyRun, 'docs');
     const docs = createDocsResult(repoRoot, files);
     const passed = review.passed && db.passed && docs.passed;
     const mode = args.review && args.db ? 'full' : 'partial';

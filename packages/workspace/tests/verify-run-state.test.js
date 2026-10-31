@@ -297,6 +297,13 @@ test('bounded read-only status long poll completes after a worker finishes', asy
   expect(status).toMatchObject({ state: 'passed', pending: false });
 });
 
+test('detached verify worker records phase progress for read-only monitoring', () => {
+  const source = fs.readFileSync(path.resolve(import.meta.dirname, '../scripts/verify.js'), 'utf8');
+  expect(source).toContain("markVerifyRunPhase(verifyRun, 'review')");
+  expect(source).toContain("markVerifyRunPhase(verifyRun, 'db')");
+  expect(source).toContain("markVerifyRunPhase(verifyRun, 'tests')");
+});
+
 test('exposes current verification phase without changing the worker or lock', () => {
   const repoRoot = createRepo();
   const verifyIdentity = identity(repoRoot);

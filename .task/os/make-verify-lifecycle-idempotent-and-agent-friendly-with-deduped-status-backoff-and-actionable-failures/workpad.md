@@ -81,6 +81,8 @@ no-test waiver: none. Red→green, strict review, formal verify exactly once aft
 - 2026-10-31 07:54:57 write: `packages/os/tests/verify-status-facade.test.ts`
 - 2026-10-31 07:54:57 fs.write: `packages/os/tests/verify-status-facade.test.ts`
 - 2026-10-31 07:59:58 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+- 2026-10-31 08:02:43 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+- 2026-10-31 08:06:45 fs.write: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
 
 ## Verification lifecycle implementation and red/green evidence
 
@@ -93,3 +95,28 @@ no-test waiver: none. Red→green, strict review, formal verify exactly once aft
 - Concurrent `stream/os` advanced with other agents' git-diff/facade changes, including generated artifacts. Next: snapshot local task edits, integrate latest stream safely, regenerate generated outputs and rerun gates, publish task PR #2759 only. No main/stream merge or deployment without approval.
 
 - 2026-10-31 07:59:58 append: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+
+## workspace-owned: validation evidence
+
+- 2026-10-31 08:01:11 `review.run`: passed — OK
+- 2026-10-31 08:02:50 `review.run`: passed — OK
+
+## Stream integration and validation
+
+- Source implementation committed locally at f503e06ca4b52d02a9b968ffb6973d62634053d0. Fetched current stream head cec84ec3e3ffd6f8971078a32206b740bc6cf7a0, performed normal two-parent merge preserving agents' git-diff, tooling, CI and docs work at 00bb5e1fe6d6472d01c310fd3346edccd02eb06b. Only conflict was generated `packages/workspace/test-selection.registry.json`: regenerated from combined source rules and committed in merge. Regenerated OS tool manifest/workflows, SDK declarations, tools reference and test-selection registry.
+- Synced focused verify lifecycle, status CLI, OS/workspace state, manifest route, parity and selector: 137/137 tests across 7 files passed. Generated manifests check passed; test selection check passed; script syntax and whitespace checks passed.
+- Full facade integration suite passed 768/768 tests (after earlier broad mixed 798/799 run had one unrelated existing 5-second timer timeout).
+- Public documentation `packages/documentation/src/content/docs/reference/tools.mdx` now explains one-time verify, status long-poll, explicit failure retry, stale and publish-safety and SDK method. Documentation `bun run --cwd packages/documentation validate` passed (`selectedPages:105`).
+- Remaining: formal strict review and one full verification run (monitor via new read-only `verify.status`/OS wait rather than repeated mutating verify calls), then publish only to task PR #2759. No stream/main merge or deploy without separate approval.
+
+- 2026-10-31 08:02:43 append: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`
+
+## Formal gate failure analysis and corrections
+
+- A single formal `verify` started runKey `9a032fbf76ba16a512bf2d6f273afb550dfaa35b7372c1a09d7af68212dbaf5e`; consumed ONLY via the new `verify-status.js` read-only operation, never by repeated mutating `verify` calls. It returned pending `passed:null` and actionable `verify.status` instruction correctly. Another agent advanced stream/os from cec84... to 0a6389... during verification; status correctly reported stale:true due changed base SHA, while HEAD and changeHash were unchanged.
+- The worker phase field was initially generic because the stage calls were not actually persisted in workspace/os verify entrypoints. Added concrete stage writes in both scripts and static stage-wiring regressions; 45/45 focused tests green.
+- The full gate failed in OS tool-package/layout tests because the canonical baseline fixture still contained 172 tools instead of the new 173. Updated the fixture from canonical generated definitions, asserting exactly `verify.status` was added and `verify` definition changed. Tool manifest/layout targeted suite 20/20, then combined 22/22 green.
+- The workspace scripts-only audit failed reproducibly: its copy of `scripts/lib/paths.js` eagerly imported yaml in an isolated fixture without node_modules. The OS copy already correctly deferred requiring yaml until config reads. Made workspace helper byte-identical with OS helper, marked script parity same, and included audit regression in critical workspace publish-gate. Reproduced failing subprocess `ENOENT while resolving package yaml` before fix and validated audit with tests afterward.
+- Latest stream moved again with unrelated cleanup and analytics changes; only overlapping file is script-parity classifications. Preserve all partner changes on merge, then do final verification and task PR publication. Do not merge main/stream or deploy without approval.
+
+- 2026-10-31 08:06:45 append: `.task/os/make-verify-lifecycle-idempotent-and-agent-friendly-with-deduped-status-backoff-and-actionable-failures/workpad.md`

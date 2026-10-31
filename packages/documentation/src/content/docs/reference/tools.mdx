@@ -119,6 +119,29 @@ The facade validates input before executing the backing command. It returns a `T
 
 The call envelope also supports a top-level `workSession` for work-session node routing. `taskSession` and `workSession` are mutually exclusive. Adding work-session routing does not by itself grant a tool new filesystem mutation authority: a tool must explicitly support work-session execution before it can use that session for work.
 
+## Verify a managed task without repeated tool calls
+
+Use `verify` to start the full review, test, and database safety gate **once** for the current task changes. If it returns `VERIFY_PENDING`, this means the same verification is running, not that it failed. Its `runKey` identifies that exact run.
+
+Use the separate **read-only** `verify.status` operation to monitor it:
+
+```json
+{
+  "tool": "verify.status",
+  "taskSession": "tsk_your_task_session",
+  "input": {
+    "runKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "waitSeconds": 60
+  }
+}
+```
+
+The key above is illustrative; copy the actual `runKey` returned by your first `verify` call. The status operation waits for a result without launching another verification and reports the current stage (`review`, `tests`, `db`, or `docs`), the terminal status, and a compact list of failing suites where relevant. A successful result is publish-valid only when the task branch, base commit, and change snapshot still match the verified state.
+
+Repeated `verify` calls for the same active run are coalesced into a bounded wait for older clients. A failed result is retained for the same snapshot: fix the failing code, or use `verify` with `retry: true` when an intentional rerun without code changes is justified. An unchanged failed run never silently retries after a short timeout.
+
+In the typed JavaScript client, the status method is `workspace.verifyStatus(...)` (not `workspace.verify.status(...)`); `workspace.verify(...)` remains the distinct mutating start operation. This workflow is part of the OS tool runtime and will be available to users once the corresponding OS release ships.
+
 ## Starting sessions
 
 `session.start` is the canonical session constructor. `kind: "task"` delegates to the existing task lifecycle and returns `sessionKind: "task"`, `taskSession`, `taskBranch`, and `worktreePath`; `task.start` remains available as a compatibility alias. `kind: "work"` creates metadata only for an existing directory and returns `sessionKind: "work"`, `workSession`, `ownerNodeId`, and `path`. It does not create a branch, worktree, PR, or copied directory.
