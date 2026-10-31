@@ -166,6 +166,8 @@ describe('OS steering execution recording', () => {
                 readiness: 'ready',
                 compatibility: 'compatible',
               },
+              { nodeId: 'node_offline_one', displayName: 'Dormant Mac', presence: 'offline' },
+              { nodeId: 'node_offline_two', displayName: 'Dormant Cloud', presence: 'offline' },
             ],
           },
         }),
@@ -182,6 +184,10 @@ describe('OS steering execution recording', () => {
     expect(steering).toContain('"mcpProtocolVersion": "2026-07-28"');
     expect(steering).toContain('"readiness": "ready"');
     expect(steering).toContain('"compatibility": "compatible"');
+    expect(steering).toContain('"offlineNodeCount": 2');
+    expect(steering).not.toContain('node_offline_one');
+    expect(steering).not.toContain('node_offline_two');
+    expect(steering).not.toContain('Dormant Mac');
     expect(steering).toContain('pass `nodeId` at the top level of `os.call`');
     expect(steering).toContain('Nodes are routing targets, not tools');
     expect(steering).toContain('Omit `nodeId` to use the workspace default node');
@@ -216,10 +222,17 @@ describe('OS steering execution recording', () => {
     `);
 
     expect(steering).toContain('## Installed skills');
-    expect(steering).toContain('"name": "custom-branch-planner"');
-    expect(steering).toContain('Plan large work into aligned branch stacks.');
-    expect(steering).toContain('Invoke when a large project needs collaborative decomposition.');
+    expect(steering).toContain('**Custom Branch Planner** — Plan large work into aligned branch stacks.');
+    expect(steering).not.toContain('"name": "custom-branch-planner"');
+    expect(steering).not.toContain('Invoke when a large project needs collaborative decomposition.');
+    expect(steering).not.toContain('"entrypoint":');
+    expect(steering).not.toContain('"capabilities":');
     expect(steering).not.toContain('body-only-marker-must-not-appear');
+    expect(steering).toContain('## Core tools');
+    expect(steering).toContain('tools.search');
+    expect(steering).toContain('code.call');
+    expect(steering).not.toContain('# raw core tool manifest');
+    expect(steering).not.toContain('"sourceManifest":');
   });
 
   it('prefers the current selected-skill index over legacy or bundled catalogs', () => {
@@ -270,7 +283,7 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('"name": "selected-branch-planner"');
+    expect(steering).toContain('**Selected Branch Planner** — Selected skill should be advertised.');
     expect(steering).not.toContain('legacy-fallback-must-not-appear');
   });
 
@@ -324,9 +337,9 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ first, second }));
     `);
 
-    expect(first).toContain('"name": "enabled-branch-planner"');
+    expect(first).toContain('**Enabled Branch Planner** — Enabled skill should remain visible.');
     expect(first).not.toContain('disabled-branch-planner');
-    expect(second).toContain('"name": "disabled-branch-planner"');
+    expect(second).toContain('**Disabled Branch Planner** — Disabled skill must not be advertised.');
   });
 
   it('includes preserved custom skills from the current installed index', () => {
@@ -366,9 +379,8 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('"name": "custom-local-planner"');
-    expect(steering).toContain('User-owned custom planning skill.');
-    expect(steering).toContain('Invoke for local custom planning.');
+    expect(steering).toContain('**Custom Local Planner** — User-owned custom planning skill.');
+    expect(steering).not.toContain('Invoke for local custom planning.');
   });
 
   it('loads supported local steering files while excluding decision and legacy steering', () => {
@@ -642,8 +654,9 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('"source": "bundled"');
-    expect(steering).toContain('"name": "branch"');
+    expect(steering).toContain('## Installed skills');
+    expect(steering).toContain('**Branch**');
+    expect(steering).not.toContain('"source": "bundled"');
   });
 
   it('does not poison the cache when a snapshot build fails', () => {

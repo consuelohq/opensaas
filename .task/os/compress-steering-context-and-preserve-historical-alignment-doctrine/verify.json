@@ -1,0 +1,328 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/compress-steering-context-and-preserve-historical-alignment-doctrine",
+  "base": "origin/task/os/compress-steering-context-and-preserve-historical-alignment-doctrine",
+  "headSha": "d7fefdeab8804cd351eab3537337630f47827134",
+  "changeHash": "741d431da05549709039d27fa46eb1de9bd14a5387b576d29a2881e6e62d4a84",
+  "changedFiles": [
+    "packages/os/scripts/lib/steering-snapshot-cache.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts"
+  ],
+  "verifiedAt": "2026-10-31T05:42:46.791Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/compress-steering-context-and-preserve-historical-alignment-doctrine/evidence-log.json",
+        ".task/os/compress-steering-context-and-preserve-historical-alignment-doctrine/read-log.json",
+        ".task/os/compress-steering-context-and-preserve-historical-alignment-doctrine/workpad.md",
+        ".task/tasks/os/compress-steering-context-and-preserve-historical-alignment-doctrine.json",
+        "packages/os/scripts/lib/steering-snapshot-cache.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-local-steering-authority",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/steering-snapshot-cache.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/os.ts",
+            "packages/os/tests/os-get-steering-trace.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1012,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/steering-canonical-source.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:42:27\n\u001b[2m   Duration \u001b[22m 82ms\u001b[2m (transform 26ms, setup 23ms, import 11ms, tests 2ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 726,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/managed-user-content.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 334\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m25 passed\u001b[39m\u001b[22m\u001b[90m (25)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:42:27\n\u001b[2m   Duration \u001b[22m 502ms\u001b[2m (transform 100ms, setup 0ms, import 110ms, tests 334ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 261,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/session-integration-guidance.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:42:28\n\u001b[2m   Duration \u001b[22m 62ms\u001b[2m (transform 14ms, setup 15ms, import 5ms, tests 3ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 11879,
+          "outputTail": "CP metadata when its stored credential is missing \u001b[33m 366\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces an expired ChatGPT MCP credential during reprovisioning \u001b[33m 715\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports existing generated security assets as existing on reprovision \u001b[33m 705\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 730\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 551\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1087\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 374\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 362\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 753\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 737\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 586\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 361\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 318\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 324\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 365\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 330\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 364\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 377\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 389\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:42:28\n\u001b[2m   Duration \u001b[22m 11.70s\u001b[2m (transform 69ms, setup 29ms, import 58ms, tests 11.66s, environment 0ms)\u001b[22m\n\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os/scripts/lib/managed-component-install.ts:315:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os/scripts/lib/managed-component-install.ts:489:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os/scripts/lib/install-state.ts:2018:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 452,
+          "outputTail": "..............................................\n----------------------------------------------------------------------\nRan 46 tests in 0.341s\n\nOK\n"
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1943,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2772,
+          "outputTail": "status\":200,\"durationMs\":1,\"jsonRpcId\":\"nonce-session-beta-1\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-10-31T05:42:44.288Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"af0038c8-5ab3-420e-b4fe-4de09fd19291\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"nonce-session-alpha-2\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-10-31T05:42:44.289Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"af0038c8-5ab3-420e-b4fe-4de09fd19291\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":200,\"durationMs\":2,\"jsonRpcId\":\"nonce-session-alpha-2\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-10-31T05:42:44.290Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"fef303e8-753e-4e27-aeb3-36758bb38da8\",\"route\":\"/mcp\",\"method\":\"initialize\",\"jsonRpcId\":\"initialize-session\"},\"ts\":\"2026-10-31T05:42:44.292Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"fef303e8-753e-4e27-aeb3-36758bb38da8\",\"route\":\"/mcp\",\"method\":\"initialize\",\"status\":200,\"durationMs\":3,\"jsonRpcId\":\"initialize-session\"},\"ts\":\"2026-10-31T05:42:44.295Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"12359ff6-72d0-4a32-a070-25b3218be36f\",\"route\":\"/mcp\",\"method\":\"tools/list\",\"jsonRpcId\":\"tools\"},\"ts\":\"2026-10-31T05:42:44.298Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"12359ff6-72d0-4a32-a070-25b3218be36f\",\"route\":\"/mcp\",\"method\":\"tools/list\",\"status\":200,\"durationMs\":5,\"jsonRpcId\":\"tools\"},\"ts\":\"2026-10-31T05:42:44.303Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"416fc606-6c2d-4ffc-8427-4d18b9940f42\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"unknown-browser-tool\",\"publicTool\":\"call\",\"facadeTool\":\"browser.login.profile\"},\"ts\":\"2026-10-31T05:42:44.307Z\"}\n{\"level\":\"error\",\"tool\":\"browser.login.profile\",\"command\":\"workspace browser.login.profile\",\"durationMs\":65,\"exitCode\":1,\"traceId\":\"trc_cdd3ddafbdf1\",\"requestId\":\"416fc606-6c2d-4ffc-8427-4d18b9940f42\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-10-31T05:42:44.390Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"416fc606-6c2d-4ffc-8427-4d18b9940f42\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":200,\"durationMs\":85,\"jsonRpcId\":\"unknown-browser-tool\",\"publicTool\":\"call\",\"facadeTool\":\"browser.login.profile\"},\"ts\":\"2026-10-31T05:42:44.392Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4072f06f-9581-454c-845d-a9439fa8ec81\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"call\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-10-31T05:42:44.396Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"4072f06f-9581-454c-845d-a9439fa8ec81\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":403,\"durationMs\":2,\"jsonRpcId\":\"call\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-10-31T05:42:44.398Z\"}\n(node:94882) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1460,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m34 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 60\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m73 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 977\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should resolve the stale lifecycle Bun executable across historical install shapes \u001b[33m 650\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m107 passed\u001b[39m\u001b[22m\u001b[90m (107)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:42:45\n\u001b[2m   Duration \u001b[22m 1.30s\u001b[2m (transform 477ms, setup 30ms, import 539ms, tests 1.04s, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

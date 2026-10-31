@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/compress-steering-context-and-preserve-historical-alignment-doctrine",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2738,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2738",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8874eb06992b",
+  "tmuxSession": "opensaas-os-compress-steering-context-and-preserve-historica-8874eb06",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compress-steering-context-and-preserve-historical-alignment-doctrine/.task/session.json",
+  "createdAt": "2026-10-31T05:37:14.257Z"
+}
