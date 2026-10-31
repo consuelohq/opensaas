@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1665-stream-align-trace-labels-and-explore-diagnostics",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2751,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2751",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1665-stream-align-trace-labels-and-explore-diagnostics",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_52aa629ce940",
+  "tmuxSession": "opensaas-os-dev-1665-stream-align-trace-labels-and-explore-d-52aa629c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1665-stream-align-trace-labels-and-explore-diagnostics/.task/session.json",
+  "createdAt": "2026-10-31T07:24:22.324Z"
+}

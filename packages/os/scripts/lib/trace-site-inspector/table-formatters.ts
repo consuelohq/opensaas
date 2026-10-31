@@ -270,6 +270,11 @@ function summarizeInput(
     return `${action === 'patch' ? 'patch' : action} workpad.md`;
   }
   if (tool === 'code.call') {
+    const codeFile = clean(input?.codeFile);
+    if (codeFile && isUsefulDisplayValue(codeFile)) {
+      const mode = clean(input?.mode);
+      return `${mode === 'verify' ? 'verify' : mode === 'edit' ? 'edit' : 'run'} ${fileName(codeFile)}`;
+    }
     const rawExisting = valueText(row.input);
     const existing = isSerializedStructure(rawExisting) ? '' : rawExisting;
     const stripped = stripCodePrefix(existing, input, toolLabel);
@@ -278,7 +283,10 @@ function summarizeInput(
       stripped &&
       stripped !== existing &&
       !looksLikeSourceCode(stripped) &&
-      isUsefulDisplayValue(stripped)
+      isUsefulDisplayValue(stripped) &&
+      !/^(?:inspect source|inspect file contents|read complete|edit source|run verification)$/i.test(
+        stripped,
+      )
     ) {
       return normalizeSeparators(stripped);
     }
@@ -288,7 +296,10 @@ function summarizeInput(
       !visibleInput ||
       visibleInput === code ||
       looksLikeSourceCode(visibleInput) ||
-      !isUsefulDisplayValue(visibleInput)
+      !isUsefulDisplayValue(visibleInput) ||
+      /^(?:inspect source|inspect file contents|read complete|edit source|run verification)$/i.test(
+        visibleInput,
+      )
         ? codeSummary
         : visibleInput;
     return isUsefulDisplayValue(candidate)
@@ -315,7 +326,11 @@ function summarizeInput(
     const action = tool.split('.').at(-1) || 'status';
     if (action === 'status') return 'runtime status';
     if (action === 'update') {
-      return [clean(input?.channel), clean(input?.version)].filter(Boolean).join(' · ') || 'update runtime';
+      return (
+        [clean(input?.channel), clean(input?.version)]
+          .filter(Boolean)
+          .join(' · ') || 'update runtime'
+      );
     }
     return lifecycleInputLabel(action, input);
   }
@@ -350,6 +365,34 @@ function summarizeInput(
     return paths.length
       ? `patch ${paths.length} ${paths.length === 1 ? 'file' : 'files'} · ${paths.join(', ')}`
       : 'patch files';
+  }
+  if (tool.startsWith('linear.')) {
+    const action = tool.slice('linear.'.length);
+    if (action === 'search') {
+      const search = clean(input?.search ?? input?.query);
+      return search && isUsefulDisplayValue(search) ? search : 'search Linear';
+    }
+    const result = resultRecord(row);
+    const resultIssue = record(record(result?.data)?.issue ?? result?.issue);
+    const issue = [
+      input?.identifier,
+      input?.issueId,
+      input?.issue,
+      resultIssue?.identifier,
+    ].map(clean).find((candidate) => /^[A-Z]{1,12}-\d{1,10}$/.test(candidate)) ?? '';
+    if (action === 'issue') return issue || 'issue details';
+    if (action === 'createComment') return issue ? `comment ${issue}` : 'comment on issue';
+    if (action === 'comments') return issue ? `comments ${issue}` : 'issue comments';
+    if (action === 'updateIssue') {
+      const state = clean(input?.state);
+      const usableState = state && !/^[0-9a-f-]{36}$/i.test(state) && isUsefulDisplayValue(state);
+      return [issue ? `update ${issue}` : 'update issue', usableState ? state : '']
+        .filter(Boolean).join(' · ');
+    }
+    if (action === 'relations') return issue ? `relations ${issue}` : 'issue relations';
+    if (issue) return `${action} ${issue}`;
+    const title = clean(input?.title);
+    if (title && isUsefulDisplayValue(title)) return title;
   }
   if (tool === 'github') {
     const repo = clean(input?.repo);
@@ -395,7 +438,10 @@ function summarizeInput(
     return clean(input?.query) || 'explore workspace';
   }
   if (tool === 'memory') {
-    return clean(input?.keyword ?? input?.query ?? input?.operation) || 'memory request';
+    return (
+      clean(input?.keyword ?? input?.query ?? input?.operation) ||
+      'memory request'
+    );
   }
   if (tool === 'subagent') {
     const provider = clean(input?.provider);
@@ -469,6 +515,8 @@ function summarizeOutput(
   if (tool === 'refresh_steering') return 'steering refreshed';
   const result = resultRecord(row);
   const data = record(result?.data) ?? result;
+  if (tool === 'linear.updateIssue') return 'issue updated';
+  if (tool === 'linear.createComment') return 'comment added';
   if (tool === 'code.call') {
     const mode = toolLabel.split('.').at(-1);
     const changed = stringArray(data?.filesChanged ?? result?.filesChanged);
@@ -497,7 +545,20 @@ function summarizeOutput(
   if (tool === 'fs.write') return 'write complete';
   if (tool === 'fs.list') return 'list complete';
   if (tool === 'fs.trash') return 'trash complete';
-  if (tool === 'fs.search' || tool === 'tools.search') return 'search complete';
+  if (tool === 'fs.search' || tool === 'tools.search') {
+    const matches = data?.results ?? data?.tools ?? data?.matches;
+    if (Array.isArray(matches)) {
+      const noun = tool === 'tools.search' ? 'tool' : 'match';
+      return (
+        matches.length +
+        ' ' +
+        noun +
+        (matches.length === 1 ? '' : 's') +
+        ' found'
+      );
+    }
+    return 'search complete';
+  }
   if (tool === 'status') return 'status loaded';
   if (tool === 'stream.context') return 'context loaded';
   if (tool === 'git.diff') return 'diff complete';
@@ -507,7 +568,9 @@ function summarizeOutput(
     if (action === 'update') {
       const lifecycleResult = record(data?.result ?? result?.result);
       const version = clean(
-        lifecycleResult?.resultingVersion ?? lifecycleResult?.version ?? input?.version,
+        lifecycleResult?.resultingVersion ??
+          lifecycleResult?.version ??
+          input?.version,
       );
       return version ? `updated ${version}` : 'update complete';
     }
@@ -529,7 +592,9 @@ function summarizeOutput(
   if (tool === 'verify') return 'verification passed';
   if (tool === 'release') {
     const releaseResult = record(data?.result ?? result?.result);
-    const version = clean(releaseResult?.version ?? data?.version ?? result?.version);
+    const version = clean(
+      releaseResult?.version ?? data?.version ?? result?.version,
+    );
     return version ? `released ${version}` : 'release complete';
   }
   if (tool === 'session.start') return 'session started';
@@ -557,10 +622,12 @@ function summarizeOutput(
   if (tool === 'task.finish') return 'task finished · worktree removed';
   if (tool === 'github') {
     const summary = record(data?.summary ?? result?.summary);
-    const state = clean(summary?.state);
-    const number = clean(summary?.number);
+    const subject = record(summary?.pr ?? summary?.pullRequest) ?? summary;
+    const state = clean(subject?.state);
+    const number = clean(subject?.number);
+    const title = clean(subject?.title);
     return (
-      [state.toLowerCase(), number ? `#${number}` : '']
+      [state.toLowerCase(), number ? `#${number}` : '', title]
         .filter(Boolean)
         .join(' · ') || 'GitHub request complete'
     );
@@ -589,7 +656,11 @@ function summarizeOutput(
 
 function resolvedInput(row: TraceRecord): Record<string, unknown> | null {
   const parsed = parseMaybeJson(
-    row.rawResolvedInputJson ?? row.rawInputJson ?? row.inputObj ?? row.input,
+    row.rawResolvedInputJson ||
+      row.rawInputJson ||
+      row.resolvedInputObj ||
+      row.inputObj ||
+      row.input,
   );
   return record(parsed) ?? record(row.input);
 }
@@ -660,6 +731,19 @@ function summarizeCode(code: string, mode: string): string {
     }
     if (Number.isFinite(milliseconds)) return `wait ${milliseconds}ms`;
   }
+  const subjects = codeFileTargets(code);
+  if (subjects.length > 1)
+    return `${mode === 'edit' ? 'edit' : 'read'} ${subjects.length} files · ${subjects.join(', ')}`;
+  if (subjects.length === 1)
+    return `${mode === 'edit' ? 'edit' : mode === 'verify' ? 'verify' : 'read'} ${subjects[0]}`;
+  const commands = codeCommands(code);
+  if (commands.length)
+    return [...new Set(commands.map(summarizeSpawnedCommand))].join(' · ');
+  const shellLines = code
+    .split(/\n|&&|;/)
+    .map((line) => summarizeShellCode(line, mode))
+    .filter(Boolean);
+  if (shellLines.length) return [...new Set(shellLines)].join(' · ');
   const fileTarget = codeFileTarget(code);
   if (fileTarget) {
     const verb =
@@ -671,6 +755,15 @@ function summarizeCode(code: string, mode: string): string {
             ? 'verify'
             : 'read';
     return `${verb} ${fileName(fileTarget.path)}`;
+  }
+  if (/\bbun:sqlite\b/.test(code) && /(?:\.query\(|\.prepare\(|\bSELECT\b)/i.test(code)) {
+    return 'query SQLite';
+  }
+  const moduleImports = [...code.matchAll(
+    /\b(?:import|require)\s*\([^\n]{0,160}?['"]([^'"]+\.(?:ts|tsx|js|jsx|mjs))['"]\s*\)/g,
+  )];
+  if (moduleImports.length === 1 && isUsefulDisplayValue(moduleImports[0][1])) {
+    return `inspect ${fileName(moduleImports[0][1])}`;
   }
   const command = spawnedCommand(code);
   if (command.length) return summarizeSpawnedCommand(command);
@@ -697,6 +790,11 @@ function isWorkpadActivity(
   row: TraceRecord,
   input: Record<string, unknown> | null,
 ): boolean {
+  if (clean(row.name ?? row.traceName ?? row.tool) === 'code.call') {
+    const targets = codeFileTargets(clean(input?.code));
+    if (targets.length)
+      return targets.every((path) => fileName(path) === 'workpad.md');
+  }
   const values = [
     row.input,
     row.summary,
@@ -724,7 +822,9 @@ function spawnedCommand(code: string): string[] {
     if (call?.[1]) {
       const variable = escapeRegExp(call[1]);
       array = code.match(
-        new RegExp(`(?:const|let|var)\\s+${variable}\\s*=\\s*\\[([\\s\\S]{0,2400}?)\\]\\s*;`),
+        new RegExp(
+          `(?:const|let|var)\\s+${variable}\\s*=\\s*\\[([\\s\\S]{0,2400}?)\\]\\s*;`,
+        ),
       )?.[1];
     }
   }
@@ -780,6 +880,61 @@ function commandProgram(command: string): string {
   return fileName(first);
 }
 
+function codeFileTargets(code: string): string[] {
+  const paths = new Set<string>();
+  const add = (value: string) => {
+    if (looksLikeFilePath(value)) paths.add(value);
+  };
+  if (/(?:Bun\.file|readFile|open|Path)\(/.test(code)) {
+    for (const loop of code.matchAll(/\b(?:of|in)\s*\[([^\]]*)\]/g)) {
+      for (const literal of loop[1].matchAll(/['"]([^'"]+)['"]/g))
+        add(literal[1]);
+    }
+  }
+  for (const match of code.matchAll(
+    /(?:Bun\.file|readFileSync|readFile|open|Path)\(\s*['"]([^'"]+)['"]/g,
+  ))
+    add(match[1]);
+  for (const binding of code.matchAll(
+    /\b(?:const\s+|let\s+|var\s+)?([a-zA-Z_$][\w$]*)\s*=\s*(['"][^'"\n]+['"]|\[[^\]]*\])/g,
+  )) {
+    const variable = escapeRegExp(binding[1]);
+    const direct = new RegExp(
+      '(?:Bun\\.file|readFileSync|readFile|open|Path)\\(\\s*' +
+        variable +
+        '\\b',
+    ).test(code);
+    const iteration =
+      new RegExp('\\b(?:in|of)\\s+' + variable + '\\b').test(code) &&
+      /(?:Bun\.file|readFile|open|Path)\(/.test(code);
+    if (direct || iteration)
+      for (const item of binding[2].matchAll(/['"]([^'"]+)['"]/g)) add(item[1]);
+  }
+  return displayPaths([...paths]);
+}
+
+function displayPaths(paths: string[]): string[] {
+  const names = paths.map(fileName);
+  return paths.map((path, index) =>
+    names.filter((name) => name === names[index]).length > 1
+      ? path.replaceAll('\\', '/').split('/').slice(-2).join('/')
+      : names[index],
+  );
+}
+
+function codeCommands(code: string): string[][] {
+  const commands: string[][] = [];
+  for (const array of code.matchAll(
+    /\[\s*['"](?:git|rg|grep|cat|sed|head|tail|bun|bunx|npm|yarn|python3?|node|curl)['"]\s*,[^\]]*\]/g,
+  )) {
+    const args = [...array[0].matchAll(/['"]((?:\\.|[^'"\\])*)['"]/g)].map(
+      (match) => match[1],
+    );
+    if (args.length) commands.push(args);
+  }
+  return commands;
+}
+
 function codeFileTarget(
   code: string,
 ): { path: string; operation: 'read' | 'write' | 'path' } | null {
@@ -830,31 +985,67 @@ function codeFileTarget(
 
 function summarizeShellCode(code: string, mode: string): string {
   const trimmed = code.trim();
-  if (!trimmed || trimmed.includes('\n')) return '';
-  const command = trimmed.split(/\s*(?:&&|\|\||;)\s*/)[0]?.trim() ?? '';
-  if (!command) return '';
-  const program = command.match(/^([a-zA-Z0-9_.+/-]+)/)?.[1] ?? '';
+  if (!trimmed) return '';
+  const lines = trimmed.split(/\r?\n|\s*(?:&&|\|\||;)\s*/)
+    .map((line) => line.trim())
+    .filter((line) => line && !/^(?:#|set\s|export\s|echo\s)/.test(line));
+  const command = lines.find((line) =>
+    /^(?:cat|head|tail|sed|awk|less|more|rg|grep|find|fd)\s/.test(line)
+  ) ?? lines[0] ?? '';
+  if (/^gh\s+run\s+view\b/.test(command)) return 'view GitHub Actions run';
+  if (/^wrangler\s+pages\s+deployment\s+list\b/.test(command)) {
+    return 'list Cloudflare Pages deployments';
+  }
+  const typecheck = command.match(/^bunx?\s+nx\s+run\s+([a-zA-Z0-9_-]+):typecheck\b/);
+  if (typecheck) return `typecheck ${typecheck[1]}`;
+  if (/^curl\s/.test(command)) return 'HTTP request';
+  const tokens = [
+    ...command.matchAll(/"((?:\\.|[^"\\])*)"|'([^']*)'|([^\s]+)/g),
+  ].map((match) => match[1] ?? match[2] ?? match[3]);
+  while (tokens[0] && /^[A-Za-z_][\w]*=/.test(tokens[0])) tokens.shift();
+  const program = fileName(tokens[0] ?? '');
   if (!program) return '';
-  const basename = fileName(program);
-  const fileTokens =
-    command.match(/(?:^|\s)([^\s'"<>|]+\.[a-zA-Z0-9_-]{1,16})(?=\s|$)/g) ?? [];
-  const target = fileTokens
-    .map((value) => value.trim())
-    .filter((value) => looksLikeFilePath(value))
-    .at(-1);
-  if (/^(?:rg|grep)$/.test(basename)) {
-    const query = command
-      .split(/\s+/)
+  if (/^(?:cat|head|tail|sed|awk|less|more|wc|stat)$/.test(program)) {
+    const paths = [
+      ...new Set(
+        tokens
+          .slice(1)
+          .filter(
+            (value) => !value.startsWith('-') && looksLikeFilePath(value),
+          ),
+      ),
+    ];
+    const files = displayPaths(paths);
+    if (files.length)
+      return (
+        (mode === 'edit' ? 'edit' : 'read') +
+        ' ' +
+        (files.length === 1
+          ? files[0]
+          : files.length + ' files · ' + files.join(', '))
+      );
+  }
+  if (/^(?:rg|grep)$/.test(program)) {
+    const query = tokens
       .slice(1)
       .find((value) => !value.startsWith('-') && !looksLikeFilePath(value));
-    return query
-      ? `search ${query.replace(/^['"]|['"]$/g, '')}`
-      : `search ${basename}`;
+    return query ? 'search ' + query : 'search ' + program;
   }
-  if (target && /^(?:cat|head|tail|sed|awk|less|more)$/.test(basename)) {
-    return `${mode === 'edit' ? 'edit' : 'read'} ${fileName(target)}`;
+  if (/^(?:find|fd)$/.test(program))
+    return 'search ' + tokens.slice(0, 3).join(' ');
+  if (
+    /^(?:gcloud|gh|curl|git|systemctl|journalctl|docker|kubectl|ls|pwd|tree)$/.test(
+      program,
+    )
+  ) {
+    return [
+      program,
+      ...tokens
+        .slice(1)
+        .filter((value) => !value.startsWith('-'))
+        .slice(0, 3),
+    ].join(' ');
   }
-  if (/^(?:find|fd)$/.test(basename)) return `search ${basename}`;
   return '';
 }
 
@@ -957,10 +1148,19 @@ function summarizePaths(
   input: Record<string, unknown> | null,
 ): string {
   if (!input) return '';
-  const paths = stringArray(input.paths ?? input.files);
+  const source = parseMaybeJson(input.paths ?? input.files ?? input.filesJson);
+  const paths = Array.isArray(source)
+    ? source
+        .map((item) =>
+          typeof item === 'string'
+            ? item
+            : clean(record(item)?.path ?? record(item)?.file),
+        )
+        .filter(Boolean)
+    : [];
   const single = clean(input.path ?? input.file);
   if (single) paths.unshift(single);
-  const unique = [...new Set(paths)].map(fileName).filter(isUsefulDisplayValue);
+  const unique = displayPaths([...new Set(paths)]).filter(isUsefulDisplayValue);
   if (!unique.length) return '';
   if (unique.length === 1) return `${verb} ${unique[0]}`;
   return `${verb} ${unique.length} files · ${unique.join(', ')}`;
@@ -970,12 +1170,12 @@ function patchPaths(
   input: Record<string, unknown> | null,
   row: TraceRecord,
 ): string[] {
-  const patch = clean(input?.patch ?? input?.content ?? row.input);
+  const patch = clean(input?.patchText ?? input?.patch ?? input?.content ?? row.input);
   return [
     ...new Set(
       [...patch.matchAll(/^\*\*\* (?:Update|Add|Delete) File: (.+)$/gm)].map(
         (match) => fileName(match[1].trim()),
-      ),
+      ).filter(isUsefulDisplayValue),
     ),
   ];
 }

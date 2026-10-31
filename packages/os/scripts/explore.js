@@ -3,6 +3,7 @@
 const { ensureIndex } = require('./lib/index/indexer');
 const { retrieve } = require('./lib/search/retriever');
 const { formatExploreOutput } = require('./lib/search/explore-output');
+const { formatExploreFailure } = require('./lib/search/explore-failure');
 const {
   appendEvidenceEvent,
   getEvidenceEvents,
@@ -271,6 +272,7 @@ async function main() {
     throw new Error('missing question');
   }
 
+  let phase = 'index';
   let indexResult;
   let results;
   let retrievalDiagnostics = { semanticAvailable: true, lexicalAvailable: true };
@@ -281,6 +283,7 @@ async function main() {
       query: args.question,
       reindex: args.reindex,
     });
+    phase = 'retrieve';
     results = await retrieve(indexResult.store, indexResult.repoRoot, args.question, {
       budget: args.budget,
       changedFiles: indexResult.changedFiles,
@@ -292,8 +295,8 @@ async function main() {
         retrievalDiagnostics = diagnostics;
       },
     });
-  } catch {
-    throw new Error('explore failed');
+  } catch (error) {
+    throw formatExploreFailure(error, phase);
   }
   const payload = toJsonResult(args, results, { ...indexResult, retrievalDiagnostics });
   const previousState = readExploreState(indexResult.repoRoot) || {};

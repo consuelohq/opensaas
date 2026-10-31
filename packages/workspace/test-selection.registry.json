@@ -196,6 +196,8 @@
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/lib/review-tests.js",
         "packages/workspace/scripts/lib/nx-projects.js",
+        "packages/workspace/scripts/lib/review-changed-lines.js",
+        "packages/workspace/scripts/lib/review-typecheck-errors.js",
         "packages/workspace/tests/review-modernization.test.js"
       ],
       "tests": [
