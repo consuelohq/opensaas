@@ -466,6 +466,8 @@ bun run verify -- --json              # structured json output
 bun run verify -- --base stream/dialer  # compare against specific ref
 ```
 
+**OS tool lifecycle:** Call `verify` once per exact task snapshot. A `VERIFY_PENDING` response is **not a failed gate**; it returns a `runKey` and a current phase (review, tests, database checks, or finalization). Use the **read-only** `verify.status` tool with that same `runKey` and `waitSeconds: 60` to long-poll without launching another verifier. Do not call `verify` repeatedly for progress; older clients that do are automatically coalesced into a bounded wait. The default comparison base is the task stream, never the task branch itself. Terminal failures are replayed on an unchanged snapshot until an explicit `verify({ retry: true })`; code/base changes create a new run identity. `verify.status` refuses to mark a stale run publish-valid. Status polling does not write or delete task evidence.
+
 **verify failure modes**
 
 ```text

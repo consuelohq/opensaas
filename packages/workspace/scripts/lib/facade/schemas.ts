@@ -563,6 +563,14 @@ export const VerifyInput = z.object({
   ...branchField,
   base: optionalString,
   noStamp: z.boolean().optional(),
+  retry: z.boolean().optional(),
+});
+
+export const VerifyStatusInput = z.object({
+  ...requestFields,
+  ...branchField,
+  runKey: z.string().regex(/^[a-f0-9]{64}$/),
+  waitSeconds: z.number().int().min(0).max(90).optional(),
 });
 
 export const PrReviewInput = z.object({
@@ -1139,6 +1147,7 @@ export const schemaRegistry = {
   StreamCleanupInput,
   ReviewInput,
   VerifyInput,
+  VerifyStatusInput,
   PrReviewInput,
   AiReviewInput,
   GhInput,
@@ -1247,7 +1256,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
   StreamCleanupInput: '{ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ReviewInput: "{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",
-  VerifyInput: '{ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  VerifyInput: '{ branch?: string; base?: string; noStamp?: boolean; retry?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  VerifyStatusInput: '{ runKey: string; waitSeconds?: number; branch?: string; requestId?: string; taskSession?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',

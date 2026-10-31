@@ -18,7 +18,10 @@
         {
           "name": "OS and Workspace stream.context compact and complete contracts",
           "command": [
-            "bun", "x", "vitest", "run",
+            "bun",
+            "x",
+            "vitest",
+            "run",
             "packages/workspace/tests/stream-context-compact.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
             "packages/workspace/tests/tool-manifest.test.ts"
@@ -83,7 +86,17 @@
         "packages/workspace/tests/task-push-binary.test.ts",
         "packages/workspace/scripts/lib/verification.js",
         "packages/workspace/scripts/confirm.js",
-        "packages/os/scripts/confirm.js"
+        "packages/os/scripts/confirm.js",
+        "packages/workspace/scripts/verify-status.js",
+        "packages/os/scripts/verify-status.js",
+        "packages/workspace/tests/verify-status.test.js",
+        "packages/os/tools/review/schema.ts",
+        "packages/os/tools/review/handler.ts",
+        "packages/os/tools/review/handler.test.ts",
+        "packages/os/tests/verify-status-facade.test.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts"
       ],
       "tests": [
         {
@@ -99,7 +112,11 @@
             "packages/workspace/tests/task-push-binary.test.ts",
             "packages/workspace/tests/task-push-local-sync.test.ts",
             "packages/os/tests/task-push-local-sync.test.ts",
-            "packages/workspace/tests/task-push-session.test.ts"
+            "packages/workspace/tests/task-push-session.test.ts",
+            "packages/workspace/tests/verify-status.test.js",
+            "packages/os/tests/verify-status-facade.test.ts",
+            "packages/os/tools/review/handler.test.ts",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
           ]
         }
       ],

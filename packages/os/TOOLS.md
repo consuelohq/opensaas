@@ -46,7 +46,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | observability | 1 |
 | posthog | 4 |
 | release | 1 |
-| review | 4 |
+| review | 5 |
 | security | 1 |
 | sentry | 7 |
 | session lifecycle | 1 |
@@ -3259,14 +3259,14 @@ await workspace.call({
 
 ## http
 
-### workspace.http
+### workspace.fs.http
 
 make HTTP requests through the workspace http wrapper (wraps xh)
 
 | Field | Value |
 | --- | --- |
 | Category | http |
-| Signature | `workspace.http({ url: string; method?: "get" &#124; "post" &#124; "put" &#124; "patch" &#124; "delete" &#124; "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.fs.http({ url: string; method?: "get" &#124; "post" &#124; "put" &#124; "patch" &#124; "delete" &#124; "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace http` |
 | Capability | writes state · mutating · safe to retry |
 | Default timeout | 60000ms |
@@ -6851,12 +6851,12 @@ await workspace.call({
 
 ### workspace.verify
 
-run the full task safety gate
+Run the full task safety gate once per exact snapshot; on VERIFY_PENDING use read-only verify.status with runKey and waitSeconds:60 rather than polling verify; retry:true explicitly reruns an unchanged failed gate.
 
 | Field | Value |
 | --- | --- |
 | Category | review |
-| Signature | `workspace.verify({ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.verify({ branch?: string; base?: string; noStamp?: boolean; retry?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace verify` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 600000ms |
@@ -6870,6 +6870,66 @@ await workspace.call({
     "branch": "task/workspace-agents/example",
     "noStamp": true,
     "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.verifyStatus
+
+Read-only long-poll for a previously started verify run. Reuses runKey, waits up to 60 seconds by default, reports pending/success/failure/stale without starting work.
+
+| Field | Value |
+| --- | --- |
+| Category | review |
+| Signature | `workspace.verifyStatus({ runKey: string; waitSeconds?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace verify-status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 150000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "verify.status",
+  "input": {
+    "runKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "waitSeconds": 60
   }
 });
 ```
@@ -7461,7 +7521,7 @@ show recent stream context
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace stream.context` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
@@ -7637,7 +7697,7 @@ sync a stream branch with main
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.sync({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.stream.sync({ area: string; stream?: string; repo?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace stream.sync` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -8485,14 +8545,14 @@ await workspace.call({
 
 ## utilities
 
-### workspace.browser
+### workspace.browser.run
 
 run the generic workspace browser wrapper command
 
 | Field | Value |
 | --- | --- |
 | Category | utilities |
-| Signature | `workspace.browser({ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.browser.run({ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace browser` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |

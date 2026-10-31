@@ -4,7 +4,6 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const DEFAULT_LOCK_STALE_MS = 30 * 60 * 1000;
-const DEFAULT_FAILED_REPLAY_TTL_MS = 30 * 1000;
 const DEFAULT_LAUNCH_GRACE_MS = 15 * 1000;
 
 function sha256(value) {
@@ -98,6 +97,23 @@ function makeVerifyRunIdentity({ repoRoot, branch, base, headSha, changeHash, ar
   };
 }
 
+function selectVerifyBase({ explicitBase, branch, taskMeta, hasRef }) {
+  if (explicitBase) return explicitBase;
+  const candidates = [];
+  const remote = (candidate) => candidate.startsWith('origin/') ? candidate : 'origin/' + candidate;
+  // The task's own remote branch is not a comparison baseline: selecting it
+  // conceals its changes and can give a false zero-suite result.
+  if (taskMeta?.baseBranch) candidates.push(remote(taskMeta.baseBranch), taskMeta.baseBranch);
+  if (taskMeta?.stream) candidates.push(remote(taskMeta.stream), taskMeta.stream);
+  const task = branch?.match(/^task\/([^/]+)\//);
+  if (task) candidates.push('origin/stream/' + task[1], 'stream/' + task[1]);
+  candidates.push('origin/main', 'main');
+  for (const candidate of candidates) {
+    if (hasRef(candidate)) return candidate;
+  }
+  return 'origin/main';
+}
+
 function pathsForIdentity(repoRoot, identity) {
   const dir = path.join(getVerifyRunDir(repoRoot), identity.key);
   return {
@@ -115,11 +131,8 @@ function readCompletedResult(paths) {
   const record = readJson(paths.recordPath);
   if (!record || record.status !== 'completed') return null;
   const exitCode = Number.isInteger(record.exitCode) ? record.exitCode : 1;
-  if (exitCode !== 0) {
-    const ttlMs = Number(process.env.WORKSPACE_VERIFY_FAILED_REPLAY_TTL_MS || DEFAULT_FAILED_REPLAY_TTL_MS);
-    const completedAt = Date.parse(record.completedAt || '');
-    if (!Number.isFinite(completedAt) || Date.now() - completedAt > ttlMs) return null;
-  }
+  // Do not silently restart an expensive failed gate after a short TTL.
+  // An unchanged run identity replays its failure until an explicit --retry.
   if (!fs.existsSync(paths.stdoutPath) || !fs.existsSync(paths.stderrPath)) return null;
 
   return {
@@ -128,6 +141,93 @@ function readCompletedResult(paths) {
     stderr: fs.readFileSync(paths.stderrPath, 'utf8'),
     exitCode,
   };
+}
+
+function readVerifyRunStatus(repoRoot, runKey) {
+  if (typeof runKey !== 'string' || !/^[a-f0-9]{64}$/.test(runKey)) {
+    throw new Error('verify run key must be a 64-character lowercase SHA-256 hex digest');
+  }
+  const paths = pathsForIdentity(repoRoot, { key: runKey });
+  const record = readJson(paths.recordPath);
+  if (!record || record.key !== runKey) {
+    return { state: 'not_found', pending: false, runKey };
+  }
+
+  const context = {
+    runKey,
+    startedAt: record.startedAt || null,
+    phase: record.phase || record.status,
+    completedAt: record.completedAt || record.abortedAt || record.orphanedAt || null,
+    branch: record.identity?.branch || null,
+    base: record.identity?.base || null,
+    headSha: record.identity?.headSha || null,
+    baseSha: record.identity?.baseSha || null,
+    changeHash: record.identity?.changeHash || null,
+    workerPid: record.workerPid ?? null,
+  };
+
+  if (record.status === 'completed') {
+    const exitCode = Number.isInteger(record.exitCode) ? record.exitCode : 1;
+    let summary = null;
+    try {
+      // The detached verifier writes its JSON result only when complete.
+      // A corrupted or unexpectedly large file must not break status queries.
+      if (fs.statSync(paths.stdoutPath).size <= 8 * 1024 * 1024) {
+        const parsed = JSON.parse(fs.readFileSync(paths.stdoutPath, 'utf8'));
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) summary = parsed;
+      }
+    } catch { /* no valid terminal summary available */ }
+    const passed = exitCode === 0 && summary?.passed === true;
+    const publishValid = passed && summary?.publishValid === true;
+    return {
+      ...context,
+      state: passed ? 'passed' : 'failed',
+      pending: false,
+      passed,
+      publishValid,
+      exitCode,
+      summary,
+    };
+  }
+  if (record.status === 'aborted' || record.status === 'orphaned') {
+    return {
+      ...context,
+      state: record.status,
+      pending: false,
+      reason: record.abortReason || record.orphanReason || 'verify did not finish',
+    };
+  }
+  if (record.status === 'launching' || record.status === 'running') {
+    const pid = Number.isInteger(record.workerPid)
+      ? record.workerPid
+      : Number.isInteger(record.pid) ? record.pid : null;
+    const active = (pid && isPidRunning(pid)) || (record.status === 'launching' && isFreshLaunch(record));
+    if (active) {
+      return {
+        ...context,
+        state: record.status,
+        pending: true,
+        elapsedSeconds: Number.isFinite(Date.parse(record.startedAt))
+          ? Math.max(0, Math.floor((Date.now() - Date.parse(record.startedAt)) / 1000))
+          : null,
+      };
+    }
+    return { ...context, state: 'orphaned', pending: false, reason: 'verify worker exited before producing a completed result' };
+  }
+  return { ...context, state: 'unavailable', pending: false, reason: 'unknown verify state' };
+}
+
+async function waitForVerifyRun(repoRoot, runKey, options = {}) {
+  // One bounded read-only long-poll replaces repeated mutating verify requests.
+  const waitMs = Math.min(90_000, Math.max(0, Number(options.waitMs ?? 60_000) || 0));
+  const intervalMs = Math.min(5_000, Math.max(25, Number(options.intervalMs ?? 1_000) || 1_000));
+  const deadline = Date.now() + waitMs;
+  let status = readVerifyRunStatus(repoRoot, runKey);
+  while (status.pending === true && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, Math.min(intervalMs, deadline - Date.now())));
+    status = readVerifyRunStatus(repoRoot, runKey);
+  }
+  return status;
 }
 
 function readActiveRecord(paths) {
@@ -210,7 +310,7 @@ function beginVerifyRun(repoRoot, identity, options = {}) {
   ensureDir(paths.dir);
 
   const completed = readCompletedResult(paths);
-  if (completed) {
+  if (completed && (!options.retry || completed.exitCode === 0)) {
     return { mode: 'replay', paths, identity, result: completed };
   }
 
@@ -241,7 +341,7 @@ function beginVerifyRun(repoRoot, identity, options = {}) {
 
   while (true) {
     const replay = readCompletedResult(paths);
-    if (replay) {
+    if (replay && (!options.retry || replay.exitCode === 0)) {
       return { mode: 'replay', paths, identity, result: replay };
     }
     if (lockExists(paths)) {
@@ -321,6 +421,14 @@ function markVerifyRunLaunched(run, workerPid) {
   });
 }
 
+function markVerifyRunPhase(run, phase) {
+  if (!run || run.mode !== 'run' || !['review', 'tests', 'db', 'docs', 'finalizing'].includes(phase)) return false;
+  const record = readJson(run.paths.recordPath);
+  if (record?.key !== run.identity.key || record.status !== 'running') return false;
+  writeJsonAtomic(run.paths.recordPath, { ...record, phase, phaseStartedAt: new Date().toISOString() });
+  return true;
+}
+
 function closeRunLock(run) {
   if (Number.isInteger(run?.lockFd)) {
     try {
@@ -385,7 +493,11 @@ module.exports = {
   getVerifyRunDir,
   makeVerifyRunIdentity,
   markVerifyRunLaunched,
+  markVerifyRunPhase,
   readCompletedResult,
+  readVerifyRunStatus,
+  waitForVerifyRun,
+  selectVerifyBase,
   pathsForIdentity,
   sha256,
 };

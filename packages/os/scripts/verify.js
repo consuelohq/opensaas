@@ -19,6 +19,9 @@ const {
   finishVerifyRun,
   makeVerifyRunIdentity,
   markVerifyRunLaunched,
+  readCompletedResult,
+  waitForVerifyRun,
+  selectVerifyBase,
 } = require('./lib/verify-run-state');
 
 function writeStdout(value = '') {
@@ -60,6 +63,7 @@ function printHelp() {
   );
   writeStdout('  --json                output structured json');
   writeStdout('  --quiet               reduce human output');
+  writeStdout('  --retry               explicitly rerun a previously failed verification for the same task snapshot');
   writeStdout('  --help                show this help');
 }
 
@@ -73,6 +77,7 @@ function parseArgs(argv) {
     reviewArgs: [],
     stamp: true,
     foreground: false,
+    retry: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -86,6 +91,7 @@ function parseArgs(argv) {
     const isBooleanFlag = [
       '--db-warn-only',
       '--foreground',
+      '--retry',
       '--help',
       '--json',
       '--no-db',
@@ -135,6 +141,9 @@ function parseArgs(argv) {
       case '--foreground':
         args.foreground = true;
         break;
+      case '--retry':
+        args.retry = true;
+        break;
       case '--no-stamp':
         args.stamp = false;
         break;
@@ -164,45 +173,12 @@ function remoteRefForBranch(branch) {
 }
 
 function detectBase(repoRoot, args, branch, taskMeta) {
-  if (args.base) {
-    return args.base;
-  }
-
-  const candidates = [];
-
-  if (taskMeta && taskMeta.data) {
-    if (taskMeta.data.taskBranch) {
-      candidates.push(remoteRefForBranch(taskMeta.data.taskBranch));
-      candidates.push(taskMeta.data.taskBranch);
-    }
-
-    if (taskMeta.data.baseBranch) {
-      candidates.push(remoteRefForBranch(taskMeta.data.baseBranch));
-      candidates.push(taskMeta.data.baseBranch);
-    }
-
-    if (taskMeta.data.stream) {
-      candidates.push(remoteRefForBranch(taskMeta.data.stream));
-      candidates.push(taskMeta.data.stream);
-    }
-  }
-
-  const taskMatch = branch.match(/^task\/([^/]+)\//);
-  if (taskMatch) {
-    candidates.push(`origin/stream/${taskMatch[1]}`);
-    candidates.push(`stream/${taskMatch[1]}`);
-  }
-
-  candidates.push('origin/main');
-  candidates.push('main');
-
-  for (const candidate of candidates.filter(Boolean)) {
-    if (hasRef(repoRoot, candidate)) {
-      return candidate;
-    }
-  }
-
-  return 'origin/main';
+  return selectVerifyBase({
+    explicitBase: args.base,
+    branch,
+    taskMeta: taskMeta?.data,
+    hasRef: (ref) => hasRef(repoRoot, ref),
+  });
 }
 
 function addGitOutput(repoRoot, files, args) {
@@ -502,23 +478,24 @@ function buildVerifyPendingPayload(verifyRun, context, workerPidOverride = null)
   return {
     status: 'VERIFY_PENDING',
     pending: true,
-    passed: false,
+    passed: null,
+    terminal: false,
     publishValid: false,
     runKey: verifyRun.identity.key,
     branch: context.branch,
     base: context.base,
     headSha: context.headSha,
-    phase: record.status || 'running',
+    phase: record.phase || record.status || 'running',
     startedAt: record.startedAt || null,
     workerPid,
-    retryAfterSeconds: 5,
+    retryAfterSeconds: 60,
     stamp: {
       written: false,
       path: null,
       publishValid: false,
     },
     message: 'Verification is running outside the agent turn.',
-    nextAction: 'Call verify again with the same task session to read pending or completed state; do not sleep inside this turn.',
+    nextAction: 'Use the READ-ONLY verify.status tool with this runKey and waitSeconds:60. Do not call verify again to poll. A completed failed run requires retry:true for an intentional rerun.',
   };
 }
 
@@ -535,7 +512,7 @@ function writeVerifyPending(verifyRun, context, workerPidOverride = null) {
 function launchDetachedVerify(repoRoot, verifyRun) {
   const workerArgs = process.argv
     .slice(2)
-    .filter((argument) => argument !== '--foreground');
+    .filter((argument) => argument !== '--foreground' && argument !== '--retry');
   workerArgs.push('--foreground');
   const stdoutFd = fs.openSync(verifyRun.paths.workerStdoutPath, 'a');
   const stderrFd = fs.openSync(verifyRun.paths.workerStderrPath, 'a');
@@ -598,6 +575,7 @@ async function main() {
     verifyRun = args.json
       ? beginVerifyRun(repoRoot, verifyIdentity, {
           defer: !args.foreground,
+          retry: args.retry && !args.foreground,
           adoptReservedKey: args.foreground
             ? process.env.WORKSPACE_VERIFY_RESERVED_KEY
             : undefined,
@@ -609,6 +587,19 @@ async function main() {
       return;
     }
     if (verifyRun && verifyRun.mode === 'pending') {
+      // Compatibility path for older agents that still poll the mutating verify
+      // operation. Coalesce those requests into one bounded wait instead of
+      // returning a fresh VERIFY_PENDING response every five seconds.
+      if (!args.foreground) {
+        const status = await waitForVerifyRun(repoRoot, verifyRun.identity.key, { waitMs: 30_000 });
+        if (!status.pending && (status.state === 'passed' || status.state === 'failed')) {
+          const completed = readCompletedResult(verifyRun.paths);
+          if (completed) {
+            replayVerifyRun({ result: completed });
+            return;
+          }
+        }
+      }
       writeVerifyPending(verifyRun, { branch, base, headSha });
       if (args.foreground) process.exitCode = 1;
       return;

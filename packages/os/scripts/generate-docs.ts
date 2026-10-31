@@ -26,7 +26,7 @@ const manifest = fullToolManifest.tools
 function renderSignature(entry: ToolManifestEntry): string {
   const input = schemaTypeSignatures[entry.inputSchema] || 'Record<string, unknown>';
   const output = outputTypeSignatures[entry.outputSchema] || outputTypeSignatures.RawOutput;
-  return `workspace.${entry.name}(${input}) => Promise<ToolResult<${output}>>`;
+  return `workspace.${entry.methodPath.join('.')}(${input}) => Promise<ToolResult<${output}>>`;
 }
 
 function exampleEnvelope(entry: ToolManifestEntry, ok: boolean): string {
@@ -59,7 +59,7 @@ function capabilitySummary(entry: ToolManifestEntry): string {
 
 function renderCommand(entry: ToolManifestEntry): string[] {
   return [
-    `### workspace.${entry.name}`,
+    `### workspace.${entry.methodPath.join('.')}`,
     '',
     entry.description,
     '',
