@@ -21,11 +21,16 @@ started: 2026-08-15
 ## files changed
 
 - `.github/workflows/consuelo-os-runtime-publish.yaml`
+- `packages/documentation/src/content/docs/reference/cli.mdx`
 - `packages/documentation/src/content/docs/secure/hosted-mcp-ingress.mdx`
 - `packages/documentation/src/content/docs/secure/security-model.mdx`
+- `packages/documentation/src/content/docs/start/install-consuelo-os.mdx`
+- `packages/os/scripts/lib/lifecycle/service.ts`
 - `packages/os/scripts/lib/security-gateway.ts`
+- `packages/os/scripts/lifecycle.ts`
 - `packages/os/tests/caddy-worker-pool-reconciliation.test.ts`
 - `packages/os/tests/distribution/release-channel-workflows.test.ts`
+- `packages/os/tests/lifecycle-restart-contract.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/workspace/test-selection.registry.json`
 - `packages/workspace/test-selection.rules.json`
@@ -34,11 +39,16 @@ started: 2026-08-15
 ## workspace-owned: files changed
 
 - `.github/workflows/consuelo-os-runtime-publish.yaml`
+- `packages/documentation/src/content/docs/reference/cli.mdx`
 - `packages/documentation/src/content/docs/secure/hosted-mcp-ingress.mdx`
 - `packages/documentation/src/content/docs/secure/security-model.mdx`
+- `packages/documentation/src/content/docs/start/install-consuelo-os.mdx`
+- `packages/os/scripts/lib/lifecycle/service.ts`
 - `packages/os/scripts/lib/security-gateway.ts`
+- `packages/os/scripts/lifecycle.ts`
 - `packages/os/tests/caddy-worker-pool-reconciliation.test.ts`
 - `packages/os/tests/distribution/release-channel-workflows.test.ts`
+- `packages/os/tests/lifecycle-restart-contract.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/workspace/test-selection.registry.json`
 - `packages/workspace/test-selection.rules.json`
@@ -52,6 +62,7 @@ started: 2026-08-15
 - 2026-08-15 05:12:25 fs.write: `.task/os/hotfix-private-workspace-auth-durability-on-canary/workpad.md`
 - 2026-08-15 05:15:09 fs.write: `.task/os/hotfix-private-workspace-auth-durability-on-canary/workpad.md`
 - 2026-08-15 05:16:43 fs.write: `.task/os/hotfix-private-workspace-auth-durability-on-canary/workpad.md`
+- 2026-08-15 05:30:54 fs.write: `.task/os/hotfix-private-workspace-auth-durability-on-canary/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -241,3 +252,30 @@ Immediate live recovery after the 0.1.43 activation-order regression succeeded. 
 - [ ] Publish dev, promote canary, update this node, then prove update + an additional restart both preserve live Caddy and a signed private Configuration roundtrip.
 
 - 2026-08-15 05:16:43 append: `.task/os/hotfix-private-workspace-auth-durability-on-canary/workpad.md`
+
+## Live 0.1.44 deployment and restart proof
+
+- Direct main hotfix PR #2028 merged with a merge commit (`trc_9752f3748aca`). Exact verified source `ff8b643ddd11aee4dd61c31d7fcc2378e85ce1ca` is an ancestor of main (`trc_6479d0db4a5c`).
+- Main runtime publish run 31866602249 completed successfully (`trc_d0047b61d3d2`). It published Consuelo OS 0.1.44, release-set bundle `sha256:35ca27eec90dcf2f25edb7a3a6a6e78a9aa512fb6bd19bbc962fa7230f4dfe55`, darwin-arm64 bundle `sha256:265c9a6d82b9e0711c048b7a5500871c90780e4bdbf673b8277325853a8c33af`, fingerprint `sha256:7e417994089ba8f95a800bb6282a630a05614a85352726bbf894bf72ceb5a0a0` (`trc_fddc595ad8fe`).
+- Dev → canary immutable promotion run 31866986202 succeeded (`trc_5be6d3dbb0e1`).
+- Normal `lifecycle.update --channel canary` accepted operation `native-1786771724264-e7e23294-f9e5-4a79-a481-2f2b32ed19af` (`trc_a7905f505ed6`) and completed successfully on 0.1.44 (`trc_b58ecc77d1df`).
+- After the update, both the installed 0.1.44 renderer and the persisted live Caddyfile contained none of the signed Workspace Edge signature/surface/connector header-removal directives (`trc_dfde0d3e0d36`). A signed request through the actual local Caddy ingress to `/gateway/configuration/snapshot` returned HTTP 200 (`trc_d5be2dcb829b`). This proves the old-runtime post-activation overwrite is fixed.
+- Per acceptance criteria, performed one additional normal OS restart (`trc_652812dd8483`). After reconnect, runtime remained 0.1.44 and the live Caddyfile still contained none of those signed-header removal directives (`trc_833edece652a`). The same signed private Configuration request through live Caddy again returned HTTP 200 (`trc_a605d54bb7f1`). This proves both `consuelo update` and a subsequent `consuelo restart` preserve the repaired gateway contract.
+
+## Stream follow-up state
+
+- Tried to sync `stream/os` from main after the hotfix. The first attempt exposed a `stream.sync` manifest/script mismatch (`--repo` is advertised but rejected: `trc_a82fcbd5550e`); retry without that argument reached the real guard but refused because the shared stream worktree currently contains unrelated uncommitted/conflicted work, including a `UU` native-lifecycle test (`trc_6fb38adca22a`). No stream mutation was forced and no unrelated work was touched. Main/canary are already fixed; PR #2021 remains open as the stream follow-up surface until that unrelated conflict is cleared.
+
+## Acceptance status — complete
+
+- [x] Exact browser-session failure class root-caused without weakening security.
+- [x] Complete private Site/Gateway route matrix has loud workspace-session + signed-edge coverage.
+- [x] Caddy protects every current/future `WORKSPACE_EDGE_NODE_HEADERS` member from stripping.
+- [x] Runtime releases force fresh idempotent Caddy reconciliation per version.
+- [x] Cross-version update post-activation handoff executes reconciliation/reload from `runtime/current`.
+- [x] Focused critical test-selection ownership prevents this class from silently falling into broad unrelated suites.
+- [x] 0.1.44 published, promoted to canary, and installed on the affected home node.
+- [x] Update proof: live Caddy correct + signed private Configuration request 200.
+- [x] Restart proof: live Caddy still correct + signed private Configuration request 200.
+
+- 2026-08-15 05:30:54 append: `.task/os/hotfix-private-workspace-auth-durability-on-canary/workpad.md`
