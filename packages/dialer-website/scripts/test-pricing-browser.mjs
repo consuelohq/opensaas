@@ -391,6 +391,21 @@ try {
       );
     }
     await page.locator('.pricing-close').scrollIntoViewIfNeeded();
+    await page.locator('[data-team-addons-details] > summary').click();
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth + 1,
+      ),
+      true,
+      'expanded pricing selections must fit the viewport',
+    );
+    if ([375, 1440].includes(width))
+      await page
+        .locator('[data-team-planner]')
+        .screenshot({
+          path: join(artifacts, 'pricing-selection-' + width + '.png'),
+        });
+    await page.locator('[data-team-addons-details] > summary').click();
     assert.deepEqual(errors, [], 'Browser errors ' + width + 'x' + height);
     await page.evaluate(() => window.scrollTo(0, 0));
     if ([375, 568, 1440].includes(width))
@@ -440,7 +455,7 @@ try {
     /\$1,188/,
   );
   for (const link of await page.locator('.minute-pack,.number-packs a').all())
-    assert.match(await link.getAttribute('href'), /^\/get-started\?addon=/);
+    assert.match(await link.getAttribute('href'), /^\/pricing\?addon=/);
   assert.equal(
     await page.locator('meta[name="robots"]').getAttribute('content'),
     'noindex,nofollow',
@@ -448,6 +463,55 @@ try {
   await page.getByRole('link', { name: 'MANAGE BILLING', exact: true }).click();
   await page.waitForURL('https://billing.stripe.com/p/login/**');
   await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
+  const beforeAddons = checkoutRequestsFor(context).length;
+  await page.locator('[data-team-plan]').selectOption('agency');
+  await page.locator('[data-seat-count]').fill('2');
+  await page
+    .locator('[data-billing-control]')
+    .getByText('Annual', { exact: true })
+    .click();
+  await page.getByRole('link', { name: 'Choose Mercury', exact: true }).click();
+  await page.locator('.minute-pack[href*="minutes-600"]').click();
+  await page.locator('.number-packs a[href*="numbers-10"]').click();
+  assert.equal(await page.locator('[data-team-mercury]').isChecked(), true);
+  assert.equal(await page.locator('[data-team-minutes]').inputValue(), '600');
+  assert.equal(await page.locator('[data-team-numbers]').inputValue(), '10');
+  assert.equal(await page.locator('[data-team-plan]').inputValue(), 'agency');
+  assert.equal(await page.locator('[data-seat-count]').inputValue(), '2');
+  assert.match(
+    await page.locator('[data-team-total]').innerText(),
+    /4,512 \/ year.*50 once/,
+  );
+  assert.equal(
+    checkoutRequestsFor(context).length,
+    beforeAddons,
+    'choosing an add-on must not create a subscription',
+  );
+  assert.equal(new URL(page.url()).pathname, '/pricing');
+  await page.locator('[data-team-checkout]').click();
+  await page.waitForURL('https://checkout.stripe.com/**');
+  assert.deepEqual(checkoutRequestsFor(context).at(-1).selection, {
+    plan: 'agency',
+    billing: 'annual',
+    seats: 2,
+    mercurySeats: 2,
+    minutePack: 600,
+    numberPack: 10,
+  });
+  await page.goto(base + '/get-started?addon=minutes-600', {
+    waitUntil: 'networkidle',
+  });
+  await page.waitForURL('**/pricing?addon=minutes-600#team-planner');
+  assert.equal(await page.locator('[data-team-minutes]').inputValue(), '600');
+  assert.equal(checkoutRequestsFor(context).length, beforeAddons + 1);
+  await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
+  emit({
+    flow: 'explicit pricing add-ons then direct hosted checkout',
+    noPurchaseOnSelection: true,
+    combinedSelection: true,
+    legacyAddonSelection: true,
+    passed: true,
+  });
   // Simulated provider proof: no real Checkout session or payment is created here.
   const payloads = [];
   let checkoutAttempt = 0;

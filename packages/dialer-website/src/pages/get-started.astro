@@ -85,7 +85,12 @@ import PricingIcon from '../components/pricing/PricingIcon.astro';
     query.get('checkout') === 'cancelled' ||
     (!purchaseId && !query.has('plan'))
   ) {
-    location.replace('/pricing');
+    const pricing = new URL('/pricing', location.origin);
+    if (query.has('addon')) {
+      pricing.searchParams.set('addon', query.get('addon')!);
+      pricing.hash = 'team-planner';
+    }
+    location.replace(pricing.href);
   } else if (!purchaseId) {
     let busy = false;
     const launch = async () => {

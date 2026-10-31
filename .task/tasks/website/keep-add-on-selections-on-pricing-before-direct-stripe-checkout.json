@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/keep-add-on-selections-on-pricing-before-direct-stripe-checkout",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2718,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2718",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-keep-add-on-selections-on-pricing-before-direct-stripe-checkout",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_15205e058e61",
+  "tmuxSession": "opensaas-website-keep-add-on-selections-on-pricing-before-direct--15205e05",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-keep-add-on-selections-on-pricing-before-direct-stripe-checkout/.task/session.json",
+  "createdAt": "2026-10-30T23:53:08.501Z"
+}
