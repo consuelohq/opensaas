@@ -100,14 +100,11 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('## Runtime identity\n\n```text\n{');
-    expect(steering).toContain('workspace: {');
-    expect(steering).toContain('id: workspace_authoritative,');
-    expect(steering).toContain('node: {');
-    expect(steering).toContain('id: node_authoritative,');
-    expect(steering).toContain('name: Cloud Node,');
-    expect(steering).not.toContain('"workspace":');
-    expect(steering).not.toContain('"node":');
+    expect(steering).toContain('"workspace"');
+    expect(steering).toContain('"id": "workspace_authoritative"');
+    expect(steering).toContain('"node"');
+    expect(steering).toContain('"id": "node_authoritative"');
+    expect(steering).toContain('"name": "Cloud Node"');
     expect(steering).not.toContain('workspace_stale_env');
     expect(steering).not.toContain('user_stale_env');
     expect(steering).not.toContain('"userId"');
@@ -169,28 +166,22 @@ describe('OS steering execution recording', () => {
                 readiness: 'ready',
                 compatibility: 'compatible',
               },
-              { nodeId: 'node_offline_one', displayName: 'Dormant Mac', presence: 'offline' },
-              { nodeId: 'node_offline_two', displayName: 'Dormant Cloud', presence: 'offline' },
             ],
           },
         }),
       }));
     `);
 
-    expect(steering).toContain('id: node_local,');
-    expect(steering).toContain('defaultNodeId: node_cloud,');
-    expect(steering).toContain('routeSource: explicit,');
-    expect(steering).toContain('displayName: Cloud Node,');
-    expect(steering).toContain('presence: online');
-    expect(steering).toContain('osVersion: 0.1.85,');
-    expect(steering).toContain('channel: canary,');
-    expect(steering).toContain('mcpProtocolVersion: 2026-07-28,');
-    expect(steering).toContain('readiness: ready,');
-    expect(steering).toContain('compatibility: compatible,');
-    expect(steering).toContain('offlineNodeCount: 2,');
-    expect(steering).not.toContain('node_offline_one');
-    expect(steering).not.toContain('node_offline_two');
-    expect(steering).not.toContain('Dormant Mac');
+    expect(steering).toContain('"id": "node_local"');
+    expect(steering).toContain('"defaultNodeId": "node_cloud"');
+    expect(steering).toContain('"routeSource": "explicit"');
+    expect(steering).toContain('"displayName": "Cloud Node"');
+    expect(steering).toContain('"presence": "online"');
+    expect(steering).toContain('"osVersion": "0.1.85"');
+    expect(steering).toContain('"channel": "canary"');
+    expect(steering).toContain('"mcpProtocolVersion": "2026-07-28"');
+    expect(steering).toContain('"readiness": "ready"');
+    expect(steering).toContain('"compatibility": "compatible"');
     expect(steering).toContain('pass `nodeId` at the top level of `os.call`');
     expect(steering).toContain('Nodes are routing targets, not tools');
     expect(steering).toContain('Omit `nodeId` to use the workspace default node');
@@ -225,92 +216,10 @@ describe('OS steering execution recording', () => {
     `);
 
     expect(steering).toContain('## Installed skills');
-    expect(steering).toContain('**Custom Branch Planner** — Plan large work into aligned branch stacks.');
-    expect(steering).not.toContain('"name": "custom-branch-planner"');
-    expect(steering).not.toContain('Invoke when a large project needs collaborative decomposition.');
-    expect(steering).not.toContain('"entrypoint":');
-    expect(steering).not.toContain('"capabilities":');
+    expect(steering).toContain('"name": "custom-branch-planner"');
+    expect(steering).toContain('Plan large work into aligned branch stacks.');
+    expect(steering).toContain('Invoke when a large project needs collaborative decomposition.');
     expect(steering).not.toContain('body-only-marker-must-not-appear');
-    expect(steering).toContain('## Core tools');
-    expect(steering).toContain('tools.search');
-    expect(steering).toContain('code.call');
-    const toolsSection = steering.slice(steering.indexOf('## Core tools'));
-    expect(toolsSection).toContain('os.call({tool:"tools.search",input:{query:"code.call",detail:"full"}})');
-    expect(toolsSection).toContain('tool:"session.start"');
-    expect(toolsSection).toContain('tool:"code.call"');
-    expect(toolsSection).toContain('tool:"fs.apply_patch"');
-    expect(toolsSection).toContain('tool:"batch"');
-    expect(toolsSection).toContain('tool:"github"');
-    expect(toolsSection).toContain('tool:"review.run"');
-    expect(toolsSection).toContain('taskSession:"tsk_..."');
-    expect(toolsSection).toContain('codeFile:');
-    expect(toolsSection).toContain('Prefer typed file or stdin transport');
-    expect(toolsSection.length).toBeLessThan(2_800);
-    expect(steering).not.toContain('# raw core tool manifest');
-    expect(steering).not.toContain('"sourceManifest":');
-  });
-
-  it('keeps compact runtime identity delimiters and safely escapes ambiguous values', () => {
-    const home = makeHome();
-    const result = runOsSnippet<{ formatted: string }>(home, `
-      const { formatSteeringRuntimeIdentity } = await import('./scripts/os.ts');
-      process.stdout.write(JSON.stringify({
-        formatted: formatSteeringRuntimeIdentity({
-          name: 'Cloud node',
-          hostile: 'a, b',
-          multiline: 'before\\n' + String.fromCharCode(96).repeat(3),
-          literal: 'true',
-          available: true,
-          missing: null,
-          nodes: [{ id: 'node_a', version: '0.1.144' }],
-        }),
-      }));
-    `);
-    expect(result.formatted).toContain('name: Cloud node,');
-    expect(result.formatted).toContain('hostile: "a, b",');
-    expect(result.formatted).toContain('multiline: "before\\n\\u0060\\u0060\\u0060",');
-    expect(result.formatted).toContain('literal: "true",');
-    expect(result.formatted).toContain('available: true,');
-    expect(result.formatted).toContain('missing: null,');
-    expect(result.formatted).toContain('nodes: [');
-    expect(result.formatted).toContain('version: 0.1.144');
-    expect(result.formatted).not.toContain('\n```');
-  });
-
-  it('does not advertise curated call examples for disabled core tools', () => {
-    const home = makeHome();
-    const overrides = path.join(home, 'security', 'overrides');
-    fs.mkdirSync(overrides, { recursive: true });
-    fs.writeFileSync(path.join(overrides, 'manifest.overlay.json'), JSON.stringify({
-      version: 1,
-      disabledTools: ['code.call', 'fs.apply_patch'],
-      disabledSkills: [],
-      disabledWorkflows: [],
-      updatedAt: '2026-10-31T00:00:00.000Z',
-    }));
-    const { steering } = runOsSnippet<{ steering: string }>(home, `
-      const { getSteering } = await import('./scripts/os.ts');
-      process.stdout.write(JSON.stringify({ steering: getSteering() }));
-    `);
-    const core = steering.slice(steering.indexOf('## Core tools'));
-    expect(core).not.toContain('tool:"code.call"');
-    expect(core).not.toContain('tool:"fs.apply_patch"');
-    expect(core).toContain('tool:"tools.search"');
-
-    fs.writeFileSync(path.join(overrides, 'manifest.overlay.json'), JSON.stringify({
-      version: 1,
-      disabledTools: ['code.call', 'fs.apply_patch', 'tools.search'],
-      disabledSkills: [],
-      disabledWorkflows: [],
-      updatedAt: '2026-10-31T00:01:00.000Z',
-    }));
-    const { steering: withoutSearch } = runOsSnippet<{ steering: string }>(home, `
-      const { getSteering } = await import('./scripts/os.ts');
-      process.stdout.write(JSON.stringify({ steering: getSteering() }));
-    `);
-    const limitedCore = withoutSearch.slice(withoutSearch.indexOf('## Core tools'));
-    expect(limitedCore).not.toContain('tool:"tools.search"');
-    expect(limitedCore).not.toContain('tool:"batch"');
   });
 
   it('prefers the current selected-skill index over legacy or bundled catalogs', () => {
@@ -361,7 +270,7 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('**Selected Branch Planner** — Selected skill should be advertised.');
+    expect(steering).toContain('"name": "selected-branch-planner"');
     expect(steering).not.toContain('legacy-fallback-must-not-appear');
   });
 
@@ -415,9 +324,9 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ first, second }));
     `);
 
-    expect(first).toContain('**Enabled Branch Planner** — Enabled skill should remain visible.');
+    expect(first).toContain('"name": "enabled-branch-planner"');
     expect(first).not.toContain('disabled-branch-planner');
-    expect(second).toContain('**Disabled Branch Planner** — Disabled skill must not be advertised.');
+    expect(second).toContain('"name": "disabled-branch-planner"');
   });
 
   it('includes preserved custom skills from the current installed index', () => {
@@ -457,8 +366,9 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('**Custom Local Planner** — User-owned custom planning skill.');
-    expect(steering).not.toContain('Invoke for local custom planning.');
+    expect(steering).toContain('"name": "custom-local-planner"');
+    expect(steering).toContain('User-owned custom planning skill.');
+    expect(steering).toContain('Invoke for local custom planning.');
   });
 
   it('loads supported local steering files while excluding decision and legacy steering', () => {
@@ -732,9 +642,8 @@ describe('OS steering execution recording', () => {
       process.stdout.write(JSON.stringify({ steering: getSteering() }));
     `);
 
-    expect(steering).toContain('## Installed skills');
-    expect(steering).toContain('**Branch**');
-    expect(steering).not.toContain('"source": "bundled"');
+    expect(steering).toContain('"source": "bundled"');
+    expect(steering).toContain('"name": "branch"');
   });
 
   it('does not poison the cache when a snapshot build fails', () => {

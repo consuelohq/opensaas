@@ -77,6 +77,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
   let loseCustomerResponse: boolean;
   let loseRepRedirectResponse: boolean;
   let rejectRepCreate: boolean;
+  let rejectCustomerCreate: boolean;
   let loseRepCreateResponse: boolean;
   let failEndFor: string | null;
   let capacity: ReturnType<typeof createPostgresRepCapacity>;
@@ -113,6 +114,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     loseCustomerResponse = false;
     loseRepRedirectResponse = false;
     rejectRepCreate = false;
+    rejectCustomerCreate = false;
     loseRepCreateResponse = false;
     failEndFor = null;
     let sequence = 0;
@@ -123,6 +125,11 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
         offerUrls.push(input.url);
         if (input.to.startsWith('client:') && rejectRepCreate)
           throw Object.assign(new Error('Twilio rejected the endpoint'), {
+            status: 400,
+            code: 21211,
+          });
+        if (!input.to.startsWith('client:') && rejectCustomerCreate)
+          throw Object.assign(new Error('Twilio rejected the customer create'), {
             status: 400,
             code: 21211,
           });
@@ -238,17 +245,17 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     await admin?.end();
   }, 30_000);
 
-  const requestCallback = () =>
+  const requestCallback = (suffix = 'one') =>
     callbacks.request({
-      operationId: 'request-one',
+      operationId: 'request-' + suffix,
       workspaceId: 'workspace',
-      callbackId: 'callback-one',
-      requestId: 'callback-request-one',
+      callbackId: 'callback-' + suffix,
+      requestId: 'callback-request-' + suffix,
       sourceRequestId: null,
       numberId: 'number-one',
       queueId: 'sales',
       originalEnteredAt: at(0),
-      consentReference: 'consent-one',
+      consentReference: 'consent-' + suffix,
       recipient: '+18285550123',
       timezone: 'UTC',
       notBefore: at(0),
@@ -286,6 +293,28 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
 
   const latestCustomerReference = () =>
     decodeURIComponent(offerUrls.at(-1)!.split('/').at(-1)!);
+
+  it('recovers a healthy callback after a previous obligation fails reconciliation on restart', async () => {
+    await requestCallback('a-corrupt');
+    await requestCallback('b-healthy');
+    // Simulate an interrupted cancellation and one malformed legacy snapshot.
+    await pool.query(
+      `UPDATE dialer_callback_obligations
+       SET state=jsonb_set(state,'{status}','"cancel_pending"'::jsonb)
+       WHERE callback_id IN ('callback-a-corrupt','callback-b-healthy')`,
+    );
+    await pool.query(
+      "UPDATE dialer_callback_obligations SET state=state-'attempts' WHERE callback_id='callback-a-corrupt'",
+    );
+    const restarted = createInboundTelephony({
+      pool, numbers: [number], endpoints: [], carrier,
+      publicUrl: 'https://voice.example', authToken: 'fixture-auth-token',
+      callbackRecipientCipher: cipher, clock,
+    });
+    const recovery = await restarted.callbackTelephony!.reconcile('workspace');
+    expect(recovery.failures).toBe(1);
+    expect((await callbacks.read('workspace', 'callback-b-healthy'))?.state.status).toBe('cancelled');
+  });
 
   it('dials the rep first, customer second, and converges duplicate worker ticks', async () => {
     await requestCallback();
@@ -563,6 +592,73 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     );
     expect(result.rows.map((row) => row.status)).toEqual(['failed']);
     expect(offerTargets).toEqual(['client:user_alice']);
+  });
+  it('treats missing callback routing configuration as local no-effect and safely drains the accepted rep', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    await callbacks.tick({
+      workspaceId: 'workspace', queueId: 'sales', cycleId: 'ready-before-restart',
+    });
+    expect((await callbacks.read('workspace', 'callback-one'))?.state.status).toBe('dialing');
+
+    const restarted = createInboundTelephony({
+      pool, numbers: [], endpoints: [], carrier,
+      publicUrl: 'https://voice.example', authToken: 'fixture-auth-token',
+      callbackRecipientCipher: cipher, clock,
+    });
+    await restarted.callbackTelephony!.executePending('workspace');
+    expect((await pool.query<{ status: string }>(
+      "SELECT status FROM dialer_callback_effects WHERE callback_id='callback-one' AND effect_kind='rep_bridge'",
+    )).rows[0]?.status).toBe('failed');
+    expect(redirects).toEqual([]);
+    expect((await capacity.read('workspace', 'slot'))?.owner?.phase).not.toBe('unknown');
+
+    calls.set(repSid, { sid: repSid, accountSid: 'account', status: 'completed' });
+    await service.tick();
+    expect((await capacity.read('workspace', 'slot'))?.owner).toBeNull();
+    expect((await callbacks.read('workspace', 'callback-one'))?.state.status).toBe('retry_due');
+  });
+  it('does not invent an unknown redirect if callback TwiML URL preparation fails locally', async () => {
+    await requestCallback();
+    await service.tick();
+    await acceptLatestRep();
+    await callbacks.tick({
+      workspaceId: 'workspace', queueId: 'sales', cycleId: 'redirect-before-invalid-url',
+    });
+    const invalid = createInboundTelephony({
+      pool, numbers: [number], endpoints: [], carrier,
+      publicUrl: 'invalid-local-url', authToken: 'fixture-auth-token',
+      callbackRecipientCipher: cipher, clock,
+    });
+    await invalid.callbackTelephony!.executePending('workspace');
+    expect((await pool.query<{ status: string }>(
+      "SELECT status FROM dialer_callback_effects WHERE callback_id='callback-one' AND effect_kind='rep_bridge'",
+    )).rows[0]?.status).toBe('failed');
+    expect(redirects).toEqual([]);
+    expect((await capacity.read('workspace', 'slot'))?.owner?.phase).not.toBe('unknown');
+  });
+  it('does not label a definitively rejected customer callback create as unknown after restart', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    rejectCustomerCreate = true;
+    await service.tick();
+    expect((await pool.query<{ status: string }>(
+      "SELECT status FROM dialer_callback_effects WHERE callback_id='callback-one' AND effect_kind='customer_dial'",
+    )).rows[0]?.status).toBe('failed');
+    expect((await capacity.read('workspace', 'slot'))?.owner).not.toBeNull();
+    const restarted = createInboundTelephony({
+      pool, numbers: [number], endpoints: [], carrier,
+      publicUrl: 'https://voice.example', authToken: 'fixture-auth-token',
+      callbackRecipientCipher: cipher, clock,
+    });
+    await restarted.tick();
+    await restarted.tick();
+    expect(calls.get(repSid)?.status).toBe('completed');
+    expect((await capacity.read('workspace', 'slot'))?.owner).toBeNull();
+    expect((await callbacks.read('workspace', 'callback-one'))?.state.status).toBe('retry_due');
+    expect(offerTargets.filter((target) => target === '+18285550123')).toHaveLength(1);
   });
 
   it('retains capacity when a rep create outcome is ambiguous', async () => {

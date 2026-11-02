@@ -72,13 +72,7 @@ export const bootSiteSmoothScroll = (): (() => void) | null => {
   ScrollTrigger.addEventListener('refresh', handleRefresh);
   ScrollTrigger.refresh();
 
-  let disconnected = false;
-
   const disconnect = () => {
-    if (disconnected) return;
-    disconnected = true;
-    window.removeEventListener('pageshow', handlePageShow);
-    window.removeEventListener('pagehide', handlePageHide);
     ScrollTrigger.removeEventListener('refresh', handleRefresh);
     gsap.ticker.remove(ticker);
     lenis.destroy();
@@ -87,26 +81,31 @@ export const bootSiteSmoothScroll = (): (() => void) | null => {
     activeHandle = null;
   };
 
+  activeHandle = { disconnect };
+
+  const resetScrollPosition = () => {
+    window.scrollTo(0, 0);
+    lenis.scrollTo(0, { immediate: true });
+  };
+
   const handlePageShow = (event: PageTransitionEvent) => {
-    if (event.persisted) {
-      // BFCache restores the same instance and scroll position.
-      ScrollTrigger.refresh();
+    if (event.persisted || window.location.hash) {
       return;
     }
-    if (!window.location.hash) {
-      window.scrollTo(0, 0);
-      lenis.scrollTo(0, { immediate: true });
-    }
+
+    resetScrollPosition();
   };
 
-  const handlePageHide = (event: PageTransitionEvent) => {
-    // The browser suspends animation frames while the page is cached.
-    if (!event.persisted) disconnect();
-  };
-
-  activeHandle = { disconnect };
   window.addEventListener('pageshow', handlePageShow);
-  window.addEventListener('pagehide', handlePageHide);
 
-  return disconnect;
+  const disconnectWithListeners = () => {
+    window.removeEventListener('pageshow', handlePageShow);
+    disconnect();
+  };
+
+  activeHandle = { disconnect: disconnectWithListeners };
+
+  window.addEventListener('pagehide', disconnectWithListeners, { once: true });
+
+  return disconnectWithListeners;
 };

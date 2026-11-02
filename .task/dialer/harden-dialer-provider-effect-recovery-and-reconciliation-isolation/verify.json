@@ -1,0 +1,1797 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/harden-dialer-provider-effect-recovery-and-reconciliation-isolation",
+  "base": "origin/stream/dialer",
+  "headSha": "5b88cb02f8ac0794775530c9e9abfc225bf4ce78",
+  "changeHash": "69eebef483d5bab4611e2da56c6e7c4b84780c02f0ca1179512b51176fe3a4d8",
+  "changedFiles": [
+    "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/callback-telephony.ts",
+    "packages/dialer-server/src/inbound/outbound-capacity.ts",
+    "packages/dialer-server/src/inbound/telephony-commands.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.ts",
+    "packages/dialer-server/src/runtime/inbound.ts",
+    "packages/dialer-website/.gitignore",
+    "packages/dialer-website/AGENTS.md",
+    "packages/dialer-website/BILLING-ECONOMICS.md",
+    "packages/dialer-website/CLAIMS.md",
+    "packages/dialer-website/COMPONENTS.md",
+    "packages/dialer-website/DESIGN.md",
+    "packages/dialer-website/animations.md",
+    "packages/dialer-website/assets/encoded/consuelo-dialer-pricing-og-20261030.png.base64",
+    "packages/dialer-website/package.json",
+    "packages/dialer-website/public/images/technology/LICENSE.md",
+    "packages/dialer-website/public/images/technology/SOURCES.md",
+    "packages/dialer-website/public/images/technology/bun.svg",
+    "packages/dialer-website/public/images/technology/cloudflare.svg",
+    "packages/dialer-website/public/images/technology/github.svg",
+    "packages/dialer-website/public/images/technology/hono.svg",
+    "packages/dialer-website/public/images/technology/postgresql.svg",
+    "packages/dialer-website/public/images/technology/redis.svg",
+    "packages/dialer-website/public/images/technology/twilio.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/SOURCES.md",
+    "packages/dialer-website/public/images/technology/wordmarks/SVGL-LICENSE",
+    "packages/dialer-website/public/images/technology/wordmarks/bun.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/claude.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/cloudflare.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/github.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/groq.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/hono.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/openai.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/opencode.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/pi.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/postgresql.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/redis.svg",
+    "packages/dialer-website/public/images/technology/wordmarks/twilio.svg",
+    "packages/dialer-website/scripts/checkout-browser-fixture.mjs",
+    "packages/dialer-website/scripts/generate-social-card.ts",
+    "packages/dialer-website/scripts/materialize-public-assets.ts",
+    "packages/dialer-website/scripts/test-marketing-browser.mjs",
+    "packages/dialer-website/scripts/test-pricing-browser.mjs",
+    "packages/dialer-website/src/components/home/HomeCloudCta.astro",
+    "packages/dialer-website/src/components/home/HomeFaq.astro",
+    "packages/dialer-website/src/components/home/HomeFeaturePreview.astro",
+    "packages/dialer-website/src/components/pricing/PricingAddons.astro",
+    "packages/dialer-website/src/components/pricing/PricingComparison.astro",
+    "packages/dialer-website/src/components/pricing/PricingIcon.astro",
+    "packages/dialer-website/src/components/pricing/PricingTechnology.astro",
+    "packages/dialer-website/src/components/site/SiteFooter.astro",
+    "packages/dialer-website/src/components/site/SiteHeader.astro",
+    "packages/dialer-website/src/components/site/StripeCheckoutLauncher.astro",
+    "packages/dialer-website/src/components/visuals/CloudField.astro",
+    "packages/dialer-website/src/data/dialer-content.ts",
+    "packages/dialer-website/src/data/pricing-content.ts",
+    "packages/dialer-website/src/data/site-links.ts",
+    "packages/dialer-website/src/data/site-navigation.ts",
+    "packages/dialer-website/src/layouts/MarketingLayout.astro",
+    "packages/dialer-website/src/lib/checkout-selection.ts",
+    "packages/dialer-website/src/lib/direct-checkout.ts",
+    "packages/dialer-website/src/lib/purchase-confirmation.ts",
+    "packages/dialer-website/src/lib/site-smooth-scroll.ts",
+    "packages/dialer-website/src/pages/get-started.astro",
+    "packages/dialer-website/src/pages/how-it-works.astro",
+    "packages/dialer-website/src/pages/index.astro",
+    "packages/dialer-website/src/pages/pricing.astro",
+    "packages/dialer-website/src/styles/pricing.css",
+    "packages/dialer-website/src/styles/tokens.css",
+    "packages/dialer-website/tests/checkout-selection.test.ts",
+    "packages/dialer-website/tests/direct-checkout.test.ts",
+    "packages/dialer-website/tests/interaction-lifecycle.test.ts",
+    "packages/dialer-website/tests/marketing-contract.test.ts",
+    "packages/dialer-website/tests/pricing-catalog.test.ts",
+    "packages/dialer-website/tests/pricing-refinement.test.ts",
+    "packages/dialer-website/tests/purchase-confirmation.test.ts",
+    "packages/os/SCRIPTS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/scripts/explore.js",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/search/explore-failure.js",
+    "packages/os/scripts/lib/steering-snapshot-cache.ts",
+    "packages/os/scripts/lib/tool-scope-authorization.ts",
+    "packages/os/scripts/lib/trace-site-inspector/table-formatters.ts",
+    "packages/os/scripts/linear.js",
+    "packages/os/scripts/os.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/explore-output-contract.test.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tests/linear-tooling-regression.test.ts",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/os/tests/trace-site-inspector-os-owned.test.ts",
+    "packages/os/tools/linear/handler.ts",
+    "packages/os/tools/linear/schema.ts",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/linear.js"
+  ],
+  "verifiedAt": "2026-11-02T02:45:10.881Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/harden-dialer-provider-effect-recovery-and-reconciliation-isolation/evidence-log.json",
+        ".task/dialer/harden-dialer-provider-effect-recovery-and-reconciliation-isolation/read-log.json",
+        ".task/dialer/harden-dialer-provider-effect-recovery-and-reconciliation-isolation/workpad.md",
+        ".task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance/evidence-log.json",
+        ".task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance/read-log.json",
+        ".task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance/verify.json",
+        ".task/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance/workpad.md",
+        ".task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes/evidence-log.json",
+        ".task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes/read-log.json",
+        ".task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes/verify.json",
+        ".task/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes/workpad.md",
+        ".task/os/release-verified-compact-os-steering-independently-of-stream/evidence-log.json",
+        ".task/os/release-verified-compact-os-steering-independently-of-stream/read-log.json",
+        ".task/os/release-verified-compact-os-steering-independently-of-stream/verify.json",
+        ".task/os/release-verified-compact-os-steering-independently-of-stream/workpad.md",
+        ".task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes/evidence-log.json",
+        ".task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes/read-log.json",
+        ".task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes/verify.json",
+        ".task/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes/workpad.md",
+        ".task/tasks/dialer/harden-dialer-provider-effect-recovery-and-reconciliation-isolation.json",
+        ".task/tasks/os/compact-steering-runtime-identity-and-restore-curated-tool-guidance.json",
+        ".task/tasks/os/dev-1660-focused-stable-release-to-main-without-unrelated-stream-changes.json",
+        ".task/tasks/os/release-verified-compact-os-steering-independently-of-stream.json",
+        ".task/tasks/os/release-verified-dev-1665-tracing-labels-to-canary-without-unrelated-stream-changes.json",
+        ".task/tasks/website/release-approved-dialer-website-preview-to-production-without-backend-stream-conflicts.json",
+        ".task/website/release-approved-dialer-website-preview-to-production-without-backend-stream-conflicts/verify.json",
+        ".task/website/release-approved-dialer-website-preview-to-production-without-backend-stream-conflicts/workpad.md",
+        "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/callback-telephony.ts",
+        "packages/dialer-server/src/inbound/outbound-capacity.ts",
+        "packages/dialer-server/src/inbound/telephony-commands.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony.ts",
+        "packages/dialer-server/src/runtime/inbound.ts",
+        "packages/dialer-website/.gitignore",
+        "packages/dialer-website/AGENTS.md",
+        "packages/dialer-website/BILLING-ECONOMICS.md",
+        "packages/dialer-website/CLAIMS.md",
+        "packages/dialer-website/COMPONENTS.md",
+        "packages/dialer-website/DESIGN.md",
+        "packages/dialer-website/animations.md",
+        "packages/dialer-website/assets/encoded/consuelo-dialer-pricing-og-20261030.png.base64",
+        "packages/dialer-website/package.json",
+        "packages/dialer-website/public/images/technology/LICENSE.md",
+        "packages/dialer-website/public/images/technology/SOURCES.md",
+        "packages/dialer-website/public/images/technology/bun.svg",
+        "packages/dialer-website/public/images/technology/cloudflare.svg",
+        "packages/dialer-website/public/images/technology/github.svg",
+        "packages/dialer-website/public/images/technology/hono.svg",
+        "packages/dialer-website/public/images/technology/postgresql.svg",
+        "packages/dialer-website/public/images/technology/redis.svg",
+        "packages/dialer-website/public/images/technology/twilio.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/SOURCES.md",
+        "packages/dialer-website/public/images/technology/wordmarks/SVGL-LICENSE",
+        "packages/dialer-website/public/images/technology/wordmarks/bun.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/claude.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/cloudflare.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/github.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/groq.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/hono.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/openai.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/opencode.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/pi.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/postgresql.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/redis.svg",
+        "packages/dialer-website/public/images/technology/wordmarks/twilio.svg",
+        "packages/dialer-website/scripts/checkout-browser-fixture.mjs",
+        "packages/dialer-website/scripts/generate-social-card.ts",
+        "packages/dialer-website/scripts/materialize-public-assets.ts",
+        "packages/dialer-website/scripts/test-marketing-browser.mjs",
+        "packages/dialer-website/scripts/test-pricing-browser.mjs",
+        "packages/dialer-website/src/components/home/HomeCloudCta.astro",
+        "packages/dialer-website/src/components/home/HomeFaq.astro",
+        "packages/dialer-website/src/components/home/HomeFeaturePreview.astro",
+        "packages/dialer-website/src/components/pricing/PricingAddons.astro",
+        "packages/dialer-website/src/components/pricing/PricingComparison.astro",
+        "packages/dialer-website/src/components/pricing/PricingIcon.astro",
+        "packages/dialer-website/src/components/pricing/PricingTechnology.astro",
+        "packages/dialer-website/src/components/site/SiteFooter.astro",
+        "packages/dialer-website/src/components/site/SiteHeader.astro",
+        "packages/dialer-website/src/components/site/StripeCheckoutLauncher.astro",
+        "packages/dialer-website/src/components/visuals/CloudField.astro",
+        "packages/dialer-website/src/data/dialer-content.ts",
+        "packages/dialer-website/src/data/pricing-content.ts",
+        "packages/dialer-website/src/data/site-links.ts",
+        "packages/dialer-website/src/data/site-navigation.ts",
+        "packages/dialer-website/src/layouts/MarketingLayout.astro",
+        "packages/dialer-website/src/lib/checkout-selection.ts",
+        "packages/dialer-website/src/lib/direct-checkout.ts",
+        "packages/dialer-website/src/lib/purchase-confirmation.ts",
+        "packages/dialer-website/src/lib/site-smooth-scroll.ts",
+        "packages/dialer-website/src/pages/get-started.astro",
+        "packages/dialer-website/src/pages/how-it-works.astro",
+        "packages/dialer-website/src/pages/index.astro",
+        "packages/dialer-website/src/pages/pricing.astro",
+        "packages/dialer-website/src/styles/pricing.css",
+        "packages/dialer-website/src/styles/tokens.css",
+        "packages/dialer-website/tests/checkout-selection.test.ts",
+        "packages/dialer-website/tests/direct-checkout.test.ts",
+        "packages/dialer-website/tests/interaction-lifecycle.test.ts",
+        "packages/dialer-website/tests/marketing-contract.test.ts",
+        "packages/dialer-website/tests/pricing-catalog.test.ts",
+        "packages/dialer-website/tests/pricing-refinement.test.ts",
+        "packages/dialer-website/tests/purchase-confirmation.test.ts",
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/search/explore-failure.js",
+        "packages/os/scripts/lib/steering-snapshot-cache.ts",
+        "packages/os/scripts/lib/tool-scope-authorization.ts",
+        "packages/os/scripts/lib/trace-site-inspector/table-formatters.ts",
+        "packages/os/scripts/linear.js",
+        "packages/os/scripts/os.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/explore-output-contract.test.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/linear-tooling-regression.test.ts",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/os/tests/trace-site-inspector-os-owned.test.ts",
+        "packages/os/tools/linear/handler.ts",
+        "packages/os/tools/linear/schema.ts",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/linear.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/schemas.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-local-steering-authority",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/steering-snapshot-cache.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+            "packages/os/scripts/lib/trace-site-inspector/table-formatters.ts",
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/trace-site-inspector-os-owned.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-explore-retrieval-science",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/explore.js",
+            "packages/os/scripts/lib/search/explore-failure.js",
+            "packages/os/tests/explore-output-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-tool-surface-generation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution.",
+          "matchedFiles": [
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/src/generated/workspace.d.ts",
+            "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+            "packages/os/tests/fixtures/tool-package-baseline.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/SCRIPTS.md",
+            "packages/os/TOOLS.md",
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/src/generated/workspace.d.ts",
+            "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+            "packages/os/tests/fixtures/tool-package-baseline.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/os.ts",
+            "packages/os/tests/os-get-steering-trace.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-internal-workspace-shell",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
+          "matchedFiles": [
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-compact-explore-response",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/explore.js",
+            "packages/os/tests/explore-output-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/callback-telephony.ts",
+            "packages/dialer-server/src/inbound/outbound-capacity.ts",
+            "packages/dialer-server/src/inbound/telephony-commands.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony.ts",
+            "packages/dialer-server/src/runtime/inbound.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-session-integration",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract.",
+          "matchedFiles": [
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-fs",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/TOOLS.md",
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/src/generated/workspace.d.ts",
+            "packages/os/tests/fixtures/tool-package-baseline.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-website-package",
+          "critical": true,
+          "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+          "matchedFiles": [
+            "packages/dialer-website/.gitignore",
+            "packages/dialer-website/AGENTS.md",
+            "packages/dialer-website/BILLING-ECONOMICS.md",
+            "packages/dialer-website/CLAIMS.md",
+            "packages/dialer-website/COMPONENTS.md",
+            "packages/dialer-website/DESIGN.md",
+            "packages/dialer-website/animations.md",
+            "packages/dialer-website/assets/encoded/consuelo-dialer-pricing-og-20261030.png.base64",
+            "packages/dialer-website/package.json",
+            "packages/dialer-website/public/images/technology/LICENSE.md",
+            "packages/dialer-website/public/images/technology/SOURCES.md",
+            "packages/dialer-website/public/images/technology/bun.svg",
+            "packages/dialer-website/public/images/technology/cloudflare.svg",
+            "packages/dialer-website/public/images/technology/github.svg",
+            "packages/dialer-website/public/images/technology/hono.svg",
+            "packages/dialer-website/public/images/technology/postgresql.svg",
+            "packages/dialer-website/public/images/technology/redis.svg",
+            "packages/dialer-website/public/images/technology/twilio.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/SOURCES.md",
+            "packages/dialer-website/public/images/technology/wordmarks/SVGL-LICENSE",
+            "packages/dialer-website/public/images/technology/wordmarks/bun.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/claude.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/cloudflare.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/github.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/groq.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/hono.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/openai.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/opencode.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/pi.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/postgresql.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/redis.svg",
+            "packages/dialer-website/public/images/technology/wordmarks/twilio.svg",
+            "packages/dialer-website/scripts/checkout-browser-fixture.mjs",
+            "packages/dialer-website/scripts/generate-social-card.ts",
+            "packages/dialer-website/scripts/materialize-public-assets.ts",
+            "packages/dialer-website/scripts/test-marketing-browser.mjs",
+            "packages/dialer-website/scripts/test-pricing-browser.mjs",
+            "packages/dialer-website/src/components/home/HomeCloudCta.astro",
+            "packages/dialer-website/src/components/home/HomeFaq.astro",
+            "packages/dialer-website/src/components/home/HomeFeaturePreview.astro",
+            "packages/dialer-website/src/components/pricing/PricingAddons.astro",
+            "packages/dialer-website/src/components/pricing/PricingComparison.astro",
+            "packages/dialer-website/src/components/pricing/PricingIcon.astro",
+            "packages/dialer-website/src/components/pricing/PricingTechnology.astro",
+            "packages/dialer-website/src/components/site/SiteFooter.astro",
+            "packages/dialer-website/src/components/site/SiteHeader.astro",
+            "packages/dialer-website/src/components/site/StripeCheckoutLauncher.astro",
+            "packages/dialer-website/src/components/visuals/CloudField.astro",
+            "packages/dialer-website/src/data/dialer-content.ts",
+            "packages/dialer-website/src/data/pricing-content.ts",
+            "packages/dialer-website/src/data/site-links.ts",
+            "packages/dialer-website/src/data/site-navigation.ts",
+            "packages/dialer-website/src/layouts/MarketingLayout.astro",
+            "packages/dialer-website/src/lib/checkout-selection.ts",
+            "packages/dialer-website/src/lib/direct-checkout.ts",
+            "packages/dialer-website/src/lib/purchase-confirmation.ts",
+            "packages/dialer-website/src/lib/site-smooth-scroll.ts",
+            "packages/dialer-website/src/pages/get-started.astro",
+            "packages/dialer-website/src/pages/how-it-works.astro",
+            "packages/dialer-website/src/pages/index.astro",
+            "packages/dialer-website/src/pages/pricing.astro",
+            "packages/dialer-website/src/styles/pricing.css",
+            "packages/dialer-website/src/styles/tokens.css",
+            "packages/dialer-website/tests/checkout-selection.test.ts",
+            "packages/dialer-website/tests/direct-checkout.test.ts",
+            "packages/dialer-website/tests/interaction-lifecycle.test.ts",
+            "packages/dialer-website/tests/marketing-contract.test.ts",
+            "packages/dialer-website/tests/pricing-catalog.test.ts",
+            "packages/dialer-website/tests/pricing-refinement.test.ts",
+            "packages/dialer-website/tests/purchase-confirmation.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/tool-scope-authorization.ts",
+            "packages/os/scripts/linear.js",
+            "packages/os/tests/linear-tooling-regression.test.ts",
+            "packages/os/tools/linear/handler.ts",
+            "packages/os/tools/linear/schema.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace facade manifest contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-immutable.test.ts",
+            "tests/release-operation.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "OS tool surface generation contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ],
+          "ruleId": "os-tool-surface-generation",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        },
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ],
+          "ruleId": "os-compact-explore-response",
+          "critical": true
+        },
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/workflow-intent.test.ts"
+          ],
+          "ruleId": "workspace-session-integration",
+          "critical": true
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-list-portability.test.ts",
+            "packages/os/tests/fs-search.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write|read)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 164,
+          "outputTail": "463Z\"}\n(pass) typed facade executor > validates input for task.exec [0.10ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.463Z\"}\n(pass) typed facade executor > validates input for task.init [0.20ms]\n(pass) typed facade executor > validates input for task.merge [0.09ms]\n(pass) typed facade executor > validates input for task.pr [0.15ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.463Z\"}\n(pass) typed facade executor > validates input for task.push [0.23ms]\n{\"level\":\"error\",\"tool\":\"session.start\",\"command\":\"workspace session.start\",\"implementationCommand\":\"workspace session.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.464Z\"}\n(pass) typed facade executor > validates input for session.start [0.49ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.464Z\"}\n(pass) typed facade executor > validates input for task.start [0.22ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.464Z\"}\n(pass) typed facade executor > validates input for tmp [0.20ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.465Z\"}\n(pass) typed facade executor > validates input for tools.search [0.24ms]\n(pass) typed facade executor > validates input for verify [0.10ms]\n(pass) typed facade executor > validates input for wait [0.13ms]\n(pass) typed facade executor > validates input for website.deploy [0.07ms]\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"workspace subagent\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.465Z\"}\n(pass) typed facade executor > validates input for subagent [0.30ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:09.466Z\"}\n(pass) typed facade executor > validates input for media.svg [0.32ms]\n\n 106 pass\n 373 filtered out\n 0 fail\n 57 expect() calls\nRan 106 tests across 1 file. [158.00ms]\n"
+        },
+        {
+          "name": "workspace facade manifest contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 721,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/session-start-compatibility.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 262\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (22)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:09\n\u001b[2m   Duration \u001b[22m 488ms\u001b[2m (transform 257ms, setup 0ms, import 394ms, tests 325ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 316,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/steering-canonical-source.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:10\n\u001b[2m   Duration \u001b[22m 63ms\u001b[2m (transform 18ms, setup 15ms, import 9ms, tests 2ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 655,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/managed-user-content.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 321\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m25 passed\u001b[39m\u001b[22m\u001b[90m (25)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:10\n\u001b[2m   Duration \u001b[22m 446ms\u001b[2m (transform 93ms, setup 0ms, import 74ms, tests 321ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 243,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/session-integration-guidance.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:11\n\u001b[2m   Duration \u001b[22m 59ms\u001b[2m (transform 14ms, setup 14ms, import 5ms, tests 3ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 11413,
+          "outputTail": "n its stored credential is missing \u001b[33m 376\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces an expired ChatGPT MCP credential during reprovisioning \u001b[33m 690\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports existing generated security assets as existing on reprovision \u001b[33m 678\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 695\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 466\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1063\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 356\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 368\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 703\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 705\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 586\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 350\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 306\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 312\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 350\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 314\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 372\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 367\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 383\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:11\n\u001b[2m   Duration \u001b[22m 11.26s\u001b[2m (transform 69ms, setup 30ms, import 69ms, tests 11.23s, environment 0ms)\u001b[22m\n\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/managed-component-install.ts:315:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/managed-component-install.ts:489:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/install-state.ts:2018:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 401,
+          "outputTail": "..............................................\n----------------------------------------------------------------------\nRan 46 tests in 0.264s\n\nOK\n"
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1811,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 494,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 264\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:25\n\u001b[2m   Duration \u001b[22m 336ms\u001b[2m (transform 15ms, setup 0ms, import 19ms, tests 264ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2221,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 128\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 98\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1651\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m renders actionable patch, code, and Linear labels from the shipped browser bundle \u001b[33m 1609\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m90 passed\u001b[39m\u001b[22m\u001b[90m (90)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:25\n\u001b[2m   Duration \u001b[22m 2.06s\u001b[2m (transform 621ms, setup 117ms, import 953ms, tests 1.91s, environment 1ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 357,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:27\n\u001b[2m   Duration \u001b[22m 93ms\u001b[2m (transform 19ms, setup 17ms, import 10ms, tests 3ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2459,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-search-query.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-persistence.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2154\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists a silent facade success with redacted input and serves it through the Hono read backend \u001b[33m 316\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists code.call and batch parent envelopes alongside nested child traces \u001b[33m 376\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists durable Codex child events once under the originating trace across later attachments \u001b[33m 473\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:28\n\u001b[2m   Duration \u001b[22m 2.28s\u001b[2m (transform 55ms, setup 25ms, import 71ms, tests 2.18s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 12524,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/trace-request-budget.test.ts:\n(pass) filtering a sparse result and rendering it does not fetch history without scroll intent [935.94ms]\n(pass) cursor SSE sends real frames and remains open for subsequent local reads until cancellation [2106.50ms]\n(pass) an underfilled page advances once per downward scroll gesture without a button [869.60ms]\n(pass) an obsolete A to B to A search response cannot overwrite the current results [3515.07ms]\n(pass) live fallback respects Retry-After, stays quiet when hidden, and retries the snapshot after failure [202.57ms]\n(pass) one live owner uses SSE without polling and backs off when a stream closes immediately [179.30ms]\n(pass) the shipped page shows throttling and does not issue requests when its bundle is evaluated twice [1658.47ms]\n(pass) scrolling near the end loads one page and a live prepend preserves the scroll position without fetching history [635.93ms]\n(pass) cursor streams enforce scope and redact payloads with the same rules as history [0.86ms]\n(pass) the shipped page hydrates and receives native EventSource deltas over one HTTP connection [166.90ms]\n(pass) the shipped page shows persisted history after an idle day with its header and rows inside the viewport [286.16ms]\n(pass) an unhandled history search clears its loading state [298.46ms]\n\n 12 pass\n 0 fail\n 61 expect() calls\nRan 12 tests across 1 file. [12.52s]\n"
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 24463,
+          "outputTail": " 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/semantic-embedding-edge-gateway.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 17\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-retriever-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 356\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-runtime-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-bench.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 938\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject missing values when a value-taking benchmark CLI flag is last \u001b[33m 688\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-index-hydration-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 24066\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop after the first failed hydration batch and continue with lexical retrieval \u001b[33m 1336\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should avoid a second query-time wait when semantic hydration hangs \u001b[33m 9121\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound total hydration latency when a later semantic batch hangs \u001b[33m 9172\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound successful semantic hydration instead of rebuilding the whole index synchronously \u001b[33m 1186\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve query semantic retrieval when changed-document hydration fails local validation \u001b[33m 2136\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should mark query-time semantic fallback degraded after successful document hydration \u001b[33m 1113\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m105 passed\u001b[39m\u001b[22m\u001b[90m (105)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:41:43\n\u001b[2m   Duration \u001b[22m 24.27s\u001b[2m (transform 724ms, setup 134ms, import 1.15s, tests 25.50s, environment 1ms)\u001b[22m\n\n$ vitest run tests/explore-retrieval-policy.test.ts tests/explore-retriever-fallback.test.ts tests/explore-index-hydration-fallback.test.ts tests/explore-bench.test.ts tests/explore-output-contract.test.ts tests/explore-hypothesis-model.test.ts tests/explore-voi-policy.test.ts tests/explore-promotion-gate.test.ts tests/explore-runtime-routing.test.ts tests/semantic-embedding-edge-gateway.test.ts tests/semantic-embedding-gateway.test.ts tests/semantic-embedding-identity.test.ts tools/decision-engine/handler.test.ts\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:43.907Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:43.919Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:43.923Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:41:43.927Z\"}\n(node:89092) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-immutable.test.ts",
+            "tests/release-operation.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1228,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/release-script-security.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-orchestrator.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 37\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-immutable.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 43\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-promotion-correlation.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-operation.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 104\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-cli-resolution.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-local-platform-bundle.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-promotion-dispatch-lock.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 229\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 77\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 592\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m103 passed\u001b[39m\u001b[22m\u001b[90m (103)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:07\n\u001b[2m   Duration \u001b[22m 1.06s\u001b[2m (transform 1.15s, setup 130ms, import 1.27s, tests 1.12s, environment 1ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts tests/production-release-mcp-security.test.ts tests/distribution/release-channels.test.ts tests/github-cli-resolution.test.ts tests/release-orchestrator.test.ts tests/release-immutable.test.ts tests/release-operation.test.ts tests/release-local-platform-bundle.test.ts tests/release-script-promotion-correlation.test.ts tests/release-promotion-dispatch-lock.test.ts tests/release-script-security.test.ts tests/release-tool-surface.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 495,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 239\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:08\n\u001b[2m   Duration \u001b[22m 316ms\u001b[2m (transform 11ms, setup 0ms, import 15ms, tests 239ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1203,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0\n────────────────────\nTotal Upload: 235.90 KiB / gzip: 51.39 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                              Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)                        Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                                     D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                                       R2 Bucket           \nenv.OS_SEMANTIC_EMBEDDING_RATE_LIMITER (600 requests/60s)                                                            Rate Limit          \nenv.OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER (1200 requests/60s)                                                        Rate Limit          \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "OS tool surface generation contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-tool-surface-generation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 779,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 111\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/tool-package-layout.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 423\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m generates full, core, and workflow outputs deterministically with no committed drift \u001b[33m 412\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:10\n\u001b[2m   Duration \u001b[22m 629ms\u001b[2m (transform 268ms, setup 23ms, import 357ms, tests 535ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/tool-manifest.test.ts tests/tool-package-layout.test.ts\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 17229,
+          "outputTail": "uld bootstrap a missing Caddy label when the HA ingress is unavailable \u001b[33m 398\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should open a recovery circuit when restart attempts exceed the bounded window \u001b[33m 524\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should keep external health recovery scoped to the external launchd label \u001b[33m 526\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject route registration when the routed MCP probe is not ready \u001b[33m 671\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should not restart when public heartbeat is rate-limited \u001b[33m 426\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/health-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5349\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real in-flight response when the worker exits after draining \u001b[33m 1315\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a slow app response stream while a real Bun worker drains \u001b[33m 1475\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real MCP tool call when the worker receives the graceful drain signal \u001b[33m 2524\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/worker-pool-process.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 16833\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m starts two real workers and replaces only the crashed slot \u001b[33m 10805\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reclaims orphaned workers when launchd restarts a killed supervisor \u001b[33m 6028\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (22)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m236 passed\u001b[39m\u001b[22m\u001b[90m (236)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:11\n\u001b[2m   Duration \u001b[22m 17.02s\u001b[2m (transform 3.66s, setup 0ms, import 7.29s, tests 35.55s, environment 2ms)\u001b[22m\n\n(node:92178) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:13.349Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:13.373Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\",\\\"version\\\":\\\"1.2.3\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --version 1.2.3 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:13.384Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:13.393Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:13.410Z\"}\n(node:92109) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "cwd": ".",
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 654,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m739 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m730 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m730 skipped\u001b[39m\u001b[90m (739)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:28\n\u001b[2m   Duration \u001b[22m 483ms\u001b[2m (transform 202ms, setup 0ms, import 393ms, tests 29ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:29.092Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:29.098Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:29.101Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:29.104Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:29.107Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:29.110Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:29.115Z\"}\n(node:93154) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2389,
+          "outputTail": "status\":200,\"durationMs\":1,\"jsonRpcId\":\"nonce-session-beta-1\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-11-02T02:42:30.349Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"86ad066b-422d-440d-8930-3c5247b624ef\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"nonce-session-alpha-2\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-11-02T02:42:30.350Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"86ad066b-422d-440d-8930-3c5247b624ef\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":200,\"durationMs\":1,\"jsonRpcId\":\"nonce-session-alpha-2\",\"publicTool\":\"get_steering\"},\"ts\":\"2026-11-02T02:42:30.351Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"aba64a3f-433d-47ca-9f8c-4fc9f0af2ebe\",\"route\":\"/mcp\",\"method\":\"initialize\",\"jsonRpcId\":\"initialize-session\"},\"ts\":\"2026-11-02T02:42:30.355Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"aba64a3f-433d-47ca-9f8c-4fc9f0af2ebe\",\"route\":\"/mcp\",\"method\":\"initialize\",\"status\":200,\"durationMs\":4,\"jsonRpcId\":\"initialize-session\"},\"ts\":\"2026-11-02T02:42:30.359Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"e5a4d78a-dc19-40d8-bc0d-7b3c7e48b4ab\",\"route\":\"/mcp\",\"method\":\"tools/list\",\"jsonRpcId\":\"tools\"},\"ts\":\"2026-11-02T02:42:30.362Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"e5a4d78a-dc19-40d8-bc0d-7b3c7e48b4ab\",\"route\":\"/mcp\",\"method\":\"tools/list\",\"status\":200,\"durationMs\":3,\"jsonRpcId\":\"tools\"},\"ts\":\"2026-11-02T02:42:30.365Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4e2ce39b-6d53-4b9a-ad63-fca40049961b\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"unknown-browser-tool\",\"publicTool\":\"call\",\"facadeTool\":\"browser.login.profile\"},\"ts\":\"2026-11-02T02:42:30.368Z\"}\n{\"level\":\"error\",\"tool\":\"browser.login.profile\",\"command\":\"workspace browser.login.profile\",\"durationMs\":56,\"exitCode\":1,\"traceId\":\"trc_2e294a2da2e8\",\"requestId\":\"4e2ce39b-6d53-4b9a-ad63-fca40049961b\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:42:30.440Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"4e2ce39b-6d53-4b9a-ad63-fca40049961b\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":200,\"durationMs\":74,\"jsonRpcId\":\"unknown-browser-tool\",\"publicTool\":\"call\",\"facadeTool\":\"browser.login.profile\"},\"ts\":\"2026-11-02T02:42:30.442Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"e296c8f1-b7b6-4a69-a508-526b3caf9551\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"call\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-11-02T02:42:30.445Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"e296c8f1-b7b6-4a69-a508-526b3caf9551\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":403,\"durationMs\":1,\"jsonRpcId\":\"call\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-11-02T02:42:30.446Z\"}\n(node:93341) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1477,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m34 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 64\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m73 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 996\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should resolve the stale lifecycle Bun executable across historical install shapes \u001b[33m 689\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m107 passed\u001b[39m\u001b[22m\u001b[90m (107)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:31\n\u001b[2m   Duration \u001b[22m 1.32s\u001b[2m (transform 473ms, setup 29ms, import 528ms, tests 1.06s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 23753,
+          "outputTail": "uires re-verification after a selected client is reconfigured \u001b[33m 870\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m requires re-verification when the package-root MCP server changes \u001b[33m 791\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 55\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 348\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 363\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-local-customization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 174\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-materialization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 240\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifact-sharing-links.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 73\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 68\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 47\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-launcher-regressions.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts-edge-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-chrome.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m100 passed\u001b[39m\u001b[22m\u001b[90m (100)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:33\n\u001b[2m   Duration \u001b[22m 23.55s\u001b[2m (transform 325ms, setup 69ms, import 1.64s, tests 20.80s, environment 1ms)\u001b[22m\n\n$ vitest run --no-file-parallelism tests/artifacts.test.ts tests/artifacts-edge-routing.test.ts tests/artifacts-hono-routes.test.ts tests/artifact-sharing-links.test.ts tests/settings-site.test.ts tests/settings-control-plane.test.ts tests/launcher-nodes-materialization.test.ts tests/observability-traces-site.test.ts tests/workspace-chrome.test.ts tests/sites-cli.test.ts tests/launcher-local-customization.test.ts tests/install-state.test.ts tests/local-agent-connectivity.test.ts tests/internal-launcher-regressions.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/managed-component-install.ts:315:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/managed-component-install.ts:489:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/scripts/lib/install-state.ts:2018:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n(node:97188) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:97189) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-compact-explore-response",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 468,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/explore-output-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:42:56\n\u001b[2m   Duration \u001b[22m 192ms\u001b[2m (transform 45ms, setup 20ms, import 77ms, tests 5ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/explore-output-contract.test.ts\n"
+        },
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1052,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 811,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1205,
+          "outputTail": "ists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 240 pass\n 102 skip\n 0 fail\n 1300 expect() calls\nRan 342 tests across 65 files. [1197.00ms]\n"
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/workflow-intent.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-session-integration",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1020,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/session-integration-guidance.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 36\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 36\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 52\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 37\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 51\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/session-start-compatibility.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 307\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 94\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m91 passed\u001b[39m\u001b[22m\u001b[90m (91)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:43:00\n\u001b[2m   Duration \u001b[22m 809ms\u001b[2m (transform 1.22s, setup 0ms, import 1.63s, tests 623ms, environment 1ms)\u001b[22m\n\n(node:97222) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-list-portability.test.ts",
+            "packages/os/tests/fs-search.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2782,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/fs-list-portability.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 73\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/fs-write.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 527\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 118\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 156\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/fs-search.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1085\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/work-session-fs.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1819\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses the work-session path as the relative context for read, list, and search \u001b[33m 463\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m applies patches and trashes files inside the trusted work-session root \u001b[33m 310\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m rejects symlink escapes for write, apply-patch, and trash \u001b[33m 354\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m66 passed\u001b[39m\u001b[22m\u001b[90m (66)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:43:01\n\u001b[2m   Duration \u001b[22m 2.60s\u001b[2m (transform 1.33s, setup 0ms, import 2.43s, tests 3.78s, environment 0ms)\u001b[22m\n\n(node:97331) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:97327) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write|read)"
+          ],
+          "cwd": ".",
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 861,
+          "outputTail": ".write\",\"implementationCommand\":\"workspace fs.write\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:43:04.844Z\"}\n{\"level\":\"info\",\"tool\":\"fs.apply_patch\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.apply_patch '{\\\"taskSession\\\":\\\"tsk_apply_patch_test\\\",\\\"dryRun\\\":true,\\\"patchText\\\":\\\"*** Begin Patch\\\\n*** End Patch\\\",\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test apply-patch --patch-text *** Begin Patch\\n*** End Patch --dry-run\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:43:04.863Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"contentFile\\\":\\\"/tmp/payload.txt\\\",\\\"force\\\":true,\\\"mkdirs\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content-file /tmp/payload.txt --force --mkdirs\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:43:04.880Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_append_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"content\\\":\\\"payload\\\",\\\"append\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content payload --append\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:43:04.896Z\"}\n{\"level\":\"info\",\"tool\":\"fs.read\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.read '{\\\"taskSession\\\":\\\"tsk_read_page\\\",\\\"path\\\":\\\"packages/os/scripts/fs.js\\\",\\\"offset\\\":5,\\\"limit\\\":20,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test read packages/os/scripts/fs.js --offset 5 --limit 20 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:43:04.912Z\"}\n{\"level\":\"info\",\"tool\":\"fs.read\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.read '{\\\"taskSession\\\":\\\"tsk_read_multi\\\",\\\"files\\\":[{\\\"path\\\":\\\"src/a.ts\\\",\\\"offset\\\":1,\\\"limit\\\":80},{\\\"path\\\":\\\"src/b.ts\\\",\\\"offset\\\":100,\\\"limit\\\":60}],\\\"filesJson\\\":\\\"[{\\\\\\\"path\\\\\\\":\\\\\\\"src/a.ts\\\\\\\",\\\\\\\"offset\\\\\\\":1,\\\\\\\"limit\\\\\\\":80},{\\\\\\\"path\\\\\\\":\\\\\\\"src/b.ts\\\\\\\",\\\\\\\"offset\\\\\\\":100,\\\\\\\"limit\\\\\\\":60}]\\\",\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test read --files-json [{\\\"path\\\":\\\"src/a.ts\\\",\\\"offset\\\":1,\\\"limit\\\":80},{\\\"path\\\":\\\"src/b.ts\\\",\\\"offset\\\":100,\\\"limit\\\":60}] --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:43:04.931Z\"}\n(node:98608) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7496,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\n+ @types/bun@1.3.14\n+ @types/github-slugger@2.0.0\n+ @types/lodash@4.17.24\n+ @types/lodash.kebabcase@4.1.9\n+ autoprefixer@10.4.27\n+ playwright@1.61.1\n+ postcss@8.5.6\n+ @astrojs/check@0.9.8\n+ @astrojs/cloudflare@13.7.0\n+ @astrojs/react@5.0.1\n+ @astrojs/rss@4.0.18\n+ @astrojs/sitemap@3.7.1\n+ @base-ui-components/react@1.0.0-rc.0\n+ @fontsource-variable/bodoni-moda@5.2.7\n+ @fontsource-variable/inter@5.2.8\n+ @iconify-json/tabler@1.2.31\n+ @pagefind/default-ui@1.5.2\n+ @resvg/resvg-js@2.6.2\n+ @tailwindcss/typography@0.5.19\n+ @types/react@19.2.14\n+ @types/react-dom@19.2.3\n+ @xyflow/react@12.10.1\n+ astro@6.0.7\n+ astro-icon@1.1.5\n+ class-variance-authority@0.7.1\n+ clsx@2.1.1\n+ dayjs@1.11.21\n+ framer-motion@12.34.3\n+ github-slugger@2.0.0\n+ gsap@3.15.0\n+ lenis@1.3.25\n+ lodash@4.18.1\n+ lodash.kebabcase@4.1.1\n+ lucide-react@0.575.0\n+ pagefind@1.5.2\n+ posthog-js@1.356.1\n+ prettier@3.8.1\n+ prettier-plugin-astro@0.14.1\n+ prettier-plugin-tailwindcss@0.6.14\n+ react@19.2.4\n+ react-dom@19.2.4\n+ remark-collapse@0.1.2\n+ remark-toc@9.0.0\n+ satori@0.26.0\n+ sharp@0.33.5\n+ slugify@1.6.9\n+ tailwind-merge@3.5.0\n+ tailwindcss@3.4.19\n+ typescript@5.9.3\n+ wrangler@4.105.0\n\n667 packages installed [7.49s]\n"
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 8495,
+          "outputTail": "21:43:15 [types] Generated 538ms\n21:43:15 [check] Getting diagnostics for Astro files in /Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/dialer-website...\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (43 files): \n- 0 errors\n- 0 warnings\n- 2 hints\n\n21:43:19 [types] Generated 26ms\n21:43:19 [build] output: \"static\"\n21:43:19 [build] mode: \"static\"\n21:43:19 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/packages/dialer-website/dist/\n21:43:19 [build] Collecting build info...\n21:43:19 [build] ✓ Completed in 47ms.\n21:43:19 [build] Building static entrypoints...\n21:43:20 [vite] ✓ built in 892ms\n21:43:20 [vite] ✓ built in 457ms\n21:43:20 [build] Rearranging server assets...\n\n generating static routes \n21:43:20   ├─ /404.html (+23ms) \n21:43:20   ├─ /calls/api/integrations/oauth/callback/index.html (+3ms) \n21:43:20   ├─ /contact/index.html (+3ms) \n21:43:20   ├─ /get-started/index.html (+3ms) \n21:43:20   ├─ /how-it-works/index.html (+5ms) \n21:43:20   ├─ /pricing/index.html (+2ms) \n21:43:20   ├─ /privacy/index.html (+2ms) \n21:43:20   ├─ /robots.txt (+2ms) \n21:43:20   ├─ /support/index.html (+4ms) \n21:43:20   ├─ /terms/index.html (+2ms) \n21:43:20   ├─ /index.html (+2ms) \n21:43:20 ✓ Completed in 65ms.\n\n21:43:20 [build] ✓ Completed in 1.44s.\n21:43:20 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`\n21:43:20 [build] 10 page(s) built in 1.50s\n21:43:20 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 9 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 79,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [0.16ms]\n(pass) Dialer marketing delivery > preserves the legacy OS feed URL when Dialer owns the root [0.03ms]\n(pass) Dialer marketing delivery > preserves every displaced static OS page through the migration map [1.00ms]\n(pass) Dialer marketing delivery > publishes product-owned sitemaps without authentication or OS URLs [0.31ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.15ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [32.67ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.29ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.11ms]\n(pass) Dialer marketing delivery > renders exactly three monthly plans and a plan-specific setup journey [0.13ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.59ms]\n\n 10 pass\n 0 fail\n 74 expect() calls\nRan 10 tests across 1 file. [71.00ms]\n"
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 48640,
+          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":62,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 61206,
+          "outputTail": "d might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:61182) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:61190) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:45:05.406Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:45:05.439Z\"}\n(node:61341) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:61363) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:61450) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:61493) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:45:07.215Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:45:07.241Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:45:07.248Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-02T02:45:07.257Z\"}\n(node:61484) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:61623) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\nSwitched to a new branch 'pr'\nSwitched to branch 'main'\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-ci-deletions-boUbse/checkout'...\n(node:62155) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
