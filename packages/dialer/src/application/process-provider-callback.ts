@@ -29,6 +29,7 @@ export const processProviderCallback = (input: ProcessProviderCallbackInput) =>
 
     const occurredAt = input.occurredAt ?? (yield* clock.now).toISOString();
 
+    const ensureOwnership = () => state.assertLockOwnership?.(groupId) ?? Effect.void;
     const locked = Effect.gen(function* () {
       const sourceGroup = yield* state.getGroup(groupId);
       if (!sourceGroup) return;
@@ -65,6 +66,7 @@ export const processProviderCallback = (input: ProcessProviderCallbackInput) =>
         actions,
         provider,
         occurredAt,
+        ensureOwnership,
       );
       yield* state.setGroup(group, ACTIVE_CALL_TTL_SECONDS);
     });

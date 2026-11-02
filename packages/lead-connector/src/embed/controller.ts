@@ -52,6 +52,7 @@ export const createLeadConnectorEmbedController = (input: {
   let commercialRefresh: Promise<void> | null = null;
   let inboundRefresh: Promise<void> | null = null;
   let inboundHeartbeat: Promise<void> | null = null;
+  let sessionRefreshSequence = 0;
   let browserVoicePrepared = false;
   let pendingInboundAcceptance: { key: string; attemptId: string } | null =
     null;
@@ -198,6 +199,12 @@ export const createLeadConnectorEmbedController = (input: {
     snapshot: InboundOperatorSnapshot,
     eventType: 'SNAPSHOT_LOADED' | 'RECONNECTED',
   ): Promise<void> => {
+    const isStale = (): boolean => {
+      const lastSyncAt = state.inboundOperator.lastSyncAt;
+      return lastSyncAt !== null &&
+        Date.parse(snapshot.serverTime) < Date.parse(lastSyncAt);
+    };
+    if (isStale()) return;
     if (input.inboundObserver) {
       dispatchInbound({ type: eventType, snapshot });
       return;
@@ -205,14 +212,17 @@ export const createLeadConnectorEmbedController = (input: {
     if (activeReadyBrowser(snapshot) && !browserVoicePrepared) {
       try {
         await input.voice.prepare();
+        if (isStale()) return;
         browserVoicePrepared = true;
       } catch (error: unknown) {
+        if (isStale()) return;
         await recoverInboundBrowser(snapshot, error, eventType);
         return;
       }
     } else if (!activeReadyBrowser(snapshot)) {
       browserVoicePrepared = false;
     }
+    if (isStale()) return;
     if (!snapshotHasBrowserWork(snapshot)) input.voice.rejectIncoming();
     dispatchInbound({ type: eventType, snapshot });
   };
@@ -236,10 +246,16 @@ export const createLeadConnectorEmbedController = (input: {
     return inboundRefresh;
   };
 
-  const run = async <T>(operation: () => Promise<T>): Promise<T | null> => {
+  const run = async <T>(
+    operation: () => Promise<T>,
+    isCurrent: () => boolean = () => true,
+  ): Promise<T | null> => {
     try {
-      return await operation();
+      const result = await operation();
+      return isCurrent() ? result : null;
     } catch (error: unknown) {
+      // A request owned by a previous session cannot error the current UI.
+      if (!isCurrent()) return null;
       if (error instanceof EmbedSessionExpiredError) {
         input.api.setSessionToken(null);
         input.inboundOperatorApi?.setSessionToken(null);
@@ -275,6 +291,12 @@ export const createLeadConnectorEmbedController = (input: {
   const projectSession = (
     session: Parameters<typeof isTerminalEmbedSession>[0],
   ): void => {
+    if (state.activeSessionId && state.activeSessionId !== session.groupId) return;
+    if (
+      state.callSession &&
+      isTerminalEmbedSession(state.callSession) &&
+      !isTerminalEmbedSession(session)
+    ) return;
     if (isTerminalEmbedSession(session)) disconnectVoice();
     dispatch({ type: 'SESSION_UPDATED', session });
   };
@@ -1236,47 +1258,58 @@ export const createLeadConnectorEmbedController = (input: {
       }
     },
     cancelTransfer: async (): Promise<void> => {
-      const sessionId = state.activeSessionId;
-      const transferId = state.transfer.transferId;
-      if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
-        dispatch({
-          type: 'FAILED',
-          code: 'WARM_TRANSFER_REQUIRED',
-          message: 'A warm consultation is required to cancel transfer',
-          recoverable: true,
-        });
-        return;
-      }
-      const result = await run(() =>
-        input.api.cancelCallTransfer(sessionId, transferId),
-      );
-      if (!result) return;
-      if (!result.success) {
-        dispatch({
-          type: 'FAILED',
-          code: 'TRANSFER_FAILED',
-          message: result.error ?? 'Transfer cancellation failed',
-          recoverable: true,
-        });
-        return;
-      }
-      dispatch({ type: 'TRANSFER_CANCELLED' });
-    },
-    refreshSession: async (): Promise<void> => {
       try {
         const sessionId = state.activeSessionId;
-        if (!sessionId) return;
-        const session = await run(() => input.api.getCallSession(sessionId));
+        const transferId = state.transfer.transferId;
+        if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+          dispatch({
+            type: 'FAILED',
+            code: 'WARM_TRANSFER_REQUIRED',
+            message: 'A warm consultation is required to cancel transfer',
+            recoverable: true,
+          });
+          return;
+        }
+        const result = await run(() =>
+          input.api.cancelCallTransfer(sessionId, transferId),
+        );
+        if (!result) return;
+        if (!result.success) {
+          dispatch({
+            type: 'FAILED',
+            code: 'TRANSFER_FAILED',
+            message: result.error ?? 'Transfer cancellation failed',
+            recoverable: true,
+          });
+          return;
+        }
+        dispatch({ type: 'TRANSFER_CANCELLED' });
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    refreshSession: async (): Promise<void> => {
+      const sequence = ++sessionRefreshSequence;
+      const sessionId = state.activeSessionId;
+      if (!sessionId) return;
+      const isCurrent = (): boolean =>
+        sequence === sessionRefreshSequence &&
+        state.activeSessionId === sessionId;
+      try {
+        const session = await run(() => input.api.getCallSession(sessionId), isCurrent);
+        if (!isCurrent()) return;
         if (session) projectSession(session);
         const transferId = state.transfer.transferId;
         if (state.transfer.status === 'initiating' && transferId) {
-          const transfer = await run(() =>
-            input.api.getCallTransferStatus(sessionId, transferId),
+          const transfer = await run(
+            () => input.api.getCallTransferStatus(sessionId, transferId),
+            isCurrent,
           );
+          if (!isCurrent() || state.transfer.transferId !== transferId) return;
           if (transfer) projectTransferStatus(transfer);
         }
       } catch (error: unknown) {
-        reportUnexpectedFailure(error);
+        if (isCurrent()) reportUnexpectedFailure(error);
       }
     },
     pause: () => dispatch({ type: 'PAUSED' }),

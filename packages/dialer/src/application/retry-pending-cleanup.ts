@@ -34,6 +34,7 @@ export const retryPendingCleanup = (groupId: string) =>
 
       for (const failure of pending) {
         if (failure.retryable === false) continue;
+        yield* (state.assertLockOwnership?.(groupId) ?? Effect.void);
         retried += 1;
         const operation =
           failure.action === 'terminate-call'

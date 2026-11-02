@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 
 import type {
@@ -28,6 +29,7 @@ local mappingKey = KEYS[2]
 local call = cjson.decode(ARGV[1])
 local groupId = ARGV[2]
 local ttl = tonumber(ARGV[3])
+if #KEYS > 2 and redis.call('GET', KEYS[3]) ~= ARGV[4] then return -1 end
 local raw = redis.call('GET', groupKey)
 if not raw then return 0 end
 local group = cjson.decode(raw)
@@ -46,6 +48,7 @@ const CLAIM_TELEMETRY_SCRIPT = `
 local groupKey = KEYS[1]
 local emittedAt = ARGV[1]
 local ttl = tonumber(ARGV[2])
+if #KEYS > 1 and redis.call('GET', KEYS[2]) ~= ARGV[3] then return -1 end
 local raw = redis.call('GET', groupKey)
 if not raw then return 0 end
 local group = cjson.decode(raw)
@@ -72,11 +75,44 @@ if redis.call('GET', key) ~= token then return 0 end
 return redis.call('PEXPIRE', key, ttl)
 `;
 
+// The lock-key check and protected write must execute in a single Redis script;
+// checking GET before a separate SET would still allow a stale owner to commit.
+const FENCED_SET_GROUP_SCRIPT = `
+-- fenced-set-group
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -1 end
+redis.call('SET', KEYS[2], ARGV[2], 'EX', tonumber(ARGV[3]))
+return 1
+`;
+
+const FENCED_CLAIM_WINNER_SCRIPT = `
+-- fenced-claim-winner
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -1 end
+local won = redis.call('SET', KEYS[2], ARGV[2], 'EX', tonumber(ARGV[3]), 'NX')
+return won and 1 or 0
+`;
+
+const FENCED_SET_MAPPING_SCRIPT = `
+-- fenced-set-mapping
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -1 end
+redis.call('SET', KEYS[2], ARGV[2], 'EX', tonumber(ARGV[3]))
+return 1
+`;
+
+const FENCED_DELETE_GROUP_SCRIPT = `
+-- fenced-delete-group
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -1 end
+for index = 2, #KEYS do redis.call('DEL', KEYS[index]) end
+return 1
+`;
+
+type GroupLease = { groupId: string; token: string };
+
 export class RedisParallelStore implements ParallelStore {
   private readonly prefix: string;
   private readonly lockTtlMs: number;
   private readonly lockRetryMs: number;
   private readonly lockTimeoutMs: number;
+  private readonly lockContext = new AsyncLocalStorage<GroupLease>();
 
   constructor(
     private readonly redis: RedisParallelClient,
@@ -109,9 +145,33 @@ export class RedisParallelStore implements ParallelStore {
     return `${this.prefix}:lock:${groupId}`;
   }
 
+  private currentLease(groupId: string): GroupLease | undefined {
+    const lease = this.lockContext.getStore();
+    return lease?.groupId === groupId ? lease : undefined;
+  }
+
+  private assertFencedWrite(result: number): void {
+    if (result === -1) throw new Error('Lost ownership of parallel group lock');
+  }
+
+  assertLockOwnership(groupId: string): Promise<void> {
+    const lease = this.currentLease(groupId);
+    if (!lease) return Promise.reject(new Error('Lost ownership of parallel group lock'));
+    return this.redis.get(this.lockKey(groupId)).then((current) => {
+      if (current !== lease.token) throw new Error('Lost ownership of parallel group lock');
+    });
+  }
+
   setGroup(groupId: string, data: string, ttlSeconds: number): Promise<void> {
-    return this.redis
-      .set(this.groupKey(groupId), data, 'EX', ttlSeconds)
+    const lease = this.currentLease(groupId);
+    if (lease) {
+      return this.redis.eval(
+        FENCED_SET_GROUP_SCRIPT, 2,
+        this.lockKey(groupId), this.groupKey(groupId),
+        lease.token, data, String(ttlSeconds),
+      ).then((result) => { this.assertFencedWrite(result); });
+    }
+    return this.redis.set(this.groupKey(groupId), data, 'EX', ttlSeconds)
       .then(() => undefined);
   }
 
@@ -124,21 +184,17 @@ export class RedisParallelStore implements ParallelStore {
     call: ParallelCall,
     ttlSeconds: number,
   ): Promise<void> {
-    return this.redis
-      .eval(
-        REGISTER_CALL_SCRIPT,
-        2,
-        this.groupKey(groupId),
-        this.callKey(call.callSid),
-        JSON.stringify(call),
-        groupId,
-        String(ttlSeconds),
-      )
-      .then((result) => {
-        if (result !== 1) {
-          throw new Error('Parallel group not found while registering call');
-        }
-      });
+    const lease = this.currentLease(groupId);
+    const keys = [this.groupKey(groupId), this.callKey(call.callSid)];
+    if (lease) keys.push(this.lockKey(groupId));
+    return this.redis.eval(
+      REGISTER_CALL_SCRIPT, keys.length, ...keys,
+      JSON.stringify(call), groupId, String(ttlSeconds),
+      ...(lease ? [lease.token] : []),
+    ).then((result) => {
+      this.assertFencedWrite(result);
+      if (result !== 1) throw new Error('Parallel group not found while registering call');
+    });
   }
 
   setCallMapping(
@@ -146,8 +202,15 @@ export class RedisParallelStore implements ParallelStore {
     groupId: string,
     ttlSeconds: number,
   ): Promise<void> {
-    return this.redis
-      .set(this.callKey(callSid), groupId, 'EX', ttlSeconds)
+    const lease = this.currentLease(groupId);
+    if (lease) {
+      return this.redis.eval(
+        FENCED_SET_MAPPING_SCRIPT, 2,
+        this.lockKey(groupId), this.callKey(callSid),
+        lease.token, groupId, String(ttlSeconds),
+      ).then((result) => { this.assertFencedWrite(result); });
+    }
+    return this.redis.set(this.callKey(callSid), groupId, 'EX', ttlSeconds)
       .then(() => undefined);
   }
 
@@ -160,8 +223,18 @@ export class RedisParallelStore implements ParallelStore {
     callSid: string,
     ttlSeconds: number,
   ): Promise<boolean> {
-    return this.redis
-      .set(this.winnerKey(groupId), callSid, 'EX', ttlSeconds, 'NX')
+    const lease = this.currentLease(groupId);
+    if (lease) {
+      return this.redis.eval(
+        FENCED_CLAIM_WINNER_SCRIPT, 2,
+        this.lockKey(groupId), this.winnerKey(groupId),
+        lease.token, callSid, String(ttlSeconds),
+      ).then((result) => {
+        this.assertFencedWrite(result);
+        return result === 1;
+      });
+    }
+    return this.redis.set(this.winnerKey(groupId), callSid, 'EX', ttlSeconds, 'NX')
       .then((result) => result === 'OK');
   }
 
@@ -174,15 +247,22 @@ export class RedisParallelStore implements ParallelStore {
     emittedAt: string,
     ttlSeconds: number,
   ): Promise<boolean> {
-    return this.redis
-      .eval(
-        CLAIM_TELEMETRY_SCRIPT,
-        1,
-        this.groupKey(groupId),
-        emittedAt,
-        String(ttlSeconds),
-      )
-      .then((result) => result === 1);
+    const lease = this.currentLease(groupId);
+    const keys = [this.groupKey(groupId)];
+    if (lease) keys.push(this.lockKey(groupId));
+    return this.redis.eval(
+      CLAIM_TELEMETRY_SCRIPT, keys.length, ...keys,
+      emittedAt, String(ttlSeconds), ...(lease ? [lease.token] : []),
+    ).then((result) => {
+      this.assertFencedWrite(result);
+      return result === 1;
+    });
+  }
+
+  private assertLockOwnershipForToken(key: string, token: string): Promise<void> {
+    return this.redis.get(key).then((current) => {
+      if (current !== token) throw new Error('Lost ownership of parallel group lock');
+    });
   }
 
   async withGroupLock<T>(
@@ -220,10 +300,13 @@ export class RedisParallelStore implements ParallelStore {
         });
     }, renewalIntervalMs);
     try {
-      const result = await operation();
+      const result = await this.lockContext.run(
+        { groupId, token }, operation,
+      );
       clearInterval(renewalTimer);
       await activeRenewal;
       if (renewalError) throw renewalError;
+      await this.assertLockOwnershipForToken(key, token);
       return result;
     } finally {
       clearInterval(renewalTimer);
@@ -232,8 +315,9 @@ export class RedisParallelStore implements ParallelStore {
     }
   }
 
-  deleteGroup(groupId: string): Promise<void> {
-    return this.getGroup(groupId).then((raw) => {
+  async deleteGroup(groupId: string): Promise<void> {
+    const raw = await this.getGroup(groupId);
+    {
       let calls: string[] = [];
       if (raw) {
         try {
@@ -249,9 +333,14 @@ export class RedisParallelStore implements ParallelStore {
           calls = [];
         }
       }
-      return this.redis
-        .del(this.groupKey(groupId), this.winnerKey(groupId), ...calls)
-        .then(() => undefined);
-    });
+      const lease = this.currentLease(groupId);
+      if (lease) {
+        const keys = [this.lockKey(groupId), this.groupKey(groupId), this.winnerKey(groupId), ...calls];
+        const result = await this.redis.eval(FENCED_DELETE_GROUP_SCRIPT, keys.length, ...keys, lease.token);
+        this.assertFencedWrite(result);
+        return;
+      }
+      await this.redis.del(this.groupKey(groupId), this.winnerKey(groupId), ...calls);
+    }
   }
 }

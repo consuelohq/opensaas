@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/harden-outbound-callback-ordering-redis-lock-fencing-and-stale-session-ui",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2766,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2766",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-outbound-callback-ordering-redis-lock-fencing-and-stale-session-ui",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_abe7a0919596",
+  "tmuxSession": "opensaas-dialer-harden-outbound-callback-ordering-redis-lock-fen-abe7a091",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-outbound-callback-ordering-redis-lock-fencing-and-stale-session-ui/.task/session.json",
+  "createdAt": "2026-11-02T02:54:06.195Z"
+}

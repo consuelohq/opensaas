@@ -414,6 +414,8 @@ export interface ParallelStore {
     ttlSeconds: number,
   ): Promise<boolean>;
   withGroupLock<T>(groupId: string, operation: () => Promise<T>): Promise<T>;
+  /** Optional storage-specific lease proof before an external provider effect. */
+  assertLockOwnership?(groupId: string): Promise<void>;
   deleteGroup(groupId: string): Promise<void>;
 }
 

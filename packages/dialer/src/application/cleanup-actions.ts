@@ -5,7 +5,7 @@ import {
   recordCleanupFailure,
 } from '../domain/parallel-group.js';
 import type { ParallelTransitionAction } from '../domain/parallel-transition.js';
-import type { DialerProviderError } from '../errors/dialer-errors.js';
+import type { DialerProviderError, DialerStateError } from '../errors/dialer-errors.js';
 import type { CallProviderService } from '../ports/call-provider.js';
 import type { ParallelGroup } from '../types.js';
 
@@ -47,12 +47,16 @@ export const executeCleanupActions = (
   actions: ParallelTransitionAction[],
   provider: CallProviderService,
   occurredAt: string,
-): Effect.Effect<ParallelGroup> =>
+  ensureOwnership: () => Effect.Effect<void, DialerStateError> = () => Effect.void,
+): Effect.Effect<ParallelGroup, DialerStateError> =>
   Effect.gen(function* () {
     let group = sourceGroup;
 
     for (const action of actions) {
       if (action.type === 'claim-winner') continue;
+      // Check lease ownership immediately before issuing each provider effect.
+      // Provider APIs are external: the later state commit is separately fenced.
+      yield* ensureOwnership();
       const operation =
         action.type === 'terminate-call'
           ? provider.terminateCall(action.callSid)

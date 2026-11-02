@@ -74,22 +74,24 @@ export const createParallelStateStoreLayer = (
           resume(effect);
         };
 
+        // Only resume the Effect AFTER the store confirms lease ownership.
+        // Resolving inside the callback can silently swallow lost-lock failures.
         store
-          .withGroupLock(groupId, async () => {
-            try {
-              const exit = await Effect.runPromiseExit(operation);
-              Exit.match(exit, {
-                onFailure: (cause) => finish(Effect.failCause(cause)),
-                onSuccess: (value) => finish(Effect.succeed(value)),
-              });
-            } catch (cause: unknown) {
-              finish(Effect.fail(stateFailure('run-locked-operation', cause)));
-            }
+          .withGroupLock(groupId, () => Effect.runPromiseExit(operation))
+          .then((exit) => {
+            Exit.match(exit, {
+              onFailure: (cause) => finish(Effect.failCause(cause)),
+              onSuccess: (value) => finish(Effect.succeed(value)),
+            });
           })
           .catch((cause: unknown) => {
             finish(Effect.fail(stateFailure('with-group-lock', cause)));
           });
       }),
+    assertLockOwnership: (groupId) =>
+      tryStore('assert-lock-ownership', () =>
+        store.assertLockOwnership?.(groupId) ?? Promise.resolve(),
+      ),
     deleteGroup: (groupId) =>
       tryStore('delete-group', () => store.deleteGroup(groupId)),
   };

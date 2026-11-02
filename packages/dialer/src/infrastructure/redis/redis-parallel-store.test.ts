@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test';
+import { Effect } from 'effect';
 
 import { RedisParallelStore } from './redis-parallel-store';
+import { createParallelStateStoreLayer } from '../memory/parallel-state-store';
+import { ParallelStateStore } from '../../ports/parallel-state-store';
 import type { ParallelGroup } from '../../types';
 
 class FakeRedis {
@@ -58,7 +61,27 @@ class FakeRedis {
   ): Promise<number> {
     const keys = args.slice(0, numberOfKeys).map(String);
     const values = args.slice(numberOfKeys).map(String);
+    if (script.includes('fenced-set-group')) {
+      if ((await this.get(keys[0]!)) !== values[0]) return -1;
+      await this.set(keys[1]!, values[1]!, 'EX', Number(values[2]));
+      return 1;
+    }
+    if (script.includes('fenced-claim-winner')) {
+      if ((await this.get(keys[0]!)) !== values[0]) return -1;
+      return (await this.set(keys[1]!, values[1]!, 'EX', Number(values[2]), 'NX')) === 'OK' ? 1 : 0;
+    }
+    if (script.includes('fenced-set-mapping')) {
+      if ((await this.get(keys[0]!)) !== values[0]) return -1;
+      await this.set(keys[1]!, values[1]!, 'EX', Number(values[2]));
+      return 1;
+    }
+    if (script.includes('fenced-delete-group')) {
+      if ((await this.get(keys[0]!)) !== values[0]) return -1;
+      await this.del(...keys.slice(1));
+      return 1;
+    }
     if (script.includes('register-call')) {
+      if (keys.length > 2 && (await this.get(keys[2]!)) !== values[3]) return -1;
       const raw = this.values.get(keys[0]);
       if (!raw) return 0;
       const group = JSON.parse(raw) as ParallelGroup;
@@ -73,6 +96,7 @@ class FakeRedis {
       return 1;
     }
     if (script.includes('claim-telemetry')) {
+      if (keys.length > 1 && (await this.get(keys[1]!)) !== values[2]) return -1;
       const raw = this.values.get(keys[0]);
       if (!raw) return 0;
       const group = JSON.parse(raw) as ParallelGroup;
@@ -226,5 +250,87 @@ describe('RedisParallelStore', () => {
     await expect(store.deleteGroup(group.groupId)).resolves.toBeUndefined();
     expect(await store.getGroup(group.groupId)).toBeNull();
     expect(await store.getWinner(group.groupId)).toBeNull();
+  });
+});
+
+describe('RedisParallelStore lock fencing', () => {
+  const lockKey = 'consuelo:dialer:parallel:lock:group-1';
+
+  it('refuses stale group writes after another worker takes the lock', async () => {
+    const redis = new FakeRedis();
+    const store = new RedisParallelStore(redis);
+    await store.setGroup(group.groupId, JSON.stringify(group), 60);
+    await expect(store.withGroupLock(group.groupId, async () => {
+      redis.values.set(lockKey, 'replacement-worker-token');
+      await store.setGroup(group.groupId, '{"status":"stale-worker"}', 60);
+    })).rejects.toThrow(/lock|ownership|lease/i);
+    expect(JSON.parse((await store.getGroup(group.groupId))!).status).toBe('dialing');
+  });
+
+  it('does not allow a stale worker to claim a winner', async () => {
+    const redis = new FakeRedis();
+    const store = new RedisParallelStore(redis);
+    await expect(store.withGroupLock(group.groupId, async () => {
+      redis.values.set(lockKey, 'replacement-worker-token');
+      await store.setWinnerIfAbsent(group.groupId, 'stale-call', 60);
+    })).rejects.toThrow(/lock|ownership|lease/i);
+    expect(await store.getWinner(group.groupId)).toBeNull();
+  });
+});
+
+describe('RedisParallelStore multiple-worker fencing', () => {
+  const lockKey = 'consuelo:dialer:parallel:lock:group-1';
+  it('preserves a newer worker commit when an earlier lease is lost', async () => {
+    const redis = new FakeRedis();
+    const first = new RedisParallelStore(redis);
+    const second = new RedisParallelStore(redis);
+    await first.setGroup(group.groupId, JSON.stringify(group), 60);
+    await expect(first.withGroupLock(group.groupId, async () => {
+      // Simulate Redis lease expiry and a second owner acquiring the same key.
+      redis.values.delete(lockKey);
+      await second.withGroupLock(group.groupId, async () => {
+        await second.setGroup(group.groupId, JSON.stringify({ ...group, status: 'connected' }), 60);
+      });
+      await first.setGroup(group.groupId, JSON.stringify({ ...group, status: 'failed' }), 60);
+    })).rejects.toThrow(/ownership/);
+    expect(JSON.parse((await first.getGroup(group.groupId))!).status).toBe('connected');
+  });
+
+  it('fences registration, mapping, telemetry, and deletion after lease loss', async () => {
+    const redis = new FakeRedis();
+    const store = new RedisParallelStore(redis);
+    await store.setGroup(group.groupId, JSON.stringify(group), 60);
+    await expect(store.withGroupLock(group.groupId, async () => {
+      redis.values.set(lockKey, 'replacement-worker-token');
+      await expect(store.registerCall(group.groupId, {
+        callSid: 'late-leg', customerNumber: 'redacted', fromNumber: 'redacted',
+        position: 1, status: 'dialing', dialStartedAt: group.createdAt,
+      }, 60)).rejects.toThrow(/ownership/);
+      await expect(store.setCallMapping('late-leg', group.groupId, 60)).rejects.toThrow(/ownership/);
+      await expect(store.claimTelemetryEmission(group.groupId, group.createdAt, 60)).rejects.toThrow(/ownership/);
+      await expect(store.deleteGroup(group.groupId)).rejects.toThrow(/ownership/);
+    })).rejects.toThrow(/ownership/);
+    expect(await store.getGroup(group.groupId)).not.toBeNull();
+    expect(await store.getCallMapping('late-leg')).toBeNull();
+  });
+});
+
+describe('Redis lease context across Effect application boundaries', () => {
+  it('fails the Effect and preserves the group when an owner loses the lease', async () => {
+    const redis = new FakeRedis();
+    const store = new RedisParallelStore(redis);
+    const layer = createParallelStateStoreLayer(store);
+    const program = Effect.gen(function* () {
+      const state = yield* ParallelStateStore;
+      yield* state.setGroup(group, 60);
+      return yield* state.withGroupLock(group.groupId, Effect.gen(function* () {
+        yield* Effect.sync(() => {
+          redis.values.set('consuelo:dialer:parallel:lock:group-1', 'different-owner');
+        });
+        yield* state.setGroup({ ...group, status: 'failed' }, 60);
+      }));
+    }).pipe(Effect.provide(layer));
+    await expect(Effect.runPromise(program)).rejects.toThrow(/ownership/i);
+    expect(JSON.parse((await store.getGroup(group.groupId))!).status).toBe('dialing');
   });
 });
