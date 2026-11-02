@@ -150,7 +150,10 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
         for (const effect of pending)
           await attempt(() => commands.execute(effect));
         if (callbackTelephony)
-          await attempt(() => callbackTelephony.executePending(number.workspaceId));
+          await attempt(async () => {
+            const result = await callbackTelephony.executePending(number.workspaceId);
+            failures += result.failures;
+          });
         for (const state of await capacity.list({
           workspaceId: number.workspaceId,
           ownedOnly: true,
@@ -158,7 +161,10 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
         }))
           await attempt(() => reconcile(state));
         if (callbackTelephony)
-          await attempt(() => callbackTelephony.reconcile(number.workspaceId));
+          await attempt(async () => {
+            const result = await callbackTelephony.reconcile(number.workspaceId);
+            failures += result.failures;
+          });
         if (callbacks)
           await attempt(() => callbacks.purgeRecipients(number.workspaceId));
         const recordings = (

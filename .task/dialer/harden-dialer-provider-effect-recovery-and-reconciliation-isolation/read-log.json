@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/dialer/harden-dialer-provider-effect-recovery-and-reconciliation-isolation/workpad.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/callback-telephony.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/telephony-commands.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.ts",
+    "packages/os/definitely-missing.json"
+  ],
+  "updatedAt": "2026-11-02T02:44:15.960Z"
+}

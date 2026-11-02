@@ -246,13 +246,21 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
         active = (async () => {
           try {
             const result = await telephony.tick();
-            for (const workspaceId of ownedWorkspaces)
-              await outbound.tick(workspaceId);
-            if (result.failures)
+            let failures = result.failures;
+            for (const workspaceId of ownedWorkspaces) {
+              try {
+                failures += (await outbound.tick(workspaceId)).failures;
+              } catch {
+                // Workspace-level transport failures must not block other
+                // tenants or erase the next scheduled recovery tick.
+                failures++;
+              }
+            }
+            if (failures)
               process.stderr.write(
                 JSON.stringify({
                   event: 'dialer.inbound.reconciliation_partial',
-                  failures: result.failures,
+                  failures,
                 }) + '\n',
               );
           } catch {

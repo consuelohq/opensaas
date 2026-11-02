@@ -452,7 +452,9 @@ export const createOutboundCapacity = (options: {
       ).rows;
       if (rows.length > 1000)
         throw new Error('Outbound recovery bound exceeded');
+      let failures = 0;
       for (const row of rows) {
+        try {
         // Missing creation evidence remains owned even when every known leg ended.
         if (row.status === 'creating') {
           const overdue = await pool.query(
@@ -627,7 +629,13 @@ export const createOutboundCapacity = (options: {
             });
           }
         });
+        } catch {
+          // Preserve the failed session for a later reconciliation pass,
+          // but never starve unrelated outbound sessions in this workspace.
+          failures++;
+        }
       }
+      return { failures };
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
       throw new Error('Async operation rejected with a non-Error cause', {

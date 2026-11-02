@@ -297,25 +297,62 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
               effect.workspace_id,
               effect.request_id,
             );
-            if (!session || !state?.owner)
-              throw new Error('Effect no longer owns capacity');
+            if (effect.kind === 'terminate') {
+              // Termination is cleanup for a known provider SID, not a new
+              // allocation. It must survive lost ownership or number config.
+              if (!effect.call_sid) {
+                await client.query(
+                  "UPDATE dialer_telephony_effects SET status='failed',updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='pending'",
+                  [effect.workspace_id, effect.effect_id],
+                );
+                return null;
+              }
+              await client.query(
+                "UPDATE dialer_telephony_effects SET status='dispatched',updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='pending'",
+                [effect.workspace_id, effect.effect_id],
+              );
+              return { effect, state, session };
+            }
+            // This pending effect has not crossed the provider boundary.
+            // A vanished session/owner is a local no-effect, not an unknown call.
+            if (!session || !state?.owner) {
+              await client.query(
+                "UPDATE dialer_telephony_effects SET status='failed',updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='pending'",
+                [effect.workspace_id, effect.effect_id],
+              );
+              return null;
+            }
             const owner = state.owner;
             const sessionActive = ['waiting', 'callback_requested'].includes(
               session.mode,
             );
-            const allowed =
-              effect.kind === 'terminate' ||
-              (sessionActive &&
-                (effect.kind === 'offer'
-                  ? owner.phase === 'offering' &&
-                    (options.clock?.() ?? new Date().toISOString()) <
-                      owner.offerExpiresAt
-                  : session.mode === 'waiting' &&
-                    owner.phase === 'connecting' &&
-                    owner.winnerEndpointId === effect.endpoint_id));
-            if (!allowed) {
+            const number = options.numbers.find(
+              (item) => item.numberId === session.number_id,
+            );
+            const target = effect.kind === 'offer'
+              ? options.endpoints.find(
+                  (item) =>
+                    item.workspaceId === effect.workspace_id &&
+                    item.repId === state.repId &&
+                    item.endpointId === effect.endpoint_id,
+                )
+              : null;
+            const allowed = sessionActive &&
+              (effect.kind === 'offer'
+                ? owner.phase === 'offering' &&
+                  (options.clock?.() ?? new Date().toISOString()) <
+                    owner.offerExpiresAt
+                : session.mode === 'waiting' &&
+                  owner.phase === 'connecting' &&
+                  owner.winnerEndpointId === effect.endpoint_id);
+            if (
+              !allowed ||
+              !number ||
+              (effect.kind === 'offer' && !target) ||
+              (effect.kind !== 'offer' && !effect.call_sid)
+            ) {
               await client.query(
-                "UPDATE dialer_telephony_effects SET status='failed' WHERE workspace_id=$1 AND effect_id=$2",
+                "UPDATE dialer_telephony_effects SET status='failed',updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='pending'",
                 [effect.workspace_id, effect.effect_id],
               );
               return null;
@@ -333,15 +370,22 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
           }
         },
       );
-      if (!claimed) return;
+      if (!claimed) {
+        // A definitively rejected local effect may have been the final
+        // effect for a dispatched command; settle its durable outbox record.
+        await settleCommands(original.workspace_id, original.assignment_id);
+        return;
+      }
       const { effect, state, session } = claimed;
-      const number = options.numbers.find(
-        (item) => item.numberId === session.number_id,
-      );
-      if (!number) throw new Error('Effect number configuration unavailable');
       let callSid = effect.call_sid;
+      let providerAttempted = false;
       try {
+        const number = options.numbers.find(
+          (item) => item.numberId === session.number_id,
+        );
         if (effect.kind === 'offer') {
+          if (!number || !state?.owner)
+            throw new Error('Effect number or capacity configuration unavailable');
           const target = options.endpoints.find(
             (item) =>
               item.workspaceId === effect.workspace_id &&
@@ -349,7 +393,7 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
               item.endpointId === effect.endpoint_id,
           );
           if (!target) throw new Error('Effect endpoint unavailable');
-          const call = await options.carrier.offer({
+          const request = {
             to:
               target.kind === 'browser'
                 ? 'client:' + createAgentVoiceIdentity(target.address)
@@ -374,26 +418,30 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
                   (Date.parse(state.owner!.offerExpiresAt) -
                     Date.parse(options.clock?.() ?? new Date().toISOString())) / 1000,
                 ))),
-          });
+          };
+          providerAttempted = true;
+          const call = await options.carrier.offer(request);
           if (call.accountSid !== number.accountSid)
             throw new Error('Provider account mismatch');
           callSid = call.sid;
         } else if (effect.kind === 'terminate') {
+          providerAttempted = true;
           await options.carrier.end(effect.call_sid!);
         } else {
-          await options.carrier.redirect(
-            effect.call_sid!,
-            conferenceTwiml(
-              session.conference_name,
-              telephonyUrl(
-                options,
-                number.numberId,
-                'conference',
-                session.request_id,
-              ),
-              effect.kind === 'bridge_caller' ? 'caller' : 'rep',
+          if (!number || !session)
+            throw new Error('Effect number or session configuration unavailable');
+          const twiml = conferenceTwiml(
+            session.conference_name,
+            telephonyUrl(
+              options,
+              number.numberId,
+              'conference',
+              session.request_id,
             ),
+            effect.kind === 'bridge_caller' ? 'caller' : 'rep',
           );
+          providerAttempted = true;
+          await options.carrier.redirect(effect.call_sid!, twiml);
         }
         const settled = await pool.query(
           "UPDATE dialer_telephony_effects SET status='succeeded',call_sid=$3,updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND (call_sid IS NULL OR call_sid=$3)",
@@ -405,8 +453,9 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
         // A provider-side request rejection proves no call was created. Only
         // ambiguous create failures may enter the protected unknown state.
         const definitivelyRejected =
-          effect.kind === 'offer' &&
-          classifyTwilioCreateFailure(cause) === 'not_created';
+          !providerAttempted ||
+          (effect.kind === 'offer' &&
+            classifyTwilioCreateFailure(cause) === 'not_created');
         await pool.query(
           "UPDATE dialer_telephony_effects SET status=$3,updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='dispatched'",
           [effect.workspace_id, effect.effect_id, definitivelyRejected ? 'failed' : 'unknown'],
@@ -415,6 +464,9 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
           await settleCommands(effect.workspace_id, effect.assignment_id);
           return;
         }
+        // An orphaned cleanup has no capacity owner left to fence; retain
+        // the uncertain termination in the effect journal for reconciliation.
+        if (!state) return;
         const current = await capacity.read(
           effect.workspace_id,
           state.capacityId,
