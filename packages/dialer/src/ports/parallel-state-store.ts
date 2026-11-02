@@ -36,6 +36,7 @@ export type ParallelStateStoreService = {
     groupId: string,
     operation: Effect.Effect<A, E>,
   ) => Effect.Effect<A, E | DialerStateError>;
+  assertLockOwnership?: (groupId: string) => Effect.Effect<void, DialerStateError>;
   deleteGroup: (groupId: string) => Effect.Effect<void, DialerStateError>;
 };
 

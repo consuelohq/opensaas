@@ -205,3 +205,45 @@ describe('parallel provider callback transition', () => {
     );
   });
 });
+
+describe('out-of-order provider callbacks', () => {
+  it('ignores a late ringing callback after a leg has reached in-progress', () => {
+    const first = planProviderCallbackTransition(baseGroup(), {
+      callSid: 'CA_first', callStatus: 'in-progress', answeredBy: 'human', occurredAt: now,
+    });
+    if (!first.ok) throw first.error;
+    const late = planProviderCallbackTransition(first.plan.group, {
+      callSid: 'CA_first', callStatus: 'ringing', answeredBy: 'machine_start',
+      occurredAt: '2026-07-23T12:00:02.000Z',
+    });
+    if (!late.ok) throw late.error;
+    expect(late.plan.actions).toEqual([]);
+    expect(late.plan.group.calls[0]).toMatchObject({
+      status: 'in-progress', amdResult: 'human', answeredAt: now,
+    });
+  });
+
+  it('ignores queued and initiated updates after ringing', () => {
+    const group = baseGroup();
+    group.calls[0].status = 'ringing';
+    for (const callStatus of ['queued', 'initiated']) {
+      const result = planProviderCallbackTransition(group, {
+        callSid: 'CA_first', callStatus, occurredAt: now,
+      });
+      if (!result.ok) throw result.error;
+      expect(result.plan.group.calls[0].status).toBe('ringing');
+      expect(result.plan.actions).toEqual([]);
+    }
+  });
+
+  it('does not replace a known lifecycle state with an unrecognized nonterminal status', () => {
+    const group = baseGroup();
+    group.calls[0].status = 'ringing';
+    const result = planProviderCallbackTransition(group, {
+      callSid: 'CA_first', callStatus: 'undocumented-progress', occurredAt: now,
+    });
+    if (!result.ok) throw result.error;
+    expect(result.plan.group.calls[0].status).toBe('ringing');
+    expect(result.plan.actions).toEqual([]);
+  });
+});

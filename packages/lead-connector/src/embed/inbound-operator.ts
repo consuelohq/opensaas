@@ -197,14 +197,21 @@ const projectSnapshot = (
   state: InboundOperatorState,
   snapshot: InboundOperatorSnapshot,
   phase: InboundOperatorState['phase'] = 'ready',
-): InboundOperatorState => ({
-  ...state,
-  ...snapshot,
-  phase,
-  lastSyncAt: snapshot.serverTime,
-  pendingAction: null,
-  error: null,
-});
+): InboundOperatorState => {
+  // An older poll must not undo a more recent action or resurrect an offer.
+  if (
+    state.lastSyncAt !== null &&
+    Date.parse(snapshot.serverTime) < Date.parse(state.lastSyncAt)
+  ) return state;
+  return {
+    ...state,
+    ...snapshot,
+    phase,
+    lastSyncAt: snapshot.serverTime,
+    pendingAction: null,
+    error: null,
+  };
+};
 
 export const reduceInboundOperatorState = (
   state: InboundOperatorState,

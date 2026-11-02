@@ -1,0 +1,170 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/harden-outbound-callback-ordering-redis-lock-fencing-and-stale-session-ui",
+  "base": "origin/task/dialer/harden-outbound-callback-ordering-redis-lock-fencing-and-stale-session-ui",
+  "headSha": "2de77b5c135c4e77bca80405039413da2f6f711c",
+  "changeHash": "781077bf645fb2bcce921de6aed20a8c94d815e64006a7dae46504a5afa68494",
+  "changedFiles": [
+    "packages/dialer/src/application/cleanup-actions.ts",
+    "packages/dialer/src/application/process-provider-callback.ts",
+    "packages/dialer/src/application/retry-pending-cleanup.ts",
+    "packages/dialer/src/application/terminate-call-session.ts",
+    "packages/dialer/src/domain/parallel-call.ts",
+    "packages/dialer/src/domain/parallel-transition.spec.ts",
+    "packages/dialer/src/domain/parallel-transition.ts",
+    "packages/dialer/src/infrastructure/memory/parallel-state-store-layer.test.ts",
+    "packages/dialer/src/infrastructure/memory/parallel-state-store.ts",
+    "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
+    "packages/dialer/src/infrastructure/redis/redis-parallel-store.ts",
+    "packages/dialer/src/ports/parallel-state-store.ts",
+    "packages/dialer/src/types.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/inbound-operator.test.ts",
+    "packages/lead-connector/src/embed/inbound-operator.ts"
+  ],
+  "verifiedAt": "2026-11-02T03:04:26.123Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/harden-outbound-callback-ordering-redis-lock-fencing-and-stale-session-ui/workpad.md",
+        ".task/tasks/dialer/harden-outbound-callback-ordering-redis-lock-fencing-and-stale-session-ui.json",
+        "packages/dialer/src/application/cleanup-actions.ts",
+        "packages/dialer/src/application/process-provider-callback.ts",
+        "packages/dialer/src/application/retry-pending-cleanup.ts",
+        "packages/dialer/src/application/terminate-call-session.ts",
+        "packages/dialer/src/domain/parallel-call.ts",
+        "packages/dialer/src/domain/parallel-transition.spec.ts",
+        "packages/dialer/src/domain/parallel-transition.ts",
+        "packages/dialer/src/infrastructure/memory/parallel-state-store-layer.test.ts",
+        "packages/dialer/src/infrastructure/memory/parallel-state-store.ts",
+        "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
+        "packages/dialer/src/infrastructure/redis/redis-parallel-store.ts",
+        "packages/dialer/src/ports/parallel-state-store.ts",
+        "packages/dialer/src/types.ts",
+        "packages/lead-connector/src/embed/controller.test.ts",
+        "packages/lead-connector/src/embed/controller.ts",
+        "packages/lead-connector/src/embed/inbound-operator.test.ts",
+        "packages/lead-connector/src/embed/inbound-operator.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/application/cleanup-actions.ts",
+            "packages/dialer/src/application/process-provider-callback.ts",
+            "packages/dialer/src/application/retry-pending-cleanup.ts",
+            "packages/dialer/src/application/terminate-call-session.ts",
+            "packages/dialer/src/domain/parallel-call.ts",
+            "packages/dialer/src/domain/parallel-transition.spec.ts",
+            "packages/dialer/src/domain/parallel-transition.ts",
+            "packages/dialer/src/infrastructure/memory/parallel-state-store-layer.test.ts",
+            "packages/dialer/src/infrastructure/memory/parallel-state-store.ts",
+            "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
+            "packages/dialer/src/infrastructure/redis/redis-parallel-store.ts",
+            "packages/dialer/src/ports/parallel-state-store.ts",
+            "packages/dialer/src/types.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/controller.ts",
+            "packages/lead-connector/src/embed/inbound-operator.test.ts",
+            "packages/lead-connector/src/embed/inbound-operator.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1901,
+          "outputTail": "ate-specific opportunity economics separate from response probability [0.06ms]\n(pass) ContextualResponseModel > matches the penalized Bernoulli objective gradient by finite differences [0.22ms]\n(pass) ContextualResponseModel > keeps regularization strength stable when the empirical sample is replicated [81.72ms]\n(pass) ContextualResponseModel > does not regularize the intercept and keeps extreme encoded values finite [0.15ms]\n(pass) ContextualResponseModel > encodes missing spacing differently from a real zero-minute spacing [0.02ms]\n\npackages/dialer/src/services/predictive-selection-science.spec.ts:\n(pass) scientific predictive selection contract > uses calibrated upper probability evidence for exploration rather than an arbitrary sample-size bonus [0.70ms]\n(pass) scientific predictive selection contract > does not change an otherwise identical priority because a contact is older than 48 hours [0.12ms]\n(pass) scientific predictive selection contract > preserves FIFO for a decision set when any candidate lacks comparable hazard evidence [0.09ms]\n(pass) uses aggregate attempt evidence rather than a peak slot for an unobserved calling time [0.10ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [0.81ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [1.90ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.44ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.11ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.50ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [0.82ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [0.92ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [1.91ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.27ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.05ms]\n\npackages/dialer/src/infrastructure/memory/parallel-state-store-layer.test.ts:\n(pass) parallel state store lock completion > does not report success when ownership fails after operation settles [1.53ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [0.49ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.81ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [180.77ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.23ms]\n(pass) RedisParallelStore lock fencing > refuses stale group writes after another worker takes the lock [0.31ms]\n(pass) RedisParallelStore lock fencing > does not allow a stale worker to claim a winner [0.17ms]\n(pass) RedisParallelStore multiple-worker fencing > preserves a newer worker commit when an earlier lease is lost [0.26ms]\n(pass) RedisParallelStore multiple-worker fencing > fences registration, mapping, telemetry, and deletion after lease loss [0.29ms]\n(pass) Redis lease context across Effect application boundaries > fails the Effect and preserves the group when an owner loses the lease [0.83ms]\n\npackages/dialer/src/infrastructure/twilio/create-outcome.test.ts:\n(pass) recognizes rejected requests while keeping timeouts and server failures unknown [0.09ms]\n\n 277 pass\n 0 fail\n 676 expect() calls\nRan 277 tests across 32 files. [1.89s]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 908,
+          "outputTail": "72ms]\n(pass) starts the actual sidebar runtime on a launcher, never a second calling form [3.24ms]\n\npackages/lead-connector/src/embed/inbound-operator.test.ts:\n(pass) inbound operator state > projects an authoritative snapshot without inventing capacity [0.04ms]\n(pass) inbound operator state > stale acceptance keeps the offer actionable and reports the server reason [0.02ms]\n(pass) inbound operator state > renders endpoint readiness, truthful connecting state, queue visibility, and recovery controls [0.06ms]\n(pass) inbound operator state > allows an offline unowned rep to go ready [0.04ms]\n(pass) inbound operator state > prefers a healthy browser endpoint over an eligible phone endpoint for offer acceptance [0.07ms]\n(pass) inbound operator state > blocks Go ready with no healthy devices but permits declining unanswerable fenced offers [0.08ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.23ms]\n(pass) stale inbound authoritative snapshots > does not regress to an older server snapshot after a newer assignment was confirmed [0.02ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.06ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.29ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.08ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.28ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.32ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.42ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.28ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.49ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [119.02ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.34ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.37ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.11ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.06ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.09ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.79ms]\n\n 243 pass\n 0 fail\n 1819 expect() calls\nRan 243 tests across 40 files. [898.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
