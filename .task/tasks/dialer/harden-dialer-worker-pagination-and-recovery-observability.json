@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/harden-dialer-worker-pagination-and-recovery-observability",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2767,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2767",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-worker-pagination-and-recovery-observability",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_0bc54b995244",
+  "tmuxSession": "opensaas-dialer-harden-dialer-worker-pagination-and-recovery-obs-0bc54b99",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-worker-pagination-and-recovery-observability/.task/session.json",
+  "createdAt": "2026-11-02T03:53:28.574Z"
+}
