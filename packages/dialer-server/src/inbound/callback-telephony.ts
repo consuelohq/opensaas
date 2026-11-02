@@ -12,6 +12,7 @@ import {
 } from './telephony-store';
 import { terminalCarrierStatus } from './telephony-contracts';
 import type { createPostgresCallbacks } from './callbacks';
+import { createCyclicRecoveryPager } from './worker-recovery';
 
 export type CallbackEffect = {
   workspace_id: string;
@@ -96,6 +97,16 @@ export const createCallbackTelephony = (
   const { pool } = options;
   const capacity = createPostgresRepCapacity(pool, { clock: options.clock });
   const journal = createPostgresInboundJournal(pool);
+  const commandPage = createCyclicRecoveryPager(100);
+  const obligationsPage = createCyclicRecoveryPager();
+  const listCommandPage = (
+    workspaceId: string,
+    status: Parameters<typeof journal.listCommands>[1],
+  ) => commandPage(
+    workspaceId + ':' + status,
+    (after) => journal.listCommands(workspaceId, status, after),
+    (row) => row.command.commandId,
+  );
 
   const createEffects = async (command: InboundStoredCommand) => {
     try {
@@ -1219,7 +1230,7 @@ export const createCallbackTelephony = (
   const executePending = async (workspaceId: string) => {
     try {
       let failures = 0;
-      const commands = await journal.listCommands(workspaceId, 'pending');
+      const commands = await listCommandPage(workspaceId, 'pending');
       for (const command of commands.filter(
         (candidate) => candidate.command.type === 'start_callback',
       )) {
@@ -1259,8 +1270,8 @@ export const createCallbackTelephony = (
           failures++;
         }
       }
-      const dispatched = await journal.listCommands(workspaceId, 'dispatched');
-      const unknown = await journal.listCommands(workspaceId, 'unknown');
+      const dispatched = await listCommandPage(workspaceId, 'dispatched');
+      const unknown = await listCommandPage(workspaceId, 'unknown');
       for (const command of [...dispatched, ...unknown].filter(
         (candidate) => candidate.command.type === 'start_callback',
       )) {
@@ -1290,7 +1301,10 @@ export const createCallbackTelephony = (
 
   const reconcile = async (workspaceId: string) => {
     try {
-      const rows = await pool.query<{ callback_id: string }>(
+      const rows = await obligationsPage(
+        workspaceId,
+        async (after, limit) => (
+          await pool.query<{ callback_id: string }>(
         `SELECT obligation.callback_id FROM dialer_callback_obligations obligation
          WHERE obligation.workspace_id=$1 AND (
            obligation.state->>'status' IN ('dialing','unknown','connected','cancel_pending')
@@ -1300,14 +1314,15 @@ export const createCallbackTelephony = (
                AND capacity.snapshot->'owner'->>'requestId'=obligation.request_id
                AND capacity.snapshot->'owner'->>'phase' IN ('offering','unknown')
            )
-         )
-         ORDER BY obligation.callback_id LIMIT 1001`,
-        [workspaceId],
+         ) AND obligation.callback_id>$2
+         ORDER BY obligation.callback_id LIMIT $3`,
+            [workspaceId, after, limit],
+          )
+        ).rows,
+        (row) => row.callback_id,
       );
-      if (rows.rows.length > 1000)
-        throw new Error('Callback reconciliation scan bound exceeded');
       let failures = 0;
-      for (const row of rows.rows) {
+      for (const row of rows) {
         try {
           await reconcileRejectedRepOffers(workspaceId, row.callback_id);
           await reconcileOne(workspaceId, row.callback_id);

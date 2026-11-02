@@ -35,6 +35,7 @@ import { createPostgresRepCapacity } from './rep-capacity';
 import { createPostgresInboundRouting } from './routing';
 import { createPostgresInboundJournal } from './postgres-journal';
 import { telephonyId } from './telephony-store';
+import { readRecoveryBacklog, recoveryLagAlerts } from './worker-recovery';
 import { TELEPHONY_MIGRATION_ID } from './telephony-migration';
 import type {
   InboundCarrier,
@@ -1221,6 +1222,28 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
       "SELECT count(*)::int AS count FROM dialer_telephony_effects WHERE effect_id LIKE '000-orphan-%' AND status='pending'",
     )).rows[0]?.count).toBe(0);
     expect(offers).toBe(1);
+  });
+  it('reports aged unknown provider effects without exposing customer or provider identifiers', async () => {
+    await incoming();
+    await pool.query(
+      `INSERT INTO dialer_telephony_effects
+         (workspace_id,effect_id,request_id,assignment_id,command_id,endpoint_id,kind,status,updated_at)
+       VALUES($1,$2,$3,$4,$5,$6,'offer','unknown',clock_timestamp()-interval '15 minutes')`,
+      ['workspace', 'fixture-private-effect', telephonyId('account', 'caller'),
+        'private-assignment', 'private-command', 'browser'],
+    );
+    const backlog = await readRecoveryBacklog(pool, ['workspace']);
+    const unknown = backlog.find((row) =>
+      row.kind === 'inbound_effect' && row.status === 'unknown');
+    if (!unknown) throw new Error('Expected an unknown provider effect');
+    expect(unknown?.count).toBe(1);
+    expect(unknown?.oldestSeconds).toBeGreaterThanOrEqual(900);
+    expect(recoveryLagAlerts(backlog)).toContainEqual({
+      ...unknown,
+      thresholdSeconds: 600,
+    });
+    expect(JSON.stringify(backlog)).not.toContain('fixture-private');
+    expect(await readRecoveryBacklog(pool, ['other-workspace'])).toEqual([]);
   });
   it('still terminates a known carrier leg if its pending termination has lost capacity ownership', async () => {
     await incoming();
