@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_495d14dd2f37",
+  "tmuxSession": "opensaas-dialer-review-and-repair-dialer-state-machine-audit-rem-495d14dd",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/review-and-repair-dialer-state-machine-audit-remediation",
+  "branch": "task/dialer/review-and-repair-dialer-state-machine-audit-remediation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-review-and-repair-dialer-state-machine-audit-remediation",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-review-and-repair-dialer-state-machine-audit-remediation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2768,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2768",
+  "createdAt": "2026-11-02T04:06:19.251Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-review-and-repair-dialer-state-machine-audit-remediation/.task/dialer/review-and-repair-dialer-state-machine-audit-remediation/session.json"
+}

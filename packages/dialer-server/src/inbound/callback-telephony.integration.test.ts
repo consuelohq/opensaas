@@ -593,6 +593,40 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     expect(result.rows.map((row) => row.status)).toEqual(['failed']);
     expect(offerTargets).toEqual(['client:user_alice']);
   });
+  it('resumes pending callback effects after a dispatched command survives restart', async () => {
+    await requestCallback(); await service.tick();
+    const { repSid } = await acceptLatestRep();
+    await callbacks.tick({ workspaceId: 'workspace', queueId: 'sales', cycleId: 'before-crash' });
+    const callback = (await callbacks.read('workspace', 'callback-one'))!;
+    const attempt = callback.state.attempts.at(-1)!;
+    const command = (await pool.query<{command: {commandId:string}}>(
+      "SELECT command FROM dialer_inbound_commands WHERE workspace_id='workspace' AND command->>'type'='start_callback' AND command->>'entityId'='callback-one'"
+    )).rows[0]!.command;
+    const state=(await capacity.read('workspace','slot'))!;
+    await capacity.execute({workspaceId:'workspace',capacityId:'slot',expectedVersion:state.version,operationId:telephonyId(command.commandId,'dispatch'),action:{type:'dispatch',commandId:command.commandId,assignmentId:attempt.assignmentId,generation:attempt.generation}});
+    for (const [kind,sid] of [['rep_bridge',repSid],['customer_dial',null]] as const) await pool.query(
+      "INSERT INTO dialer_callback_effects (workspace_id,callback_id,attempt_id,effect_kind,command_id,status,call_sid) VALUES ($1,$2,$3,$4,$5,'pending',$6)",
+      ['workspace','callback-one',attempt.attemptId,kind,command.commandId,sid]);
+    const restarted=createInboundTelephony({pool,numbers:[number],endpoints:[],carrier,publicUrl:'https://voice.example',authToken:'fixture-auth-token',callbackRecipientCipher:cipher,clock});
+    await Promise.all([restarted.callbackTelephony!.executePending('workspace'), restarted.callbackTelephony!.executePending('workspace')]);
+    expect(redirects).toEqual([repSid]);
+    expect(offerTargets.filter(target=>target==='+18285550123')).toHaveLength(1);
+    await restarted.callbackTelephony!.executePending('workspace');
+    expect(redirects).toEqual([repSid]);
+    expect(offerTargets.filter(target=>target==='+18285550123')).toHaveLength(1);
+  });
+  it('never starts a pending customer dial after the callback is cancelled', async () => {
+    await requestCallback(); await service.tick(); const {repSid}=await acceptLatestRep();
+    await callbacks.tick({workspaceId:'workspace',queueId:'sales',cycleId:'cancel-before-recovery'});
+    const callback=(await callbacks.read('workspace','callback-one'))!;const attempt=callback.state.attempts.at(-1)!;
+    const command=(await pool.query<{command:{commandId:string}}>("SELECT command FROM dialer_inbound_commands WHERE workspace_id='workspace' AND command->>'type'='start_callback' AND command->>'entityId'='callback-one'")).rows[0]!.command;
+    const state=(await capacity.read('workspace','slot'))!;
+    await capacity.execute({workspaceId:'workspace',capacityId:'slot',expectedVersion:state.version,operationId:telephonyId(command.commandId,'dispatch'),action:{type:'dispatch',commandId:command.commandId,assignmentId:attempt.assignmentId,generation:attempt.generation}});
+    for(const [kind,status,sid] of [['rep_bridge','succeeded',repSid],['customer_dial','pending',null]] as const) await pool.query("INSERT INTO dialer_callback_effects (workspace_id,callback_id,attempt_id,effect_kind,command_id,status,call_sid) VALUES ($1,$2,$3,$4,$5,$6,$7)",['workspace','callback-one',attempt.attemptId,kind,command.commandId,status,sid]);
+    await callbacks.cancel({workspaceId:'workspace',callbackId:'callback-one',operationId:'cancel-before-recovery',reconciled:false});
+    await service.callbackTelephony!.reconcile('workspace');
+    expect(offerTargets.filter(target=>target==='+18285550123')).toHaveLength(0);
+  });
   it('treats missing callback routing configuration as local no-effect and safely drains the accepted rep', async () => {
     await requestCallback();
     await service.tick();

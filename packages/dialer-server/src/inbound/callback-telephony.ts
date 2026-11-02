@@ -350,6 +350,36 @@ export const createCallbackTelephony = (
               )
             ).rows[0];
             if (!row || row.status !== 'pending') return null;
+            if (row.effect_kind === 'rep_bridge' || row.effect_kind === 'customer_dial') {
+              // A callback may be canceled or reassigned while the worker is
+              // between reads. Check authority under the same tenant lock as
+              // the pending -> dispatched claim, before any carrier mutation.
+              const obligation = (await client.query<{ state: {
+                status: string; attempts: Array<{ attemptId: string; capacityId: string; assignmentId: string; generation: number }>;
+              } }>(
+                'SELECT state FROM dialer_callback_obligations WHERE workspace_id=$1 AND callback_id=$2',
+                [row.workspace_id, row.callback_id],
+              )).rows[0]?.state;
+              const attempt = obligation?.attempts.at(-1);
+              if (!obligation || attempt?.attemptId !== row.attempt_id) return null;
+              const capacityState = await readTelephonyCapacity(client, row.workspace_id, attempt.capacityId);
+              const owner = capacityState?.owner;
+              if (!owner || owner.assignmentId !== attempt.assignmentId || owner.generation !== attempt.generation) return null;
+              if (row.effect_kind === 'rep_bridge') {
+                if (obligation.status !== 'dialing' || owner.phase !== 'connecting') return null;
+              } else {
+                const effects = await readEffects(client, row.workspace_id, row.callback_id, row.attempt_id);
+                const bridge = effects.find((effect) => effect.effect_kind === 'rep_bridge');
+                if (bridge?.status !== 'succeeded') return null;
+                const normal = obligation.status === 'dialing' && owner.phase === 'connecting';
+                // A reconciled bridge can leave both authorities marked unknown
+                // until the customer effect is settled. It is safe to continue
+                // only once every other effect has a definitive outcome.
+                const recovered = obligation.status === 'unknown' && owner.phase === 'unknown' &&
+                  effects.every((effect) => effect.effect_kind === 'customer_dial' || (effect.effect_kind === 'rep_bridge' && effect.status === 'succeeded'));
+                if (!normal && !recovered) return null;
+              }
+            }
             await client.query(
               `UPDATE dialer_callback_effects
                SET status='dispatched',updated_at=clock_timestamp()
@@ -1228,75 +1258,36 @@ export const createCallbackTelephony = (
   };
 
   const executePending = async (workspaceId: string) => {
-    try {
-      let failures = 0;
-      const commands = await listCommandPage(workspaceId, 'pending');
-      for (const command of commands.filter(
-        (candidate) => candidate.command.type === 'start_callback',
-      )) {
-        try {
+    let failures = 0;
+    const pending = await listCommandPage(workspaceId, 'pending');
+    const dispatched = await listCommandPage(workspaceId, 'dispatched');
+    for (const command of [...pending, ...dispatched].filter(
+      (candidate) => candidate.command.type === 'start_callback',
+    )) {
+      try {
+        // Revalidate the active owner before resuming work that was persisted
+        // before a process restart. Only pending effects are safe to claim.
         const context = await createEffects(command);
         if (!context) continue;
-        for (const effect of await readEffects(
-          pool,
-          workspaceId,
-          context.callback.state.callbackId,
-          context.attempt.attemptId,
-        )) {
-          if (effect.status !== 'pending') continue;
-          if (
-            effect.effect_kind === 'customer_dial' &&
-            !(await readEffects(
-              pool,
-              workspaceId,
-              context.callback.state.callbackId,
-              context.attempt.attemptId,
-            )).some(
-              (candidate) =>
-                candidate.effect_kind === 'rep_bridge' &&
-                candidate.status === 'succeeded',
-            )
-          )
-            continue;
-          await executeEffect(effect);
+        for (const effect of await readEffects(pool, workspaceId, context.callback.state.callbackId, context.attempt.attemptId)) {
+          if (effect.status === 'pending') await executeEffect(effect);
         }
-        await settleCommand(
-          workspaceId,
-          context.commandId,
-          context.callback.state.callbackId,
-          context.attempt.attemptId,
-        );
-        } catch {
-          failures++;
-        }
+        await settleCommand(workspaceId, context.commandId, context.callback.state.callbackId, context.attempt.attemptId);
+      } catch {
+        failures++;
       }
-      const dispatched = await listCommandPage(workspaceId, 'dispatched');
-      const unknown = await listCommandPage(workspaceId, 'unknown');
-      for (const command of [...dispatched, ...unknown].filter(
-        (candidate) => candidate.command.type === 'start_callback',
-      )) {
-        try {
-        const callback = await callbacks.read(
-          workspaceId,
-          command.command.entityId,
-        );
-        const attempt = callback?.state.attempts[callback.state.attempts.length - 1];
-        if (!callback || !attempt) continue;
-        await settleCommand(
-          workspaceId,
-          command.command.commandId,
-          callback.state.callbackId,
-          attempt.attemptId,
-        );
-        } catch {
-          failures++;
-        }
-      }
-      return { failures };
-    } catch (cause: unknown) {
-      if (cause instanceof Error) throw cause;
-      throw new Error('Async operation rejected with a non-Error cause', { cause });
     }
+    const unknown = await listCommandPage(workspaceId, 'unknown');
+    for (const command of unknown.filter((candidate) => candidate.command.type === 'start_callback')) {
+      try {
+        const callback = await callbacks.read(workspaceId, command.command.entityId);
+        const attempt = callback?.state.attempts.at(-1);
+        if (callback && attempt) await settleCommand(workspaceId, command.command.commandId, callback.state.callbackId, attempt.attemptId);
+      } catch {
+        failures++;
+      }
+    }
+    return { failures };
   };
 
   const reconcile = async (workspaceId: string) => {
