@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2774,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2774",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1677-honor-per-call-recording-and-transcription-consent",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_84092a10c3bc",
+  "tmuxSession": "opensaas-dialer-dev-1677-honor-per-call-recording-and-transcript-84092a10",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1677-honor-per-call-recording-and-transcription-consent/.task/session.json",
+  "createdAt": "2026-11-06T03:24:12.765Z"
+}

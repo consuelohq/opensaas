@@ -255,6 +255,25 @@ describe('floating workspace pages', () => {
       detail.querySelector('[data-action="inbound-readiness"]'),
     ).toBeNull();
   });
+  it('shows recording and transcription as separate off-by-default call options gated by entitlements', () => {
+    const state = rep();
+    const screen = { screen: 'call-options', mode: 'outbound', compact: false } as const;
+    const unavailable = dom(renderLeadConnectorEmbed(state, { surface: 'overlay', workspace: screen }));
+    const record = unavailable.querySelector<HTMLInputElement>('[data-field="recording-enabled"]');
+    const transcript = unavailable.querySelector<HTMLInputElement>('[data-field="transcription-enabled"]');
+    expect(record?.checked).toBe(false);
+    expect(transcript?.checked).toBe(false);
+    expect(record?.disabled).toBe(true);
+    expect(transcript?.disabled).toBe(true);
+
+    state.commercialCaller = { ...state.commercialCaller!, recordings: true, transcripts: true };
+    const ready = dom(renderLeadConnectorEmbed(state, { surface: 'overlay', workspace: screen }));
+    expect(ready.querySelector<HTMLInputElement>('[data-field="recording-enabled"]')?.disabled).toBe(false);
+    expect(ready.querySelector<HTMLInputElement>('[data-field="transcription-enabled"]')?.disabled).toBe(false);
+    expect(ready.querySelector<HTMLInputElement>('[data-field="recording-enabled"]')?.checked).toBe(false);
+    expect(ready.querySelector<HTMLInputElement>('[data-field="transcription-enabled"]')?.checked).toBe(false);
+  });
+
   it('uses compact accessible choice menus on the calling-options page', () => {
     const state = rep();
     state.callerIds = ['+15550103891'];

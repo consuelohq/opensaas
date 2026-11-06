@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+    "packages/lead-connector/src/embed/controller.test.ts"
+  ],
+  "updatedAt": "2026-11-06T03:26:17.417Z"
+}

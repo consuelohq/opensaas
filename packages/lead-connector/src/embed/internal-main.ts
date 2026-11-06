@@ -1094,6 +1094,12 @@ root.addEventListener('change', (event) => {
   if (target.dataset.field === 'caller-id') {
     controller.updateSetup({ callerIdNumber: target.value || null });
   }
+  if (target.dataset.field === 'recording-enabled' && target instanceof HTMLInputElement) {
+    controller.updateSetup({ recordingEnabled: target.checked && !target.disabled });
+  }
+  if (target.dataset.field === 'transcription-enabled' && target instanceof HTMLInputElement) {
+    controller.updateSetup({ transcriptionEnabled: target.checked && !target.disabled });
+  }
   if (target.dataset.field === 'pipeline') {
     void controller.searchOpportunities({
       query: controller.getState().filters.query,

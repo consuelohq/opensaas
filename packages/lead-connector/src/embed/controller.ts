@@ -449,6 +449,10 @@ export const createLeadConnectorEmbedController = (input: {
                   ? state.setup.requestedFanout
                   : Math.min(3, targets.length),
             preferLocalPresence: state.setup.preferLocalPresence,
+            recordingEnabled:
+              state.setup.recordingEnabled === true && state.commercialCaller?.recordings === true,
+            transcriptionEnabled:
+              state.setup.transcriptionEnabled === true && state.commercialCaller?.transcripts === true,
             ...(state.setup.callerIdNumber
               ? { callerIdNumber: state.setup.callerIdNumber }
               : {}),
@@ -467,6 +471,10 @@ export const createLeadConnectorEmbedController = (input: {
               selectionStrategy: 'single',
               requestedFanout: 1,
               preferLocalPresence: state.setup.preferLocalPresence,
+              recordingEnabled:
+                state.setup.recordingEnabled === true && state.commercialCaller?.recordings === true,
+              transcriptionEnabled:
+                state.setup.transcriptionEnabled === true && state.commercialCaller?.transcripts === true,
               ...(state.setup.callerIdNumber
                 ? { callerIdNumber: state.setup.callerIdNumber }
                 : {}),

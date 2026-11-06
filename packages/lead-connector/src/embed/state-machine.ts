@@ -60,6 +60,8 @@ export type EmbedDialerSetup = {
   requestedFanout: 1 | 2 | 3;
   preferLocalPresence: boolean;
   callerIdNumber: string | null;
+  recordingEnabled: boolean;
+  transcriptionEnabled: boolean;
 };
 
 export type EmbedQueueSelection = {
@@ -382,6 +384,8 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
     requestedFanout: 1,
     preferLocalPresence: true,
     callerIdNumber: null,
+    recordingEnabled: false,
+    transcriptionEnabled: false,
   },
   selectedQueue: null,
   resourcesRefreshing: false,
@@ -523,6 +527,8 @@ export const reduceEmbedState = (
             ? state.setup.callingMode
             : 'single',
           requestedFanout: event.caller.predictive ? requestedFanout : 1,
+          recordingEnabled: event.caller.recordings && state.setup.recordingEnabled,
+          transcriptionEnabled: event.caller.transcripts && state.setup.transcriptionEnabled,
           callerIdNumber:
             !state.setup.preferLocalPresence &&
             state.setup.callerIdNumber &&
@@ -553,6 +559,9 @@ export const reduceEmbedState = (
       };
     case 'SETUP_CHANGED': {
       const setup = { ...state.setup, ...event.setup };
+      // Even programmatic setup updates cannot enable capture beyond entitlement.
+      if (!state.commercialCaller?.recordings) setup.recordingEnabled = false;
+      if (!state.commercialCaller?.transcripts) setup.transcriptionEnabled = false;
       if (setup.preferLocalPresence) setup.callerIdNumber = null;
       if (state.commercialCaller?.predictive === false)
         setup.callingMode = 'single';
@@ -666,6 +675,12 @@ export const reduceEmbedState = (
     case 'RETURN_HOME':
       return {
         ...state,
+        // Consent applies to one call session, not the following one.
+        setup: {
+          ...state.setup,
+          recordingEnabled: false,
+          transcriptionEnabled: false,
+        },
         phase: 'ready',
         resumePhase: null,
         activeSessionId: null,

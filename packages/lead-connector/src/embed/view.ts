@@ -201,6 +201,8 @@ const renderCallOptions = (state: LeadConnectorEmbedState): string => {
         ],
       })}
       <label class="option-toggle"><span><strong>Local presence</strong><small>Prefer a caller ID near the person you’re calling.</small></span><input type="checkbox" data-field="local-presence"${state.setup.preferLocalPresence ? ' checked' : ''} /></label>
+      <label class="option-toggle"><span><strong>Record calls</strong><small>Off by default. Enable only with everyone’s permission.${caller?.recordings === false ? ' Not included in your plan.' : ''}</small></span><input type="checkbox" data-field="recording-enabled"${caller?.recordings === true ? '' : ' disabled'}${caller?.recordings === true && state.setup.recordingEnabled ? ' checked' : ''} /></label>
+      <label class="option-toggle"><span><strong>Transcribe calls</strong><small>Off by default. Enable only with everyone’s permission.${caller?.transcripts === false ? ' Not included in your plan.' : ''}</small></span><input type="checkbox" data-field="transcription-enabled"${caller?.transcripts === true ? '' : ' disabled'}${caller?.transcripts === true && state.setup.transcriptionEnabled ? ' checked' : ''} /></label>
       ${
         state.setup.mode === 'queue'
           ? `<div class="calling-options-grid">${renderCombobox({ field: 'calling-mode', label: 'Calling mode', value: state.setup.callingMode, placeholder: 'Choose mode', options: [...(caller?.predictive === false ? [] : [{ value: 'predictive', label: 'Predictive dialing (recommended)' }]), { value: 'single', label: 'Sequential dialing' }] })}

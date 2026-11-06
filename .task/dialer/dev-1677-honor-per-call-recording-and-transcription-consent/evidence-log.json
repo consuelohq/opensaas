@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent",
+  "events": [
+    {
+      "id": "7362e28b-7f9c-473f-ad4c-2add02746b52",
+      "occurred_at": "2026-11-06T03:24:20.442Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/embed/controller.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent"
+      }
+    },
+    {
+      "id": "04c43f47-5fd6-4e76-ba28-20091c20d41d",
+      "occurred_at": "2026-11-06T03:26:14.735Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent"
+      }
+    },
+    {
+      "id": "f4d1e5b8-550e-4519-be87-9db5853550c9",
+      "occurred_at": "2026-11-06T03:26:17.504Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1677-honor-per-call-recording-and-transcription-consent"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-06T03:26:17.590Z"
+}
