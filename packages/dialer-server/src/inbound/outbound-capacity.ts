@@ -20,6 +20,7 @@ import {
   type InboundCarrier,
 } from './telephony-contracts';
 import { routingTime } from './routing-store';
+import { createCyclicRecoveryPager } from './worker-recovery';
 
 type OutboundBinding = {
   workspace_id: string;
@@ -442,17 +443,22 @@ export const createOutboundCapacity = (options: {
       });
     }
   };
+  const recoveryPage = createCyclicRecoveryPager();
   const tick = async (workspaceId: string) => {
     try {
-      const rows = (
-        await pool.query<OutboundBinding>(
-          "SELECT * FROM dialer_telephony_outbound WHERE workspace_id=$1 AND status<>'ended' ORDER BY session_id LIMIT 1001",
-          [workspaceId],
-        )
-      ).rows;
-      if (rows.length > 1000)
-        throw new Error('Outbound recovery bound exceeded');
+      const rows = await recoveryPage(
+        workspaceId,
+        async (after, limit) => (
+          await pool.query<OutboundBinding>(
+            "SELECT * FROM dialer_telephony_outbound WHERE workspace_id=$1 AND status<>'ended' AND session_id>$2 ORDER BY session_id LIMIT $3",
+            [workspaceId, after, limit],
+          )
+        ).rows,
+        (row) => row.session_id,
+      );
+      let failures = 0;
       for (const row of rows) {
+        try {
         // Missing creation evidence remains owned even when every known leg ended.
         if (row.status === 'creating') {
           const overdue = await pool.query(
@@ -627,7 +633,13 @@ export const createOutboundCapacity = (options: {
             });
           }
         });
+        } catch {
+          // Preserve the failed session for a later reconciliation pass,
+          // but never starve unrelated outbound sessions in this workspace.
+          failures++;
+        }
       }
+      return { failures };
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
       throw new Error('Async operation rejected with a non-Error cause', {

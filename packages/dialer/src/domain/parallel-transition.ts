@@ -3,6 +3,7 @@ import type { ParallelGroup } from '../types.js';
 import {
   applyProviderCallStatus,
   isTerminalCallStatus,
+  isStaleProviderCallStatus,
 } from './parallel-call.js';
 import {
   clearCleanupFailure,
@@ -63,7 +64,10 @@ export const planProviderCallbackTransition = (
   }
 
   const previousCall = group.calls[callIndex];
-  if (isTerminalCallStatus(previousCall.status)) {
+  if (
+    isTerminalCallStatus(previousCall.status) ||
+    isStaleProviderCallStatus(previousCall.status, event.callStatus)
+  ) {
     return { ok: true, plan: { group, actions: [] } };
   }
 

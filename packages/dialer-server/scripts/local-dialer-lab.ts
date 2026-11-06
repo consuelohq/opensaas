@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import {COACHING_SCRIPTS_MIGRATION_ID} from '../src/coaching/scripts';
+import { NATIVE_BILLING_MIGRATION_ID } from '../src/billing/native-billing-store';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../src/inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../src/inbound/callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../src/inbound/callback-booking-event-migration';
@@ -335,12 +336,16 @@ const main = async () => {
     const rowsBeforeRollback = await countObservations();
     const inbound = await runInboundJournalScenarios(pool);
     const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
-    // Preserve the 014 company-credential table. The following historical
-    // rollback test is confined to this disposable local database; remove
-    // only its ledger entry to exercise the pre-014 down chain.
+    // Preserve forward-only 014 company credentials, 015 coaching scripts and
+    // 016 native billing tables. Remove only their ledger entries in this
+    // disposable local database to exercise the historical down chain.
     await database.query(
       'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = ANY($1::text[])',
-      [[DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,COACHING_SCRIPTS_MIGRATION_ID]],
+      [[
+        DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+        COACHING_SCRIPTS_MIGRATION_ID,
+        NATIVE_BILLING_MIGRATION_ID,
+      ]],
     );
     await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);

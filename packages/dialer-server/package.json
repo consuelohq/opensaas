@@ -17,7 +17,8 @@
     "validate:provider-test": "bun ./scripts/validate-provider-test.ts",
     "validate:groq-transcription": "bun ./scripts/validate-groq-transcription.ts",
     "lab:local": "bun ./scripts/local-dialer-lab.ts",
-    "lab:verify": "CONSUELO_RUN_LOCAL_DIALER_LAB_INTEGRATION=1 bun test ./src/lab/local-dialer-lab.integration.test.ts"
+    "lab:verify": "CONSUELO_RUN_LOCAL_DIALER_LAB_INTEGRATION=1 bun test ./src/lab/local-dialer-lab.integration.test.ts",
+    "lab:launch": "bun ./scripts/launch-scenarios.ts"
   },
   "dependencies": {
     "@consuelo/contacts": "workspace:*",

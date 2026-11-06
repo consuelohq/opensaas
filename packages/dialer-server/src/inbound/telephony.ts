@@ -32,6 +32,7 @@ import {
   type TelephonyEffect,
   type TelephonySession,
 } from './telephony-contracts';
+import { createCyclicRecoveryPager } from './worker-recovery';
 
 export const createInboundTelephony = (options: TelephonyOptions) => {
   const { pool } = options;
@@ -59,6 +60,11 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
   );
   let running = false;
   let cursor = 0;
+  const sessionsPage = createCyclicRecoveryPager();
+  const pendingEffectsPage = createCyclicRecoveryPager();
+  const prepareCapacityPage = createCyclicRecoveryPager();
+  const reconcileCapacityPage = createCyclicRecoveryPager();
+  const recordingsPage = createCyclicRecoveryPager();
   const tick = async () => {
     if (running) return { skipped: true, failures: 0 };
     running = true;
@@ -79,10 +85,14 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
           ]),
         ).values(),
       ];
+      const processedWorkspaces = new Set<string>();
       for (let offset = 0; offset < queues.length; offset++) {
         const number = queues[(cursor + offset) % queues.length]!;
-        const sessions = (
-          await pool.query<TelephonySession>(
+        try {
+        const sessions = await sessionsPage(
+          number.workspaceId + ':' + number.queueId,
+          async (after, limit) => (
+            await pool.query<TelephonySession>(
             `SELECT session.* FROM dialer_telephony_sessions session
              WHERE session.workspace_id=$1 AND session.queue_id=$2 AND (
                session.mode IN ('waiting','voicemail')
@@ -94,13 +104,13 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
                      AND obligation.request_id=session.request_id
                  )
                )
-             )
-             ORDER BY session.request_id LIMIT 1001`,
-            [number.workspaceId, number.queueId],
-          )
-        ).rows;
-        if (sessions.length > 1000)
-          throw new Error('Inbound scan bound exceeded');
+             ) AND session.request_id>$3
+             ORDER BY session.request_id LIMIT $4`,
+              [number.workspaceId, number.queueId, after, limit],
+            )
+          ).rows,
+          (session) => session.request_id,
+        );
         for (const session of sessions)
           await attempt(async () => {
             try {
@@ -134,39 +144,61 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
                 decisionId: 'tel:' + randomUUID(),
               }),
         );
-        const states = await capacity.list({
-          workspaceId: number.workspaceId,
-          ownedOnly: true,
-          limit: 1000,
-        });
+        // Queue routing is per number; provider recovery is per workspace.
+        if (processedWorkspaces.has(number.workspaceId)) continue;
+        processedWorkspaces.add(number.workspaceId);
+        const states = await prepareCapacityPage(
+          number.workspaceId,
+          (after, limit) => capacity.list({
+            workspaceId: number.workspaceId,
+            ownedOnly: true,
+            afterCapacityId: after || undefined,
+            limit,
+          }),
+          (state) => state.capacityId,
+        );
         for (const state of states)
           await attempt(() => commands.prepare(state));
-        const pending = (
-          await pool.query<TelephonyEffect>(
-            "SELECT * FROM dialer_telephony_effects WHERE workspace_id=$1 AND status='pending' ORDER BY effect_id LIMIT 100",
-            [number.workspaceId],
-          )
-        ).rows;
+        const pending = await pendingEffectsPage(
+          number.workspaceId,
+          (after, limit) =>
+            pool.query<TelephonyEffect>(
+              "SELECT * FROM dialer_telephony_effects WHERE workspace_id=$1 AND status='pending' AND effect_id>$2 ORDER BY effect_id LIMIT $3",
+              [number.workspaceId, after, limit],
+            ).then((result) => result.rows),
+          (effect) => effect.effect_id,
+        );
         for (const effect of pending)
           await attempt(() => commands.execute(effect));
         if (callbackTelephony)
-          await attempt(() => callbackTelephony.executePending(number.workspaceId));
-        for (const state of await capacity.list({
-          workspaceId: number.workspaceId,
-          ownedOnly: true,
-          limit: 1000,
-        }))
+          await attempt(() => callbackTelephony.executePending(number.workspaceId)
+            .then((result) => { failures += result.failures; }));
+        for (const state of await reconcileCapacityPage(
+          number.workspaceId,
+          (after, limit) => capacity.list({
+            workspaceId: number.workspaceId,
+            ownedOnly: true,
+            afterCapacityId: after || undefined,
+            limit,
+          }),
+          (state) => state.capacityId,
+        ))
           await attempt(() => reconcile(state));
         if (callbackTelephony)
-          await attempt(() => callbackTelephony.reconcile(number.workspaceId));
+          await attempt(() => callbackTelephony.reconcile(number.workspaceId)
+            .then((result) => { failures += result.failures; }));
         if (callbacks)
           await attempt(() => callbacks.purgeRecipients(number.workspaceId));
-        const recordings = (
-          await pool.query<{ recording_sid: string }>(
-            'SELECT recording_sid FROM dialer_telephony_voicemail WHERE workspace_id=$1 AND deleted_at IS NULL AND expires_at<=$2 ORDER BY expires_at LIMIT 100',
-            [number.workspaceId, options.clock?.() ?? new Date().toISOString()],
-          )
-        ).rows;
+        const recordings = await recordingsPage(
+          number.workspaceId,
+          async (after, limit) => (
+            await pool.query<{ recording_sid: string }>(
+              'SELECT recording_sid FROM dialer_telephony_voicemail WHERE workspace_id=$1 AND deleted_at IS NULL AND expires_at<=$2 AND recording_sid>$3 ORDER BY recording_sid LIMIT $4',
+              [number.workspaceId, options.clock?.() ?? new Date().toISOString(), after, limit],
+            )
+          ).rows,
+          (recording) => recording.recording_sid,
+        );
         for (const recording of recordings)
           await attempt(async () => {
             try {
@@ -183,6 +215,11 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
               );
             }
           });
+        } catch {
+          // A failed scan or provider query for one tenant/queue must not
+          // prevent independent workspaces from recovering in this cycle.
+          failures++;
+        }
       }
       cursor = queues.length ? (cursor + 1) % queues.length : 0;
       return { skipped: false, failures };

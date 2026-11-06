@@ -7,6 +7,7 @@ import { Pool } from 'pg';
 import { migrateDialerDatabase } from '../database/migrations';
 import { createInboundTelephony } from '../inbound/telephony';
 import { createOutboundCapacity } from '../inbound/outbound-capacity';
+import { readRecoveryBacklog, recoveryLagAlerts } from '../inbound/worker-recovery';
 import { createTwilioInboundCarrier } from '../inbound/twilio-carrier';
 import { parseTelephonyConfig } from '../inbound/telephony-config';
 import { createCallbackRecipientCipher } from '../inbound/callback-recipient-cipher';
@@ -240,25 +241,66 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
     let stopped = false;
     let active: Promise<void> | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let nextRecoveryTelemetryAt = 0;
     const start = () => {
       if (active || timer || stopped) return;
       const run = () => {
         active = (async () => {
+          const startedAt = Date.now();
           try {
             const result = await telephony.tick();
-            for (const workspaceId of ownedWorkspaces)
-              await outbound.tick(workspaceId);
-            if (result.failures)
+            let failures = result.failures;
+            for (const workspaceId of ownedWorkspaces) {
+              try {
+                failures += (await outbound.tick(workspaceId)).failures;
+              } catch {
+                // Workspace-level transport failures must not block other
+                // tenants or erase the next scheduled recovery tick.
+                failures++;
+              }
+            }
+            if (Date.now() >= nextRecoveryTelemetryAt) {
+              nextRecoveryTelemetryAt = Date.now() + 60_000;
+              try {
+                const backlog = await readRecoveryBacklog(pool, [...ownedWorkspaces]);
+                if (backlog.length)
+                  process.stderr.write(JSON.stringify({
+                    event: 'dialer.inbound.recovery_backlog',
+                    backlog,
+                  }) + '\n');
+                const alerts = recoveryLagAlerts(backlog);
+                if (alerts.length)
+                  process.stderr.write(JSON.stringify({
+                    event: 'dialer.inbound.recovery_lag_alert',
+                    alerts,
+                  }) + '\n');
+              } catch {
+                // A metrics query must never suppress call reconciliation.
+                failures++;
+                process.stderr.write(
+                  JSON.stringify({ event: 'dialer.inbound.recovery_telemetry_failed' }) + '\n',
+                );
+              }
+            }
+            if (failures)
               process.stderr.write(
                 JSON.stringify({
                   event: 'dialer.inbound.reconciliation_partial',
-                  failures: result.failures,
+                  failures,
                 }) + '\n',
               );
           } catch {
             process.stderr.write(
               JSON.stringify({ event: 'dialer.inbound.worker_failed' }) + '\n',
             );
+          } finally {
+            const durationMs = Date.now() - startedAt;
+            if (durationMs > 30_000)
+              process.stderr.write(JSON.stringify({
+                event: 'dialer.inbound.recovery_slow_tick',
+                durationMs,
+                thresholdMs: 30_000,
+              }) + '\n');
           }
         })().finally(() => {
           active = undefined;

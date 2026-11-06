@@ -247,3 +247,25 @@ describe('inbound operator adapter', () => {
     });
   });
 });
+
+describe('stale inbound authoritative snapshots', () => {
+  test('does not regress to an older server snapshot after a newer assignment was confirmed', () => {
+    const newer: InboundOperatorSnapshot = {
+      ...snapshot,
+      serverTime: '2026-09-13T16:00:10.000Z',
+      rep: { ...snapshot.rep, assignment: null, capacityPhase: null },
+      offers: [],
+    };
+    const current = reduceInboundOperatorState(
+      createInitialInboundOperatorState(),
+      { type: 'ACTION_CONFIRMED', action: 'decline', snapshot: newer },
+    );
+    const result = reduceInboundOperatorState(current, {
+      type: 'SNAPSHOT_LOADED',
+      snapshot: { ...snapshot, serverTime: '2026-09-13T16:00:02.000Z' },
+    });
+    expect(result.rep.assignment).toBeNull();
+    expect(result.offers).toHaveLength(0);
+    expect(result.lastSyncAt).toBe(newer.serverTime);
+  });
+});

@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/dialer/harden-dialer-worker-pagination-and-recovery-observability/workpad.md",
+    "packages/dialer-server/src/inbound/callback-telephony.ts",
+    "packages/dialer-server/src/inbound/outbound-capacity.ts",
+    "packages/dialer-server/src/runtime/inbound.ts"
+  ],
+  "updatedAt": "2026-11-02T04:00:09.005Z"
+}

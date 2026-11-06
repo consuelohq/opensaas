@@ -1,5 +1,5 @@
 import type { Pool, PoolClient } from 'pg';
-import type { InboundStoredCommand, RepCapacityState } from '@consuelo/dialer';
+import { classifyTwilioCreateFailure, type InboundStoredCommand, type RepCapacityState } from '@consuelo/dialer';
 import { createPostgresInboundJournal, withInboundTransaction } from './postgres-journal';
 import { createPostgresRepCapacity, executeRepCapacityOnClient } from './rep-capacity';
 import { conferenceTwiml, hangupTwiml } from './telephony-twiml';
@@ -12,6 +12,7 @@ import {
 } from './telephony-store';
 import { terminalCarrierStatus } from './telephony-contracts';
 import type { createPostgresCallbacks } from './callbacks';
+import { createCyclicRecoveryPager } from './worker-recovery';
 
 export type CallbackEffect = {
   workspace_id: string;
@@ -96,6 +97,16 @@ export const createCallbackTelephony = (
   const { pool } = options;
   const capacity = createPostgresRepCapacity(pool, { clock: options.clock });
   const journal = createPostgresInboundJournal(pool);
+  const commandPage = createCyclicRecoveryPager(100);
+  const obligationsPage = createCyclicRecoveryPager();
+  const listCommandPage = (
+    workspaceId: string,
+    status: Parameters<typeof journal.listCommands>[1],
+  ) => commandPage(
+    workspaceId + ':' + status,
+    (after) => journal.listCommands(workspaceId, status, after),
+    (row) => row.command.commandId,
+  );
 
   const createEffects = async (command: InboundStoredCommand) => {
     try {
@@ -317,8 +328,10 @@ export const createCallbackTelephony = (
   };
 
   const executeEffect = async (original: CallbackEffect) => {
+    let claimed: CallbackEffect | null = null;
+    let providerAttempted = false;
     try {
-      const claimed = await withInboundTransaction(
+      claimed = await withInboundTransaction(
         pool,
         original.workspace_id,
         async (client) => {
@@ -337,6 +350,36 @@ export const createCallbackTelephony = (
               )
             ).rows[0];
             if (!row || row.status !== 'pending') return null;
+            if (row.effect_kind === 'rep_bridge' || row.effect_kind === 'customer_dial') {
+              // A callback may be canceled or reassigned while the worker is
+              // between reads. Check authority under the same tenant lock as
+              // the pending -> dispatched claim, before any carrier mutation.
+              const obligation = (await client.query<{ state: {
+                status: string; attempts: Array<{ attemptId: string; capacityId: string; assignmentId: string; generation: number }>;
+              } }>(
+                'SELECT state FROM dialer_callback_obligations WHERE workspace_id=$1 AND callback_id=$2',
+                [row.workspace_id, row.callback_id],
+              )).rows[0]?.state;
+              const attempt = obligation?.attempts.at(-1);
+              if (!obligation || attempt?.attemptId !== row.attempt_id) return null;
+              const capacityState = await readTelephonyCapacity(client, row.workspace_id, attempt.capacityId);
+              const owner = capacityState?.owner;
+              if (!owner || owner.assignmentId !== attempt.assignmentId || owner.generation !== attempt.generation) return null;
+              if (row.effect_kind === 'rep_bridge') {
+                if (obligation.status !== 'dialing' || owner.phase !== 'connecting') return null;
+              } else {
+                const effects = await readEffects(client, row.workspace_id, row.callback_id, row.attempt_id);
+                const bridge = effects.find((effect) => effect.effect_kind === 'rep_bridge');
+                if (bridge?.status !== 'succeeded') return null;
+                const normal = obligation.status === 'dialing' && owner.phase === 'connecting';
+                // A reconciled bridge can leave both authorities marked unknown
+                // until the customer effect is settled. It is safe to continue
+                // only once every other effect has a definitive outcome.
+                const recovered = obligation.status === 'unknown' && owner.phase === 'unknown' &&
+                  effects.every((effect) => effect.effect_kind === 'customer_dial' || (effect.effect_kind === 'rep_bridge' && effect.status === 'succeeded'));
+                if (!normal && !recovered) return null;
+              }
+            }
             await client.query(
               `UPDATE dialer_callback_effects
                SET status='dispatched',updated_at=clock_timestamp()
@@ -374,25 +417,24 @@ export const createCallbackTelephony = (
         const rep = await options.carrier.call(callSid);
         if (rep.accountSid !== number.accountSid || terminalCarrierStatus(rep.status))
           throw new Error('Callback rep is no longer available');
-        await options.carrier.redirect(
-          callSid,
-          conferenceTwiml(
-            session.conference_name,
-            telephonyUrl(
-              options,
-              number.numberId,
-              'conference',
-              session.request_id,
-            ),
-            'rep',
+        const twiml = conferenceTwiml(
+          session.conference_name,
+          telephonyUrl(
+            options,
+            number.numberId,
+            'conference',
+            session.request_id,
           ),
+          'rep',
         );
+        providerAttempted = true;
+        await options.carrier.redirect(callSid, twiml);
       } else if (claimed.effect_kind === 'customer_dial') {
         const recipient = await callbacks.readRecipient(
           claimed.workspace_id,
           claimed.callback_id,
         );
-        const call = await options.carrier.offer({
+        const request = {
           to: recipient,
           from: number.did,
           url: telephonyUrl(
@@ -408,12 +450,15 @@ export const createCallbackTelephony = (
             callbackWebhookReference(claimed.callback_id, claimed.attempt_id),
           ),
           timeoutSeconds: callback.policy.customerRingSeconds,
-        });
+        };
+        providerAttempted = true;
+        const call = await options.carrier.offer(request);
         if (call.accountSid !== number.accountSid)
           throw new Error('Callback customer provider account mismatch');
         callSid = call.sid;
       } else {
         if (!callSid) throw new Error('Callback termination call is missing');
+        providerAttempted = true;
         await options.carrier.end(callSid);
       }
       const result = await pool.query(
@@ -432,9 +477,18 @@ export const createCallbackTelephony = (
       if (result.rowCount !== 1)
         throw new Error('Callback provider correlation changed');
     } catch (cause: unknown) {
+      // A failed local preflight has no provider effect to reconcile.
+      // Once a carrier mutation was attempted, its outcome may be unknown.
+      if (!claimed) {
+        if (cause instanceof Error) throw cause;
+        throw new Error('Callback effect claim failed', { cause });
+      }
+      const definitelyNoEffect = !providerAttempted ||
+        (claimed.effect_kind === 'customer_dial' &&
+          classifyTwilioCreateFailure(cause) === 'not_created');
       await pool.query(
         `UPDATE dialer_callback_effects
-         SET status='unknown',updated_at=clock_timestamp()
+         SET status=$5,updated_at=clock_timestamp()
          WHERE workspace_id=$1 AND callback_id=$2 AND attempt_id=$3 AND effect_kind=$4
            AND status='dispatched'`,
         [
@@ -442,14 +496,16 @@ export const createCallbackTelephony = (
           original.callback_id,
           original.attempt_id,
           original.effect_kind,
+          definitelyNoEffect ? 'failed' : 'unknown',
         ],
       );
-      await markUnknown(
-        original.workspace_id,
-        original.callback_id,
-        original.attempt_id,
-        original.command_id,
-      );
+      if (!definitelyNoEffect)
+        await markUnknown(
+          original.workspace_id,
+          original.callback_id,
+          original.attempt_id,
+          original.command_id,
+        );
       if (cause instanceof Error) return;
       throw new Error('Async operation rejected with a non-Error cause', { cause });
     }
@@ -965,6 +1021,29 @@ export const createCallbackTelephony = (
         await reconcileOwnerlessAttempt(workspaceId, callbackId, attempt.attemptId);
         return;
       }
+      // A customer create rejected locally or definitively by the carrier
+      // cannot leave an accepted rep reserved forever. End the known rep leg
+      // and require terminal carrier evidence before releasing the slot.
+      if (customer?.status === 'failed' && !customer.call_sid &&
+          rep?.status === 'succeeded' && rep.call_sid) {
+        const repCall = await options.carrier.call(rep.call_sid);
+        if (repCall.accountSid !== number.accountSid)
+          throw new Error('Callback rep provider account mismatch during failed customer recovery');
+        if (!terminalCarrierStatus(repCall.status)) {
+          await ensureTermination(
+            workspaceId, callbackId, attempt.attemptId,
+            rep.command_id, 'rep', rep.call_sid,
+          );
+          return;
+        }
+        await callbacks.releaseAttemptCapacity({
+          workspaceId, callbackId,
+          operationId: telephonyId(attempt.attemptId, 'failed-customer-release'),
+          outcome: 'no_effect',
+        });
+        await reconcileOwnerlessAttempt(workspaceId, callbackId, attempt.attemptId);
+        return;
+      }
       if (rep?.command_id ?? customer?.command_id)
         await settleCommand(
           workspaceId,
@@ -1179,70 +1258,44 @@ export const createCallbackTelephony = (
   };
 
   const executePending = async (workspaceId: string) => {
-    try {
-      const commands = await journal.listCommands(workspaceId, 'pending');
-      for (const command of commands.filter(
-        (candidate) => candidate.command.type === 'start_callback',
-      )) {
+    let failures = 0;
+    const pending = await listCommandPage(workspaceId, 'pending');
+    const dispatched = await listCommandPage(workspaceId, 'dispatched');
+    for (const command of [...pending, ...dispatched].filter(
+      (candidate) => candidate.command.type === 'start_callback',
+    )) {
+      try {
+        // Revalidate the active owner before resuming work that was persisted
+        // before a process restart. Only pending effects are safe to claim.
         const context = await createEffects(command);
         if (!context) continue;
-        for (const effect of await readEffects(
-          pool,
-          workspaceId,
-          context.callback.state.callbackId,
-          context.attempt.attemptId,
-        )) {
-          if (effect.status !== 'pending') continue;
-          if (
-            effect.effect_kind === 'customer_dial' &&
-            !(await readEffects(
-              pool,
-              workspaceId,
-              context.callback.state.callbackId,
-              context.attempt.attemptId,
-            )).some(
-              (candidate) =>
-                candidate.effect_kind === 'rep_bridge' &&
-                candidate.status === 'succeeded',
-            )
-          )
-            continue;
-          await executeEffect(effect);
+        for (const effect of await readEffects(pool, workspaceId, context.callback.state.callbackId, context.attempt.attemptId)) {
+          if (effect.status === 'pending') await executeEffect(effect);
         }
-        await settleCommand(
-          workspaceId,
-          context.commandId,
-          context.callback.state.callbackId,
-          context.attempt.attemptId,
-        );
+        await settleCommand(workspaceId, context.commandId, context.callback.state.callbackId, context.attempt.attemptId);
+      } catch {
+        failures++;
       }
-      const dispatched = await journal.listCommands(workspaceId, 'dispatched');
-      const unknown = await journal.listCommands(workspaceId, 'unknown');
-      for (const command of [...dispatched, ...unknown].filter(
-        (candidate) => candidate.command.type === 'start_callback',
-      )) {
-        const callback = await callbacks.read(
-          workspaceId,
-          command.command.entityId,
-        );
-        const attempt = callback?.state.attempts[callback.state.attempts.length - 1];
-        if (!callback || !attempt) continue;
-        await settleCommand(
-          workspaceId,
-          command.command.commandId,
-          callback.state.callbackId,
-          attempt.attemptId,
-        );
-      }
-    } catch (cause: unknown) {
-      if (cause instanceof Error) throw cause;
-      throw new Error('Async operation rejected with a non-Error cause', { cause });
     }
+    const unknown = await listCommandPage(workspaceId, 'unknown');
+    for (const command of unknown.filter((candidate) => candidate.command.type === 'start_callback')) {
+      try {
+        const callback = await callbacks.read(workspaceId, command.command.entityId);
+        const attempt = callback?.state.attempts.at(-1);
+        if (callback && attempt) await settleCommand(workspaceId, command.command.commandId, callback.state.callbackId, attempt.attemptId);
+      } catch {
+        failures++;
+      }
+    }
+    return { failures };
   };
 
   const reconcile = async (workspaceId: string) => {
     try {
-      const rows = await pool.query<{ callback_id: string }>(
+      const rows = await obligationsPage(
+        workspaceId,
+        async (after, limit) => (
+          await pool.query<{ callback_id: string }>(
         `SELECT obligation.callback_id FROM dialer_callback_obligations obligation
          WHERE obligation.workspace_id=$1 AND (
            obligation.state->>'status' IN ('dialing','unknown','connected','cancel_pending')
@@ -1252,16 +1305,25 @@ export const createCallbackTelephony = (
                AND capacity.snapshot->'owner'->>'requestId'=obligation.request_id
                AND capacity.snapshot->'owner'->>'phase' IN ('offering','unknown')
            )
-         )
-         ORDER BY obligation.callback_id LIMIT 1001`,
-        [workspaceId],
+         ) AND obligation.callback_id>$2
+         ORDER BY obligation.callback_id LIMIT $3`,
+            [workspaceId, after, limit],
+          )
+        ).rows,
+        (row) => row.callback_id,
       );
-      if (rows.rows.length > 1000)
-        throw new Error('Callback reconciliation scan bound exceeded');
-      for (const row of rows.rows) {
-        await reconcileRejectedRepOffers(workspaceId, row.callback_id);
-        await reconcileOne(workspaceId, row.callback_id);
+      let failures = 0;
+      for (const row of rows) {
+        try {
+          await reconcileRejectedRepOffers(workspaceId, row.callback_id);
+          await reconcileOne(workspaceId, row.callback_id);
+        } catch {
+          // Recovery for one obligation must not block unrelated callbacks.
+          // The worker surfaces the aggregate failure count for investigation.
+          failures++;
+        }
       }
+      return { failures };
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
       throw new Error('Async operation rejected with a non-Error cause', { cause });

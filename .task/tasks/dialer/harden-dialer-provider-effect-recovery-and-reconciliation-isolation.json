@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/harden-dialer-provider-effect-recovery-and-reconciliation-isolation",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2764,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2764",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_0223ab80047e",
+  "tmuxSession": "opensaas-dialer-harden-dialer-provider-effect-recovery-and-recon-0223ab80",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-harden-dialer-provider-effect-recovery-and-reconciliation-isolation/.task/session.json",
+  "createdAt": "2026-11-02T02:30:52.100Z"
+}

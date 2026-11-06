@@ -13,6 +13,7 @@ export const terminateCallSession = (groupId: string) =>
     const state = yield* ParallelStateStore;
     const clock = yield* DialerClock;
 
+    const ensureOwnership = () => state.assertLockOwnership?.(groupId) ?? Effect.void;
     const locked = Effect.gen(function* () {
       const group = yield* state.getGroup(groupId);
       if (!group) return;
@@ -28,6 +29,7 @@ export const terminateCallSession = (groupId: string) =>
         actions,
         provider,
         occurredAt,
+        ensureOwnership,
       );
       yield* state.setGroup(
         {

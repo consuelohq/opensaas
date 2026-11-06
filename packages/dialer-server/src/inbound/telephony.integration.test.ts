@@ -35,11 +35,13 @@ import { createPostgresRepCapacity } from './rep-capacity';
 import { createPostgresInboundRouting } from './routing';
 import { createPostgresInboundJournal } from './postgres-journal';
 import { telephonyId } from './telephony-store';
+import { readRecoveryBacklog, recoveryLagAlerts } from './worker-recovery';
 import { TELEPHONY_MIGRATION_ID } from './telephony-migration';
 import type {
   InboundCarrier,
   InboundNumber,
   CarrierCall,
+  TelephonyEffect,
 } from './telephony-contracts';
 
 const port = Number(process.env.CONSUELO_RD5_PG_PORT);
@@ -1152,6 +1154,148 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     await restarted.tick();
     expect(offers).toBe(1);
     expect((await capacity.read('workspace', 'slot'))!.owner).not.toBeNull();
+  });
+  it('fails a locally unconfigured pending offer after restart without inventing an unknown carrier call', async () => {
+    await incoming();
+    await createPostgresInboundRouting(pool, { clock }).tick({
+      workspaceId: 'workspace', queueId: 'sales', decisionId: 'reserve-for-restart',
+    });
+    const reserved = (await capacity.read('workspace', 'slot'))!;
+    expect(reserved.owner).not.toBeNull();
+    await service.commands.prepare(reserved);
+    expect((await pool.query(
+      "SELECT status FROM dialer_telephony_effects WHERE kind='offer'",
+    )).rows[0]?.status).toBe('pending');
+
+    const restarted = createInboundTelephony({
+      pool, numbers: [number], endpoints: [], carrier,
+      publicUrl: 'https://voice.example', authToken: 'secret', clock,
+    });
+    await restarted.tick();
+    await restarted.tick();
+    expect(offers).toBe(0);
+    expect((await pool.query(
+      "SELECT status,call_sid FROM dialer_telephony_effects WHERE kind='offer'",
+    )).rows).toEqual([{ status: 'failed', call_sid: null }]);
+    expect((await pool.query(
+      "SELECT status FROM dialer_inbound_commands WHERE command->>'type'='offer'",
+    )).rows[0]?.status).toBe('failed');
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+  });
+  it('fails malformed local offer URL preparation before any provider request is attempted', async () => {
+    await incoming();
+    await createPostgresInboundRouting(pool, { clock }).tick({
+      workspaceId: 'workspace', queueId: 'sales', decisionId: 'reserve-before-url',
+    });
+    await service.commands.prepare((await capacity.read('workspace', 'slot'))!);
+    const invalid = createInboundTelephony({
+      pool, numbers: [number],
+      endpoints: [{ workspaceId: 'workspace', repId: 'alice',
+        endpointId: 'browser', kind: 'browser', address: 'alice' }],
+      carrier, publicUrl: 'invalid-local-url', authToken: 'secret', clock,
+    });
+    await invalid.tick();
+    await invalid.tick();
+    expect(offers).toBe(0);
+    expect((await pool.query(
+      "SELECT status FROM dialer_telephony_effects WHERE kind='offer'",
+    )).rows[0]?.status).toBe('failed');
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+  });
+  it('drains orphaned pending effects without starving later valid offers', async () => {
+    await incoming();
+    const requestId = telephonyId('account', 'caller');
+    for (let index = 0; index < 105; index++) {
+      await pool.query(
+        `INSERT INTO dialer_telephony_effects
+           (workspace_id,effect_id,request_id,assignment_id,command_id,endpoint_id,kind,status)
+         VALUES($1,$2,$3,$4,$5,$6,'offer','pending')`,
+        [
+          'workspace', '000-orphan-' + String(index).padStart(3, '0'),
+          requestId, 'missing-owner-' + index, 'missing-command-' + index, 'browser',
+        ],
+      );
+    }
+    await service.tick();
+    await service.tick();
+    expect((await pool.query(
+      "SELECT count(*)::int AS count FROM dialer_telephony_effects WHERE effect_id LIKE '000-orphan-%' AND status='pending'",
+    )).rows[0]?.count).toBe(0);
+    expect(offers).toBe(1);
+  });
+  it('reports aged unknown provider effects without exposing customer or provider identifiers', async () => {
+    await incoming();
+    await pool.query(
+      `INSERT INTO dialer_telephony_effects
+         (workspace_id,effect_id,request_id,assignment_id,command_id,endpoint_id,kind,status,updated_at)
+       VALUES($1,$2,$3,$4,$5,$6,'offer','unknown',clock_timestamp()-interval '15 minutes')`,
+      ['workspace', 'fixture-private-effect', telephonyId('account', 'caller'),
+        'private-assignment', 'private-command', 'browser'],
+    );
+    const backlog = await readRecoveryBacklog(pool, ['workspace']);
+    const unknown = backlog.find((row) =>
+      row.kind === 'inbound_effect' && row.status === 'unknown');
+    if (!unknown) throw new Error('Expected an unknown provider effect');
+    expect(unknown?.count).toBe(1);
+    expect(unknown?.oldestSeconds).toBeGreaterThanOrEqual(900);
+    expect(recoveryLagAlerts(backlog)).toContainEqual({
+      ...unknown,
+      thresholdSeconds: 600,
+    });
+    expect(JSON.stringify(backlog)).not.toContain('fixture-private');
+    expect(await readRecoveryBacklog(pool, ['other-workspace'])).toEqual([]);
+  });
+  it('still terminates a known carrier leg if its pending termination has lost capacity ownership', async () => {
+    await incoming();
+    calls.set('stranded-rep', {
+      sid: 'stranded-rep', accountSid: 'account', status: 'in-progress',
+    });
+    await pool.query(
+      `INSERT INTO dialer_telephony_effects
+       (workspace_id,effect_id,request_id,assignment_id,command_id,endpoint_id,kind,status,call_sid)
+       VALUES($1,$2,$3,$4,$5,$6,'terminate','pending',$7)`,
+      [
+        'workspace', 'orphan-termination', telephonyId('account', 'caller'),
+        'previous-assignment', 'previous-command', 'browser', 'stranded-rep',
+      ],
+    );
+    const effect = (await pool.query<TelephonyEffect>(
+      "SELECT * FROM dialer_telephony_effects WHERE effect_id='orphan-termination'",
+    )).rows[0]!;
+    const restarted = createInboundTelephony({
+      pool, numbers: [], endpoints: [], carrier,
+      publicUrl: 'https://voice.example', authToken: 'secret', clock,
+    });
+    await restarted.commands.execute(effect);
+    expect(calls.get('stranded-rep')?.status).toBe('completed');
+    expect((await pool.query<{ status: string }>(
+      "SELECT status FROM dialer_telephony_effects WHERE effect_id='orphan-termination'",
+    )).rows[0]?.status).toBe('succeeded');
+  });
+  it('reconciles later outbound sessions after an earlier carrier lookup fails', async () => {
+    const outbound = createOutboundCapacity({ pool, carrier, accountSid: 'account', clock });
+    for (const [sessionId, userId, sid] of [
+      ['a-bad', 'alice', 'unavailable'],
+      ['b-good', 'bob', 'finished'],
+    ]) {
+      await outbound.begin({ workspaceId: 'workspace', userId, sessionId, plannedCalls: 1 });
+      await outbound.progress('workspace', sessionId, {
+        groupId: sessionId + '-group',
+        conferenceName: sessionId + '-conference',
+        calls: [{ callSid: sid }],
+      });
+      await outbound.complete('workspace', sessionId);
+    }
+    calls.set('finished', { sid: 'finished', accountSid: 'account', status: 'completed' });
+    const recovery = await outbound.tick('workspace');
+    expect(recovery.failures).toBe(1);
+    const rows = (await pool.query<{ session_id: string; status: string }>(
+      "SELECT session_id,status FROM dialer_telephony_outbound ORDER BY session_id",
+    )).rows;
+    expect(rows).toEqual([
+      { session_id: 'a-bad', status: 'succeeded' },
+      { session_id: 'b-good', status: 'ended' },
+    ]);
   });
   it('rejects stale and cross-rep acceptance and cleans an abandoned caller', async () => {
     await incoming();

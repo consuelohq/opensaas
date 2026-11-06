@@ -1470,3 +1470,82 @@ it('rejects only the pending browser invite when secure session recovery exhaust
   expect(voice.disconnect).not.toHaveBeenCalled();
   expect(controller.getState().activeSessionId).toBe('connected-call');
 });
+
+describe('stale outbound session refreshes', () => {
+  const session = (status: string) => ({
+    groupId: 'group-1', status, winnerSid: null, winner: null, calls: [],
+  });
+
+  it('does not resurrect a session after return home', async () => {
+    let complete!: (value: ReturnType<typeof session>) => void;
+    const api: LeadConnectorEmbedApi = {
+      ...createApi(),
+      getCallSession: mock(() => new Promise<ReturnType<typeof session>>((resolve) => { complete = resolve; })),
+    };
+    const voice = createVoice();
+    const controller = createLeadConnectorEmbedController({
+      api, voice,
+      initialState: {
+        ...createInitialEmbedState(), sessionToken: 'signed-session',
+        phase: 'connected', activeSessionId: 'group-1',
+        callSession: session('connected'),
+      },
+    });
+    const pending = controller.refreshSession();
+    controller.returnHome();
+    complete(session('completed'));
+    await pending;
+    expect(controller.getState()).toMatchObject({
+      phase: 'ready', activeSessionId: null, callSession: null,
+    });
+  });
+
+  it('does not regress a completed session when an older same-session poll finishes last', async () => {
+    const complete: Array<(value: ReturnType<typeof session>) => void> = [];
+    const api: LeadConnectorEmbedApi = {
+      ...createApi(),
+      getCallSession: mock(() => new Promise<ReturnType<typeof session>>((resolve) => { complete.push(resolve); })),
+    };
+    const controller = createLeadConnectorEmbedController({
+      api, voice: createVoice(),
+      initialState: {
+        ...createInitialEmbedState(), sessionToken: 'signed-session',
+        phase: 'connected', activeSessionId: 'group-1',
+        callSession: session('connected'),
+      },
+    });
+    const older = controller.refreshSession();
+    const newer = controller.refreshSession();
+    complete[1]!(session('completed'));
+    await newer;
+    complete[0]!(session('connected'));
+    await older;
+    expect(controller.getState().callSession?.status).toBe('completed');
+    expect(controller.getState().phase).toBe('wrapping-up');
+  });
+});
+
+describe('stale outbound session request failures', () => {
+  it('ignores a rejected poll after the user returns home', async () => {
+    let rejectPoll!: (reason: Error) => void;
+    const api: LeadConnectorEmbedApi = {
+      ...createApi(),
+      getCallSession: mock(() => new Promise<ReturnType<LeadConnectorEmbedApi['getCallSession']> extends Promise<infer T> ? T : never>((_, reject) => {
+        rejectPoll = reject;
+      })),
+    };
+    const controller = createLeadConnectorEmbedController({
+      api, voice: createVoice(),
+      initialState: {
+        ...createInitialEmbedState(), sessionToken: 'signed-session',
+        phase: 'connected', activeSessionId: 'group-1',
+      },
+    });
+    const pending = controller.refreshSession();
+    controller.returnHome();
+    rejectPoll(new Error('expired connection from old call'));
+    await pending;
+    expect(controller.getState().phase).toBe('ready');
+    expect(controller.getState().error).toBeNull();
+  });
+});
