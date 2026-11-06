@@ -422,8 +422,10 @@ body[data-surface='overlay'] .calling-workspace {
   border: 1px solid var(--line);
   border-radius: 9px;
 }
+.calling-workspace .inbound-endpoint-row {
+  border: 0;
+}
 .calling-workspace .inbound-endpoint-row:has(:checked) {
-  border-color: var(--ink);
   background: var(--soft);
 }
 .device-icon,
@@ -597,11 +599,36 @@ body[data-surface='overlay'] .calling-workspace {
   margin-bottom: 12px;
   background: var(--soft);
 }
-.settings-plan > div {
+.settings-plan > .settings-plan-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 5px;
+}
+.settings-plan-name {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.calling-workspace .settings-plan {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.calling-workspace .settings-plan:hover:not(:disabled) {
+  /* The card stays visually constant; only "Manage plan" responds. */
+  filter: none;
+}
+.calling-workspace .settings-plan:hover .text-button {
+  color: var(--ink);
+}
+.calling-workspace .settings-plan:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
 }
 .settings-section {
   border-top: 1px solid var(--line);
@@ -1493,16 +1520,28 @@ body[data-surface='admin']:has([data-workspace]) {
   text-decoration: none;
 }
 .calling-workspace .inbound-endpoint-row {
-  background: var(--soft);
+  background: transparent;
 }
 .calling-workspace .inbound-endpoint-row strong {
   color: var(--muted);
 }
 .calling-workspace .inbound-endpoint-row:has(:checked) {
-  background: transparent;
+  background: var(--soft);
 }
 .calling-workspace .inbound-endpoint-row:has(:checked) strong {
   color: var(--ink);
+}
+.calling-workspace .inbound-endpoint-row:has(input:not(:disabled)) {
+  cursor: pointer;
+}
+.calling-workspace .inbound-endpoint-row:has(input:not(:disabled)):hover {
+  background: var(--soft);
+}
+.calling-workspace .inbound-endpoint-row:has(input:not(:disabled)):hover strong {
+  color: var(--ink);
+}
+.calling-workspace .inbound-endpoint-row input:not(:disabled) {
+  cursor: pointer;
 }
 .calling-workspace .button--primary:disabled {
   background: var(--soft);

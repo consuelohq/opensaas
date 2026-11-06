@@ -1,0 +1,93 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/polish-inbound-device-selection-and-clickable-plan-card-release-ui-only",
+  "base": "origin/main",
+  "headSha": "4628814f7cc5601141acf6f7bb38da8a53b199f6",
+  "changeHash": "96d389f223f3e01b02a00e3ea7e83d56a9a79c069bb42643d5d26f2f155971b1",
+  "changedFiles": [
+    "packages/lead-connector/src/embed/compact-workspace-polish.test.ts",
+    "packages/lead-connector/src/embed/workspace-pages.ts",
+    "packages/lead-connector/src/embed/workspace-theme.css"
+  ],
+  "verifiedAt": "2026-11-06T04:01:51.962Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/polish-inbound-device-selection-and-clickable-plan-card-release-ui-only/workpad.md",
+        ".task/tasks/dialer/polish-inbound-device-selection-and-clickable-plan-card-release-ui-only.json",
+        "packages/lead-connector/src/embed/compact-workspace-polish.test.ts",
+        "packages/lead-connector/src/embed/workspace-pages.ts",
+        "packages/lead-connector/src/embed/workspace-theme.css"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/compact-workspace-polish.test.ts",
+            "packages/lead-connector/src/embed/workspace-pages.ts",
+            "packages/lead-connector/src/embed/workspace-theme.css"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1571,
+          "outputTail": "le-active snapshots [3.65ms]\n(pass) compact Dialer workspace UX > device rows use borderless, bright selected, quiet inactive and pointer-hover states [2.97ms]\n(pass) compact Dialer workspace UX > the entire Starter plan card opens billing with only Manage plan highlighting [2.64ms]\n(pass) compact Dialer workspace UX > the Call from number finder does not show the redundant slot-pricing caption [2.43ms]\n(pass) compact Dialer workspace UX > outbound tabs have one underline, plain queue placeholder and no empty-state filler [2.69ms]\n(pass) compact Dialer workspace UX > calling options and queue details share a footer action group immediately above the primary action [4.89ms]\n(pass) compact Dialer workspace UX > settings and inner pages place the heading on the same row as a quiet back breadcrumb [21.30ms]\n(pass) compact Dialer workspace UX > phone-number purpose tabs use the same quiet inactive and bright active tab classes [4.12ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.08ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.28ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.08ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.29ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.07ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.07ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.34ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.36ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.28ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.69ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [128.01ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.32ms]\n(pass) dialer GitHub release workflow contract > releases only the approved UI files to the Worker while fencing Railway and other changes [589.61ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.41ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.09ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.07ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.09ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [3.00ms]\n\n 252 pass\n 0 fail\n 1957 expect() calls\nRan 252 tests across 41 files. [1.56s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

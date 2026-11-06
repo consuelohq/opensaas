@@ -127,7 +127,7 @@ const numbers = (
     .join('');
   return (
     tabs +
-    `<ul class="number-list">${rows || '<li class="page-empty">No calling numbers yet.</li>'}</ul><section class="settings-section"><h2>Add a number</h2><form data-form="commercial-number-search"><label>Area code<input name="query" inputmode="numeric" placeholder="e.g. 212" required /></label><label>Assign to<select name="userId" required>${personOptions(state, state.commercialNumberTargetUserId)}</select></label><button type="submit" class="button button--secondary"${people(state).length ? '' : ' disabled'}>Find numbers</button></form><p class="form-caption">An additional number slot is ${money(d.catalog.additionalNumberPriceCents)}/month. Included slots follow your plan.</p><ul class="number-list">${results}</ul></section>`
+    `<ul class="number-list">${rows || '<li class="page-empty">No calling numbers yet.</li>'}</ul><section class="settings-section"><h2>Add a number</h2><form data-form="commercial-number-search"><label>Area code<input name="query" inputmode="numeric" placeholder="e.g. 212" required /></label><label>Assign to<select name="userId" required>${personOptions(state, state.commercialNumberTargetUserId)}</select></label><button type="submit" class="button button--secondary"${people(state).length ? '' : ' disabled'}>Find numbers</button></form><ul class="number-list">${results}</ul></section>`
   );
 };
 const mercury = (
@@ -166,6 +166,6 @@ export const renderWorkspacePage = (
       `<fieldset class="theme-choices"><legend>Color theme</legend>${(['system', 'light', 'dark'] as const).map((t) => `<button type="button" class="theme-choice" data-action="workspace-theme" data-theme-value="${t}" aria-pressed="${(workspace.theme ?? 'system') === t}"><span class="theme-preview theme-preview--${t}">${icon(t === 'system' ? 'browser' : 'sun')}</span>${t === 'system' ? 'Match your system' : titleCase(t)}</button>`).join('')}</fieldset>`
     );
   return (
-    `<section class="settings-plan"><span class="section-label">YOUR PLAN</span><div><h2>${e(planName(state))}</h2><button type="button" class="text-button" data-action="workspace-billing">Manage plan ${icon('arrow')}</button></div></section><div class="navigation-list">${row('numbers', 'Phone numbers', 'Answering devices and calling numbers', 'phone')}${row('mercury', 'Mercury', 'Call scripts for your team', 'script')}${row('team', 'Team & seats', 'People with Dialer access', 'team')}${row('billing', 'Plan & billing', 'Minutes, subscription and invoices', 'card')}${row('appearance', 'Appearance', 'Light, dark or system theme', 'sun')}</div>`
+    `<button type="button" class="settings-plan" data-action="workspace-billing"><span class="section-label">YOUR PLAN</span><span class="settings-plan-row"><span class="settings-plan-name">${e(planName(state))}</span><span class="text-button">Manage plan ${icon('arrow')}</span></span></button><div class="navigation-list">${row('numbers', 'Phone numbers', 'Answering devices and calling numbers', 'phone')}${row('mercury', 'Mercury', 'Call scripts for your team', 'script')}${row('team', 'Team & seats', 'People with Dialer access', 'team')}${row('billing', 'Plan & billing', 'Minutes, subscription and invoices', 'card')}${row('appearance', 'Appearance', 'Light, dark or system theme', 'sun')}</div>`
   );
 };
