@@ -67,17 +67,33 @@ The prior thought that inbound `ready:false` blocked outbound was wrong: existin
 
 ## Files changed
 
-- none yet
+- `packages/dialer-server/src/inbound/outbound-account-routing.test.ts`
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/dialer-server/src/inbound/outbound-account-routing.test.ts`
 
 ## workspace-owned: activity log
 
 - 2026-11-06 04:44:28 fs.write: `.task/dialer/dev-1675-route-commercial-outbound-calls-through-the-number-owning-twilio-account/workpad.md`
+- 2026-11-06 04:48:01 fs.write: `packages/dialer-server/src/inbound/outbound-account-routing.test.ts`
+- 2026-11-06 04:48:38 fs.write: `.task/dialer/dev-1675-route-commercial-outbound-calls-through-the-number-owning-twilio-account/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-11-06 04:44:38 `review.run`: passed — OK
 - 2026-11-06 04:44:59 `verify`: passed — OK
+- 2026-11-06 04:48:01 write: `packages/dialer-server/src/inbound/outbound-account-routing.test.ts`
+- 2026-11-06 04:48:27 `review.run`: passed — OK
+- 2026-11-06 04:49:03 `review.run`: passed — OK
+- 2026-11-06 04:49:34 `verify`: passed — OK
+
+## Final outbound/Web bridge reconciliation (Nov 6 UTC)
+
+A production configuration check confirmed the S01 workspace belongs to the inbound-capacity guard. The existing guard required the parent's Twilio AccountSid, while commercial Web Voice tokens are correctly issued from the owned child account. It also compared signed Twilio Web SDK `user_<repId>` directly to raw `repId` in capacity state. Both would reject the rep bridge on a live call, despite successful customer-leg creation.
+
+Fixed `packages/dialer-server/src/inbound/outbound-capacity.ts`: authoritative workspace-to-account lookup for admitRep and restart reconciliation, normalized signed Web SDK identity, parent legacy fallback only when no workspace-owned telephony account exists, fail-closed disabled/malformed/missing scoped carrier. Fixed `packages/dialer-server/src/runtime/inbound.ts` to cache child-scoped parent-auth Twilio carriers for outbound reconciliation while preserving the original parent carrier for inbound; `packages/dialer-server/src/inbound/twilio-carrier.ts` supports optional account targeting. Added `packages/dialer-server/src/inbound/outbound-account-routing.test.ts` with ownership, malformed/disabled, identity and account mismatches. The focused suite now has 25 passing tests; both typechecks green. Strict review initially found one error-handling style issue in a nested async closure, corrected by removing the closure. Re-run strict review, full suites and formal verify prior to final publication.
+
+No inbound receiving toggled, no provider calls performed. The first exact-head CI run 42164438799 was dispatched on the **earlier source commit** and must not be used as final CI evidence. After the bridge fix is published, dispatch fresh CI against the new exact source SHA.
+
+- 2026-11-06 04:48:38 append: `.task/dialer/dev-1675-route-commercial-outbound-calls-through-the-number-owning-twilio-account/workpad.md`

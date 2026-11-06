@@ -234,7 +234,26 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
           enrich,
         })
       : undefined;
-    const outbound = createOutboundCapacity({ pool, carrier, accountSid });
+    const carrierCache = new Map<string, Promise<typeof carrier>>();
+    const carrierForAccount = (targetSid: string): Promise<typeof carrier> => {
+      if (targetSid === accountSid) return Promise.resolve(carrier);
+      if (!/^AC[a-fA-F0-9]{32}$/.test(targetSid)) {
+        return Promise.reject(new Error('Invalid scoped Twilio carrier account'));
+      }
+      const previous = carrierCache.get(targetSid);
+      if (previous) return previous;
+      const pending = createTwilioInboundCarrier(accountSid, authToken, targetSid)
+        .catch((cause: unknown) => {
+          carrierCache.delete(targetSid);
+          if (cause instanceof Error) throw cause;
+          throw new Error('Scoped outbound carrier initialization failed', { cause });
+        });
+      carrierCache.set(targetSid, pending);
+      return pending;
+    };
+    const outbound = createOutboundCapacity({
+      pool, carrier, accountSid, carrierForAccount,
+    });
     const ownsWorkspace = (workspaceId: string) =>
       ownedWorkspaces.has(workspaceId);
     let stopped = false;
