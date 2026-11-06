@@ -1,6 +1,6 @@
 import { renderTargetPicker } from './target-picker.js';
 import { renderLiveScript } from './script-presentation.js';
-import { renderWorkspacePage, pageHeading } from './workspace-pages.js';
+import { renderWorkspacePage } from './workspace-pages.js';
 import { renderHistory, renderHistoryDetail } from './workspace-history.js';
 import { planName } from './workspace-format.js';
 import { icon } from './workspace-icons.js';
@@ -115,7 +115,7 @@ const queueOptions = (state: LeadConnectorEmbedState): ComboboxOption[] =>
 const renderQueueSummary = (state: LeadConnectorEmbedState): string => {
   const queue = state.selectedQueue;
   if (!queue) {
-    return '<p class="setup-hint">Choose a pipeline stage to build your calling list.</p>';
+    return '';
   }
   return `<div class="queue-summary">
     <div><span>${escapeHtml(queue.pipelineName)}</span><strong>${escapeHtml(queue.stageName)}</strong></div>
@@ -153,7 +153,7 @@ const renderCallSetup = (
               value: state.selectedQueue
                 ? `${state.selectedQueue.pipelineId}:${state.selectedQueue.stageId}`
                 : null,
-              placeholder: '— Select a pipeline stage —',
+              placeholder: 'Select a pipeline stage',
               options: queueOptions(state),
             })}${renderQueueSummary(state)}`
           : renderTargetPicker({
@@ -170,12 +170,14 @@ const renderCallSetup = (
                   : undefined,
             })
       }
-      <button type="button" class="calling-options-entry" data-action="workspace-call-options"><span>${icon('settings')}<strong>Calling options</strong></span><span>${state.setup.callerIdNumber ? maskPhone(state.setup.callerIdNumber) : 'Automatic caller ID'} ${icon('arrow')}</span></button>
     </div>
 
     ${caller && !caller.canStartCall ? `<p class="notice notice--error" role="status">Calling is unavailable: ${escapeHtml(phaseLabel(caller.denialCode ?? 'commercial access blocked'))}.</p>` : ''}
-    <div class="setup-actions">
-      <button type="button" class="button button--primary" data-action="start-configured"${canStart ? '' : ' disabled'}>Start calling</button>
+    <div class="setup-action-group">
+      <button type="button" class="calling-options-entry" data-action="workspace-call-options"><span>${icon('settings')}<strong>Calling options</strong></span><span>${state.setup.callerIdNumber ? maskPhone(state.setup.callerIdNumber) : 'Automatic caller ID'} ${icon('arrow')}</span></button>
+      <div class="setup-actions">
+        <button type="button" class="button button--primary" data-action="start-configured"${canStart ? '' : ' disabled'}>Start calling</button>
+      </div>
     </div>
   </section>`;
 };
@@ -183,10 +185,6 @@ const renderCallSetup = (
 const renderCallOptions = (state: LeadConnectorEmbedState): string => {
   const caller = state.commercialCaller;
   return (
-    pageHeading(
-      'Calling options',
-      'Set up this calling session. Changes are saved as you choose.',
-    ) +
     `<div class="calling-options-page">
       ${renderCombobox({
         field: 'caller-id',
@@ -306,6 +304,39 @@ const renderOverlayStage = (
   return `<section class="overlay-stage overlay-stage--complete"><div class="success-mark" aria-hidden="true">✓</div><div><p class="eyebrow">Saved</p><h1>Updated in LeadConnector</h1><p>The call outcome is complete.</p></div></section>`;
 };
 
+const compactPageTitle = (
+  workspace: CallingWorkspace,
+): string | null => {
+  switch (workspace.screen) {
+    case 'settings':
+      return 'Settings';
+    case 'numbers':
+      return 'Phone numbers';
+    case 'team':
+      return 'Team & seats';
+    case 'billing':
+      return 'Plan & billing';
+    case 'appearance':
+      return 'Appearance';
+    case 'queue-details':
+      return 'Queue details';
+    case 'call-options':
+      return 'Calling options';
+    case 'mercury':
+      if (workspace.scriptDraft)
+        return workspace.scriptDraft.expectedRevision
+          ? 'Edit script'
+          : 'Add a call script';
+      return (
+        workspace.coachingLibrary?.scripts.find(
+          (script) => script.id === workspace.scriptId,
+        )?.title ?? 'Mercury'
+      );
+    default:
+      return null;
+  }
+};
+
 export const renderLeadConnectorEmbed = (
   state: LeadConnectorEmbedState,
   options: {
@@ -343,8 +374,7 @@ export const renderLeadConnectorEmbed = (
               })
             : renderOverlayStage(state, workspace)
       : workspace.screen === 'queue-details'
-        ? pageHeading('Queue details', 'Incoming calls for your team.') +
-          renderInboundQueueDetails(state.inboundOperator)
+        ? renderInboundQueueDetails(state.inboundOperator)
         : workspace.screen === 'call-options'
           ? renderCallOptions(state)
           : workspace.screen === 'history'
@@ -364,9 +394,10 @@ export const renderLeadConnectorEmbed = (
           ? 'history'
           : 'calling';
   const remaining = state.commercialCaller?.remainingMinutes;
+  const compactTitle = compactPageTitle(workspace);
   return `<main class="calling-workspace" data-workspace data-workspace-screen="${workspace.screen}" data-workspace-compact="false" data-surface="${surface}" data-phase="${state.phase}">
   <header class="workspace-header"><a class="workspace-brand" href="https://consuelohq.com/" target="_blank" rel="noopener noreferrer" aria-label="Consuelo Dialer"><img src="/consuelo-logo.svg" data-brand-logo width="36" height="36" alt="" /><span class="workspace-wordmark"><span>CONSUELO</span><span>DIALER</span></span></a><nav aria-label="Workspace"><button type="button" class="header-action" data-action="workspace-history" aria-label="Call history" aria-pressed="${workspace.screen === 'history' || workspace.screen === 'call-detail'}">${icon('history')}<span>History</span></button><button type="button" class="icon-button" data-action="workspace-settings" aria-label="Settings">${icon('settings')}</button>${surface === 'overlay' || status.active ? `<button type="button" class="icon-button" data-action="workspace-minimize" aria-label="Close calling window">${icon('close')}</button>` : ''}</nav></header>
-  ${workspace.screen === 'calling' ? `<div class="direction-tabs" role="tablist" aria-label="Calling direction"><button type="button" role="tab" aria-selected="${workspace.mode === 'inbound'}" data-action="workspace-inbound"${callMode === 'outbound' ? ' disabled' : ''}>${icon('incoming')} Inbound</button><button type="button" role="tab" aria-selected="${workspace.mode === 'outbound'}" data-action="workspace-outbound"${callMode === 'inbound' ? ' disabled' : ''}>${icon('outgoing')} Outbound</button></div>` : `<div class="page-breadcrumb"><button type="button" class="text-button" data-action="workspace-${parentScreen}">${icon('back')} ${parentScreen === 'settings' ? 'Settings' : parentScreen === 'history' ? 'Call history' : 'Back to calling'}</button>${status.active ? `<button type="button" class="live-indicator" data-action="workspace-calling"><span class="session-dot"></span>${escapeHtml(status.label)}</button>` : ''}</div>`}
+  ${workspace.screen === 'calling' ? `<div class="direction-tabs" role="tablist" aria-label="Calling direction"><button type="button" role="tab" aria-selected="${workspace.mode === 'inbound'}" data-action="workspace-inbound"${callMode === 'outbound' ? ' disabled' : ''}>${icon('incoming')} Inbound</button><button type="button" role="tab" aria-selected="${workspace.mode === 'outbound'}" data-action="workspace-outbound"${callMode === 'inbound' ? ' disabled' : ''}>${icon('outgoing')} Outbound</button></div>` : `<div class="page-breadcrumb"><button type="button" class="text-button" data-action="workspace-${parentScreen}">${icon('back')} ${parentScreen === 'settings' ? 'Settings' : parentScreen === 'history' ? 'Call history' : 'Back to calling'}</button>${status.active ? `<button type="button" class="live-indicator" data-action="workspace-calling"><span class="session-dot"></span>${escapeHtml(status.label)}</button>` : ''}${compactTitle ? '<h1 id="workspace-page-title" tabindex="-1">' + escapeHtml(compactTitle) + '</h1>' : ''}</div>`}
   <div class="workspace-content">${workspace.screen !== 'calling' ? renderError(state) : ''}${body}</div>
   ${!loading ? `<footer class="workspace-footer"><button type="button" class="plan-entry" data-action="workspace-billing" aria-label="Open plan and billing"><strong>${escapeHtml(planName(state))}</strong><span>${remaining == null ? (remaining === null ? 'Unlimited minutes' : '') : escapeHtml(remaining.toLocaleString('en-US')) + ' minutes left'}</span>${icon('arrow')}</button><a href="https://docs.consuelohq.com/" target="_blank" rel="noopener noreferrer">Learn more</a></footer>` : ''}
   </main>`;

@@ -1,0 +1,113 @@
+import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { JSDOM } from 'jsdom';
+import { createInitialEmbedState, type LeadConnectorEmbedState } from './state-machine';
+import { renderLeadConnectorEmbed } from './view';
+import { selectedAnsweringEndpoints } from './inbound-operator-view';
+
+const makeState = (): LeadConnectorEmbedState => {
+  const state = createInitialEmbedState();
+  state.phase = 'ready';
+  state.sessionToken = 'test-session';
+  state.inboundOperator.phase = 'ready';
+  state.inboundOperator.rep.endpoints = [
+    { endpointId: 'web-1', kind: 'browser', label: 'Web', healthy: true, active: true },
+    { endpointId: 'cell-1', kind: 'phone', label: 'Cell phone', healthy: true, active: true },
+  ];
+  state.commercialDashboard = {
+    numbers: [],
+    catalog: { additionalNumberPriceCents: 300 },
+    seats: [],
+  } as unknown as LeadConnectorEmbedState['commercialDashboard'];
+  return state;
+};
+const page = (state: LeadConnectorEmbedState, screen: 'calling' | 'settings' | 'numbers' | 'mercury' | 'team' | 'billing' | 'appearance' | 'queue-details' | 'call-options', mode: 'inbound' | 'outbound' = 'inbound', numberTab?: 'receive' | 'call-from') =>
+  new JSDOM(renderLeadConnectorEmbed(state, {
+    surface: 'overlay',
+    workspace: { screen, mode, compact: false, numberTab },
+  })).window.document;
+
+describe('compact Dialer workspace UX', () => {
+  test('inbound answering uses exclusive Web or Cell phone selection, including legacy double-active snapshots', () => {
+    const state = makeState();
+    const selection = selectedAnsweringEndpoints(state.inboundOperator, ['web-1', 'cell-1']);
+    expect(selection).toEqual(['web-1']);
+    const doc = page(state, 'calling');
+    const options = [...doc.querySelectorAll<HTMLInputElement>('[data-field="inbound-endpoint"]')];
+    expect(options).toHaveLength(2);
+    expect(options.map((option) => option.type)).toEqual(['radio', 'radio']);
+    expect(options[0]!.name).toBe(options[1]!.name);
+    expect(options.filter((option) => option.checked)).toHaveLength(1);
+    expect(doc.querySelector('.answering-devices')?.textContent).toContain('Web');
+    expect(doc.querySelector('.answering-devices')?.textContent).toContain('Cell phone');
+    expect(doc.querySelector('.answering-devices')?.textContent).not.toContain('My phone');
+    expect(doc.querySelector('.answering-devices')?.textContent).not.toContain('This browser');
+  });
+
+  test('outbound tabs have one underline, plain queue placeholder and no empty-state filler', () => {
+    const state = makeState();
+    const doc = page(state, 'calling', 'outbound');
+    const options = [...doc.querySelectorAll<HTMLElement>('.setup-tabs .setup-tab')];
+    expect(options).toHaveLength(2);
+    expect(options.filter((button) => button.classList.contains('is-active'))).toHaveLength(1);
+    expect(doc.querySelector('[data-combobox-field="queue"] [role="combobox"]')?.textContent).toBe('Select a pipeline stage');
+    expect(doc.body.textContent).not.toContain('Choose a pipeline stage to build your calling list.');
+    const styles = readFileSync(new URL('./workspace-theme.css', import.meta.url), 'utf8');
+    expect(styles).not.toMatch(/\.calling-workspace\s+\.setup-tab\.is-active\s*\{\s*text-decoration:\s*underline/);
+  });
+
+  test('calling options and queue details share a footer action group immediately above the primary action', () => {
+    const state = makeState();
+    for (const mode of ['outbound', 'inbound'] as const) {
+      const doc = page(state, 'calling', mode);
+      const entry = doc.querySelector<HTMLElement>('.calling-options-entry');
+      const actions = doc.querySelector<HTMLElement>('.setup-action-group .setup-actions');
+      expect(entry).not.toBeNull();
+      expect(actions).not.toBeNull();
+      expect(entry?.parentElement).toBe(actions?.parentElement);
+      expect(entry?.nextElementSibling).toBe(actions);
+      expect(entry?.firstElementChild?.querySelector('svg')).not.toBeNull();
+      expect(entry?.getAttribute('data-action')).toBe(mode === 'inbound' ? 'workspace-queue-details' : 'workspace-call-options');
+    }
+  });
+
+  test('settings and inner pages place the heading on the same row as a quiet back breadcrumb', () => {
+    const state = makeState();
+    for (const [screen, title, back] of [
+      ['settings', 'Settings', 'workspace-calling'],
+      ['numbers', 'Phone numbers', 'workspace-settings'],
+      ['mercury', 'Mercury', 'workspace-settings'],
+      ['team', 'Team & seats', 'workspace-settings'],
+      ['billing', 'Plan & billing', 'workspace-settings'],
+      ['appearance', 'Appearance', 'workspace-settings'],
+      ['queue-details', 'Queue details', 'workspace-calling'],
+      ['call-options', 'Calling options', 'workspace-calling'],
+    ] as const) {
+      const doc = page(state, screen);
+      expect(doc.querySelector('.page-breadcrumb h1')?.textContent).toBe(title);
+      expect(doc.querySelector('.page-breadcrumb [data-action="' + back + '"]')).not.toBeNull();
+      expect(doc.querySelectorAll('#workspace-page-title')).toHaveLength(1);
+      expect(doc.querySelector('.workspace-content .page-heading')).toBeNull();
+    }
+    const settings = page(state, 'settings');
+    expect(settings.body.textContent).not.toContain('A few things to make calling yours.');
+    const numbers = page(state, 'numbers');
+    expect(numbers.body.textContent).not.toContain('Choose how callers reach you.');
+    expect(page(state, 'mercury').body.textContent).not.toContain('Keep your team’s playbook close.');
+  });
+
+  test('phone-number purpose tabs use the same quiet inactive and bright active tab classes', () => {
+    const state = makeState();
+    for (const [numberTab, active] of [
+      ['receive', 'numbers-receive'],
+      ['call-from', 'numbers-call-from'],
+    ] as const) {
+      const doc = page(state, 'numbers', 'inbound', numberTab);
+      const tabs = [...doc.querySelectorAll<HTMLElement>('[aria-label="Phone number purpose"] .setup-tab')];
+      expect(tabs).toHaveLength(2);
+      expect(tabs.filter((tab) => tab.classList.contains('is-active'))).toHaveLength(1);
+      expect(tabs.find((tab) => tab.classList.contains('is-active'))?.getAttribute('data-action')).toBe(active);
+      expect(tabs.filter((tab) => tab.getAttribute('aria-selected') === 'true')).toHaveLength(1);
+    }
+  });
+});

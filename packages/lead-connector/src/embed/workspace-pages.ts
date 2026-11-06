@@ -62,7 +62,6 @@ const billing = (state: LeadConnectorEmbedState): string => {
     d.subscription?.cancel_at_period_end ?? d.subscription?.cancelAtPeriodEnd,
   );
   return (
-    pageHeading('Plan & billing', 'Your subscription, minutes and invoices.') +
     `
     <section class="plan-summary"><span class="section-label">CURRENT PLAN</span><div class="plan-title"><h2>${e(planName(state))}</h2><span class="quiet-chip">${cancelled ? 'Cancels at period end' : recovery ? 'Payment needs attention' : c.trial ? 'Free' : 'Active'}</span></div>
     ${purchase ? `<p>${purchase.seats} ${purchase.seats === 1 ? 'seat' : 'seats'} · ${purchase.billing === 'annual' ? 'Billed annually' : 'Billed monthly'}</p><p class="plan-price">${money(purchase.recurringCents)} <small>/ ${purchase.billing === 'annual' ? 'year' : 'month'}</small></p>` : ''}
@@ -86,7 +85,6 @@ const team = (state: LeadConnectorEmbedState): string => {
   const seats = d.seats;
   const capacity = d.publicPurchase?.seats;
   return (
-    pageHeading('Team & seats', 'People with access to your Dialer.') +
     `<p class="team-summary">${state.commercialCaller?.trial ? 'Starter includes your access.' : `${seats.length} assigned${capacity ? ' of ' + capacity + ' paid seats' : ''}.`}</p><ul class="member-list">${seats.length ? seats.map((s) => `<li class="member-row"><span class="member-avatar">${e(repName(state, s.user_id ?? s.userId).slice(0, 1))}</span><span><strong>${e(repName(state, s.user_id ?? s.userId))}</strong><small>${e(planName(state))}</small></span><span class="quiet-chip">${e(titleCase(String(s.status ?? 'active')))}</span></li>`).join('') : '<li class="member-row"><span class="member-avatar">Y</span><span><strong>You</strong><small>Starter access</small></span></li>'}</ul><section class="settings-section"><h2>Growing your team</h2><p>Team membership belongs to your CRM location. Your paid plan and seat quantity are managed in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">${d.subscription ? 'Manage paid seats' : 'Choose a team plan'}</button></section>`
   );
 };
@@ -96,10 +94,9 @@ const numbers = (
 ): string => {
   const d = state.commercialDashboard;
   if (!d) return loading();
-  const tabs = `<div class="setup-tabs" role="tablist" aria-label="Phone number purpose"><button type="button" role="tab" aria-selected="${workspace.numberTab !== 'call-from'}" data-action="numbers-receive">Receive calls</button><button type="button" role="tab" aria-selected="${workspace.numberTab === 'call-from'}" data-action="numbers-call-from">Call from</button></div>`;
+  const tabs = `<div class="setup-tabs" role="tablist" aria-label="Phone number purpose"><button type="button" role="tab" aria-selected="${workspace.numberTab !== 'call-from'}" class="setup-tab${workspace.numberTab !== 'call-from' ? ' is-active' : ''}" data-action="numbers-receive">Receive calls</button><button type="button" role="tab" aria-selected="${workspace.numberTab === 'call-from'}" class="setup-tab${workspace.numberTab === 'call-from' ? ' is-active' : ''}" data-action="numbers-call-from">Call from</button></div>`;
   if (workspace.numberTab !== 'call-from')
     return (
-      pageHeading('Phone numbers', 'Choose how callers reach you.') +
       tabs +
       `<section class="settings-section"><h2>Your team’s inbound number</h2><p>${e(state.inboundOperator.configuration.maskedNumber || 'Not configured yet')}</p><p class="form-caption">Customers call this number to reach your team.</p></section><section class="settings-section"><h2>Your answering devices</h2><div class="navigation-list">${[
         ...state.inboundOperator.rep.endpoints,
@@ -109,7 +106,7 @@ const numbers = (
         )
         .map(
           (device) =>
-            `<div class="navigation-row"><span class="navigation-icon">${icon(device.kind === 'browser' ? 'browser' : 'phone')}</span><span><strong>${device.kind === 'browser' ? 'This browser' : 'Forwarding phone'}</strong><small>${device.kind === 'browser' ? 'Use your microphone and speakers' : 'Your personal phone that rings for incoming calls'}</small></span><span class="quiet-chip">${device.healthy ? 'Configured' : 'Unavailable'}</span></div>`,
+            `<div class="navigation-row"><span class="navigation-icon">${icon(device.kind === 'browser' ? 'browser' : 'phone')}</span><span><strong>${device.kind === 'browser' ? 'Web' : 'Cell phone'}</strong><small>${device.kind === 'browser' ? 'Use your microphone and speakers' : 'Your personal phone that rings for incoming calls'}</small></span><span class="quiet-chip">${device.healthy ? 'Configured' : 'Unavailable'}</span></div>`,
         )
         .join(
           '',
@@ -129,7 +126,6 @@ const numbers = (
     })
     .join('');
   return (
-    pageHeading('Phone numbers', 'Numbers customers see when you call.') +
     tabs +
     `<ul class="number-list">${rows || '<li class="page-empty">No calling numbers yet.</li>'}</ul><section class="settings-section"><h2>Add a number</h2><form data-form="commercial-number-search"><label>Area code<input name="query" inputmode="numeric" placeholder="e.g. 212" required /></label><label>Assign to<select name="userId" required>${personOptions(state, state.commercialNumberTargetUserId)}</select></label><button type="submit" class="button button--secondary"${people(state).length ? '' : ' disabled'}>Find numbers</button></form><p class="form-caption">An additional number slot is ${money(d.catalog.additionalNumberPriceCents)}/month. Included slots follow your plan.</p><ul class="number-list">${results}</ul></section>`
   );
@@ -146,19 +142,13 @@ const mercury = (
       : null;
   if (active && !draft)
     return (
-      pageHeading(active.title, 'Mercury · Team script') +
       `<div class="script-reader">${e(active.content)}</div>${active.canEdit ? `<button type="button" class="button button--secondary" data-action="script-edit" data-script-id="${e(active.id)}">Edit script</button>` : ''}`
     );
   if (draft)
     return (
-      pageHeading(
-        draft.expectedRevision ? 'Edit script' : 'Add a call script',
-        'Text and Markdown, up to 100 KB.',
-      ) +
       `<form data-form="coaching-script"><label class="file-import">${icon('upload')}<span>Import a script</span><input type="file" data-field="script-file" accept=".txt,.md,text/plain,text/markdown" /></label><label>Script name<input name="title" required maxlength="120" value="${e(draft.title)}" placeholder="e.g. First conversation" /></label><label>Script<textarea name="content" required maxlength="100000" rows="11" placeholder="Your opening, discovery questions and next steps…">${e(draft.content)}</textarea></label><p class="form-caption">Saved scripts are shared with this workspace. Live AI coaching is configured separately.</p><div class="button-row"><button type="button" class="button button--secondary" data-action="script-cancel">Cancel</button><button type="submit" class="button button--primary"${workspace.scriptSaving ? ' disabled' : ''}>${workspace.scriptSaving ? 'Saving…' : 'Save script'}</button></div></form>`
     );
   return (
-    pageHeading('Mercury', 'Keep your team’s playbook close.') +
     preferences +
     `<section class="mercury-intro"><span class="mercury-symbol">${icon('script')}</span><h2>Scripts for your calling day.</h2><p>Upload a playbook or write one here. Open a script whenever you need it.</p><button type="button" class="button button--primary" data-action="script-new"${lib ? '' : ' disabled'}>${icon('upload')} Add a script</button></section><section class="settings-section"><h2>Your scripts</h2>${lib ? (lib.scripts.length ? `<div class="navigation-list">${lib.scripts.map((s) => `<button type="button" class="navigation-row" data-action="script-open" data-script-id="${e(s.id)}"><span class="navigation-icon">${icon('script')}</span><span><strong>${e(s.title)}</strong><small>Team script</small></span>${icon('arrow')}</button>`).join('')}</div>` : '<p>No scripts yet. Add your first playbook above.</p>') : '<p class="page-empty">Loading your script library…</p>'}</section>`
   );
@@ -173,11 +163,9 @@ export const renderWorkspacePage = (
   if (workspace.screen === 'mercury') return mercury(state, workspace);
   if (workspace.screen === 'appearance')
     return (
-      pageHeading('Appearance', 'Make the workspace comfortable for you.') +
       `<fieldset class="theme-choices"><legend>Color theme</legend>${(['system', 'light', 'dark'] as const).map((t) => `<button type="button" class="theme-choice" data-action="workspace-theme" data-theme-value="${t}" aria-pressed="${(workspace.theme ?? 'system') === t}"><span class="theme-preview theme-preview--${t}">${icon(t === 'system' ? 'browser' : 'sun')}</span>${t === 'system' ? 'Match your system' : titleCase(t)}</button>`).join('')}</fieldset>`
     );
   return (
-    pageHeading('Settings', 'A few things to make calling yours.') +
     `<section class="settings-plan"><span class="section-label">YOUR PLAN</span><div><h2>${e(planName(state))}</h2><button type="button" class="text-button" data-action="workspace-billing">Manage plan ${icon('arrow')}</button></div></section><div class="navigation-list">${row('numbers', 'Phone numbers', 'Answering devices and calling numbers', 'phone')}${row('mercury', 'Mercury', 'Call scripts for your team', 'script')}${row('team', 'Team & seats', 'People with Dialer access', 'team')}${row('billing', 'Plan & billing', 'Minutes, subscription and invoices', 'card')}${row('appearance', 'Appearance', 'Light, dark or system theme', 'sun')}</div>`
   );
 };

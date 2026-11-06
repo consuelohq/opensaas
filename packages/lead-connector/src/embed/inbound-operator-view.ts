@@ -18,9 +18,17 @@ export const selectedAnsweringEndpoints = (
   state: InboundOperatorState,
   selected?: readonly string[],
 ): readonly string[] => {
-  if (state.rep.ready)
-    return state.rep.endpoints.filter((e) => e.active).map((e) => e.endpointId);
-  if (selected) return selected;
+  // Keep a single preferred endpoint even for legacy double-active snapshots.
+  const allowed = state.rep.ready
+    ? state.rep.endpoints.filter((e) => e.active).map((e) => e.endpointId)
+    : selected;
+  if (allowed) {
+    const chosen =
+      state.rep.endpoints.find(
+        (e) => e.kind === 'browser' && allowed.includes(e.endpointId),
+      ) ?? state.rep.endpoints.find((e) => allowed.includes(e.endpointId));
+    return chosen ? [chosen.endpointId] : [];
+  }
   const browser = state.rep.endpoints.find(
     (e) => e.kind === 'browser' && e.healthy,
   );
@@ -28,6 +36,7 @@ export const selectedAnsweringEndpoints = (
     ? [browser.endpointId]
     : state.rep.endpoints
         .filter((e) => e.kind === 'phone' && e.active && e.healthy)
+        .slice(0, 1)
         .map((e) => e.endpointId);
 };
 const endpointRow = (
@@ -35,7 +44,7 @@ const endpointRow = (
   ready: boolean,
   selected?: readonly string[],
 ): string =>
-  `<label class="inbound-endpoint-row"><input type="checkbox" data-field="inbound-endpoint" data-endpoint-id="${escapeHtml(endpoint.endpointId)}" data-endpoint-kind="${endpoint.kind}"${(selected ? selected.includes(endpoint.endpointId) : (endpoint.active ?? ready)) ? ' checked' : ''}${endpoint.healthy && !ready ? '' : ' disabled'} /><span class="device-icon" aria-hidden="true">${icon(endpoint.kind === 'phone' ? 'phone' : 'browser')}</span><span><strong>${endpoint.kind === 'phone' ? 'My phone' : 'This browser'}</strong><small>${endpoint.healthy ? (endpoint.kind === 'phone' ? 'Answer on your forwarding phone' : 'Use your microphone and speakers') : 'Unavailable — check your device settings'}</small></span></label>`;
+  `<label class="inbound-endpoint-row"><input type="radio" name="answering-device" data-field="inbound-endpoint" data-endpoint-id="${escapeHtml(endpoint.endpointId)}" data-endpoint-kind="${endpoint.kind}"${selected?.includes(endpoint.endpointId) ? ' checked' : ''}${endpoint.healthy && !ready ? '' : ' disabled'} /><span class="device-icon" aria-hidden="true">${icon(endpoint.kind === 'phone' ? 'phone' : 'browser')}</span><span><strong>${endpoint.kind === 'phone' ? 'Cell phone' : 'Web'}</strong><small>${endpoint.healthy ? (endpoint.kind === 'phone' ? 'Answer on your forwarding phone' : 'Use your microphone and speakers') : 'Unavailable — check your device settings'}</small></span></label>`;
 
 const renderOffers = (state: InboundOperatorState): string =>
   state.offers
@@ -96,13 +105,15 @@ export const renderInboundOperatorPanel = (
               .map((e) => endpointRow(e, state.rep.ready, selected))
               .join('') ||
             '<p class="resource-empty">No answering device is set up yet.</p>'
-          }${!state.rep.endpoints.some((e) => e.kind === 'browser') ? `<div class="device-unavailable"><span class="device-icon">${icon('browser')}</span><span><strong>This browser</strong><small>Browser answering isn’t enabled for this workspace yet.</small></span></div>` : ''}</fieldset>`
+          }${!state.rep.endpoints.some((e) => e.kind === 'browser') ? `<div class="device-unavailable"><span class="device-icon">${icon('browser')}</span><span><strong>Web</strong><small>Browser answering isn’t enabled for this workspace yet.</small></span></div>` : ''}</fieldset>`
         : ''
     }
 
     
-    <button type="button" class="calling-options-entry" data-action="workspace-queue-details"><span><strong>Queue details</strong></span><span>${state.queue.waitingCount} waiting ${icon('arrow')}</span></button>
-    <div class="setup-actions"><button type="button" class="button ${state.rep.ready ? 'button--secondary' : 'button--primary'} primary-wide" data-action="inbound-readiness" data-ready="${!state.rep.ready}"${canToggle ? '' : ' disabled'}>${state.pendingAction ? 'Updating…' : state.rep.ready ? 'Stop receiving calls' : 'Start receiving calls'}</button></div>
+    <div class="setup-action-group">
+      <button type="button" class="calling-options-entry" data-action="workspace-queue-details"><span>${icon('settings')}<strong>Queue details</strong></span><span>${state.queue.waitingCount} waiting ${icon('arrow')}</span></button>
+      <div class="setup-actions"><button type="button" class="button ${state.rep.ready ? 'button--secondary' : 'button--primary'} primary-wide" data-action="inbound-readiness" data-ready="${!state.rep.ready}"${canToggle ? '' : ' disabled'}>${state.pendingAction ? 'Updating…' : state.rep.ready ? 'Stop receiving calls' : 'Start receiving calls'}</button></div>
+    </div>
   </section>`;
 };
 
