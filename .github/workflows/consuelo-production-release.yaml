@@ -98,7 +98,17 @@ jobs:
               packages/dialer-server/src/lab/launch-scenarios.test.ts|\
               packages/dialer-server/src/lab/launch-scenarios.cli.test.ts|\
               packages/dialer-server/src/lab/launch-release-classifier.test.ts|\
-              packages/dialer-server/src/lab/learning-rollback-scenario.ts)
+              packages/dialer-server/src/lab/learning-rollback-scenario.ts|\
+              packages/dialer-server/src/lab/rep-campaign.ts|\
+              packages/dialer-server/src/lab/rep-campaign-plan.ts|\
+              packages/dialer-server/src/lab/rep-campaign.test.ts|\
+              packages/dialer-server/src/lab/qa-postgres-suites.ts|\
+              packages/dialer-server/src/lab/historical-inbound-fixture.ts|\
+              packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts|\
+              packages/dialer-server/src/inbound/rep-capacity.integration.test.ts|\
+              packages/dialer-server/src/inbound/routing.integration.test.ts|\
+              packages/dialer-server/src/inbound/callbacks.integration.test.ts|\
+              packages/dialer-server/src/inbound/telephony.integration.test.ts)
                 qa_file_seen=true
                 ;;
               .task/*|.github/workflows/consuelo-production-release.yaml)
@@ -146,7 +156,17 @@ jobs:
               packages/dialer-server/src/lab/launch-scenarios.test.ts|\
               packages/dialer-server/src/lab/launch-scenarios.cli.test.ts|\
               packages/dialer-server/src/lab/launch-release-classifier.test.ts|\
-              packages/dialer-server/src/lab/learning-rollback-scenario.ts)
+              packages/dialer-server/src/lab/learning-rollback-scenario.ts|\
+              packages/dialer-server/src/lab/rep-campaign.ts|\
+              packages/dialer-server/src/lab/rep-campaign-plan.ts|\
+              packages/dialer-server/src/lab/rep-campaign.test.ts|\
+              packages/dialer-server/src/lab/qa-postgres-suites.ts|\
+              packages/dialer-server/src/lab/historical-inbound-fixture.ts|\
+              packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts|\
+              packages/dialer-server/src/inbound/rep-capacity.integration.test.ts|\
+              packages/dialer-server/src/inbound/routing.integration.test.ts|\
+              packages/dialer-server/src/inbound/callbacks.integration.test.ts|\
+              packages/dialer-server/src/inbound/telephony.integration.test.ts)
                 # QA catalog/files do not change live telephony behavior.
                 ;;
               .task/*|.github/workflows/consuelo-production-release.yaml)

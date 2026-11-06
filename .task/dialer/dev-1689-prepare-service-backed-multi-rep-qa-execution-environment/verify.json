@@ -1,0 +1,267 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment",
+  "base": "origin/main",
+  "headSha": "53755c6617fb920fc36fac7706fe981298e4ec90",
+  "changeHash": "31a84d9ae0e3d33ad655a538568f2ceca1e1d8d63c780d9578a5d9a7f4156c2e",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/dialer-server/LAUNCH-QA.md",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+    "packages/dialer-server/src/inbound/routing.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/lab/historical-inbound-fixture.ts",
+    "packages/dialer-server/src/lab/launch-release-classifier.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/lab/qa-postgres-suites.ts",
+    "packages/dialer-server/src/lab/rep-campaign-plan.ts",
+    "packages/dialer-server/src/lab/rep-campaign.test.ts",
+    "packages/dialer-server/src/lab/rep-campaign.ts"
+  ],
+  "verifiedAt": "2026-11-06T23:19:51.935Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/current.json",
+        ".task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/session.json",
+        ".task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/workpad.md",
+        ".task/tasks/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment.json",
+        "packages/dialer-server/LAUNCH-QA.md",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+        "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+        "packages/dialer-server/src/inbound/routing.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/lab/historical-inbound-fixture.ts",
+        "packages/dialer-server/src/lab/launch-release-classifier.test.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+        "packages/dialer-server/src/lab/qa-postgres-suites.ts",
+        "packages/dialer-server/src/lab/rep-campaign-plan.ts",
+        "packages/dialer-server/src/lab/rep-campaign.test.ts",
+        "packages/dialer-server/src/lab/rep-campaign.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/LAUNCH-QA.md",
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+            "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+            "packages/dialer-server/src/inbound/routing.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/lab/historical-inbound-fixture.ts",
+            "packages/dialer-server/src/lab/launch-release-classifier.test.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+            "packages/dialer-server/src/lab/qa-postgres-suites.ts",
+            "packages/dialer-server/src/lab/rep-campaign-plan.ts",
+            "packages/dialer-server/src/lab/rep-campaign.test.ts",
+            "packages/dialer-server/src/lab/rep-campaign.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "public-production-release-isolation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Website and docs release changes must preserve the existing Dialer release classifier and keep unrelated pushes from redeploying OS authentication; manual release and MCP security controls remain explicit.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-production-release.yaml"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 791,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 744,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1748,
+          "outputTail": " persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 269 pass\n 93 skip\n 0 fail\n 1714 expect() calls\nRan 362 tests across 71 files. [1.74s]\n"
+        },
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 572,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1689-prepare-service-backed-multi-rep-qa-execution-environment\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/docs-production-release.test.js \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/production-release-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/github-workflow-policy.test.js \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 75\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 257\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:19:51\n\u001b[2m   Duration \u001b[22m 348ms\u001b[2m (transform 95ms, setup 0ms, import 130ms, tests 336ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 535,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:19:51\n\u001b[2m   Duration \u001b[22m 85ms\u001b[2m (transform 14ms, setup 16ms, import 4ms, tests 2ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/production-release-mcp-security.test.ts\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2781,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2781",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2781",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2781/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2781",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2781/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1689-prepare-service-backed-multi-rep-qa-execution-environment",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_923b49e08d65",
+  "tmuxSession": "opensaas-dialer-dev-1689-prepare-service-backed-multi-rep-qa-exe-923b49e0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/.task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/session.json",
+  "createdAt": "2026-11-06T23:02:41.476Z"
+}

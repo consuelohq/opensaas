@@ -1,3 +1,4 @@
+import {prepareHistoricalInboundRollback} from '../lab/historical-inbound-fixture';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from './callback-booking-attempt-migration';
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { randomUUID } from 'node:crypto';
@@ -473,6 +474,7 @@ suite('RD6 callbacks with real Postgres', () => {
   });
 
   it('blocks rollback until callback obligations are terminal and retained recipients are purged', async () => {
+    await prepareHistoricalInboundRollback(pool);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
@@ -500,6 +502,7 @@ suite('RD6 callbacks with real Postgres', () => {
     expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe(
       'cancelled',
     );
+    await prepareHistoricalInboundRollback(pool);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
@@ -667,6 +670,7 @@ suite('RD6 callbacks with real Postgres', () => {
     expect((await service.read('workspace', 'callback-one'))?.state.revision).toBe(1);
     await expect(pool.query('UPDATE dialer_callback_booking_attempts SET revision=2'))
       .rejects.toThrow();
+    await prepareHistoricalInboundRollback(pool);
     const rollback = await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID)
       .catch((error: unknown) => error);
     expect(rollback).toBeInstanceOf(Error);

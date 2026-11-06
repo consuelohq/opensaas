@@ -1,5 +1,11 @@
 #!/usr/bin/env bun
-import {COACHING_SCRIPTS_MIGRATION_ID} from '../src/coaching/scripts';
+import { runRepCampaign } from '../src/lab/rep-campaign';
+import {
+  qaPostgresSuites,
+  qaPostgresEnvironment,
+  parseDatabaseSuiteResult,
+} from '../src/lab/qa-postgres-suites';
+import { COACHING_SCRIPTS_MIGRATION_ID } from '../src/coaching/scripts';
 import { NATIVE_BILLING_MIGRATION_ID } from '../src/billing/native-billing-store';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../src/inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../src/inbound/callback-migration';
@@ -8,7 +14,7 @@ import { CUSTOMER_ENTRY_MIGRATION_ID } from '../src/inbound/customer-entry-migra
 import { TELEPHONY_MIGRATION_ID } from '../src/inbound/telephony-migration';
 import { ROUTING_MIGRATION_ID } from '../src/inbound/routing-migration';
 
-import { mkdtemp, mkdir, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createConnection, createServer } from 'node:net';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -22,9 +28,12 @@ import { verifyLearningRollbackChain } from '../src/lab/learning-rollback-scenar
 import Redis from 'ioredis';
 import { Pool } from 'pg';
 
-import { migrateDialerDatabase, rollbackDialerDatabaseMigration,
+import {
+  migrateDialerDatabase,
+  rollbackDialerDatabaseMigration,
   DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
-  DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID } from '../src/database/migrations';
+  DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+} from '../src/database/migrations';
 import {
   createSyntheticDialerFixture,
   resolveLabScale,
@@ -45,7 +54,9 @@ const parseScale = (): LabScaleName => {
   if (value === 'smoke' || value === 'standard' || value === 'large') {
     return value;
   }
-  throw new Error(`Unsupported --scale ${value ?? '<missing>'}; expected smoke, standard, or large`);
+  throw new Error(
+    `Unsupported --scale ${value ?? '<missing>'}; expected smoke, standard, or large`,
+  );
 };
 
 const parseSeed = () => {
@@ -201,11 +212,17 @@ const startPostgres = async (root: string, port: number) => {
 const startRedis = async (root: string, port: number) => {
   const redisServer = Bun.which('redis-server');
   if (!redisServer) {
-    throw new Error('Missing redis-server; install Redis and ensure it is on PATH');
+    throw new Error(
+      'Missing redis-server; install Redis and ensure it is on PATH',
+    );
   }
   const directory = join(root, 'redis');
   const logPath = join(root, 'redis.log');
-  await mkdir(directory, { recursive: true });
+  try {
+    await mkdir(directory, { recursive: true });
+  } catch (cause: unknown) {
+    throw scriptFailure('Redis fixture directory creation', cause);
+  }
   const processHandle = Bun.spawn(
     [
       redisServer,
@@ -229,7 +246,9 @@ const startRedis = async (root: string, port: number) => {
   try {
     await waitForPort(port, true);
     if (processHandle.exitCode !== null) {
-      throw new Error(`redis-server exited with code ${processHandle.exitCode}`);
+      throw new Error(
+        `redis-server exited with code ${processHandle.exitCode}`,
+      );
     }
   } catch (cause: unknown) {
     const log = await readFile(logPath, 'utf8').catch(() => '');
@@ -313,7 +332,11 @@ const main = async () => {
     const redisClient = {
       get: (key: string) => redis!.get(key),
       set: (key: string, value: string, ...args: unknown[]) =>
-        redis!.set(key, value, ...(args as [string, ...Array<string | number>])),
+        redis!.set(
+          key,
+          value,
+          ...(args as [string, ...Array<string | number>]),
+        ),
       del: (...keys: string[]) => redis!.del(...keys),
       eval: (script: string, numberOfKeys: number, ...args: unknown[]) =>
         redis!.eval(script, numberOfKeys, ...args).then(Number),
@@ -321,7 +344,8 @@ const main = async () => {
 
     const migrationStartedAt = performance.now();
     await migrateDialerDatabase(database);
-    const migrationMs = Math.round((performance.now() - migrationStartedAt) * 1_000) / 1_000;
+    const migrationMs =
+      Math.round((performance.now() - migrationStartedAt) * 1_000) / 1_000;
     const benchmarks = await runLocalDialerBenchmarks({
       database,
       redis: redisClient,
@@ -329,27 +353,89 @@ const main = async () => {
       fixture,
       scale,
     });
-    const learningRollbackChainVerified = await verifyLearningRollbackChain(pool);
-    const countObservations = () => database.query<{ count: string }>(
-      'SELECT COUNT(*)::text AS count FROM dialer_learning_observations',
-    ).then((result) => result.rows[0]?.count);
+    let qa:
+      | (Awaited<ReturnType<typeof runRepCampaign>> & {
+          databaseSuites: ReturnType<typeof parseDatabaseSuiteResult>;
+        })
+      | undefined;
+    if (process.argv.includes('--qa')) {
+      const campaign = await runRepCampaign({ pool, redis, seed });
+      const suite = Bun.spawn(
+        [
+          'bun',
+          'test',
+          ...qaPostgresSuites.map((file) =>
+            join(import.meta.dir, '../src', file),
+          ),
+        ],
+        {
+          stdout: 'pipe',
+          stderr: 'pipe',
+          env: qaPostgresEnvironment(postgresPort, process.env),
+        },
+      );
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(suite.stdout).text(),
+        new Response(suite.stderr).text(),
+        suite.exited,
+      ]);
+      if (exitCode !== 0) {
+        const diagnostic = await mkdtemp(
+          join(tmpdir(), 'consuelo-qa-db-failure-'),
+        );
+        const log = join(diagnostic, 'database-suites.log');
+        await writeFile(log, stdout + '\n' + stderr, { mode: 0o600 });
+        process.stderr.write('Database failure evidence: ' + log + '\n');
+      }
+      qa = {
+        ...campaign,
+        databaseSuites: parseDatabaseSuiteResult(
+          exitCode,
+          stdout + '\n' + stderr,
+        ),
+      };
+    }
+    const learningRollbackChainVerified =
+      await verifyLearningRollbackChain(pool);
+    const countObservations = () =>
+      database
+        .query<{
+          count: string;
+        }>('SELECT COUNT(*)::text AS count FROM dialer_learning_observations')
+        .then((result) => result.rows[0]?.count);
     const rowsBeforeRollback = await countObservations();
     const inbound = await runInboundJournalScenarios(pool);
-    const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
+    const simulation = await runInboundSimulationScenarios({
+      pool,
+      redis,
+      databaseUrl,
+      seed,
+    });
     // Preserve forward-only 014 company credentials, 015 coaching scripts and
     // 016 native billing tables. Remove only their ledger entries in this
     // disposable local database to exercise the historical down chain.
     await database.query(
       'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = ANY($1::text[])',
-      [[
-        DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
-        COACHING_SCRIPTS_MIGRATION_ID,
-        NATIVE_BILLING_MIGRATION_ID,
-      ]],
+      [
+        [
+          DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+          COACHING_SCRIPTS_MIGRATION_ID,
+          NATIVE_BILLING_MIGRATION_ID,
+        ],
+      ],
     );
-    await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
-    await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
-    await rollbackDialerDatabaseMigration(database, CUSTOMER_ENTRY_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(
+      database,
+      CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
+    );
+    await rollbackDialerDatabaseMigration(
+      database,
+      CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
+    );
+    await rollbackDialerDatabaseMigration(
+      database,
+      CUSTOMER_ENTRY_MIGRATION_ID,
+    );
     await rollbackDialerDatabaseMigration(database, CALLBACK_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, TELEPHONY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, ROUTING_MIGRATION_ID);
@@ -361,7 +447,10 @@ const main = async () => {
     if (inboundRemoved.rows[0]?.table_name !== null) {
       throw new Error('Inbound rollback left schema behind');
     }
-    await rollbackDialerDatabaseMigration(database, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(
+      database,
+      DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+    );
     const removed = await database.query<{ count: string }>(`
       SELECT COUNT(*)::text AS count FROM pg_constraint
       WHERE conrelid = 'dialer_learning_observations'::regclass AND conname IN (
@@ -372,9 +461,15 @@ const main = async () => {
     const ledgerAfterRollback = await database.query<{ migration_id: string }>(
       'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
     );
-    if (removed.rows[0]?.count !== '0' || ledgerAfterRollback.rows.length !== 4 ||
-        ledgerAfterRollback.rows.some((row) => row.migration_id === DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID) ||
-        rowsBeforeRollback !== await countObservations()) {
+    if (
+      removed.rows[0]?.count !== '0' ||
+      ledgerAfterRollback.rows.length !== 4 ||
+      ledgerAfterRollback.rows.some(
+        (row) =>
+          row.migration_id === DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+      ) ||
+      rowsBeforeRollback !== (await countObservations())
+    ) {
       throw new Error('Integrity rollback did not preserve prior data/schema');
     }
     await migrateDialerDatabase(database);
@@ -385,8 +480,13 @@ const main = async () => {
         'dialer_learning_decision_context_schema_required_check'
       )
     `);
-    if (restored.rows[0]?.count !== '2' || rowsBeforeRollback !== await countObservations()) {
-      throw new Error('Integrity reapply did not restore constraints and preserve data');
+    if (
+      restored.rows[0]?.count !== '2' ||
+      rowsBeforeRollback !== (await countObservations())
+    ) {
+      throw new Error(
+        'Integrity reapply did not restore constraints and preserve data',
+      );
     }
     const migrationRows = await database.query<{ migration_id: string }>(
       'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
@@ -427,6 +527,7 @@ const main = async () => {
         ),
       },
       benchmarks,
+      ...(qa ? { qa } : {}),
       inbound,
       simulation,
     };
@@ -459,7 +560,7 @@ const main = async () => {
 
 main().catch((cause: unknown) => {
   process.stderr.write(
-    `[dialer-lab] ${cause instanceof Error ? cause.stack ?? cause.message : String(cause)}\n`,
+    `[dialer-lab] ${cause instanceof Error ? (cause.stack ?? cause.message) : String(cause)}\n`,
   );
   process.exitCode = 1;
 });
