@@ -20,17 +20,44 @@ started: 2026-11-06
 
 ## files changed
 
-- none yet
+- `.github/workflows/consuelo-production-release.yaml`
+- `packages/dialer-server/LAUNCH-QA.md`
+- `packages/dialer-server/scripts/local-dialer-lab.ts`
+- `packages/dialer-server/src/inbound/callbacks.integration.test.ts`
+- `packages/dialer-server/src/inbound/rep-capacity.integration.test.ts`
+- `packages/dialer-server/src/inbound/routing.integration.test.ts`
+- `packages/dialer-server/src/inbound/telephony.integration.test.ts`
+- `packages/dialer-server/src/lab/historical-inbound-fixture.ts`
+- `packages/dialer-server/src/lab/launch-release-classifier.test.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/lab/qa-postgres-suites.ts`
+- `packages/dialer-server/src/lab/rep-campaign-plan.ts`
+- `packages/dialer-server/src/lab/rep-campaign.test.ts`
+- `packages/dialer-server/src/lab/rep-campaign.ts`
 
 ## workspace-owned: files changed
 
-- none yet
+- `.github/workflows/consuelo-production-release.yaml`
+- `packages/dialer-server/LAUNCH-QA.md`
+- `packages/dialer-server/scripts/local-dialer-lab.ts`
+- `packages/dialer-server/src/inbound/callbacks.integration.test.ts`
+- `packages/dialer-server/src/inbound/rep-capacity.integration.test.ts`
+- `packages/dialer-server/src/inbound/routing.integration.test.ts`
+- `packages/dialer-server/src/inbound/telephony.integration.test.ts`
+- `packages/dialer-server/src/lab/historical-inbound-fixture.ts`
+- `packages/dialer-server/src/lab/launch-release-classifier.test.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/lab/qa-postgres-suites.ts`
+- `packages/dialer-server/src/lab/rep-campaign-plan.ts`
+- `packages/dialer-server/src/lab/rep-campaign.test.ts`
+- `packages/dialer-server/src/lab/rep-campaign.ts`
 
 ## workspace-owned: activity log
 
 - 2026-11-06 23:03:07 fs.write: `.task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/workpad.md`
 - 2026-11-06 23:07:02 fs.write: `.task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/workpad.md`
 - 2026-11-06 23:18:00 fs.write: `.task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/workpad.md`
+- 2026-11-06 23:22:20 fs.write: `.task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -38,6 +65,7 @@ started: 2026-11-06
 - 2026-11-06 23:18:52 `review.run`: passed — OK
 - 2026-11-06 23:19:15 `verify`: failed — COMMAND_FAILED
 - 2026-11-06 23:20:01 `verify`: passed — OK
+- 2026-11-06 23:22:39 `verify`: passed — OK
 
 ## key decisions
 
@@ -88,3 +116,8 @@ Service-backed contract passes: actual loopback HTTP + current Hono routes/auth 
 Ordinary cross-package regression:791 pass,93 intentionally gated skips,0 fail. Separate enabled integration:5 pass,0 fail including all86 selected DB cases and old14-process-recovery scenarios. Server tsc green. CLI disables dotenv and strips live env for DB children. README documents proof limits. Added exact-path QA-only production-release classification regressions; caught/fixed new QA file paths incorrectly classifying as runtime deployment. No production runtime/data/keys/calls affected. QA0 is a smoke foundation, not full carrier/browser/20-seat throughput proof; broad lane execution remains pending.
 
 - 2026-11-06 23:18:00 append: `.task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/workpad.md`
+
+## Publication recovery
+Verified task source cc8f2d2b6ae8ee56058963da9d64a24e5a5878a9. task.pr failed non-metadata conflicts (trc_bb55ac6e5175). stream.sync failed three real conflicts in launch-scenarios.ts, compact-workspace-polish.test.ts, workspace-pages.ts (trc_061cba81890a). Read-only exact tree comparison shows156 unrelated source/config differences across OS/website/Dialer/workflow domains; stream.context ahead/behind snapshot was insufficient. Preserve stream and other work. Within Ko's approved focused shipping scope, use isolated already-main-based PR2781 against main, as DEV-1675/1686 were released. Do not merge unreviewed shared backlog or choose ours/theirs. Full main-based verify/review still apply to the same bounded QA source. Stream reconciliation remains separate.
+
+- 2026-11-06 23:22:20 append: `.task/dialer/dev-1689-prepare-service-backed-multi-rep-qa-execution-environment/workpad.md`
