@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/release-verified-dialer-launch-qa-without-unrelated-stream-commits",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2770,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2770",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-verified-dialer-launch-qa-without-unrelated-stream-commits",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5f72fe41d6ab",
+  "tmuxSession": "opensaas-dialer-release-verified-dialer-launch-qa-without-unrela-5f72fe41",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-verified-dialer-launch-qa-without-unrelated-stream-commits/.task/session.json",
+  "createdAt": "2026-11-06T02:11:38.318Z"
+}
