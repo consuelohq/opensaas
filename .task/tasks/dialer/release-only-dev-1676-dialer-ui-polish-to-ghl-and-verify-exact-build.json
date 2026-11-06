@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/release-only-dev-1676-dialer-ui-polish-to-ghl-and-verify-exact-build",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2772,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2772",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-only-dev-1676-dialer-ui-polish-to-ghl-and-verify-exact-build",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9e4c5a52ecac",
+  "tmuxSession": "opensaas-dialer-release-only-dev-1676-dialer-ui-polish-to-ghl-an-9e4c5a52",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-only-dev-1676-dialer-ui-polish-to-ghl-and-verify-exact-build/.task/session.json",
+  "createdAt": "2026-11-06T03:05:01.557Z"
+}

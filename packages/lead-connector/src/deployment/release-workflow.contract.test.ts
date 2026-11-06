@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'bun:test';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 
 const repoRoot = join(import.meta.dir, '..', '..', '..', '..');
 const read = (...parts: string[]) =>
@@ -177,5 +184,114 @@ describe('dialer GitHub release workflow contract', () => {
     expect(rollback).toContain('environment: consuelo dialer / production');
     expect(rollback).not.toContain('pull_request:');
     expect(rollback).not.toMatch(/previous|latest successful/i);
+  });
+
+  it('releases only the approved UI files to the Worker while fencing Railway and other changes', () => {
+    const release = read(
+      '.github',
+      'workflows',
+      'consuelo-production-release.yaml',
+    );
+    const classifier = release
+      .split('  dialer-changes:\n')[1]
+      ?.split('\n  public-changes:\n')[0]
+      ?.split('        run: |\n')[1]
+      ?.split('\n')
+      .map((line) => line.replace(/^ {10}/, ''))
+      .join('\n');
+    expect(classifier).toBeDefined();
+    if (!classifier) throw new Error('Dialer release classifier is absent');
+
+    const temp = mkdtempSync(join(tmpdir(), 'dev1676-ui-classifier-'));
+    const git = (...args: string[]) => {
+      const result = Bun.spawnSync(['git', ...args], {
+        cwd: temp,
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
+      if (result.exitCode !== 0)
+        throw new Error('Fixture git failed: ' + result.stderr.toString());
+      return result.stdout.toString().trim();
+    };
+    const put = (path: string, content: string) => {
+      mkdirSync(dirname(join(temp, path)), { recursive: true });
+      writeFileSync(join(temp, path), content);
+    };
+    const commit = (message: string) => {
+      git('add', '.');
+      git('commit', '-qm', message);
+      return git('rev-parse', 'HEAD');
+    };
+    const classify = (
+      before: string,
+      after: string,
+      event: 'push' | 'workflow_dispatch' = 'push',
+      target = 'all',
+    ) => {
+      // Keep fixture outputs out of subsequent git commits: otherwise a
+      // temporary test artifact looks like an unrelated production file.
+      const outputFile = join(temp, '.git', 'classifier-output');
+      writeFileSync(outputFile, '');
+      const bash = classifier
+        .replaceAll('$' + '{{ github.event_name }}', event)
+        .replaceAll('$' + '{{ inputs.target }}', target)
+        .replaceAll('$' + '{{ github.event.before }}', before);
+      const result = Bun.spawnSync(['bash', '-c', bash], {
+        cwd: temp,
+        stdout: 'pipe',
+        stderr: 'pipe',
+        env: {
+          PATH: process.env.PATH ?? '/usr/bin:/bin',
+          GITHUB_SHA: after,
+          GITHUB_OUTPUT: outputFile,
+          RUNNER_TEMP: join(temp, '.git'),
+        },
+      });
+      expect(result.exitCode, result.stderr.toString()).toBe(0);
+      return readFileSync(outputFile, 'utf8');
+    };
+    try {
+      git('init', '-q');
+      git('config', 'user.email', 'release-test@consuelo.invalid');
+      git('config', 'user.name', 'Release Test');
+      put('packages/lead-connector/src/embed/view.ts', 'export const title = "before";\n');
+      put('packages/dialer-server/src/main.ts', 'export const live = true;\n');
+      const base = commit('base');
+
+      put('packages/lead-connector/src/embed/view.ts', 'export const title = "after";\n');
+      put('packages/lead-connector/src/embed/compact-workspace-polish.test.ts', 'test();\n');
+      put('packages/lead-connector/src/deployment/release-workflow.contract.test.ts', 'test();\n');
+      const ui = commit('scoped UI');
+      expect(classify(base, ui)).toContain('release=false');
+      expect(classify(base, ui)).toContain('frontend_only=true');
+      expect(classify(base, ui, 'workflow_dispatch', 'dialer')).toContain(
+        'release=true',
+      );
+      expect(classify(base, ui, 'workflow_dispatch', 'dialer')).toContain(
+        'frontend_only=false',
+      );
+
+      put('packages/dialer-server/src/main.ts', 'export const live = false;\n');
+      const backend = commit('runtime change');
+      expect(classify(ui, backend)).toContain('release=true');
+      expect(classify(ui, backend)).toContain('frontend_only=false');
+      expect(classify(base, backend)).toContain('frontend_only=false');
+
+      put('packages/dialer-server/src/lab/launch-scenarios.ts', 'export {};\n');
+      const qa = commit('QA catalog');
+      expect(classify(backend, qa)).toContain('release=false');
+      expect(classify(backend, qa)).toContain('frontend_only=false');
+    } finally {
+      rmSync(temp, { recursive: true, force: true });
+    }
+
+    const workerJob = release.split('\n  release-dialer-ui:\n')[1];
+    expect(workerJob).toBeDefined();
+    expect(workerJob).toContain("needs.dialer-changes.outputs.frontend_only == 'true'");
+    expect(workerJob).toContain('CLOUDFLARE_DIALER_WORKER_API_TOKEN');
+    expect(workerJob).toContain('bun run --cwd packages/lead-connector build');
+    expect(workerJob).toContain('release:deploy-worker');
+    expect(workerJob).toContain('verify-production-edge.ts');
+    expect(workerJob).not.toMatch(/RAILWAY_TOKEN|RAILWAY_DIALER_PROJECT_ID|railway up|railway-deployment/);
   });
 });

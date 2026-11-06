@@ -42,6 +42,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       release: ${{ steps.classify.outputs.release }}
+      frontend_only: ${{ steps.classify.outputs.frontend_only }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,6 +59,7 @@ jobs:
               all|dialer) echo "release=true" >> "$GITHUB_OUTPUT" ;;
               *) echo "release=false" >> "$GITHUB_OUTPUT" ;;
             esac
+            echo "frontend_only=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -106,8 +108,41 @@ jobs:
           if [[ "$qa_only" == true && "$qa_file_seen" == true ]]; then
             echo "Dialer launch QA-only change; preserving live Railway and Worker."
             echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "frontend_only=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          # DEV-1676 changes only the embedded presentation. Deploy the
+          # Calls Worker alone; do not restart Railway or change phone state.
+          # Mixed code, dependency or backend changes use the normal release.
+          ui_only=true
+          ui_file_seen=false
+          while IFS= read -r path; do
+            case "$path" in
+              packages/lead-connector/src/embed/calling-workspace.test.ts|\
+              packages/lead-connector/src/embed/compact-workspace-polish.test.ts|\
+              packages/lead-connector/src/embed/inbound-operator-view.ts|\
+              packages/lead-connector/src/embed/internal-main.ts|\
+              packages/lead-connector/src/embed/view.ts|\
+              packages/lead-connector/src/embed/workspace-pages.ts|\
+              packages/lead-connector/src/embed/workspace-theme.css|\
+              packages/lead-connector/src/deployment/release-workflow.contract.test.ts)
+                ui_file_seen=true
+                ;;
+              .task/*|.github/workflows/consuelo-production-release.yaml)
+                ;;
+              *)
+                ui_only=false
+                ;;
+            esac
+          done < "$RUNNER_TEMP/dialer-release-changes.txt"
+          if [[ "$ui_only" == true && "$ui_file_seen" == true ]]; then
+            echo "Scoped DEV-1676 UI-only change: Cloudflare, not Railway."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "frontend_only=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "frontend_only=false" >> "$GITHUB_OUTPUT"
           # CI and release-orchestration edits are not dialer runtime changes.
           # Releasing them needlessly redeploys the live dialer; preserve runtime,
           # root dependency, and explicit rollback triggers.
@@ -498,3 +533,103 @@ jobs:
         run: |
           echo "### Consuelo Dialer production release" >> "$GITHUB_STEP_SUMMARY"
           jq -r '"- Git SHA: `\(.gitSha)`\n- Railway deployment: `\(.railway.deploymentId)` (`\(.railway.status)`)\n- Cloudflare version: `\(.cloudflare.versionId)`\n- Marketplace bootstrap SHA-256: `\(.launcherBootstrap.sha256)` (one-time install)\n- Safe smoke: `\(.smoke.ok)`"' "$RUNNER_TEMP/dialer-release-manifest.json" >> "$GITHUB_STEP_SUMMARY"
+
+  # A strictly scoped LeadConnector presentation change must not restart
+  # Railway, mutate provider secrets or replace existing call sessions.
+  release-dialer-ui:
+    name: Consuelo / LeadConnector UI-only release
+    needs: dialer-changes
+    if: needs.dialer-changes.outputs.frontend_only == 'true'
+    environment: consuelo dialer / production
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact UI release source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
+
+      - name: Install dependencies
+        uses: ./.github/actions/bun-install
+
+      - name: Build and test only LeadConnector UI
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          bun test packages/lead-connector/src
+          bun run --cwd packages/lead-connector typecheck
+          bun run --cwd packages/lead-connector build
+
+      - name: Validate Cloudflare-only release configuration
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
+          LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: ${{ vars.LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 }}
+        run: |
+          set -euo pipefail
+          for name in CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN LEADCONNECTOR_PRODUCTION_EMBED_URL LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing LeadConnector UI release setting: $name"
+              exit 1
+            fi
+          done
+          bun packages/lead-connector/scripts/verify-marketplace-bootstrap.ts packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.marketplace-loader.html > "$RUNNER_TEMP/marketplace-bootstrap.json"
+
+      - name: Deploy LeadConnector worker UI
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-dialer-ui.ndjson
+        run: bun run --cwd packages/lead-connector release:deploy-worker
+
+      - name: Capture exact Worker version
+        run: >-
+          bun packages/lead-connector/scripts/read-wrangler-deployment.ts
+          "$RUNNER_TEMP/wrangler-dialer-ui.ndjson"
+          > "$RUNNER_TEMP/cloudflare-ui-deployment.json"
+
+      - name: Verify deployed shell, launcher and compiled UI bytes
+        env:
+          LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
+        run: |
+          set -euo pipefail
+          bun packages/lead-connector/scripts/verify-production-edge.ts > "$RUNNER_TEMP/leadconnector-ui-edge.json"
+          base="${LEADCONNECTOR_PRODUCTION_EMBED_URL%/}"
+          for asset in main.js main.css; do
+            curl --fail --silent --show-error --location --retry 5 --retry-all-errors "$base/$asset?v=$GITHUB_SHA" -o "$RUNNER_TEMP/deployed-$asset"
+            if ! cmp -s "packages/lead-connector/dist/embed-app/$asset" "$RUNNER_TEMP/deployed-$asset"; then
+              echo "::error::Deployed $asset does not match exact source build"
+              exit 1
+            fi
+          done
+
+      - name: Save UI-only release evidence
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg sourceSha "$GITHUB_SHA" \
+            --arg mainJsSha256 "$(sha256sum packages/lead-connector/dist/embed-app/main.js | cut -d' ' -f1)" \
+            --arg mainCssSha256 "$(sha256sum packages/lead-connector/dist/embed-app/main.css | cut -d' ' -f1)" \
+            --slurpfile worker "$RUNNER_TEMP/cloudflare-ui-deployment.json" \
+            --slurpfile edge "$RUNNER_TEMP/leadconnector-ui-edge.json" \
+            --slurpfile marketplace "$RUNNER_TEMP/marketplace-bootstrap.json" \
+            '{ sourceSha: $sourceSha, railway: "unchanged", worker: $worker[0], edge: $edge[0], mainJsSha256: $mainJsSha256, mainCssSha256: $mainCssSha256, marketplaceBootstrap: $marketplace[0] }' \
+            > "$RUNNER_TEMP/dialer-ui-release.json"
+
+      - name: Upload UI release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: dialer-ui-release-${{ github.sha }}
+          path: ${{ runner.temp }}/dialer-ui-release.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish UI release summary
+        run: |
+          echo "### Consuelo LeadConnector UI-only release" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '"- Source: \(.sourceSha)\n- Cloudflare version: \(.worker.versionId)\n- Railway: unchanged\n- Main JavaScript SHA-256: \(.mainJsSha256)\n- Main CSS SHA-256: \(.mainCssSha256)\n- Safe edge verification: \(.edge.ok)"' "$RUNNER_TEMP/dialer-ui-release.json" >> "$GITHUB_STEP_SUMMARY"
