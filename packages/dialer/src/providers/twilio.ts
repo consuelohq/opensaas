@@ -44,6 +44,7 @@ export class TwilioProvider implements DialerProvider {
     this.credentials = {
       accountSid:
         credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
+      authAccountSid: credentials?.authAccountSid,
       authToken: credentials?.authToken ?? process.env.TWILIO_AUTH_TOKEN ?? '',
       apiKey: credentials?.apiKey ?? process.env.TWILIO_API_KEY,
       apiSecret: credentials?.apiSecret ?? process.env.TWILIO_API_SECRET,
@@ -59,8 +60,9 @@ export class TwilioProvider implements DialerProvider {
       }
       const twilio = await import('twilio');
       this.client = twilio.default(
-        this.credentials.accountSid,
+        this.credentials.authAccountSid ?? this.credentials.accountSid,
         this.credentials.authToken,
+        { accountSid: this.credentials.accountSid },
       );
       return this.client;
     } catch (err: unknown) {

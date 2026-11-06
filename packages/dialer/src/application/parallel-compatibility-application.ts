@@ -356,6 +356,12 @@ export const generateParallelAgentTwiml = (input: ParallelAgentTwimlInput) =>
         }),
       );
     }
+    if (input.accountSid && input.parentAccountSid &&
+        input.accountSid !== (group.providerAccountId ?? input.parentAccountSid)) {
+      return yield* Effect.fail(requestError(
+        'TWILIO_ACCOUNT_MISMATCH', 'Voice account does not own this call group',
+      ));
+    }
     if (group.status === 'completed' || group.status === 'failed') {
       return '<?xml version="1.0" encoding="UTF-8"?><Response><Hangup /></Response>';
     }

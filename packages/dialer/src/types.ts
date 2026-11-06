@@ -1,6 +1,8 @@
 /** Twilio credentials configuration */
 export interface TwilioCredentials {
   accountSid: string;
+  /** REST auth authority: parent SID when operating on a managed child account. */
+  authAccountSid?: string;
   authToken: string;
   apiKey?: string;
   apiSecret?: string;
@@ -338,6 +340,7 @@ export type ParallelGroup = {
   groupId: string;
   dialerSessionId?: string;
   providerMode?: ParallelProviderMode;
+  providerAccountId?: string;
   conferenceName: string;
   status: ParallelGroupStatus;
   winnerSid: string | null;
@@ -360,6 +363,7 @@ export interface ParallelDialOptions {
   workspaceId: string;
   dialerSessionId?: string;
   providerMode?: ParallelProviderMode;
+  providerAccountId?: string;
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];

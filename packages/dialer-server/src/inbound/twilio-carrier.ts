@@ -3,12 +3,14 @@ import type { InboundCarrier } from './telephony-contracts';
 export const createTwilioInboundCarrier = async (
   accountSid: string,
   authToken: string,
+  targetAccountSid?: string,
 ): Promise<InboundCarrier> => {
   try {
     const { default: twilio } = await import('twilio');
     const client = twilio(accountSid, authToken, {
       timeout: 5000,
       autoRetry: false,
+      accountSid: targetAccountSid ?? accountSid,
     });
     const conference = async (name: string) => {
       try {

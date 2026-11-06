@@ -35,6 +35,7 @@ export class ConferenceService {
     this.credentials = {
       accountSid:
         credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
+      authAccountSid: credentials?.authAccountSid,
       authToken: credentials?.authToken ?? process.env.TWILIO_AUTH_TOKEN ?? '',
     };
   }
@@ -49,8 +50,9 @@ export class ConferenceService {
     try {
       const twilio = await import('twilio');
       this.client = twilio.default(
-        this.credentials.accountSid,
+        this.credentials.authAccountSid ?? this.credentials.accountSid,
         this.credentials.authToken,
+        { accountSid: this.credentials.accountSid },
       );
       return this.client;
     } catch (err: unknown) {

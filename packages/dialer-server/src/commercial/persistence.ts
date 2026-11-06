@@ -54,6 +54,16 @@ export const COMMERCIAL_SCHEMA_STATEMENTS = [
     status text NOT NULL CHECK (status IN ('active', 'disabled')),
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
+  `  CREATE TABLE IF NOT EXISTS dialer_workspace_twilio_voice_credentials (
+    workspace_id text PRIMARY KEY
+      REFERENCES dialer_workspace_telephony_accounts(workspace_id),
+    provider_account_id text NOT NULL,
+    api_key_sid text NOT NULL,
+    api_key_secret_ciphertext text NOT NULL,
+    twiml_app_sid text NOT NULL,
+    status text NOT NULL CHECK(status IN ('active', 'disabled')),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
   `CREATE TABLE IF NOT EXISTS dialer_phone_numbers (
     workspace_id text NOT NULL,
     phone_number text NOT NULL,

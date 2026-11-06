@@ -38,7 +38,7 @@ type CommercialApplication = CommercialRouteDependencies & {
 };
 
 export type CommercialUsageProvider = {
-  getCompletion: (providerCallId: string) => Promise<{
+  getCompletion: (providerCallId: string, workspaceId: string) => Promise<{
     customerConnectedSeconds: number;
     agentConnectedSeconds: number;
     providerCostMicros: number;
@@ -1340,6 +1340,7 @@ export const createCommercialApplication = (input: {
           if (!userId) throw new Error('USAGE_SESSION_NOT_FOUND');
           const completion = await input.usage.getCompletion(
             request.providerCallId,
+            request.workspaceId,
           );
           return Effect.runPromise(
             recordFinalProviderUsage({

@@ -47,10 +47,45 @@ const OUTBOUND_REP_POLICY = {
 } as const;
 const OUTBOUND_BROWSER_SLOT = 'outbound-browser';
 
+/**
+ * Outbound customer and browser legs must reconcile against the workspace's
+ * Twilio account, not the global inbound parent account.
+ */
+export const resolveOutboundCarrierAccount = async (
+  pool: Pick<Pool, 'query'>,
+  workspaceId: string,
+  parentAccountSid: string,
+): Promise<string> => {
+  try {
+    const found = await pool.query<{
+      provider_account_id: string;
+      status: string;
+    }>(
+      'SELECT provider_account_id,status FROM dialer_workspace_telephony_accounts WHERE workspace_id=$1',
+      [workspaceId],
+    );
+    const row = found.rows[0];
+    if (!row) return parentAccountSid; // legacy parent-owned group
+    if (row.status !== 'active' || !/^AC[a-fA-F0-9]{32}$/.test(row.provider_account_id)) {
+      throw new Error('Outbound provider account unavailable');
+    }
+    return row.provider_account_id;
+  } catch (cause: unknown) {
+    if (cause instanceof Error) throw cause;
+    throw new Error('Outbound provider account lookup failed', { cause });
+  }
+};
+
+export const outboundRepIdFromClient = (clientIdentity: string): string =>
+  clientIdentity.startsWith('user_')
+    ? clientIdentity.slice('user_'.length)
+    : clientIdentity; // retained for older signed integrations
+
 export const createOutboundCapacity = (options: {
   pool: Pool;
   carrier: InboundCarrier;
   accountSid: string;
+  carrierForAccount?: (accountSid: string) => Promise<InboundCarrier>;
   clock?: () => string;
 }) => {
   const { pool } = options;
@@ -383,6 +418,8 @@ export const createOutboundCapacity = (options: {
     guardedWorkspaceIds: readonly string[],
   ) => {
     try {
+      const repId = outboundRepIdFromClient(input.clientIdentity);
+      if (!repId) throw new Error('Outbound representative identity missing');
       const binding = (
         await pool.query<OutboundBinding>(
           'SELECT * FROM dialer_telephony_outbound WHERE session_id=$1 OR group_id=$1',
@@ -392,7 +429,7 @@ export const createOutboundCapacity = (options: {
       if (binding.length === 0) {
         const guarded = await pool.query(
           'SELECT capacity_id FROM dialer_rep_capacity WHERE workspace_id=ANY($1::text[]) AND rep_id=$2',
-          [guardedWorkspaceIds, input.clientIdentity],
+          [guardedWorkspaceIds, repId],
         );
         if (guarded.rowCount)
           throw new Error('Outbound capacity binding missing');
@@ -400,7 +437,10 @@ export const createOutboundCapacity = (options: {
       }
       if (binding.length !== 1) throw new Error('Outbound binding ambiguous');
       const row = binding[0]!;
-      if (input.accountSid !== options.accountSid || !input.callSid)
+      const accountSid = await resolveOutboundCarrierAccount(
+        pool, row.workspace_id, options.accountSid,
+      );
+      if (input.accountSid !== accountSid || !input.callSid)
         throw new Error('Outbound provider identity mismatch');
       await withInboundTransaction(pool, row.workspace_id, async (client) => {
         try {
@@ -417,7 +457,7 @@ export const createOutboundCapacity = (options: {
           );
           if (
             !state?.owner ||
-            state.repId !== input.clientIdentity ||
+            state.repId !== repId ||
             state.owner.assignmentId !== row.assignment_id ||
             !['connecting', 'connected'].includes(state.owner.phase) ||
             current.status !== 'succeeded' ||
@@ -474,12 +514,21 @@ export const createOutboundCapacity = (options: {
           );
           if (!rejected.rowCount) continue;
         }
+        const accountSid = await resolveOutboundCarrierAccount(
+          pool, row.workspace_id, options.accountSid,
+        );
+        if (accountSid !== options.accountSid && !options.carrierForAccount) {
+          throw new Error('Scoped outbound carrier unavailable');
+        }
+        const carrier = accountSid === options.accountSid
+          ? options.carrier
+          : await options.carrierForAccount!(accountSid);
         const calls = await Promise.all(
           [...row.call_sids, ...(row.rep_sid ? [row.rep_sid] : [])].map((sid) =>
-            options.carrier.call(sid),
+            carrier.call(sid),
           ),
         );
-        if (calls.some((call) => call.accountSid !== options.accountSid))
+        if (calls.some((call) => call.accountSid !== accountSid))
           throw new Error('Outbound carrier account mismatch');
         const customersEnded = calls
           .filter((call) => row.call_sids.includes(call.sid))
@@ -494,11 +543,11 @@ export const createOutboundCapacity = (options: {
             'UPDATE dialer_telephony_outbound SET end_requested_at=coalesce(end_requested_at,clock_timestamp()) WHERE workspace_id=$1 AND session_id=$2',
             [workspaceId, row.session_id],
           );
-          await options.carrier.end(row.rep_sid!);
+          await carrier.end(row.rep_sid!);
           continue;
         }
         const members = row.conference_name
-          ? await options.carrier.participants(row.conference_name)
+          ? await carrier.participants(row.conference_name)
           : [];
         const present = (sid: string) =>
           members.some(

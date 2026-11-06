@@ -14,6 +14,7 @@ export const createParallelGroup = (
   groupId,
   dialerSessionId: options.dialerSessionId,
   providerMode: options.providerMode,
+  providerAccountId: options.providerAccountId,
   conferenceName: `${groupId}_${options.queueId}`,
   status: 'dialing',
   winnerSid: null,

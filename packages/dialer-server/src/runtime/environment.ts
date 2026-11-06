@@ -3,6 +3,7 @@ import {
   Dialer,
   DialerRequestError,
   type TwilioCredentials,
+  type VoiceToken,
 } from '@consuelo/dialer';
 
 import type { DialerApplicationLayers } from '../application';
@@ -49,6 +50,13 @@ type RuntimeModule = {
   createTransferApplicationRuntime?: (
     environment: DialerServerEnvironment,
   ) => Promise<DialerTransferApplication> | DialerTransferApplication;
+  createWorkspaceVoiceRuntime?: (
+    environment: DialerServerEnvironment,
+  ) => Promise<{
+    issueVoiceToken: (identity: { workspaceId: string; userId: string }) => Promise<VoiceToken>;
+    verifyTwilioSignature: DialerServerDependencies['verifyTwilioSignature'];
+  }>;
+
 };
 
 export type DialerServerRuntimeConfig = {
@@ -145,6 +153,16 @@ export async function loadDialerServerRuntime(
       twimlAppSid: environment.TWILIO_TWIML_APP_SID?.trim(),
     };
     const voiceDialer = new Dialer({ credentials: voiceCredentials });
+    // Production commercial workspaces must use account-matched Voice JWTs
+    // and child-account webhook signing authority. Legacy parent-only
+    // installations retain their existing configuration.
+    const workspaceVoice = commercialEnabled
+      ? await imported.createWorkspaceVoiceRuntime?.(environment)
+      : undefined;
+    if (commercialEnabled && !workspaceVoice &&
+        !environment.DIALER_SERVER_RUNTIME_MODULE) {
+      throw new Error('Workspace Twilio Voice authority is unavailable');
+    }
     const staticAuthenticator = createBearerAuthenticator(identities);
     const embedSessions = createEmbedSessionService({
       secret: required(environment, 'DIALER_SERVER_EMBED_SESSION_SECRET'),
@@ -215,11 +233,15 @@ export async function loadDialerServerRuntime(
         authenticate,
         issueEmbedSession: embedSessions.issue,
         leadConnector,
-        verifyTwilioSignature: createTwilioSignatureVerifier(
-          required(environment, 'TWILIO_AUTH_TOKEN'),
-          environment.DIALER_SERVER_PUBLIC_URL?.trim() || undefined,
-        ),
-        issueVoiceToken: (identity) => voiceDialer.getToken(identity.userId),
+        twilioMasterAccountSid: voiceCredentials.accountSid,
+        verifyTwilioSignature: workspaceVoice?.verifyTwilioSignature ??
+          createTwilioSignatureVerifier(
+            required(environment, 'TWILIO_AUTH_TOKEN'),
+            environment.DIALER_SERVER_PUBLIC_URL?.trim() || undefined,
+          ),
+        issueVoiceToken: workspaceVoice
+          ? workspaceVoice.issueVoiceToken
+          : (identity) => voiceDialer.getToken(identity.userId),
       },
     };
   } catch (error: unknown) {
