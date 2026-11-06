@@ -363,6 +363,7 @@ const main = async () => {
       const suite = Bun.spawn(
         [
           'bun',
+          '--no-env-file',
           'test',
           ...qaPostgresSuites.map((file) =>
             join(import.meta.dir, '../src', file),
