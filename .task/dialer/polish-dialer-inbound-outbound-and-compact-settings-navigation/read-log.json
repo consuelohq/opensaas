@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/dialer-server/src/application.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/internal-main.ts"
+  ],
+  "updatedAt": "2026-11-06T02:43:12.140Z"
+}

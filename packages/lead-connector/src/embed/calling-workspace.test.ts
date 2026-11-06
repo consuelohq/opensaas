@@ -190,7 +190,7 @@ describe('rep-first calling workspace', () => {
   it('keeps idle inbound quiet while making browser setup discoverable', () => {
     const doc = dom(renderLeadConnectorEmbed(rep(), { surface: 'admin' }));
     expect(doc.querySelector('[data-session-status]')).toBeNull();
-    expect(doc.body.textContent).toContain('This browser');
+    expect(doc.body.textContent).toContain('Web');
     expect(
       doc.querySelector('[data-action="inbound-readiness"]')?.textContent,
     ).toContain('Start receiving calls');
