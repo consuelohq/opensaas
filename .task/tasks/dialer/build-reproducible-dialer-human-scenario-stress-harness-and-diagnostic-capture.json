@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/build-reproducible-dialer-human-scenario-stress-harness-and-diagnostic-capture",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2769,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2769",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-build-reproducible-dialer-human-scenario-stress-harness-and-diagnostic-capture",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_88895a70682c",
+  "tmuxSession": "opensaas-dialer-build-reproducible-dialer-human-scenario-stress--88895a70",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-build-reproducible-dialer-human-scenario-stress-harness-and-diagnostic-capture/.task/session.json",
+  "createdAt": "2026-11-06T02:00:09.310Z"
+}
