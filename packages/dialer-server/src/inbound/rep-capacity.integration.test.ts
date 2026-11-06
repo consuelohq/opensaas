@@ -1,3 +1,4 @@
+import {prepareHistoricalInboundRollback} from '../lab/historical-inbound-fixture';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from './callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from './callback-booking-event-migration';
@@ -657,6 +658,7 @@ suite('Postgres shared rep capacity', () => {
   });
 
   it('preserves identity uniqueness, history immutability and populated migration rollback', async () => {
+    await prepareHistoricalInboundRollback(pool);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);

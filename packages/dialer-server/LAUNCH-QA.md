@@ -42,6 +42,61 @@ provider/server/capacity evidence is checked. Do not include raw call audio, HAR
 cookies, secrets, customer contact data or payment details in notes or exports.
 Never paste telephone numbers into Linear or a public PR.
 
+
+## Service-backed prerequisite lane (DEV-1689)
+
+From an isolated current-main task checkout, run:
+
+    bun --no-env-file packages/dialer-server/scripts/local-dialer-lab.ts --scale smoke --seed 20261106 --qa
+
+Save the complete JSON result to a private run artifact through the OS task
+facade. The normal `lab:launch run` command remains component coverage; `--qa`
+is a separate real-service lane. It creates new loopback PostgreSQL/Redis
+instances, uses production migrations, and starts bounded loopback HTTP servers
+with the real inbound routes, authentication middleware and operator adapter.
+The authenticator is an explicit local opaque-token fixture: this is not proof
+of production Google/CRM OAuth. Synthetic actor tokens are never exported.
+
+`qa.stages` contains 1, 2, 5 and 20 distinct rep identities, a separate tenant,
+seeded caller arrivals, a deterministic input digest and captured event order.
+Each stage checks a queued caller beyond available capacity, exactly one
+committed acceptance across two tabs per rep, foreign-owner rejection,
+confirmed synthetic provider participants, redis-index loss, service recreation,
+journal replay and terminal ownership/effect cleanup. A planted invalid-state
+unit test proves the independent capacity oracle detects duplicate owners and
+endpoint winners. Input order is reproducible; OS/DB scheduling and race winner
+identity are not claimed to be deterministic. Timing is local synthetic timing,
+not PSTN latency or a production throughput promise.
+
+`qa.databaseSuites` runs the explicit inventory in
+`src/lab/qa-postgres-suites.ts` with the RD3/RD4/RD5/RD6/RD7B local port flags and
+coaching/upgrade/native-billing/public-checkout flags. It fails on any skipped
+selected test, any failure, empty test output or nonzero exit. This covers the
+previously gated suite families; do not equate Bun's historical skipped group
+count with the number of executed cases. Child environments allow only machine
+runtime paths/local flags and disable dotenv loading; no provider keys or
+production DB URLs are inherited. The ordinary integration wrapper adds its
+own asserted resource teardown.
+
+Historical inbound rollback fixtures deliberately retain forward-only
+014/015/016 application tables while removing their ledger entries only in
+UUID-named disposable RD3–RD6 databases. Production rollback guards are unchanged.
+The outbound fixture initializes commercial persistence just as runtime does.
+Do not copy this historical fixture setup into production migration handling.
+
+The full local command also retains the existing 14 process-death/reconciliation
+scenarios and scientific learning proofs. A failed selected DB run writes its
+full log into an owner-only temporary failure directory before teardown and
+prints its path. Keep it when escalating; never substitute a clean rerun for
+that evidence.
+
+This is the smoke-tested foundation for Luna execution tasks DEV-1690–1693.
+The broader stress schedules, 30-minute soak and user/browser workflows remain
+separate cases. No browser audio, live carrier delivery, notifications or paid
+activation is certified here. Device and team product changes remain separately
+owned by larger-model tasks DEV-1655/1657. Use a distinct evidence directory and
+owned task/fixture resources per worker; never run faults against production.
+
 ## First human walkthrough: minimal safe pilot
 
 Use the existing isolated Wet Stone test tenant and signed-in GHL workspace.
