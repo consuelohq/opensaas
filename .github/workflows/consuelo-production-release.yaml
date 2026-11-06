@@ -75,6 +75,7 @@ jobs:
           # package or runtime change must take the normal release path.
           qa_only=true
           qa_file_seen=false
+          qa_package_safe=true
           while IFS= read -r path; do
             case "$path" in
               packages/dialer-server/package.json)
@@ -84,8 +85,10 @@ jobs:
                 if ! before_package="$(git show "$before:$path" | jq -S 'del(.scripts["lab:launch"])')" ||
                    ! after_package="$(git show "$GITHUB_SHA:$path" | jq -S 'del(.scripts["lab:launch"])')"; then
                   qa_only=false
+                  qa_package_safe=false
                 elif [[ "$before_package" != "$after_package" ]]; then
                   qa_only=false
+                  qa_package_safe=false
                 fi
                 ;;
               packages/dialer-server/LAUNCH-QA.md|\
@@ -128,6 +131,23 @@ jobs:
               packages/lead-connector/src/embed/workspace-theme.css|\
               packages/lead-connector/src/deployment/release-workflow.contract.test.ts)
                 ui_file_seen=true
+                ;;
+              packages/dialer-server/package.json)
+                # Already validated in the QA classifier. Only the addition
+                # of the lab:launch script can be neutral to a UI-only push.
+                if [[ "$qa_package_safe" != true ]]; then
+                  ui_only=false
+                fi
+                ;;
+              packages/dialer-server/LAUNCH-QA.md|\
+              packages/dialer-server/scripts/launch-scenarios.ts|\
+              packages/dialer-server/scripts/local-dialer-lab.ts|\
+              packages/dialer-server/src/lab/launch-scenarios.ts|\
+              packages/dialer-server/src/lab/launch-scenarios.test.ts|\
+              packages/dialer-server/src/lab/launch-scenarios.cli.test.ts|\
+              packages/dialer-server/src/lab/launch-release-classifier.test.ts|\
+              packages/dialer-server/src/lab/learning-rollback-scenario.ts)
+                # QA catalog/files do not change live telephony behavior.
                 ;;
               .task/*|.github/workflows/consuelo-production-release.yaml)
                 ;;
@@ -580,18 +600,52 @@ jobs:
           done
           bun packages/lead-connector/scripts/verify-marketplace-bootstrap.ts packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.marketplace-loader.html > "$RUNNER_TEMP/marketplace-bootstrap.json"
 
-      - name: Deploy LeadConnector worker UI
+      - name: Upload LeadConnector Worker version without changing routes
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
-          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-dialer-ui.ndjson
-        run: bun run --cwd packages/lead-connector release:deploy-worker
+        run: |
+          set -euo pipefail
+          bunx wrangler versions upload \
+            --config packages/lead-connector/wrangler.jsonc \
+            --keep-vars \
+            --tag "ui-$GITHUB_SHA" \
+            --message "DEV-1676 UI source $GITHUB_SHA"
 
-      - name: Capture exact Worker version
-        run: >-
-          bun packages/lead-connector/scripts/read-wrangler-deployment.ts
-          "$RUNNER_TEMP/wrangler-dialer-ui.ndjson"
-          > "$RUNNER_TEMP/cloudflare-ui-deployment.json"
+      - name: Deploy uploaded Worker version on existing routes
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          bunx wrangler versions deploy \
+            --config packages/lead-connector/wrangler.jsonc \
+            --version-tag "ui-$GITHUB_SHA" \
+            --message "DEV-1676 UI source $GITHUB_SHA" \
+            --yes
+
+      - name: Capture and verify exact deployed Worker version
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          bunx wrangler deployments list \
+            --config packages/lead-connector/wrangler.jsonc \
+            --json > "$RUNNER_TEMP/worker-deployments.json"
+          jq -e --arg sha "$GITHUB_SHA" '
+            .[-1] |
+            ((.annotations["workers/message"] // "") | contains($sha)) and
+            ((.versions | length) == 1) and
+            (.versions[0].percentage == 100) and
+            ((.versions[0].version_id | type) == "string")
+          ' "$RUNNER_TEMP/worker-deployments.json" > /dev/null
+          version_id="$(jq -er '.[-1].versions[0].version_id' "$RUNNER_TEMP/worker-deployments.json")"
+          jq -n \
+            --arg workerName "consuelo-lead-connector-embed" \
+            --arg versionId "$version_id" \
+            '{workerName: $workerName, versionId: $versionId, targets: ["https://calls.consuelohq.com"]}' \
+            > "$RUNNER_TEMP/cloudflare-ui-deployment.json"
 
       - name: Verify deployed shell, launcher and compiled UI bytes
         env:
