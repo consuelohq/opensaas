@@ -77,7 +77,11 @@ const allSizes = [
   [1024, 768],
   [1440, 960],
 ];
-const sizes = process.argv.includes('--smoke') ? [[375, 812]] : allSizes;
+const sizes = process.argv.includes('--smoke')
+  ? [[375, 812]]
+  : process.argv.includes('--desktop-smoke')
+    ? [[1440, 960]]
+    : allSizes;
 try {
   for (const [width, height] of sizes) {
     const context = await newCheckoutFixtureContext(browser, {
@@ -173,12 +177,13 @@ try {
       await page.screenshot({
         path: join(artifactRoot, 'features-' + width + '.png'),
       });
+    const returningFocusLabel = width <= 760 ? 'Demo' : 'Pricing';
     await returningNav
-      .getByRole('link', { name: 'Pricing', exact: true })
+      .getByRole('link', { name: returningFocusLabel, exact: true })
       .focus();
     assert.equal(
       await returningNav
-        .getByRole('link', { name: 'Pricing', exact: true })
+        .getByRole('link', { name: returningFocusLabel, exact: true })
         .evaluate((el) => el === document.activeElement),
       true,
     );
@@ -244,6 +249,11 @@ try {
       'Footer has grouped navigation',
     );
     await footer.scrollIntoViewIfNeeded();
+    assert.equal(
+      await returningNav.getAttribute('inert'),
+      '',
+      'Returning navigation dismisses before the closing footer',
+    );
     if ([375, 1440].includes(width))
       await page.screenshot({
         path: join(artifactRoot, 'footer-' + width + '.png'),
@@ -283,6 +293,28 @@ try {
   });
   const page = await context.newPage();
   await page.goto(base + '/pricing', { waitUntil: 'networkidle' });
+  const pricingReturning = page.locator('[data-returning-nav]');
+  assert.equal(
+    await pricingReturning.getAttribute('inert'),
+    '',
+    'Pricing navigation begins out of view',
+  );
+  await page.evaluate(() => window.scrollTo(0, 450));
+  await page.waitForFunction(
+    () => !document.querySelector('[data-returning-nav]').hasAttribute('inert'),
+  );
+  const pricingNavigationBox = await pricingReturning.boundingBox();
+  assert.ok(
+    pricingNavigationBox &&
+      Math.abs(pricingNavigationBox.x) < 1 &&
+      Math.abs(pricingNavigationBox.y) < 1 &&
+      Math.abs(pricingNavigationBox.width - 1440) < 1,
+    'Pricing navigation is flush to the top and fills the viewport',
+  );
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForFunction(
+    () => document.querySelector('[data-returning-nav]').hasAttribute('inert'),
+  );
   const pricingClearance = await page.evaluate(() => {
     const social = [...document.querySelectorAll('.os-header__socials')].find(
       (el) => el.getBoundingClientRect().height > 0,
@@ -381,7 +413,7 @@ try {
     '/',
     '/pricing',
     '/get-started',
-    '/how-it-works',
+    '/demo',
     '/contact',
     '/privacy',
     '/terms',

@@ -2,6 +2,7 @@
 import HomeCloudCta from '../components/home/HomeCloudCta.astro';
 import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
 import HomeHero from '../components/home/HomeHero.astro';
+import PricingTechnology from '../components/pricing/PricingTechnology.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import { homeFaqItems } from '../data/dialer-content';
 import { homepageSeo } from '../lib/homepage-seo';
@@ -29,10 +30,11 @@ const schemaEntries = [
   preloadImages={['/images/clouds/dialer-cloud-01.webp', '/images/clouds/dialer-cloud-02.webp']}
   schemaEntries={schemaEntries}
 >
-  <SiteHeader pageSections={[{ id: 'features', label: 'FEATURES' }, { id: 'faq', label: 'FAQ' }]} />
+  <SiteHeader pageSections={[{ id: 'features', label: 'CAPABILITIES' }, { id: 'faq', label: 'FAQ' }]} />
   <main>
     <div class="home-scroll-layer" data-home-scroll-layer>
       <HomeHero sectionId="intro" />
+      <PricingTechnology variant="home" />
       <HomeFeaturePreview sectionId="features" />
     </div>
     <HomeCloudCta />

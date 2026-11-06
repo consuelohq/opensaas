@@ -3,20 +3,20 @@ export type SiteNavLink = SiteLink;
 export type HomePageSection = { id: string; label: string };
 export const siteHeaderLinks: SiteNavLink[] = [
   { label: 'Docs', href: siteLinks.docs },
-  { label: 'How it works', href: '/how-it-works' },
-  { label: 'Get started', href: '/get-started' },
+  { label: 'Interactive demo', href: '/demo' },
+  { label: 'Get started', href: '/pricing' },
 ];
 export const osSiteHeaderLinks = {
-  cloudHref: '/get-started',
+  cloudHref: '/pricing',
   desktop: [
-    { label: 'FEATURES', href: '/#features' },
+    { label: 'CAPABILITIES', href: '/#features' },
     { label: 'DOCS', href: siteLinks.docs },
     { label: 'PRICING', href: '/pricing' },
-    { label: 'GET STARTED', href: '/get-started' },
+    { label: 'GET STARTED', href: '/pricing' },
   ],
   mobile: [
     { label: 'DOCS', href: siteLinks.docs },
-    { label: 'GET STARTED', href: '/get-started' },
+    { label: 'GET STARTED', href: '/pricing' },
   ],
   wordmarkAriaLabel: 'Consuelo Dialer home',
   communityAriaLabel: 'Community links',
@@ -24,16 +24,16 @@ export const osSiteHeaderLinks = {
   mobilePrimaryAriaLabel: 'Mobile primary',
 };
 export const siteMobileMenuLinks = [
-  { label: 'How it works', href: '/how-it-works' },
+  { label: 'Interactive demo', href: '/demo' },
   { label: 'Open GoHighLevel', href: siteLinks.login },
 ];
 export const homePageSections: HomePageSection[] = [
   { id: 'intro', label: 'Intro' },
-  { id: 'features', label: 'Features' },
+  { id: 'features', label: 'Capabilities' },
   { id: 'faq', label: 'FAQ' },
 ];
 export const footerLinks: SiteLink[] = [
-  { label: 'How it works', href: '/how-it-works' },
+  { label: 'Interactive demo', href: '/demo' },
   { label: 'Docs', href: siteLinks.docs },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Contact', href: '/contact' },
@@ -42,10 +42,10 @@ export const siteFooterGroups = [
   {
     name: 'Product',
     links: [
-      { label: 'Inbound calling', href: '/how-it-works#inbound' },
-      { label: 'Outbound dialing', href: '/how-it-works#outbound' },
-      { label: 'Analytics', href: '/how-it-works#analytics' },
-      { label: 'Mercury coaching', href: '/pricing#addons' },
+      { label: 'Inbound calling', href: '/#inbound' },
+      { label: 'Outbound dialing', href: '/#outbound' },
+      { label: 'Analytics', href: '/#analytics' },
+      { label: 'Mercury coaching', href: '/#mercury' },
     ],
   },
   {
@@ -53,7 +53,7 @@ export const siteFooterGroups = [
     links: [
       { label: 'Plans & pricing', href: '/pricing' },
       { label: 'Documentation', href: siteLinks.docs },
-      { label: 'How it works', href: '/how-it-works' },
+      { label: 'Interactive demo', href: '/demo' },
       { label: 'Talk to us', href: '/contact' },
     ],
   },

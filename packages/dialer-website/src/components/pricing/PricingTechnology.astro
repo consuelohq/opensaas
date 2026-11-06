@@ -1,4 +1,7 @@
 ---
+type Props = { variant?: 'pricing' | 'home' };
+const { variant = 'pricing' } = Astro.props as Props;
+
 const technologies = [
   ['twilio', 'Twilio', true],
   ['openai', 'OpenAI'],
@@ -16,7 +19,7 @@ const technologies = [
 ---
 
 <section
-  class="pricing-technology"
+  class:list={['pricing-technology', { 'pricing-technology--home': variant === 'home' }]}
   aria-labelledby="technology-heading"
   data-logo-carousel
 >
@@ -53,6 +56,71 @@ const technologies = [
     </div>
   </div>
 </section>
+<style is:global>
+  .pricing-technology {
+    background: var(--site-color-surface);
+    color: var(--site-color-stack-ink);
+    padding: var(--site-space-8) 0;
+    text-align: center;
+    overflow: hidden;
+  }
+  .pricing-technology--home {
+    background: var(--site-color-brand);
+    color: var(--site-color-on-brand);
+    padding: var(--site-space-7) 0 var(--site-space-6);
+  }
+  .pricing-technology h2 {
+    margin: 0 0 var(--site-space-7);
+    font: 500 0.9rem/1.4 var(--site-font-mono);
+    letter-spacing: var(--site-tracking-control);
+  }
+  .pricing-technology--home h2 {
+    margin-bottom: var(--site-space-5);
+    font-size: var(--site-text-xs);
+    text-transform: uppercase;
+  }
+  .technology-strip {
+    --visible-logos: 7;
+    overflow: hidden;
+  }
+  .technology-track {
+    display: flex;
+    width: max-content;
+  }
+  .technology-wordmark {
+    display: grid;
+    place-items: center;
+    flex: 0 0 calc((100vw - 2 * var(--site-frame-inset)) / var(--visible-logos));
+    width: calc((100vw - 2 * var(--site-frame-inset)) / var(--visible-logos));
+    height: var(--site-space-8);
+    padding: 0 var(--site-space-5);
+  }
+  .technology-wordmark img {
+    width: min(100%, var(--dialer-logo-size));
+    height: var(--dialer-logo-height);
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+  }
+  .pricing-technology--home .technology-wordmark img {
+    filter: grayscale(1) brightness(0) invert(1);
+    opacity: 0.85;
+  }
+  .technology-wordmark--symbol img {
+    width: var(--dialer-logo-height);
+    height: var(--dialer-logo-height);
+  }
+  @media (max-width: 1050px) {
+    .technology-strip { --visible-logos: 5; }
+  }
+  @media (max-width: 600px) {
+    .technology-strip { --visible-logos: 3; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .technology-strip { overflow-x: auto; }
+    .technology-track [aria-hidden] { display: none; }
+  }
+</style>
 <script>
   const root = document.querySelector<HTMLElement>('[data-logo-carousel]');
   const track = root?.querySelector<HTMLElement>('[data-logo-track]');

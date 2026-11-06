@@ -109,27 +109,36 @@ const [mobileDocsLink, mobileCloudLink] = osSiteHeaderLinks.mobile;
   inert
   aria-hidden="true"
 >
-  <a class="returning-nav__brand" href="/" aria-label="Consuelo Dialer home"
-    >CONSUELO <span>DIALER</span></a
-  >
-  <div class="returning-nav__links">
-    <a href="/#features">Features</a>
-    <a href={siteLinks.docs}>Docs</a>
-    <a href="/pricing">Pricing</a>
+  <div class="returning-nav__inner">
+    <a class="returning-nav__brand" href="/" aria-label="Consuelo Dialer home">
+      <img class="returning-nav__logo" src="/images/home/consuelo-mark.svg" alt="" width="42" height="42" />
+      <span class="returning-nav__wordmark">CONSUELO <span>DIALER</span></span>
+    </a>
+    <div class="returning-nav__links">
+      <a href="/#features">Capabilities</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/demo">Demo</a>
+    </div>
+    <a class="returning-nav__start" href="/pricing">Get started <span aria-hidden="true">↗</span></a>
   </div>
-  <a class="returning-nav__start" href="/get-started"
-    >Get started <span aria-hidden="true">↗</span></a
-  >
 </nav>
 <script>
   const nav = document.querySelector<HTMLElement>('[data-returning-nav]');
-  const target = document.querySelector<HTMLElement>('[data-feature-story]');
+  const target =
+    document.querySelector<HTMLElement>('[data-feature-story]') ??
+    document.querySelector<HTMLElement>('.pricing-plans');
+  const closing = document.querySelector<HTMLElement>('[data-cloud-reveal]');
   if (nav && target) {
     let frame = 0;
     const update = () => {
       frame = 0;
-      const shown =
+      const passedHero =
+        window.scrollY > 80 &&
         target.getBoundingClientRect().top <= window.innerHeight * 0.75;
+      const reachedClosing =
+        closing !== null &&
+        closing.getBoundingClientRect().top <= nav.offsetHeight + 16;
+      const shown = passedHero && !reachedClosing;
       nav.dataset.visible = String(shown);
       nav.toggleAttribute('inert', !shown);
       nav.setAttribute('aria-hidden', String(!shown));
@@ -147,23 +156,29 @@ const [mobileDocsLink, mobileCloudLink] = osSiteHeaderLinks.mobile;
   .returning-nav {
     position: fixed;
     z-index: var(--site-z-header);
-    inset: var(--site-space-3) var(--site-frame-inset) auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--site-space-5);
-    min-height: var(--dialer-returning-nav-height);
-    padding: var(--site-space-3) var(--site-space-5);
+    inset: 0 0 auto;
+    display: block;
+    padding-inline: var(--site-frame-inset);
     background: var(--site-color-brand);
     color: var(--site-color-on-brand);
     box-shadow: var(--site-shadow-dropdown);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(calc(-1 * var(--site-space-4)));
+    transform: translateY(-12px);
     transition:
       opacity var(--site-motion-medium) var(--site-ease-standard),
       transform var(--site-motion-medium) var(--site-ease-emphasized),
       visibility var(--site-motion-medium);
+  }
+  .returning-nav__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--site-space-5);
+    width: min(100%, var(--site-container-wide));
+    min-height: var(--dialer-returning-nav-height);
+    margin-inline: auto;
+    padding-block: var(--site-space-2);
   }
   .returning-nav[data-visible='true'] {
     opacity: 1;
@@ -179,41 +194,63 @@ const [mobileDocsLink, mobileCloudLink] = osSiteHeaderLinks.mobile;
     outline-offset: var(--site-space-1);
   }
   .returning-nav__brand {
-    font: 500 var(--site-text-lg)/1 var(--site-font-display);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--site-space-3);
+    width: fit-content;
   }
-  .returning-nav__brand span {
+  .returning-nav__logo {
+    display: block;
+    width: 2.55rem;
+    height: 2.55rem;
+    object-fit: contain;
+  }
+  .returning-nav__wordmark {
+    display: grid;
+    gap: 0.12rem;
+    font: 520 1.13rem/0.78 var(--site-font-display);
+    letter-spacing: 0.01em;
+  }
+  .returning-nav__wordmark span {
     display: block;
   }
   .returning-nav__links {
     display: flex;
+    align-items: center;
+    justify-content: center;
     gap: var(--site-space-6);
     font-size: var(--site-text-sm);
   }
+  .returning-nav__links a {
+    opacity: 0.86;
+    transition: opacity var(--site-motion-fast);
+  }
+  .returning-nav__links a:hover,
+  .returning-nav__links a:focus-visible { opacity: 1; }
   .returning-nav__start {
+    display: inline-flex;
+    align-items: center;
+    justify-self: end;
+    justify-content: center;
+    gap: var(--site-space-2);
     padding: var(--site-space-3) var(--site-space-4);
     background: var(--site-color-on-brand);
     color: var(--site-color-brand) !important;
     font: 600 var(--site-text-xs)/1 var(--site-font-mono);
+    white-space: nowrap;
   }
   @media (max-width: 760px) {
-    .returning-nav {
-      gap: var(--site-space-3);
-      padding-inline: var(--site-space-3);
-    }
+    .returning-nav__inner { gap: var(--site-space-2); min-height: 3.65rem; }
     .returning-nav__links {
-      gap: var(--site-space-3);
       font-size: var(--site-text-xs);
     }
-    .returning-nav__brand {
-      font-size: var(--site-text-sm);
-    }
+    .returning-nav__logo { width: 2rem; height: 2rem; }
+    .returning-nav__wordmark { display: none; }
     .returning-nav__start {
       padding-inline: var(--site-space-2);
       font-size: var(--site-text-xs);
     }
-    .returning-nav__links a:first-child {
-      display: none;
-    }
+    .returning-nav__links a:not(:last-child) { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .returning-nav {

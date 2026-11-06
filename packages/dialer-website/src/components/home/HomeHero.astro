@@ -9,8 +9,10 @@ const {sectionId='intro'} = Astro.props as Props;
  <div class="os-hero__content">
   <h1 data-hero-heading>{dialerHero.title.map(line => <span class="os-hero__heading-line">{line}</span>)}</h1>
   <p class="os-hero__subtitle">{dialerHero.description}</p>
-  <div class="os-hero__actions"><a class="os-hero__button" href="/get-started">{dialerHero.primaryLabel} <span aria-hidden="true">↗</span></a></div>
-  <a class="os-hero__command" href="/how-it-works"><strong>{dialerHero.secondaryLabel}</strong><span aria-hidden="true">↗</span></a>
+  <div class="os-hero__actions">
+    <a class="os-hero__button" href="/pricing">{dialerHero.primaryLabel}<span aria-hidden="true">↗</span></a>
+    <a class="os-hero__command" href="/demo">{dialerHero.secondaryLabel}<span aria-hidden="true">↗</span></a>
+  </div>
  </div>
 </section>
 <style>.os-hero__command { text-decoration: none; }</style>
@@ -92,11 +94,14 @@ const {sectionId='intro'} = Astro.props as Props;
   }
 
   .os-hero__actions {
-    display: grid;
-    width: min(100%, 34rem);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: min(100%, 40rem);
     min-width: 0;
-    gap: 0.55rem;
-    margin-top: 0.45rem;
+    gap: var(--site-space-4);
+    margin-top: var(--site-space-4);
   }
 
   .os-hero__button,
@@ -110,11 +115,12 @@ const {sectionId='intro'} = Astro.props as Props;
   }
 
   .os-hero__button {
-    display: flex;
+    display: inline-flex;
+    min-width: 13.5rem;
     min-height: 3.15rem;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
+    gap: var(--site-space-2);
     background: white;
     box-shadow: 0.22rem 0.22rem 0 rgba(0, 0, 92, 0.28);
     color: var(--site-color-brand);
@@ -138,30 +144,20 @@ const {sectionId='intro'} = Astro.props as Props;
   }
 
   .os-hero__command {
-    display: flex;
-    width: min(100%, 34rem);
-    min-width: 0;
+    display: inline-flex;
+    min-width: 13.5rem;
     min-height: 3.05rem;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+    justify-content: center;
+    gap: var(--site-space-2);
     overflow: hidden;
     background: transparent;
     box-shadow: 0.2rem 0.2rem 0 rgba(255, 255, 255, 0.32);
     color: white;
-    padding: 0.75rem 1rem;
-    text-align: left;
+    padding: 0.75rem var(--site-space-6);
+    text-align: center;
     transform: translate(-0.06rem, -0.06rem);
     transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
-  }
-
-  .os-hero__command code {
-    min-width: 0;
-    overflow: hidden;
-    font: inherit;
-    letter-spacing: 0;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .os-hero__command span {
@@ -206,17 +202,17 @@ const {sectionId='intro'} = Astro.props as Props;
       line-height: 1.48;
     }
 
-    .os-hero__actions,
-    .os-hero__command {
+    .os-hero__actions {
       width: min(100%, 32rem);
     }
 
-    .os-hero__button {
+    .os-hero__button,
+    .os-hero__command {
+      width: 100%;
       min-height: 3rem;
     }
 
     .os-hero__command {
-      min-height: 2.85rem;
       font-size: 0.64rem;
     }
 
@@ -234,7 +230,8 @@ const {sectionId='intro'} = Astro.props as Props;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .os-hero__button {
+    .os-hero__button,
+    .os-hero__command {
       transition: none;
     }
   }

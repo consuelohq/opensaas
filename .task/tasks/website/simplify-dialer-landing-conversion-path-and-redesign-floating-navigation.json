@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/simplify-dialer-landing-conversion-path-and-redesign-floating-navigation",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2779,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2779",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-simplify-dialer-landing-conversion-path-and-redesign-floating-navigation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6792d847dbed",
+  "tmuxSession": "opensaas-website-simplify-dialer-landing-conversion-path-and-rede-6792d847",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-simplify-dialer-landing-conversion-path-and-redesign-floating-navigation/.task/session.json",
+  "createdAt": "2026-11-06T04:47:45.623Z"
+}
