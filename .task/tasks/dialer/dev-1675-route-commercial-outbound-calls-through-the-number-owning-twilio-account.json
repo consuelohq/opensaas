@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1675-route-commercial-outbound-calls-through-the-number-owning-twilio-account",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2777,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2777",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1675-route-commercial-outbound-calls-through-the-number-owning-twilio-account",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_bbb5a6babff9",
+  "tmuxSession": "opensaas-dialer-dev-1675-route-commercial-outbound-calls-through-bbb5a6ba",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1675-route-commercial-outbound-calls-through-the-number-owning-twilio-account/.task/session.json",
+  "createdAt": "2026-11-06T04:21:32.965Z"
+}

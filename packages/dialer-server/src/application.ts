@@ -278,6 +278,7 @@ export const createEffectDialerApplication = (
         ? {
             workspaceId: group.workspaceId,
             dialerSessionId: group.dialerSessionId ?? null,
+            providerAccountId: group.providerAccountId ?? null,
           }
         : null;
     }).pipe(Effect.provide(layers.parallelLayer)),

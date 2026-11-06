@@ -66,6 +66,7 @@ export const createTwilioCallProviderLayer = (
   let client: TwilioClient | null = null;
   const resolved = {
     accountSid: credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
+    authAccountSid: credentials?.authAccountSid,
     authToken: credentials?.authToken ?? process.env.TWILIO_AUTH_TOKEN ?? '',
   };
 
@@ -73,7 +74,8 @@ export const createTwilioCallProviderLayer = (
     if (client) return Promise.resolve(client);
     return import('twilio')
       .then(({ default: twilio }) => {
-        client = twilio(resolved.accountSid, resolved.authToken);
+        client = twilio(resolved.authAccountSid ?? resolved.accountSid, resolved.authToken,
+          { accountSid: resolved.accountSid });
         return client;
       })
       .catch((cause: unknown) => {

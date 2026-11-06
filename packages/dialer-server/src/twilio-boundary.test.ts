@@ -336,4 +336,108 @@ describe('Twilio webhook boundary', () => {
       url: 'https://dialer.test/webhooks/twilio/media',
     });
   });
+
+  it('rejects cross-account signed status and customer TwiML callbacks without mutating a different workspace', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const owner = 'AC' + '2'.repeat(32);
+    const foreign = 'AC' + '3'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    dependencies.application.resolveTwilioCallContext = mock(() =>
+      Effect.succeed({
+        workspaceId: 'workspace-1',
+        dialerSessionId: 'session-1',
+        providerAccountId: owner,
+      }),
+    );
+    const app = createDialerServer(dependencies);
+    const send = (path: string, sid: string) =>
+      app.fetch(new Request('https://dialer.test/webhooks/twilio/' + path, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture',
+        },
+        body: new URLSearchParams({
+          AccountSid: sid,
+          CallSid: 'CA_CALL',
+          CallStatus: 'ringing',
+        }),
+      }));
+    expect((await send('status', foreign)).status).toBe(401);
+    expect(dependencies.application.processTwilioStatus).not.toHaveBeenCalled();
+    expect((await send('customer-twiml', foreign)).status).toBe(401);
+    expect(dependencies.application.generateTwilioCustomerTwiml).not.toHaveBeenCalled();
+    expect((await send('status', owner)).status).toBe(200);
+    expect(dependencies.application.processTwilioStatus).toHaveBeenCalledTimes(1);
+    expect((await send('customer-twiml', owner)).status).toBe(200);
+    expect(dependencies.application.generateTwilioCustomerTwiml).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects cross-account signed recording callbacks before touching call history', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const owner = 'AC' + '2'.repeat(32);
+    const foreign = 'AC' + '3'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    dependencies.application.resolveTwilioCallContext = mock(() =>
+      Effect.succeed({
+        workspaceId: 'workspace-1',
+        dialerSessionId: 'session-1',
+        providerAccountId: owner,
+      }),
+    );
+    const recordCallRecordingStatus = mock(() => Effect.void);
+    dependencies.callOperations = {
+      recordCallRecordingStatus,
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const send = (sid: string) => createDialerServer(dependencies).fetch(
+      new Request('https://dialer.test/webhooks/twilio/recording-status', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture',
+        },
+        body: new URLSearchParams({
+          AccountSid: sid,
+          CallSid: 'CA_RECORDING',
+          RecordingSid: 'RE_RECORDING',
+          RecordingStatus: 'completed',
+        }),
+      }),
+    );
+    expect((await send(foreign)).status).toBe(401);
+    expect(recordCallRecordingStatus).not.toHaveBeenCalled();
+    expect((await send(owner)).status).toBe(200);
+    expect(recordCallRecordingStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes the authenticated Twilio AccountSid to agent conference TwiML', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    const response = await createDialerServer(dependencies).fetch(
+      new Request('https://dialer.test/webhooks/twilio/agent-twiml', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture',
+        },
+        body: new URLSearchParams({
+          AccountSid: child,
+          From: 'client:user_user-1',
+          SessionId: 'group-1',
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(dependencies.application.generateTwilioAgentTwiml).toHaveBeenCalledWith({
+      sessionId: 'group-1',
+      clientIdentity: 'user_user-1',
+      accountSid: child,
+      parentAccountSid: parent,
+    });
+  });
+
 });

@@ -166,6 +166,10 @@ export type ParallelGroupStatusResult = {
 export type ParallelAgentTwimlInput = {
   sessionId?: string;
   clientIdentity?: string;
+  /** Signed webhook's provider account identity. */
+  accountSid?: string;
+  /** Server-trusted legacy parent account (never browser-provided). */
+  parentAccountSid?: string;
 };
 
 export type MarkParallelAgentReadyCommand = {

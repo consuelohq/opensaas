@@ -143,6 +143,7 @@ export type DialerServerApplication = {
     {
       workspaceId: string;
       dialerSessionId: string | null;
+      providerAccountId?: string | null;
     } | null,
     DialerApplicationError
   >;
@@ -250,6 +251,8 @@ export type DialerServerDependencies = {
   callOperations?: ReturnType<typeof createCallOperationsApplication>;
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;
+  /** Server-trusted parent account for cross-tenant callback validation. */
+  twilioMasterAccountSid?: string;
   issueVoiceToken?: (identity: DialerIdentity) => Promise<VoiceToken>;
   issueEmbedSession?: (
     identity: LeadConnectorEmbedIdentity,
