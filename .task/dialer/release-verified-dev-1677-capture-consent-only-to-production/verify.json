@@ -1,0 +1,249 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/release-verified-dev-1677-capture-consent-only-to-production",
+  "base": "origin/main",
+  "headSha": "d86b3f6fb7716beddfea48a7b0a7647f83072302",
+  "changeHash": "a2dd046c4208398e6c6be63c3aaceefc97dd4837c6e9e22aa598e3f4df0d8fa5",
+  "changedFiles": [
+    "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+    "packages/dialer-server/src/commercial/application.ts",
+    "packages/lead-connector/src/embed/calling-workspace.test.ts",
+    "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/internal-main.ts",
+    "packages/lead-connector/src/embed/state-machine.ts",
+    "packages/lead-connector/src/embed/view.ts",
+    "packages/lead-connector/src/embed/workspace-launch.test.ts",
+    "packages/lead-connector/src/embed/workspace-launch.ts"
+  ],
+  "verifiedAt": "2026-11-06T03:32:43.378Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/release-verified-dev-1677-capture-consent-only-to-production/read-log.json",
+        ".task/dialer/release-verified-dev-1677-capture-consent-only-to-production/workpad.md",
+        ".task/tasks/dialer/release-verified-dev-1677-capture-consent-only-to-production.json",
+        "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+        "packages/dialer-server/src/commercial/application.ts",
+        "packages/lead-connector/src/embed/calling-workspace.test.ts",
+        "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+        "packages/lead-connector/src/embed/controller.test.ts",
+        "packages/lead-connector/src/embed/controller.ts",
+        "packages/lead-connector/src/embed/internal-main.ts",
+        "packages/lead-connector/src/embed/state-machine.ts",
+        "packages/lead-connector/src/embed/view.ts",
+        "packages/lead-connector/src/embed/workspace-launch.test.ts",
+        "packages/lead-connector/src/embed/workspace-launch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+            "packages/dialer-server/src/commercial/application.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-native-billing",
+          "critical": true,
+          "reason": "Billing edits must prove paid-only native changes, isolated component invoices, idempotent top-ups, immutable usage debits and legacy schema upgrades against disposable PostgreSQL.",
+          "matchedFiles": [
+            "packages/dialer-server/src/commercial/application.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/calling-workspace.test.ts",
+            "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/controller.ts",
+            "packages/lead-connector/src/embed/internal-main.ts",
+            "packages/lead-connector/src/embed/state-machine.ts",
+            "packages/lead-connector/src/embed/view.ts",
+            "packages/lead-connector/src/embed/workspace-launch.test.ts",
+            "packages/lead-connector/src/embed/workspace-launch.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "Stripe native billing with disposable PostgreSQL",
+          "command": [
+            "bun",
+            "packages/dialer-server/scripts/verify-native-billing.ts"
+          ],
+          "ruleId": "dialer-native-billing",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 793,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1032,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3199,
+          "outputTail": " persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 251 pass\n 93 skip\n 0 fail\n 1631 expect() calls\nRan 344 tests across 68 files. [3.19s]\n"
+        },
+        {
+          "name": "Stripe native billing with disposable PostgreSQL",
+          "command": [
+            "bun",
+            "packages/dialer-server/scripts/verify-native-billing.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-native-billing",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3160,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-server/src/native-billing.postgres.integration.test.ts:\n(pass) native billing with durable PostgreSQL and simulated carrier-independent Stripe > isolates native subscriptions, survives partial payment/retry and projects only paid owned edits [927.86ms]\n\npackages/dialer-server/src/native-billing.acceptance.test.ts:\n(pass) Stripe-native billing packages > keeps one recurring base item, a separate number invoice and the approved combined price [0.15ms]\n(pass) Stripe-native billing packages > requires an explicit all-seat coaching bundle and preserves base prices [0.07ms]\n(pass) Stripe-native billing packages > normalizes only one owned recurring item of the expected role and bounded quantity [0.12ms]\n\npackages/dialer-server/src/public-checkout.postgres.integration.test.ts:\n(pass) public checkout with disposable PostgreSQL and simulated Stripe > survives unknown outcomes, binds once, fences stale facts and retains legacy billing [1059.31ms]\n\npackages/dialer-server/src/database/migrations.postgres.integration.test.ts:\n(pass) LeadConnector company credential upgrades with isolated PostgreSQL > preserves existing installations, old ledger timestamps and recovered credentials, and bootstraps signed context [894.75ms]\n\n 6 pass\n 0 fail\n 145 expect() calls\nRan 6 tests across 4 files. [3.14s]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1660,
+          "outputTail": "s Go ready with no healthy devices but permits declining unanswerable fenced offers [0.10ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.25ms]\n\npackages/lead-connector/src/embed/compact-workspace-polish.test.ts:\n(pass) compact Dialer workspace UX > inbound answering uses exclusive Web or Cell phone selection, including legacy double-active snapshots [3.90ms]\n(pass) compact Dialer workspace UX > outbound tabs have one underline, plain queue placeholder and no empty-state filler [4.16ms]\n(pass) compact Dialer workspace UX > calling options and queue details share a footer action group immediately above the primary action [5.49ms]\n(pass) compact Dialer workspace UX > settings and inner pages place the heading on the same row as a quiet back breadcrumb [27.41ms]\n(pass) compact Dialer workspace UX > phone-number purpose tabs use the same quiet inactive and bright active tab classes [4.63ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.08ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.28ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.09ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.36ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.28ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.35ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.30ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.16ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [144.38ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.36ms]\n(pass) dialer GitHub release workflow contract > releases only the approved UI files to the Worker while fencing Railway and other changes [539.15ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.45ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.10ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.07ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.09ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.78ms]\n\n 249 pass\n 0 fail\n 1937 expect() calls\nRan 249 tests across 41 files. [1.65s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

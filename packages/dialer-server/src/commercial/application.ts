@@ -798,8 +798,10 @@ export const createCommercialApplication = (input: {
           return {
             ...bodyRecord,
             requestedFanout,
-            recordingEnabled: caller.recordings,
-            transcriptionEnabled: caller.transcripts,
+            // Plan entitlements are ceilings, never recording/transcription consent.
+            // Omitted or false per-call flags must remain off, including trial calls.
+            recordingEnabled: caller.recordings && bodyRecord.recordingEnabled === true,
+            transcriptionEnabled: caller.transcripts && bodyRecord.transcriptionEnabled === true,
           };
         } catch (cause: unknown) {
           throw normalizeAsyncError(cause);

@@ -38,6 +38,8 @@ const commercialState = (): LeadConnectorEmbedState =>
       requestedFanout: 1,
       preferLocalPresence: true,
       callerIdNumber: '+15550100001',
+      recordingEnabled: false,
+      transcriptionEnabled: false,
     },
     callerIds: ['+15550100001', '+15550100002'],
   }) as LeadConnectorEmbedState;

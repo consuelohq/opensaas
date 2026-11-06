@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/release-verified-dev-1677-capture-consent-only-to-production",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2775,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2775",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-verified-dev-1677-capture-consent-only-to-production",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_74ca1a2d5d80",
+  "tmuxSession": "opensaas-dialer-release-verified-dev-1677-capture-consent-only-t-74ca1a2d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-verified-dev-1677-capture-consent-only-to-production/.task/session.json",
+  "createdAt": "2026-11-06T03:31:25.946Z"
+}

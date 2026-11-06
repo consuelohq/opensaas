@@ -30,6 +30,31 @@ describe('persistent workspace launch intent', () => {
       })?.ready,
     ).toBe(true);
   });
+  it('never accepts per-call recording consent from an untrusted launcher payload', () => {
+    const value = readWorkspaceLaunch({
+      id: 'launch-1',
+      mode: 'outbound',
+      action: 'start-configured',
+      setup: {
+        mode: 'single',
+        callingMode: 'single',
+        requestedFanout: 1,
+        preferLocalPresence: false,
+        callerIdNumber: null,
+        recordingEnabled: true,
+        transcriptionEnabled: true,
+      },
+      targets: [{ phone: '+15550100123' }],
+    });
+    expect(value?.setup).toEqual({
+      mode: 'single',
+      callingMode: 'single',
+      requestedFanout: 1,
+      preferLocalPresence: false,
+      callerIdNumber: null,
+    });
+  });
+
   it('rejects malformed generations, modes and oversized device data', () => {
     for (const generation of [-1, 1.5, '17'])
       expect(
