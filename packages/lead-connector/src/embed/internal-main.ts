@@ -719,20 +719,25 @@ root.addEventListener('click', (event) => {
     };
     if (action === 'inbound-readiness') {
       launch.ready = actionElement.dataset.ready === 'true';
-      launch.endpoints = [
+      const answeringEndpoint = [
         ...root.querySelectorAll<HTMLInputElement>(
           '[data-field="inbound-endpoint"]',
         ),
       ]
-        .filter(
+        .find(
           (e) =>
             (e.checked && !e.disabled) ||
             (e.checked && state.inboundOperator.rep.ready),
-        )
-        .map((e) => ({
-          endpointId: e.dataset.endpointId!,
-          kind: e.dataset.endpointKind === 'phone' ? 'phone' : 'browser',
-        }));
+        );
+      launch.endpoints = answeringEndpoint
+        ? [{
+            endpointId: answeringEndpoint.dataset.endpointId!,
+            kind:
+              answeringEndpoint.dataset.endpointKind === 'phone'
+                ? 'phone'
+                : 'browser',
+          }]
+        : [];
     }
     if (action === 'inbound-accept' || action === 'inbound-decline') {
       launch.assignmentId = actionElement.dataset.assignmentId;
@@ -885,24 +890,26 @@ root.addEventListener('click', (event) => {
     void controller.reconnectInbound();
   }
   if (action === 'inbound-readiness') {
-    const endpoints = [
+    const selectedEndpoint = [
       ...root.querySelectorAll<HTMLInputElement>(
         '[data-field="inbound-endpoint"]',
       ),
     ]
-      .filter(
+      .find(
         (endpoint) =>
           endpoint.checked &&
           endpoint.dataset.endpointId &&
           endpoint.dataset.endpointKind,
-      )
-      .map((endpoint) => ({
-        endpointId: endpoint.dataset.endpointId!,
-        kind:
-          endpoint.dataset.endpointKind === 'phone'
-            ? ('phone' as const)
-            : ('browser' as const),
-      }));
+      );
+    const endpoints = selectedEndpoint
+      ? [{
+          endpointId: selectedEndpoint.dataset.endpointId!,
+          kind:
+            selectedEndpoint.dataset.endpointKind === 'phone'
+              ? ('phone' as const)
+              : ('browser' as const),
+        }]
+      : [];
     void controller.setInboundReadiness({
       ready: actionElement.dataset.ready === 'true',
       endpoints,
@@ -1021,14 +1028,12 @@ root.addEventListener('change', (event) => {
     !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)
   )
     return;
-  if (target.dataset.field === 'inbound-endpoint') {
-    workspace.answeringEndpointIds = [
-      ...root.querySelectorAll<HTMLInputElement>(
-        '[data-field="inbound-endpoint"]',
-      ),
-    ]
-      .filter((e) => e.checked && !e.disabled)
-      .map((e) => e.dataset.endpointId!);
+  if (
+    target instanceof HTMLInputElement &&
+    target.dataset.field === 'inbound-endpoint'
+  ) {
+    if (target.checked && !target.disabled && target.dataset.endpointId)
+      workspace.answeringEndpointIds = [target.dataset.endpointId];
     render();
   }
   if (

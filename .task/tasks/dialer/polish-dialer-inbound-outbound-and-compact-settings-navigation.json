@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/polish-dialer-inbound-outbound-and-compact-settings-navigation",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2771,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2771",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-polish-dialer-inbound-outbound-and-compact-settings-navigation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_efc5cd1f7411",
+  "tmuxSession": "opensaas-dialer-polish-dialer-inbound-outbound-and-compact-setti-efc5cd1f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-polish-dialer-inbound-outbound-and-compact-settings-navigation/.task/session.json",
+  "createdAt": "2026-11-06T02:42:46.625Z"
+}
