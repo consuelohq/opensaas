@@ -55,7 +55,6 @@ import { siteFooterGroups } from '../../data/site-navigation';
     grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     gap: var(--site-space-7);
     padding-block: var(--site-space-7) var(--site-space-8);
-    border-top: 1px solid var(--site-color-muted-on-brand);
   }
   .dialer-footer__brand {
     display: flex;
@@ -97,7 +96,7 @@ import { siteFooterGroups } from '../../data/site-navigation';
   .dialer-footer a {
     text-decoration: none;
   }
-  .dialer-footer a:hover {
+  .dialer-footer a:not(.dialer-footer__brand):hover {
     color: var(--site-color-on-brand);
     text-decoration: underline;
     text-underline-offset: var(--site-space-1);

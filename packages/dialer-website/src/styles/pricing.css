@@ -690,64 +690,6 @@
   color: var(--site-color-muted);
 }
 
-.pricing-technology {
-  background: var(--site-color-surface);
-  color: var(--site-color-stack-ink);
-  padding: var(--site-space-8) 0;
-  text-align: center;
-  overflow: hidden;
-}
-.pricing-technology h2 {
-  margin: 0 0 var(--site-space-7);
-  font: 500 0.9rem/1.4 var(--site-font-mono);
-  letter-spacing: 0.04em;
-}
-.technology-strip {
-  --visible-logos: 7;
-  overflow: hidden;
-}
-.technology-track {
-  display: flex;
-  width: max-content;
-}
-.technology-wordmark {
-  display: grid;
-  place-items: center;
-  flex: 0 0 calc((100vw - 2 * var(--site-frame-inset)) / var(--visible-logos));
-  width: calc((100vw - 2 * var(--site-frame-inset)) / var(--visible-logos));
-  height: var(--site-space-8);
-  padding: 0 var(--site-space-5);
-}
-.technology-wordmark img {
-  width: min(100%, var(--dialer-logo-size));
-  height: var(--dialer-logo-height);
-  max-width: none;
-  max-height: none;
-  object-fit: contain;
-}
-.technology-wordmark--symbol img {
-  width: var(--dialer-logo-height);
-  height: var(--dialer-logo-height);
-}
-
-@media (max-width: 1050px) {
-  .technology-strip {
-    --visible-logos: 5;
-  }
-}
-@media (max-width: 600px) {
-  .technology-strip {
-    --visible-logos: 3;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .technology-strip {
-    overflow-x: auto;
-  }
-  .technology-track [aria-hidden] {
-    display: none;
-  }
-}
 .pricing-page [hidden] {
   display: none !important;
 }

@@ -75,8 +75,9 @@ describe('Dialer marketing delivery', () => {
     const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       (match) => new URL(match[1]).pathname.replace(/\/$/, '') || '/',
     );
-    for (const path of ['/', '/pricing', '/get-started'])
+    for (const path of ['/', '/pricing', '/get-started', '/demo'])
       expect(paths).toContain(path);
+    expect(paths).not.toContain('/how-it-works');
     expect(paths).not.toContain('/guides');
     expect(
       paths.some((path) => /^\/(calls|login|about|404)(\/|\.|$)/.test(path)),
@@ -174,7 +175,7 @@ describe('Dialer marketing delivery', () => {
     for (const route of [
       'pricing',
       'get-started',
-      'how-it-works',
+      'demo',
       'contact',
       'privacy',
       'terms',
@@ -185,7 +186,7 @@ describe('Dialer marketing delivery', () => {
       '',
       'pricing',
       'get-started',
-      'how-it-works',
+      'demo',
       'contact',
       'privacy',
       'terms',
@@ -195,6 +196,7 @@ describe('Dialer marketing delivery', () => {
       expect(page(route)).not.toMatch(/href="\/guides(?:[\/?#"])/);
     }
     expect(existsSync(resolve(root, 'dist/guides/index.html'))).toBe(false);
+    expect(existsSync(resolve(root, 'dist/how-it-works/index.html'))).toBe(false);
     const redirects = readFileSync(resolve(root, 'public/_redirects'), 'utf8');
     for (const route of ['/guides', '/guides/', '/docs', '/docs/']) {
       expect(redirects).toContain(`${route} https://docs.consuelohq.com/ 301`);
