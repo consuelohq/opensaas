@@ -256,6 +256,13 @@ describe('dialer GitHub release workflow contract', () => {
       git('config', 'user.name', 'Release Test');
       put('packages/lead-connector/src/embed/view.ts', 'export const title = "before";\n');
       put('packages/dialer-server/src/main.ts', 'export const live = true;\n');
+      const packagePath = 'packages/dialer-server/package.json';
+      const basePackage = {
+        name: '@consuelo/dialer-server',
+        scripts: { test: 'bun test' },
+        dependencies: { hono: '4.0.0' },
+      };
+      put(packagePath, JSON.stringify(basePackage) + '\n');
       const base = commit('base');
 
       put('packages/lead-connector/src/embed/view.ts', 'export const title = "after";\n');
@@ -271,16 +278,44 @@ describe('dialer GitHub release workflow contract', () => {
         'frontend_only=false',
       );
 
+      put('packages/dialer-server/src/lab/launch-scenarios.ts', 'export {};\n');
+      const mixedQaAndUi = commit('QA and UI together');
+      expect(classify(base, mixedQaAndUi)).toContain('release=false');
+      expect(classify(base, mixedQaAndUi)).toContain('frontend_only=true');
+
+      const labPackage = {
+        ...basePackage,
+        scripts: {
+          ...basePackage.scripts,
+          'lab:launch': 'bun ./scripts/launch-scenarios.ts',
+        },
+      };
+      put(packagePath, JSON.stringify(labPackage) + '\n');
+      const mixedQaUiAndLabScript = commit('QA script and UI');
+      expect(classify(base, mixedQaUiAndLabScript)).toContain('release=false');
+      expect(classify(base, mixedQaUiAndLabScript)).toContain('frontend_only=true');
+
       put('packages/dialer-server/src/main.ts', 'export const live = false;\n');
       const backend = commit('runtime change');
       expect(classify(ui, backend)).toContain('release=true');
       expect(classify(ui, backend)).toContain('frontend_only=false');
       expect(classify(base, backend)).toContain('frontend_only=false');
 
-      put('packages/dialer-server/src/lab/launch-scenarios.ts', 'export {};\n');
+      put(
+        packagePath,
+        JSON.stringify({
+          ...labPackage,
+          dependencies: { hono: '4.1.0' },
+        }) + '\n',
+      );
+      const dependency = commit('dependency change');
+      expect(classify(backend, dependency)).toContain('release=true');
+      expect(classify(backend, dependency)).toContain('frontend_only=false');
+
+      put('packages/dialer-server/scripts/local-dialer-lab.ts', 'export {};\n');
       const qa = commit('QA catalog');
-      expect(classify(backend, qa)).toContain('release=false');
-      expect(classify(backend, qa)).toContain('frontend_only=false');
+      expect(classify(dependency, qa)).toContain('release=false');
+      expect(classify(dependency, qa)).toContain('frontend_only=false');
     } finally {
       rmSync(temp, { recursive: true, force: true });
     }

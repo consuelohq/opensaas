@@ -15,7 +15,8 @@ started: 2026-11-06
 
 ## files changed
 
-- none yet
+- `.github/workflows/consuelo-production-release.yaml`
+- `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
 
 ## key decisions
 
@@ -58,7 +59,8 @@ Test-first contract:
 
 ## workspace-owned: files changed
 
-- none yet
+- `.github/workflows/consuelo-production-release.yaml`
+- `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
 
 ## workspace-owned: activity log
 
@@ -66,11 +68,14 @@ Test-first contract:
 - 2026-11-06 03:18:00 apply-patch: `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
 - 2026-11-06 03:18:15 apply-patch: `.github/workflows/consuelo-production-release.yaml`
 - 2026-11-06 03:18:47 fs.write: `.task/dialer/fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence/workpad.md`
+- 2026-11-06 03:24:28 fs.write: `.task/dialer/fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-11-06 03:18:42 `review.run`: passed — OK
 - 2026-11-06 03:18:56 `verify`: passed — OK
+- 2026-11-06 03:24:38 `review.run`: passed — OK
+- 2026-11-06 03:24:50 `verify`: passed — OK
 
 ## Recovery validation and publication
 - New release job changes only .github/workflows/consuelo-production-release.yaml; regression contract test in packages/lead-connector/src/deployment/release-workflow.contract.test.ts.
@@ -81,3 +86,14 @@ Test-first contract:
 - Next gates: formal verify publish-valid, scoped main PR #2773, exact SHA CI all jobs, exact-head main merge, postmerge automatic frontend_only=true UI-only job with Railway skipped, Worker manifest and public assets proof, Linear DEV-1676 update.
 
 - 2026-11-06 03:18:47 append: `.task/dialer/fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence/workpad.md`
+
+- 2026-11-06 03:23:50 apply-patch: `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
+- 2026-11-06 03:24:07 apply-patch: `.github/workflows/consuelo-production-release.yaml`
+- 2026-11-06 03:24:15 apply-patch: `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
+## Review finding and additional safety regression
+- GitHub reviewer on PR #2773 raised P1: approved UI plus launch-QA files in the same push could bypass both existing allowlists and initiate a full Railway release.
+- Added an actual disposable-git regression before changing production YAML; it failed with release=true, frontend_only=false on the mixed QA+UI fixture.
+- UI-only classification now regards the existing allowlisted QA artifacts as neutral, including package.json *only if* its semantically compared difference is the lab:launch script. New tests: UI-only, QA+UI, QA+UI+safe lab script all route Cloudflare only; runtime or dependency changes still route full release; QA-only still skips deployment; explicit manual Dialer dispatch still full release.
+- New focused run: 6 passed, 118 assertions; build, typecheck, diff checks green. No change to dialer runtime.
+
+- 2026-11-06 03:24:28 append: `.task/dialer/fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence/workpad.md`
