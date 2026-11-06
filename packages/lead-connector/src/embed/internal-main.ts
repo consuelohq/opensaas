@@ -413,7 +413,10 @@ const paint = (): void => {
       ? workspace.locationId + ':' + state.inboundOperator.rep.repId
       : null;
   const callMode = activeCallingMode(state);
-  if (scope && canRestoreWorkspacePreferences(scope, preferenceScope, Boolean(callMode))) {
+  if (
+    scope &&
+    canRestoreWorkspacePreferences(scope, preferenceScope, Boolean(callMode))
+  ) {
     preferenceScope = scope;
     const saved = preferenceStorage
       ? readWorkspacePreferences(preferenceStorage, scope)
@@ -614,6 +617,10 @@ root.addEventListener('click', (event) => {
     render();
     return;
   }
+  if (action === 'remove-answering-phone') {
+    void controller.updateAnsweringPhone(null);
+    return;
+  }
   if (action === 'numbers-receive' || action === 'numbers-call-from') {
     workspace.numberTab =
       action === 'numbers-receive' ? 'receive' : 'call-from';
@@ -723,20 +730,21 @@ root.addEventListener('click', (event) => {
         ...root.querySelectorAll<HTMLInputElement>(
           '[data-field="inbound-endpoint"]',
         ),
-      ]
-        .find(
-          (e) =>
-            (e.checked && !e.disabled) ||
-            (e.checked && state.inboundOperator.rep.ready),
-        );
+      ].find(
+        (e) =>
+          (e.checked && !e.disabled) ||
+          (e.checked && state.inboundOperator.rep.ready),
+      );
       launch.endpoints = answeringEndpoint
-        ? [{
-            endpointId: answeringEndpoint.dataset.endpointId!,
-            kind:
-              answeringEndpoint.dataset.endpointKind === 'phone'
-                ? 'phone'
-                : 'browser',
-          }]
+        ? [
+            {
+              endpointId: answeringEndpoint.dataset.endpointId!,
+              kind:
+                answeringEndpoint.dataset.endpointKind === 'phone'
+                  ? 'phone'
+                  : 'browser',
+            },
+          ]
         : [];
     }
     if (action === 'inbound-accept' || action === 'inbound-decline') {
@@ -894,21 +902,22 @@ root.addEventListener('click', (event) => {
       ...root.querySelectorAll<HTMLInputElement>(
         '[data-field="inbound-endpoint"]',
       ),
-    ]
-      .find(
-        (endpoint) =>
-          endpoint.checked &&
-          endpoint.dataset.endpointId &&
-          endpoint.dataset.endpointKind,
-      );
+    ].find(
+      (endpoint) =>
+        endpoint.checked &&
+        endpoint.dataset.endpointId &&
+        endpoint.dataset.endpointKind,
+    );
     const endpoints = selectedEndpoint
-      ? [{
-          endpointId: selectedEndpoint.dataset.endpointId!,
-          kind:
-            selectedEndpoint.dataset.endpointKind === 'phone'
-              ? ('phone' as const)
-              : ('browser' as const),
-        }]
+      ? [
+          {
+            endpointId: selectedEndpoint.dataset.endpointId!,
+            kind:
+              selectedEndpoint.dataset.endpointKind === 'phone'
+                ? ('phone' as const)
+                : ('browser' as const),
+          },
+        ]
       : [];
     void controller.setInboundReadiness({
       ready: actionElement.dataset.ready === 'true',
@@ -1094,11 +1103,21 @@ root.addEventListener('change', (event) => {
   if (target.dataset.field === 'caller-id') {
     controller.updateSetup({ callerIdNumber: target.value || null });
   }
-  if (target.dataset.field === 'recording-enabled' && target instanceof HTMLInputElement) {
-    controller.updateSetup({ recordingEnabled: target.checked && !target.disabled });
+  if (
+    target.dataset.field === 'recording-enabled' &&
+    target instanceof HTMLInputElement
+  ) {
+    controller.updateSetup({
+      recordingEnabled: target.checked && !target.disabled,
+    });
   }
-  if (target.dataset.field === 'transcription-enabled' && target instanceof HTMLInputElement) {
-    controller.updateSetup({ transcriptionEnabled: target.checked && !target.disabled });
+  if (
+    target.dataset.field === 'transcription-enabled' &&
+    target instanceof HTMLInputElement
+  ) {
+    controller.updateSetup({
+      transcriptionEnabled: target.checked && !target.disabled,
+    });
   }
   if (target.dataset.field === 'pipeline') {
     void controller.searchOpportunities({
@@ -1230,6 +1249,31 @@ const closeTargetPicker = (event: Event) => {
 document.addEventListener('pointerdown', closeTargetPicker);
 
 root.addEventListener('submit', (event) => {
+  const answeringForm = (event.target as HTMLElement).closest<HTMLFormElement>(
+    '[data-form="answering-phone"]',
+  );
+  if (answeringForm) {
+    event.preventDefault();
+    const value = String(
+      new FormData(answeringForm).get('phone') ?? '',
+    ).replace(/[\s().-]/g, '');
+    if (!/^\+[1-9]\d{7,14}$/.test(value)) {
+      managementError =
+        'Enter a phone number with its country code, such as +1 202 555 0123.';
+      render();
+      return;
+    }
+    managementError = null;
+    void controller.updateAnsweringPhone(value).then((saved) => {
+      if (!saved) return;
+      const field = root.querySelector<HTMLInputElement>(
+        '[data-form="answering-phone"] input[name="phone"]',
+      );
+      if (field) field.value = '';
+      render();
+    });
+    return;
+  }
   const form = event.target;
   if (!(form instanceof HTMLFormElement)) return;
   event.preventDefault();

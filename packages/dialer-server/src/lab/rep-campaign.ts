@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { Cause, Runtime } from 'effect';
 import { createHmac, randomUUID } from 'node:crypto';
 import type { Pool } from 'pg';
-import type Redis from 'ioredis';
 import { Hono } from 'hono';
 import type { RepCapacityState } from '@consuelo/dialer';
 import { createLeadConnectorInboundOperatorApi } from '@consuelo/lead-connector/embed';
@@ -30,11 +29,9 @@ import {
 // Imported only by the disposable lab. No provider client, deployment URL or credentials.
 export const runRepCampaign = async ({
   pool,
-  redis,
   seed,
 }: {
   pool: Pool;
-  redis: Redis;
   seed: number;
 }) => {
   const stages = [];
@@ -233,8 +230,6 @@ export const runRepCampaign = async ({
           (c) => c.identity.workspaceId === foreignWorkspace,
         )!;
       assert.equal((await foreign.api.getSnapshot()).offers.length, 0);
-      const redisKey = 'qa:actors:' + workspaceId;
-      await redis.set(redisKey, JSON.stringify(plan.actors));
       const scheduled = [];
       for (const arrival of plan.arrivals) {
         time = Date.UTC(2026, 10, 6, 12) + arrival.at;
@@ -331,9 +326,7 @@ export const runRepCampaign = async ({
       assert.equal(offers, reps);
       assert.equal(redirects, reps * 2);
       const acceptToConfirmedMilliseconds = performance.now() - beforeAccept;
-      // Losing an ephemeral index must not erase committed owners or create new effects.
-      await redis.del(redisKey);
-      assert.equal(await redis.get(redisKey), null);
+      // Recreate services against committed Postgres state; inbound has no Redis dependency.
       service = createInboundTelephony(options);
       await tick();
       assert.equal(offers, reps);
@@ -386,7 +379,7 @@ export const runRepCampaign = async ({
         seed,
         schedule: scheduled,
         scheduleDigest: plan.digest,
-        level: 'local-http-postgres-redis',
+        level: 'local-http-postgres',
         transport: 'loopback-http',
         authentication:
           'explicit-fixture-authenticator-with-production-middleware',
@@ -400,9 +393,10 @@ export const runRepCampaign = async ({
     }
   }
   return {
-    level: 'local-http-postgres-redis',
+    level: 'local-http-postgres',
     stages,
     limitations: [
+      'Inbound routing uses Postgres, so these stages do not exercise Redis-index recovery.',
       'No production OAuth, browser media, PSTN audio, notification or 20-seat throughput claim.',
       'Input schedule is seeded; database race winners follow committed authority and may vary.',
       'QA0 is a fixture/oracle smoke; stress, fault combinations and bounded soak are separate execution lanes.',

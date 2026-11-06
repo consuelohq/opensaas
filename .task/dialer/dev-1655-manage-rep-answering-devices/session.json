@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_b8cb71d6cd12",
+  "tmuxSession": "opensaas-dialer-dev-1655-manage-rep-answering-devices-b8cb71d6",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1655-manage-rep-answering-devices",
+  "branch": "task/dialer/dev-1655-manage-rep-answering-devices",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1655-manage-rep-answering-devices",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1655-manage-rep-answering-devices",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2782,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2782",
+  "createdAt": "2026-11-06T23:26:08.399Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1655-manage-rep-answering-devices/.task/dialer/dev-1655-manage-rep-answering-devices/session.json"
+}

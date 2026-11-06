@@ -61,8 +61,7 @@ const billing = (state: LeadConnectorEmbedState): string => {
   const cancelled = Boolean(
     d.subscription?.cancel_at_period_end ?? d.subscription?.cancelAtPeriodEnd,
   );
-  return (
-    `
+  return `
     <section class="plan-summary"><span class="section-label">CURRENT PLAN</span><div class="plan-title"><h2>${e(planName(state))}</h2><span class="quiet-chip">${cancelled ? 'Cancels at period end' : recovery ? 'Payment needs attention' : c.trial ? 'Free' : 'Active'}</span></div>
     ${purchase ? `<p>${purchase.seats} ${purchase.seats === 1 ? 'seat' : 'seats'} · ${purchase.billing === 'annual' ? 'Billed annually' : 'Billed monthly'}</p><p class="plan-price">${money(purchase.recurringCents)} <small>/ ${purchase.billing === 'annual' ? 'year' : 'month'}</small></p>` : ''}
     ${purchase?.separateInvoices ? `<p class="form-caption">${purchase.mercurySeats ? 'Mercury is included for every paid seat.' : 'Add or remove Mercury with your plan in Stripe.'}</p>` : ''}
@@ -76,17 +75,14 @@ const billing = (state: LeadConnectorEmbedState): string => {
     ${total !== null && total > 0 ? `<meter min="0" max="${total}" value="${Math.min(used, total)}" aria-label="Connected minutes used"></meter>` : ''}
     <div class="usage-labels"><span>${e(used.toLocaleString())} used</span><span>${total === null ? 'No fixed allowance' : e(total.toLocaleString()) + ' included'}</span></div>${purchase?.separateInvoices ? '<button type="button" class="button button--secondary" data-action="buy-minute-pack">Buy extra minutes</button><p class="form-caption">Choose a one-time minute pack in Stripe. No recurring subscription is added.</p>' : ''}</section>
     <section class="settings-section"><h2>Invoices & payment</h2>${d.subscription ? '<p>View invoices, update your card or manage cancellation in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">Open billing portal</button>' : '<p>No invoices yet. You can use Starter without adding a card.</p>'}</section>
-    ${claim(state)}`
-  );
+    ${claim(state)}`;
 };
 const team = (state: LeadConnectorEmbedState): string => {
   const d = state.commercialDashboard;
   if (!d) return loading();
   const seats = d.seats;
   const capacity = d.publicPurchase?.seats;
-  return (
-    `<p class="team-summary">${state.commercialCaller?.trial ? 'Starter includes your access.' : `${seats.length} assigned${capacity ? ' of ' + capacity + ' paid seats' : ''}.`}</p><ul class="member-list">${seats.length ? seats.map((s) => `<li class="member-row"><span class="member-avatar">${e(repName(state, s.user_id ?? s.userId).slice(0, 1))}</span><span><strong>${e(repName(state, s.user_id ?? s.userId))}</strong><small>${e(planName(state))}</small></span><span class="quiet-chip">${e(titleCase(String(s.status ?? 'active')))}</span></li>`).join('') : '<li class="member-row"><span class="member-avatar">Y</span><span><strong>You</strong><small>Starter access</small></span></li>'}</ul><section class="settings-section"><h2>Growing your team</h2><p>Team membership belongs to your CRM location. Your paid plan and seat quantity are managed in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">${d.subscription ? 'Manage paid seats' : 'Choose a team plan'}</button></section>`
-  );
+  return `<p class="team-summary">${state.commercialCaller?.trial ? 'Starter includes your access.' : `${seats.length} assigned${capacity ? ' of ' + capacity + ' paid seats' : ''}.`}</p><ul class="member-list">${seats.length ? seats.map((s) => `<li class="member-row"><span class="member-avatar">${e(repName(state, s.user_id ?? s.userId).slice(0, 1))}</span><span><strong>${e(repName(state, s.user_id ?? s.userId))}</strong><small>${e(planName(state))}</small></span><span class="quiet-chip">${e(titleCase(String(s.status ?? 'active')))}</span></li>`).join('') : '<li class="member-row"><span class="member-avatar">Y</span><span><strong>You</strong><small>Starter access</small></span></li>'}</ul><section class="settings-section"><h2>Growing your team</h2><p>Team membership belongs to your CRM location. Your paid plan and seat quantity are managed in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">${d.subscription ? 'Manage paid seats' : 'Choose a team plan'}</button></section>`;
 };
 const numbers = (
   state: LeadConnectorEmbedState,
@@ -106,11 +102,11 @@ const numbers = (
         )
         .map(
           (device) =>
-            `<div class="navigation-row"><span class="navigation-icon">${icon(device.kind === 'browser' ? 'browser' : 'phone')}</span><span><strong>${device.kind === 'browser' ? 'Web' : 'Cell phone'}</strong><small>${device.kind === 'browser' ? 'Use your microphone and speakers' : 'Your personal phone that rings for incoming calls'}</small></span><span class="quiet-chip">${device.healthy ? 'Configured' : 'Unavailable'}</span></div>`,
+            `<div class="navigation-row"><span class="navigation-icon">${icon(device.kind === 'browser' ? 'browser' : 'phone')}</span><span><strong>${device.kind === 'browser' ? 'Web' : 'Cell phone'}</strong><small>${device.kind === 'browser' ? 'Use your microphone and speakers' : 'Your personal phone · ' + (device.configurationSource === 'self' ? 'Saved by you' : 'Saved by your workspace')}</small></span><span class="quiet-chip">${device.kind === 'browser' ? (device.active && device.healthy ? 'Ready' : 'Set up when you start') : e(device.maskedDestination ?? 'Saved by workspace')}</span></div>`,
         )
         .join(
           '',
-        )}</div><p class="form-caption">Forwarding phone changes are managed by your workspace administrator. Selecting a device on Inbound does not change your Call from numbers.</p></section>`
+        )}</div>${state.inboundOperator.error ? `<p class="notice notice--error" role="alert">${e(state.inboundOperator.error.message)}</p>` : ''}<form data-form="answering-phone"><label for="answering-phone">${state.inboundOperator.rep.endpoints.some((d) => d.kind === 'phone') ? 'Change your cell phone' : 'Add your cell phone'}<input id="answering-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 202 555 0123" required ${state.inboundOperator.rep.assignment ? 'disabled' : ''}/></label><p class="form-caption">Enter your personal number with country code. This saves the destination; it does not verify ownership or place a call. Changes pause receiving.</p><button type="submit" class="button button--secondary" ${state.inboundOperator.rep.assignment ? 'disabled' : ''}>Save cell phone</button>${state.inboundOperator.rep.endpoints.some((d) => d.kind === 'phone') ? '<button type="button" class="text-button danger-text" data-action="remove-answering-phone" ' + (state.inboundOperator.rep.assignment ? 'disabled' : '') + '>Remove cell phone</button>' : ''}</form>${state.inboundOperator.rep.assignment ? '<p role="status">Finish your call and wrap-up before changing devices.</p>' : ''}<p class="form-caption">Web audio is prepared with your microphone permission when you start receiving. These devices are separate from your Call from numbers.</p></section>`
     );
   const rows = d.numbers
     .map((n) => {
@@ -141,13 +137,9 @@ const mercury = (
       ? lib?.scripts.find((s) => s.id === workspace.scriptId)
       : null;
   if (active && !draft)
-    return (
-      `<div class="script-reader">${e(active.content)}</div>${active.canEdit ? `<button type="button" class="button button--secondary" data-action="script-edit" data-script-id="${e(active.id)}">Edit script</button>` : ''}`
-    );
+    return `<div class="script-reader">${e(active.content)}</div>${active.canEdit ? `<button type="button" class="button button--secondary" data-action="script-edit" data-script-id="${e(active.id)}">Edit script</button>` : ''}`;
   if (draft)
-    return (
-      `<form data-form="coaching-script"><label class="file-import">${icon('upload')}<span>Import a script</span><input type="file" data-field="script-file" accept=".txt,.md,text/plain,text/markdown" /></label><label>Script name<input name="title" required maxlength="120" value="${e(draft.title)}" placeholder="e.g. First conversation" /></label><label>Script<textarea name="content" required maxlength="100000" rows="11" placeholder="Your opening, discovery questions and next steps…">${e(draft.content)}</textarea></label><p class="form-caption">Saved scripts are shared with this workspace. Live AI coaching is configured separately.</p><div class="button-row"><button type="button" class="button button--secondary" data-action="script-cancel">Cancel</button><button type="submit" class="button button--primary"${workspace.scriptSaving ? ' disabled' : ''}>${workspace.scriptSaving ? 'Saving…' : 'Save script'}</button></div></form>`
-    );
+    return `<form data-form="coaching-script"><label class="file-import">${icon('upload')}<span>Import a script</span><input type="file" data-field="script-file" accept=".txt,.md,text/plain,text/markdown" /></label><label>Script name<input name="title" required maxlength="120" value="${e(draft.title)}" placeholder="e.g. First conversation" /></label><label>Script<textarea name="content" required maxlength="100000" rows="11" placeholder="Your opening, discovery questions and next steps…">${e(draft.content)}</textarea></label><p class="form-caption">Saved scripts are shared with this workspace. Live AI coaching is configured separately.</p><div class="button-row"><button type="button" class="button button--secondary" data-action="script-cancel">Cancel</button><button type="submit" class="button button--primary"${workspace.scriptSaving ? ' disabled' : ''}>${workspace.scriptSaving ? 'Saving…' : 'Save script'}</button></div></form>`;
   return (
     preferences +
     `<section class="mercury-intro"><span class="mercury-symbol">${icon('script')}</span><h2>Scripts for your calling day.</h2><p>Upload a playbook or write one here. Open a script whenever you need it.</p><button type="button" class="button button--primary" data-action="script-new"${lib ? '' : ' disabled'}>${icon('upload')} Add a script</button></section><section class="settings-section"><h2>Your scripts</h2>${lib ? (lib.scripts.length ? `<div class="navigation-list">${lib.scripts.map((s) => `<button type="button" class="navigation-row" data-action="script-open" data-script-id="${e(s.id)}"><span class="navigation-icon">${icon('script')}</span><span><strong>${e(s.title)}</strong><small>Team script</small></span>${icon('arrow')}</button>`).join('')}</div>` : '<p>No scripts yet. Add your first playbook above.</p>') : '<p class="page-empty">Loading your script library…</p>'}</section>`
@@ -162,10 +154,6 @@ export const renderWorkspacePage = (
   if (workspace.screen === 'numbers') return numbers(state, workspace);
   if (workspace.screen === 'mercury') return mercury(state, workspace);
   if (workspace.screen === 'appearance')
-    return (
-      `<fieldset class="theme-choices"><legend>Color theme</legend>${(['system', 'light', 'dark'] as const).map((t) => `<button type="button" class="theme-choice" data-action="workspace-theme" data-theme-value="${t}" aria-pressed="${(workspace.theme ?? 'system') === t}"><span class="theme-preview theme-preview--${t}">${icon(t === 'system' ? 'browser' : 'sun')}</span>${t === 'system' ? 'Match your system' : titleCase(t)}</button>`).join('')}</fieldset>`
-    );
-  return (
-    `<button type="button" class="settings-plan" data-action="workspace-billing"><span class="section-label">YOUR PLAN</span><span class="settings-plan-row"><span class="settings-plan-name">${e(planName(state))}</span><span class="text-button">Manage plan ${icon('arrow')}</span></span></button><div class="navigation-list">${row('numbers', 'Phone numbers', 'Answering devices and calling numbers', 'phone')}${row('mercury', 'Mercury', 'Call scripts for your team', 'script')}${row('team', 'Team & seats', 'People with Dialer access', 'team')}${row('billing', 'Plan & billing', 'Minutes, subscription and invoices', 'card')}${row('appearance', 'Appearance', 'Light, dark or system theme', 'sun')}</div>`
-  );
+    return `<fieldset class="theme-choices"><legend>Color theme</legend>${(['system', 'light', 'dark'] as const).map((t) => `<button type="button" class="theme-choice" data-action="workspace-theme" data-theme-value="${t}" aria-pressed="${(workspace.theme ?? 'system') === t}"><span class="theme-preview theme-preview--${t}">${icon(t === 'system' ? 'browser' : 'sun')}</span>${t === 'system' ? 'Match your system' : titleCase(t)}</button>`).join('')}</fieldset>`;
+  return `<button type="button" class="settings-plan" data-action="workspace-billing"><span class="section-label">YOUR PLAN</span><span class="settings-plan-row"><span class="settings-plan-name">${e(planName(state))}</span><span class="text-button">Manage plan ${icon('arrow')}</span></span></button><div class="navigation-list">${row('numbers', 'Phone numbers', 'Answering devices and calling numbers', 'phone')}${row('mercury', 'Mercury', 'Call scripts for your team', 'script')}${row('team', 'Team & seats', 'People with Dialer access', 'team')}${row('billing', 'Plan & billing', 'Minutes, subscription and invoices', 'card')}${row('appearance', 'Appearance', 'Light, dark or system theme', 'sun')}</div>`;
 };

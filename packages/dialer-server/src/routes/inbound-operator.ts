@@ -39,6 +39,28 @@ export const createInboundOperatorRoutes = (
   routes.post('/v1/inbound/operator/reconnect', async (context) =>
     context.json(await operator.snapshot(context.get('identity'))),
   );
+  routes.post('/v1/inbound/operator/devices', async (context) => {
+    try {
+      return context.json(
+        await operator.updateDevices(
+          context.get('identity'),
+          await context.req.json(),
+        ),
+      );
+    } catch {
+      return context.json(
+        {
+          error: {
+            code: 'DEVICE_CHANGE_REJECTED',
+            message:
+              'Device settings could not be saved. Use a valid phone number, finish any call, refresh and try again.',
+            retryable: false,
+          },
+        },
+        409,
+      );
+    }
+  });
   for (const [path, operation] of [
     ['readiness', operator.readiness],
     ['heartbeat', operator.heartbeat],

@@ -165,6 +165,7 @@ export const createLeadConnectorEmbedController = (input: {
       const recovered = await runInbound(() =>
         input.inboundOperatorApi!.setReadiness({
           ready: phones.length > 0,
+          deviceRevision: snapshot.rep.deviceRevision,
           endpoints: phones.map((endpoint) => ({
             endpointId: endpoint.endpointId,
             kind: endpoint.kind,
@@ -450,9 +451,11 @@ export const createLeadConnectorEmbedController = (input: {
                   : Math.min(3, targets.length),
             preferLocalPresence: state.setup.preferLocalPresence,
             recordingEnabled:
-              state.setup.recordingEnabled === true && state.commercialCaller?.recordings === true,
+              state.setup.recordingEnabled === true &&
+              state.commercialCaller?.recordings === true,
             transcriptionEnabled:
-              state.setup.transcriptionEnabled === true && state.commercialCaller?.transcripts === true,
+              state.setup.transcriptionEnabled === true &&
+              state.commercialCaller?.transcripts === true,
             ...(state.setup.callerIdNumber
               ? { callerIdNumber: state.setup.callerIdNumber }
               : {}),
@@ -472,9 +475,11 @@ export const createLeadConnectorEmbedController = (input: {
               requestedFanout: 1,
               preferLocalPresence: state.setup.preferLocalPresence,
               recordingEnabled:
-                state.setup.recordingEnabled === true && state.commercialCaller?.recordings === true,
+                state.setup.recordingEnabled === true &&
+                state.commercialCaller?.recordings === true,
               transcriptionEnabled:
-                state.setup.transcriptionEnabled === true && state.commercialCaller?.transcripts === true,
+                state.setup.transcriptionEnabled === true &&
+                state.commercialCaller?.transcripts === true,
               ...(state.setup.callerIdNumber
                 ? { callerIdNumber: state.setup.callerIdNumber }
                 : {}),
@@ -641,6 +646,23 @@ export const createLeadConnectorEmbedController = (input: {
       })();
       return inboundHeartbeat;
     },
+    updateAnsweringPhone: async (phone: string | null): Promise<boolean> => {
+      const api = input.inboundOperatorApi;
+      const update = api?.updateDevices;
+      const revision = state.inboundOperator.rep.deviceRevision ?? 0;
+      const snapshot = await runInbound(async () => {
+        try {
+          if (!update) throw new Error('Device editing is unavailable');
+          return await update({ revision, phone });
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      });
+      if (!snapshot) return false;
+      browserVoicePrepared = false;
+      dispatchInbound({ type: 'SNAPSHOT_LOADED', snapshot });
+      return true;
+    },
     setInboundReadiness: async (inputValue: {
       ready: boolean;
       endpoints: Array<{ endpointId: string; kind: 'browser' | 'phone' }>;
@@ -659,7 +681,10 @@ export const createLeadConnectorEmbedController = (input: {
         }
         dispatchInbound({ type: 'ACTION_STARTED', action: 'readiness' });
         const snapshot = await runInbound(() =>
-          input.inboundOperatorApi!.setReadiness(inputValue),
+          input.inboundOperatorApi!.setReadiness({
+            ...inputValue,
+            deviceRevision: state.inboundOperator.rep.deviceRevision,
+          }),
         );
         if (snapshot)
           dispatchInbound({ type: 'READINESS_CONFIRMED', snapshot });

@@ -1,10 +1,10 @@
+import type { RepDeviceDirectory } from './rep-devices';
+import { resolveRepEndpoints } from './endpoint-resolution';
 import { resolveInboundEnrichment } from './enrichment';
 import { nextInboundCallbackWindow } from './customer-entry';
 import { createTelephonyEndpoints } from './telephony-endpoints';
 import type { Pool } from 'pg';
-import {
-  type RepCapacityState,
-} from '@consuelo/dialer';
+import { type RepCapacityState } from '@consuelo/dialer';
 import type { CallbackRecipientCipher } from './callback-recipient-cipher';
 import {
   createPostgresCallbacks,
@@ -42,6 +42,7 @@ export type TelephonyOptions = {
   pool: Pool;
   numbers: readonly InboundNumber[];
   endpoints: readonly InboundEndpoint[];
+  devices?: RepDeviceDirectory;
   carrier: InboundCarrier;
   publicUrl: string;
   authToken: string;
@@ -100,7 +101,14 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
           input.workspaceId,
           input.capacityId,
         );
-        const endpoint = options.endpoints.find(
+        const endpoint = (
+          await resolveRepEndpoints(
+            options,
+            client,
+            input.workspaceId,
+            input.userId,
+          )
+        ).endpoints.find(
           (item) =>
             item.workspaceId === input.workspaceId &&
             item.repId === input.userId &&
@@ -131,7 +139,10 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
           input.workspaceId,
           effect.request_id,
         );
-        if (!session || !['waiting', 'callback_requested'].includes(session.mode))
+        if (
+          !session ||
+          !['waiting', 'callback_requested'].includes(session.mode)
+        )
           throw new Error('Caller no longer waiting');
         const operationId =
           input.operationId ??
@@ -294,7 +305,8 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
         );
         if (!session || session.caller_sid !== facts.CallSid)
           throw new Error('Caller identity mismatch');
-        if (!['waiting', 'callback_requested'].includes(session.mode)) return hangupTwiml();
+        if (!['waiting', 'callback_requested'].includes(session.mode))
+          return hangupTwiml();
         const request = await readInboundSnapshot(
           client,
           number.workspaceId,
@@ -335,15 +347,22 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
               throw new Error('Callback recipient evidence is unavailable');
             const at = await routingTime(client, options.clock);
             const callbackId = telephonyId(requestId, 'callback');
-            const callbackRequestId = telephonyId(requestId, 'callback-request');
+            const callbackRequestId = telephonyId(
+              requestId,
+              'callback-request',
+            );
             const routing = (
-              await client.query<{ metadata: import('@consuelo/dialer').RoutingRequestMetadata }>(
+              await client.query<{
+                metadata: import('@consuelo/dialer').RoutingRequestMetadata;
+              }>(
                 'SELECT metadata FROM dialer_routing_entries WHERE workspace_id=$1 AND request_id=$2',
                 [number.workspaceId, requestId],
               )
             ).rows[0]?.metadata;
             const queue = (
-              await client.query<{ policy: import('@consuelo/dialer').InboundQueuePolicy }>(
+              await client.query<{
+                policy: import('@consuelo/dialer').InboundQueuePolicy;
+              }>(
                 'SELECT policy FROM dialer_routing_queues WHERE workspace_id=$1 AND queue_id=$2',
                 [number.workspaceId, number.queueId],
               )
@@ -351,10 +370,14 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
             if (!routing || !queue)
               throw new Error('Callback routing evidence is unavailable');
             const window = nextInboundCallbackWindow(
-              queue, at, callbackPolicy!.immediateWindowMilliseconds,
+              queue,
+              at,
+              callbackPolicy!.immediateWindowMilliseconds,
             );
             if (!window)
-              return hangupTwiml('Callback scheduling is currently unavailable.');
+              return hangupTwiml(
+                'Callback scheduling is currently unavailable.',
+              );
             await recordTelephonyFact(
               client,
               number.workspaceId,
@@ -390,7 +413,9 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
           }
           if (request.state === 'offering') {
             const owned = (
-              await client.query<{ snapshot: import('@consuelo/dialer').RepCapacityState }>(
+              await client.query<{
+                snapshot: import('@consuelo/dialer').RepCapacityState;
+              }>(
                 `SELECT snapshot FROM dialer_rep_capacity
                  WHERE workspace_id=$1 AND snapshot->'owner'->>'requestId'=$2 LIMIT 2`,
                 [number.workspaceId, requestId],

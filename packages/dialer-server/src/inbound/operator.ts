@@ -1,3 +1,4 @@
+import { resolveRepEndpoints } from './endpoint-resolution';
 import type {
   InboundOperatorSnapshot,
   InboundOperatorActionResult,
@@ -44,6 +45,12 @@ export const projectOperatorEndpoints = (
         healthy: active?.healthy ?? true,
         active: Boolean(active),
         label: endpoint.kind === 'browser' ? 'Browser' : 'Forwarding phone',
+        ...(endpoint.kind === 'phone'
+          ? {
+              maskedDestination: '••• ••• ' + endpoint.address.slice(-4),
+              configurationSource: endpoint.configurationSource ?? 'workspace',
+            }
+          : {}),
       };
     });
 
@@ -189,6 +196,12 @@ export const createInboundOperator = (
                   wrapUpUntil: owner.wrapUpUntil,
                 }
               : null;
+            const devices = await resolveRepEndpoints(
+              options,
+              client,
+              identity.workspaceId,
+              identity.userId,
+            );
             return {
               serverTime: at,
               rep: {
@@ -203,8 +216,9 @@ export const createInboundOperator = (
                       : 'away',
                 capacityPhase: owner?.phase ?? null,
                 assignment,
+                deviceRevision: devices.revision,
                 endpoints: projectOperatorEndpoints(
-                  options.endpoints,
+                  devices.endpoints,
                   identity.workspaceId,
                   identity.userId,
                   rep.endpoints,
@@ -314,8 +328,20 @@ export const createInboundOperator = (
               identity.workspaceId,
               previous.capacityId,
             ))!;
+            const devices = await resolveRepEndpoints(
+              options,
+              client,
+              identity.workspaceId,
+              identity.userId,
+            );
+            if (
+              options.devices &&
+              input.ready &&
+              input.deviceRevision !== devices.revision
+            )
+              throw new Error('Refresh device settings before receiving calls');
             const endpoints = targets.map((endpoint) => {
-              const configured = options.endpoints.find(
+              const configured = devices.endpoints.find(
                 (item) =>
                   item.workspaceId === identity.workspaceId &&
                   item.repId === identity.userId &&
@@ -327,8 +353,7 @@ export const createInboundOperator = (
                   item.endpointId === endpoint.endpointId &&
                   item.kind === endpoint.kind,
               );
-              if (!configured)
-                throw new Error('Endpoint must be provisioned');
+              if (!configured) throw new Error('Endpoint must be provisioned');
               return {
                 endpointId: configured.endpointId,
                 kind: configured.kind,
@@ -336,7 +361,9 @@ export const createInboundOperator = (
               };
             });
             if (input.ready && !endpoints.some((endpoint) => endpoint.healthy))
-              throw new Error('Readiness requires a healthy configured endpoint');
+              throw new Error(
+                'Readiness requires a healthy configured endpoint',
+              );
             await executeRepCapacityOnClient(
               client,
               {
@@ -371,44 +398,66 @@ export const createInboundOperator = (
   const heartbeat = async (identity: DialerIdentity, _raw?: unknown) => {
     try {
       const previous = await state(identity);
-      await withInboundTransaction(pool, identity.workspaceId, async (client) => {
-        try {
-          const rep = (await readTelephonyCapacity(
-            client, identity.workspaceId, previous.capacityId,
-          ))!;
-          // A lease renewal can never change manual away into ready.
-          if (
-            !rep.ready ||
-            !rep.endpoints.some((endpoint) =>
-              endpoint.healthy && options.endpoints.some((configured) =>
-                configured.workspaceId === identity.workspaceId &&
-                configured.repId === identity.userId &&
-                configured.endpointId === endpoint.endpointId &&
-                configured.kind === endpoint.kind,
-              ),
+      await withInboundTransaction(
+        pool,
+        identity.workspaceId,
+        async (client) => {
+          try {
+            const rep = (await readTelephonyCapacity(
+              client,
+              identity.workspaceId,
+              previous.capacityId,
+            ))!;
+            const devices = await resolveRepEndpoints(
+              options,
+              client,
+              identity.workspaceId,
+              identity.userId,
+            );
+            // A lease renewal can never change manual away into ready.
+            if (
+              !rep.ready ||
+              !rep.endpoints.some(
+                (endpoint) =>
+                  endpoint.healthy &&
+                  devices.endpoints.some(
+                    (configured) =>
+                      configured.workspaceId === identity.workspaceId &&
+                      configured.repId === identity.userId &&
+                      configured.endpointId === endpoint.endpointId &&
+                      configured.kind === endpoint.kind,
+                  ),
+              )
             )
-          )
-            throw new Error('Only a ready rep with a configured healthy endpoint can renew presence');
-          await executeRepCapacityOnClient(
-            client,
-            {
-              workspaceId: identity.workspaceId,
-              capacityId: rep.capacityId,
-              expectedVersion: rep.version,
-              operationId: 'operator-heartbeat:' + randomUUID(),
-              action: { type: 'heartbeat' },
-            },
-            { clock: options.clock },
-          );
-        } catch (cause: unknown) {
-          if (cause instanceof Error) throw cause;
-          throw new Error('Inbound presence renewal rejected with a non-Error cause', { cause });
-        }
-      });
+              throw new Error(
+                'Only a ready rep with a configured healthy endpoint can renew presence',
+              );
+            await executeRepCapacityOnClient(
+              client,
+              {
+                workspaceId: identity.workspaceId,
+                capacityId: rep.capacityId,
+                expectedVersion: rep.version,
+                operationId: 'operator-heartbeat:' + randomUUID(),
+                action: { type: 'heartbeat' },
+              },
+              { clock: options.clock },
+            );
+          } catch (cause: unknown) {
+            if (cause instanceof Error) throw cause;
+            throw new Error(
+              'Inbound presence renewal rejected with a non-Error cause',
+              { cause },
+            );
+          }
+        },
+      );
       return snapshot(identity);
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
-      throw new Error('Operator heartbeat failed with a non-Error cause', { cause });
+      throw new Error('Operator heartbeat failed with a non-Error cause', {
+        cause,
+      });
     }
   };
   const accept = async (
@@ -419,9 +468,7 @@ export const createInboundOperator = (
     const ownership = fence(raw);
     const endpointId = text(input.endpointId);
     const attemptId =
-      input.attemptId === undefined
-        ? randomUUID()
-        : text(input.attemptId, 96);
+      input.attemptId === undefined ? randomUUID() : text(input.attemptId, 96);
     const rep = await state(identity);
     const effect = (
       await pool.query<{ call_sid: string | null }>(
@@ -590,5 +637,23 @@ export const createInboundOperator = (
       });
     }
   };
-  return { snapshot, readiness, heartbeat, accept, decline, wrapUp };
+  const updateDevices = async (identity: DialerIdentity, raw: unknown) => {
+    try {
+      await state(identity);
+      if (!options.devices) throw new Error('Device editing is unavailable');
+      await options.devices.update(identity, raw);
+      return snapshot(identity);
+    } catch (cause: unknown) {
+      throw new Error('Device settings update failed', { cause });
+    }
+  };
+  return {
+    updateDevices,
+    snapshot,
+    readiness,
+    heartbeat,
+    accept,
+    decline,
+    wrapUp,
+  };
 };
