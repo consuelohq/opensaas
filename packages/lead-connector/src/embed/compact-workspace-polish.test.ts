@@ -44,6 +44,44 @@ describe('compact Dialer workspace UX', () => {
     expect(doc.querySelector('.answering-devices')?.textContent).not.toContain('This browser');
   });
 
+  test('device rows use borderless, bright selected, quiet inactive and pointer-hover states', () => {
+    const styles = readFileSync(new URL('./workspace-theme.css', import.meta.url), 'utf8');
+    const base = styles.match(/\.calling-workspace \.inbound-endpoint-row \{([^}]+)\}/g)?.at(-1) ?? '';
+    const active = styles.match(/\.calling-workspace \.inbound-endpoint-row:has\(:checked\) \{([^}]+)\}/g)?.at(-1) ?? '';
+    expect(base).toContain('background: transparent');
+    expect(active).toContain('background: var(--soft)');
+    expect(styles).toMatch(/\.calling-workspace \.inbound-endpoint-row:has\(input:not\(:disabled\)\)\s*\{[^}]*cursor:\s*pointer/s);
+    expect(styles).toMatch(/\.calling-workspace \.inbound-endpoint-row:has\(input:not\(:disabled\)\):hover\s*\{[^}]*background:\s*var\(--soft\)/s);
+    expect(styles).toMatch(/\.calling-workspace \.inbound-endpoint-row:has\(input:not\(:disabled\)\):hover strong\s*\{[^}]*color:\s*var\(--ink\)/s);
+    const doc = page(makeState(), 'calling');
+    const rows = [...doc.querySelectorAll<HTMLLabelElement>('label.inbound-endpoint-row')];
+    expect(rows).toHaveLength(2);
+    expect(rows.every((row) => row.querySelector('input[type="radio"]'))).toBe(true);
+  });
+
+  test('the entire Starter plan card opens billing with only Manage plan highlighting', () => {
+    const doc = page(makeState(), 'settings');
+    const plan = doc.querySelector<HTMLElement>('.settings-plan');
+    expect(plan?.tagName).toBe('BUTTON');
+    expect(plan?.getAttribute('data-action')).toBe('workspace-billing');
+    expect(plan?.getAttribute('type')).toBe('button');
+    expect(plan?.textContent).toContain('YOUR PLAN');
+    expect(plan?.textContent).toContain('Manage plan');
+    expect(plan?.querySelector('button, a')).toBeNull();
+    expect(plan?.querySelector('h1, h2, h3, div')).toBeNull();
+    const styles = readFileSync(new URL('./workspace-theme.css', import.meta.url), 'utf8');
+    expect(styles).toMatch(/\.calling-workspace \.settings-plan\s*\{[^}]*cursor:\s*pointer/s);
+    expect(styles).toMatch(/\.calling-workspace \.settings-plan:hover:not\(:disabled\)\s*\{[^}]*filter:\s*none/s);
+    expect(styles).toMatch(/\.calling-workspace \.settings-plan:hover \.text-button\s*\{[^}]*color:\s*var\(--ink\)/s);
+  });
+
+  test('the Call from number finder does not show the redundant slot-pricing caption', () => {
+    const doc = page(makeState(), 'numbers', 'inbound', 'call-from');
+    expect(doc.querySelector('[data-form="commercial-number-search"]')).not.toBeNull();
+    expect(doc.body.textContent).not.toContain('An additional number slot');
+    expect(doc.body.textContent).not.toContain('Included slots follow your plan.');
+  });
+
   test('outbound tabs have one underline, plain queue placeholder and no empty-state filler', () => {
     const state = makeState();
     const doc = page(state, 'calling', 'outbound');
