@@ -290,7 +290,14 @@ describe('dialer GitHub release workflow contract', () => {
     expect(workerJob).toContain("needs.dialer-changes.outputs.frontend_only == 'true'");
     expect(workerJob).toContain('CLOUDFLARE_DIALER_WORKER_API_TOKEN');
     expect(workerJob).toContain('bun run --cwd packages/lead-connector build');
-    expect(workerJob).toContain('release:deploy-worker');
+    expect(workerJob).toContain('wrangler versions upload');
+    expect(workerJob).toContain('wrangler versions deploy');
+    expect(workerJob).toContain('wrangler deployments list');
+    expect(workerJob).toContain('--version-tag');
+    expect(workerJob).toContain('--keep-vars');
+    expect(workerJob).toContain('versionId');
+    expect(workerJob).not.toContain('release:deploy-worker');
+    expect(workerJob).not.toContain('read-wrangler-deployment.ts');
     expect(workerJob).toContain('verify-production-edge.ts');
     expect(workerJob).not.toMatch(/RAILWAY_TOKEN|RAILWAY_DIALER_PROJECT_ID|railway up|railway-deployment/);
   });

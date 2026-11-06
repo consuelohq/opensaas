@@ -1,0 +1,167 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence",
+  "base": "origin/main",
+  "headSha": "58f64dd56f3464500717accc57c74a862c620b51",
+  "changeHash": "7063df719dfa71809383b6fde87e28a6e5f312abc2815581e7d17927f5ea51c6",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/lead-connector/src/deployment/release-workflow.contract.test.ts"
+  ],
+  "verifiedAt": "2026-11-06T03:18:56.195Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/dialer/fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence/workpad.md",
+        ".task/tasks/dialer/fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence.json",
+        "packages/lead-connector/src/deployment/release-workflow.contract.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/deployment/release-workflow.contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "public-production-release-isolation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Website and docs release changes must preserve the existing Dialer release classifier and keep unrelated pushes from redeploying OS authentication; manual release and MCP security controls remain explicit.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-production-release.yaml"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        },
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1260,
+          "outputTail": " ready with no healthy devices but permits declining unanswerable fenced offers [0.08ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.25ms]\n\npackages/lead-connector/src/embed/compact-workspace-polish.test.ts:\n(pass) compact Dialer workspace UX > inbound answering uses exclusive Web or Cell phone selection, including legacy double-active snapshots [3.09ms]\n(pass) compact Dialer workspace UX > outbound tabs have one underline, plain queue placeholder and no empty-state filler [2.65ms]\n(pass) compact Dialer workspace UX > calling options and queue details share a footer action group immediately above the primary action [4.19ms]\n(pass) compact Dialer workspace UX > settings and inner pages place the heading on the same row as a quiet back breadcrumb [19.07ms]\n(pass) compact Dialer workspace UX > phone-number purpose tabs use the same quiet inactive and bright active tab classes [3.66ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.06ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.27ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.07ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.28ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.13ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.10ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.07ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.14ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [120.39ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.12ms]\n(pass) dialer GitHub release workflow contract > releases only the approved UI files to the Worker while fencing Railway and other changes [243.20ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.42ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.10ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.06ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.09ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.43ms]\n\n 245 pass\n 0 fail\n 1913 expect() calls\nRan 245 tests across 41 files. [1251.00ms]\n"
+        },
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 541,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/docs-production-release.test.js \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/production-release-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/github-workflow-policy.test.js \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 77\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 233\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:18:55\n\u001b[2m   Duration \u001b[22m 326ms\u001b[2m (transform 82ms, setup 0ms, import 120ms, tests 314ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 353,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-cloudflare-ui-only-release-route-permissions-and-record-deployed-worker-evidence/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:18:56\n\u001b[2m   Duration \u001b[22m 85ms\u001b[2m (transform 15ms, setup 16ms, import 4ms, tests 2ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/production-release-mcp-security.test.ts\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
