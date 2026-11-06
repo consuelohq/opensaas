@@ -158,11 +158,11 @@ describe('commercial application billing and inventory authority', () => {
     });
   });
 
-  it('injects plan-owned recording and transcription flags into call authorization and ignores browser escalation', async () => {
-    const createQuery = (planCode: 'single' | 'standard') =>
+  it('honors explicit per-call recording and transcription preferences without escalating beyond plan entitlements', async () => {
+    const createQuery = (planCode: 'single' | 'standard' | null) =>
       mock(async (sql: string) => {
         if (sql.toLowerCase().includes('dialer_team_seats') && sql.includes('user_id = $2')) {
-          return { rows: [{ plan_code: planCode }] };
+          return { rows: planCode === null ? [] : [{ plan_code: planCode }] };
         }
         if (sql.toLowerCase().includes('dialer_phone_numbers') && sql.includes('user_id = $2')) {
           return { rows: [{ phone_number: '+15550100001' }] };
@@ -231,9 +231,47 @@ describe('commercial application billing and inventory authority', () => {
         ),
       ),
     ).resolves.toMatchObject({
-      recordingEnabled: true,
-      transcriptionEnabled: true,
+      recordingEnabled: false,
+      transcriptionEnabled: false,
     });
+
+    for (const [requested, expected] of [
+      [{}, { recordingEnabled: false, transcriptionEnabled: false }],
+      [{ recordingEnabled: true, transcriptionEnabled: false }, { recordingEnabled: true, transcriptionEnabled: false }],
+      [{ recordingEnabled: false, transcriptionEnabled: true }, { recordingEnabled: false, transcriptionEnabled: true }],
+      [{ recordingEnabled: true, transcriptionEnabled: true }, { recordingEnabled: true, transcriptionEnabled: true }],
+    ] as const) {
+      await expect(
+        Effect.runPromise(
+          standard.authorizeCall(
+            { workspaceId: 'workspace-one', userId: 'user-one', role: 'user' },
+            { requestedFanout: 1, selectionStrategy: 'single', ...requested },
+          ),
+        ),
+      ).resolves.toMatchObject(expected);
+    }
+
+    // No paid seat: production trial catalog uses Standard capabilities, not mandatory consent.
+    const trial = createCommercialApplication({
+      database: { query: createQuery(null) },
+      catalog,
+      billing: createBilling(),
+      billingReturnUrl: 'https://app.test/admin',
+    });
+    for (const [requested, expected] of [
+      [{}, { recordingEnabled: false, transcriptionEnabled: false }],
+      [{ recordingEnabled: false, transcriptionEnabled: false }, { recordingEnabled: false, transcriptionEnabled: false }],
+      [{ recordingEnabled: true, transcriptionEnabled: true }, { recordingEnabled: true, transcriptionEnabled: true }],
+    ] as const) {
+      await expect(
+        Effect.runPromise(
+          trial.authorizeCall(
+            { workspaceId: 'workspace-one', userId: 'user-one', role: 'user' },
+            { requestedFanout: 1, selectionStrategy: 'single', ...requested },
+          ),
+        ),
+      ).resolves.toMatchObject(expected);
+    }
   });
 
   it('returns confirmed subscription quantities and the upcoming invoice summary for admin billing', async () => {

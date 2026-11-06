@@ -802,6 +802,8 @@ describe('LeadConnector embed controller', () => {
       selectionStrategy: 'single',
       requestedFanout: 1,
       preferLocalPresence: true,
+      recordingEnabled: false,
+      transcriptionEnabled: false,
       targetPhone: '+15550100123',
       contactId: 'contact-1',
       contactName: 'Test Contact',
@@ -988,6 +990,45 @@ describe('LeadConnector embed controller', () => {
     expect(controller.getState().phase).toBe('ready');
   });
 
+  it('only sends recording and transcription opt-in when deliberately enabled', async () => {
+    const api = createApi();
+    const originalCaller = await api.getCommercialCallerContext();
+    api.getCommercialCallerContext = mock(async () => ({
+      ...originalCaller,
+      recordings: true,
+      transcripts: true,
+    }));
+    const controller = createLeadConnectorEmbedController({ api, voice: createVoice() });
+    await controller.authenticate('opaque-parent-ciphertext');
+    controller.updateSetup({ recordingEnabled: true, transcriptionEnabled: true });
+    controller.selectTarget(normalizeClickToCallTarget({ phone: '+15550100123' })!);
+    await controller.startCall('single');
+    expect(api.startCallSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: 'direct',
+        requestedFanout: 1,
+        recordingEnabled: true,
+        transcriptionEnabled: true,
+      }),
+    );
+    controller.returnHome();
+    expect(controller.getState().setup).toMatchObject({
+      recordingEnabled: false,
+      transcriptionEnabled: false,
+    });
+  });
+
+  it('refuses recording and transcription opt-ins when the current plan does not allow them', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({ api, voice: createVoice() });
+    await controller.authenticate('opaque-parent-ciphertext');
+    controller.updateSetup({ recordingEnabled: true, transcriptionEnabled: true });
+    expect(controller.getState().setup).toMatchObject({
+      recordingEnabled: false,
+      transcriptionEnabled: false,
+    });
+  });
+
   it('starts multiline calls through the queue predictive contract', async () => {
     const api = createApi();
     const controller = createLeadConnectorEmbedController({
@@ -1010,6 +1051,8 @@ describe('LeadConnector embed controller', () => {
       selectionStrategy: 'predictive',
       requestedFanout: 2,
       preferLocalPresence: true,
+      recordingEnabled: false,
+      transcriptionEnabled: false,
       targetPhones: ['+15550100123', '+15550100124'],
       contactIds: ['contact-1', 'contact-2'],
     });
@@ -1022,6 +1065,8 @@ describe('LeadConnector embed controller', () => {
       ...starter,
       predictive: true,
       trial: false,
+      recordings: true,
+      transcripts: true,
       lineOptions: [1, 2, 3],
     }));
     const controller = createLeadConnectorEmbedController({
@@ -1037,6 +1082,8 @@ describe('LeadConnector embed controller', () => {
       callingMode: 'predictive',
       requestedFanout: 3,
       preferLocalPresence: true,
+      recordingEnabled: true,
+      transcriptionEnabled: true,
     });
 
     await controller.startConfiguredCall();
@@ -1060,6 +1107,8 @@ describe('LeadConnector embed controller', () => {
       selectionStrategy: 'predictive',
       requestedFanout: 3,
       preferLocalPresence: true,
+      recordingEnabled: true,
+      transcriptionEnabled: true,
       targetPhones: [
         '+15550100123',
         '+15550100124',

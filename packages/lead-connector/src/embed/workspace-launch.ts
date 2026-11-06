@@ -119,7 +119,15 @@ export const readWorkspaceLaunch = (value: unknown): WorkspaceLaunch | null => {
   return {
     ...base,
     action: 'start-configured',
-    setup: setup as WorkspaceLaunch['setup'],
+    // Only setup choices may enter from launcher messages. Capture consent
+    // must originate inside the authenticated Dialer UI, never the host page.
+    setup: {
+      mode: setup.mode as 'queue' | 'single',
+      callingMode: setup.callingMode as 'predictive' | 'single',
+      requestedFanout: setup.requestedFanout as 1 | 2 | 3,
+      preferLocalPresence: setup.preferLocalPresence as boolean,
+      callerIdNumber: setup.callerIdNumber as string | null,
+    },
     targets,
     ...(q && short(q.pipelineId) && short(q.stageId)
       ? { queue: { pipelineId: q.pipelineId, stageId: q.stageId } }
