@@ -1,3 +1,4 @@
+import { createRepDeviceDirectory } from '../inbound/rep-devices';
 import { createHash, randomUUID } from 'node:crypto';
 import type { RepCapacityState } from '@consuelo/dialer';
 import { withInboundTransaction } from '../inbound/postgres-journal';
@@ -10,8 +11,14 @@ import { createOutboundCapacity } from '../inbound/outbound-capacity';
 import { createTwilioInboundCarrier } from '../inbound/twilio-carrier';
 import { parseTelephonyConfig } from '../inbound/telephony-config';
 import { createCallbackRecipientCipher } from '../inbound/callback-recipient-cipher';
-import { createPostgresRepCapacity, executeRepCapacityOnClient } from '../inbound/rep-capacity';
-import type { InboundEndpoint, InboundEnrichment } from '../inbound/telephony-contracts';
+import {
+  createPostgresRepCapacity,
+  executeRepCapacityOnClient,
+} from '../inbound/rep-capacity';
+import type {
+  InboundEndpoint,
+  InboundEnrichment,
+} from '../inbound/telephony-contracts';
 import {
   createCustomerEntryConsentAdapter,
   createInboundCustomerApplication,
@@ -29,7 +36,9 @@ const DEFAULT_REP_POLICY = {
 export const reconcileConfiguredRepCapacity = async (
   pool: Pool,
   endpoints: readonly InboundEndpoint[],
-  workspaceIds: readonly string[] = endpoints.map((endpoint) => endpoint.workspaceId),
+  workspaceIds: readonly string[] = endpoints.map(
+    (endpoint) => endpoint.workspaceId,
+  ),
 ) => {
   try {
     const capacity = createPostgresRepCapacity(pool);
@@ -62,21 +71,24 @@ export const reconcileConfiguredRepCapacity = async (
     for (const workspaceId of new Set(workspaceIds)) {
       await withInboundTransaction(pool, workspaceId, async (client) => {
         try {
-        const idle = await client.query<{ snapshot: RepCapacityState }>(
-          `SELECT snapshot FROM dialer_rep_capacity WHERE workspace_id=$1
+          const idle = await client.query<{ snapshot: RepCapacityState }>(
+            `SELECT snapshot FROM dialer_rep_capacity WHERE workspace_id=$1
            AND snapshot->'owner' = 'null'::jsonb AND snapshot->>'ready' = 'true'
            LIMIT 1001 FOR UPDATE`,
-          [workspaceId],
-        );
-        if (idle.rows.length > 1000) throw new Error('Rep readiness reset bound exceeded');
-        // A restarted process cannot vouch for health measured by an old device session.
-        for (const { snapshot } of idle.rows) {
-          await executeRepCapacityOnClient(client, {
-            workspaceId, capacityId: snapshot.capacityId, expectedVersion: snapshot.version,
-            operationId: 'runtime-readiness:' + randomUUID(),
-            action: { type: 'readiness', ready: false, endpoints: [] },
-          });
-        }
+            [workspaceId],
+          );
+          if (idle.rows.length > 1000)
+            throw new Error('Rep readiness reset bound exceeded');
+          // A restarted process cannot vouch for health measured by an old device session.
+          for (const { snapshot } of idle.rows) {
+            await executeRepCapacityOnClient(client, {
+              workspaceId,
+              capacityId: snapshot.capacityId,
+              expectedVersion: snapshot.version,
+              operationId: 'runtime-readiness:' + randomUUID(),
+              action: { type: 'readiness', ready: false, endpoints: [] },
+            });
+          }
         } catch (cause: unknown) {
           if (cause instanceof Error) throw cause;
           throw new Error('Inbound authority transaction failed', { cause });
@@ -85,9 +97,12 @@ export const reconcileConfiguredRepCapacity = async (
     }
   } catch (cause: unknown) {
     if (cause instanceof Error) throw cause;
-    throw new Error('Configured rep reconciliation failed with a non-Error cause', {
-      cause,
-    });
+    throw new Error(
+      'Configured rep reconciliation failed with a non-Error cause',
+      {
+        cause,
+      },
+    );
   }
 };
 
@@ -95,18 +110,27 @@ export const inboundEnabled = (environment: Environment) =>
   environment.DIALER_INBOUND_ENABLED === 'true';
 
 export const hasEnabledCallbacks = (
-  numbers: readonly { readonly enabled: boolean; readonly callback?: unknown }[],
+  numbers: readonly {
+    readonly enabled: boolean;
+    readonly callback?: unknown;
+  }[],
 ) => numbers.some((number) => number.enabled && Boolean(number.callback));
 
 export const hasEnabledCustomerEntry = (
-  numbers: readonly { readonly enabled: boolean; readonly customerEntry?: unknown }[],
+  numbers: readonly {
+    readonly enabled: boolean;
+    readonly customerEntry?: unknown;
+  }[],
 ) => numbers.some((number) => number.enabled && Boolean(number.customerEntry));
 
 // A disabled number may still have scheduled callbacks or uncertain provider
 // effects. Refuse to boot a worker which cannot decrypt or address that work.
 export const assertPendingCallbacksCanDrain = async (
   pool: Pool,
-  numbers: readonly { readonly workspaceId: string; readonly numberId: string }[],
+  numbers: readonly {
+    readonly workspaceId: string;
+    readonly numberId: string;
+  }[],
   callbackRecipientSecret: string | undefined,
 ): Promise<void> => {
   try {
@@ -121,20 +145,33 @@ export const assertPendingCallbacksCanDrain = async (
     if (result.rows.length > 1000)
       throw new Error('Callback draining scan bound exceeded');
     if (result.rows.length && !callbackRecipientSecret)
-      throw new Error('DIALER_CALLBACK_RECIPIENT_SECRET is required to drain pending callbacks');
+      throw new Error(
+        'DIALER_CALLBACK_RECIPIENT_SECRET is required to drain pending callbacks',
+      );
     for (const row of result.rows) {
-      if (!numbers.some((number) =>
-        number.workspaceId === row.workspace_id && number.numberId === row.number_id,
-      ))
-        throw new Error('Callback number must remain configured until pending work drains');
+      if (
+        !numbers.some(
+          (number) =>
+            number.workspaceId === row.workspace_id &&
+            number.numberId === row.number_id,
+        )
+      )
+        throw new Error(
+          'Callback number must remain configured until pending work drains',
+        );
     }
   } catch (cause: unknown) {
     if (cause instanceof Error) throw cause;
-    throw new Error('Callback draining check rejected with a non-Error cause', { cause });
+    throw new Error('Callback draining check rejected with a non-Error cause', {
+      cause,
+    });
   }
 };
 
-export const createInboundRuntime = async (environment: Environment, enrich?: InboundEnrichment) => {
+export const createInboundRuntime = async (
+  environment: Environment,
+  enrich?: InboundEnrichment,
+) => {
   if (!inboundEnabled(environment)) return undefined;
   const accountSid = environment.TWILIO_ACCOUNT_SID?.trim();
   const authToken = environment.TWILIO_AUTH_TOKEN?.trim();
@@ -180,7 +217,11 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
   });
   try {
     await migrateDialerDatabase(pool);
-    await assertPendingCallbacksCanDrain(pool, config.numbers, callbackRecipientSecret);
+    await assertPendingCallbacksCanDrain(
+      pool,
+      config.numbers,
+      callbackRecipientSecret,
+    );
     for (const number of config.numbers.filter((number) => number.enabled)) {
       const queue = await pool.query(
         'SELECT queue_id FROM dialer_routing_queues WHERE workspace_id=$1 AND queue_id=$2',
@@ -191,7 +232,9 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
           'Configure the queue policy before enabling its inbound number',
         );
     }
-    const configuredWorkspaces = [...new Set(config.numbers.map((number) => number.workspaceId))];
+    const configuredWorkspaces = [
+      ...new Set(config.numbers.map((number) => number.workspaceId)),
+    ];
     // Disabled numbers can still own live legs or an uncertain external effect.
     const draining = await pool.query<{ workspace_id: string }>(
       `SELECT workspace_id FROM dialer_telephony_sessions
@@ -202,20 +245,30 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
       [configuredWorkspaces],
     );
     const ownedWorkspaces = new Set([
-      ...config.numbers.filter((number) => number.enabled).map((number) => number.workspaceId),
+      ...config.numbers
+        .filter((number) => number.enabled)
+        .map((number) => number.workspaceId),
       ...draining.rows.map((row) => row.workspace_id),
     ]);
     await protectTelephonyConfiguration(pool, config);
     await reconcileConfiguredRepCapacity(
       pool,
-      config.endpoints.filter((endpoint) => ownedWorkspaces.has(endpoint.workspaceId)),
+      config.endpoints.filter((endpoint) =>
+        ownedWorkspaces.has(endpoint.workspaceId),
+      ),
       [...ownedWorkspaces],
     );
     const carrier = await createTwilioInboundCarrier(accountSid, authToken);
     const callbackConsent = customerEntryEnabled
       ? createCustomerEntryConsentAdapter({ pool })
       : undefined;
+    const devices = createRepDeviceDirectory({
+      pool,
+      endpoints: config.endpoints,
+      cipher: callbackRecipientCipher,
+    });
     const telephony = createInboundTelephony({
+      devices,
       pool,
       ...config,
       carrier,
@@ -225,34 +278,45 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
       callbackConsent,
       enrich,
     });
-    const customer = customerEntryEnabled && customerEntrySecret
-      ? createInboundCustomerApplication({
-          pool,
-          numbers: config.numbers,
-          callbacks: telephony.callbacks,
-          secret: customerEntrySecret,
-          enrich,
-        })
-      : undefined;
+    const customer =
+      customerEntryEnabled && customerEntrySecret
+        ? createInboundCustomerApplication({
+            pool,
+            numbers: config.numbers,
+            callbacks: telephony.callbacks,
+            secret: customerEntrySecret,
+            enrich,
+          })
+        : undefined;
     const carrierCache = new Map<string, Promise<typeof carrier>>();
     const carrierForAccount = (targetSid: string): Promise<typeof carrier> => {
       if (targetSid === accountSid) return Promise.resolve(carrier);
       if (!/^AC[a-fA-F0-9]{32}$/.test(targetSid)) {
-        return Promise.reject(new Error('Invalid scoped Twilio carrier account'));
+        return Promise.reject(
+          new Error('Invalid scoped Twilio carrier account'),
+        );
       }
       const previous = carrierCache.get(targetSid);
       if (previous) return previous;
-      const pending = createTwilioInboundCarrier(accountSid, authToken, targetSid)
-        .catch((cause: unknown) => {
-          carrierCache.delete(targetSid);
-          if (cause instanceof Error) throw cause;
-          throw new Error('Scoped outbound carrier initialization failed', { cause });
+      const pending = createTwilioInboundCarrier(
+        accountSid,
+        authToken,
+        targetSid,
+      ).catch((cause: unknown) => {
+        carrierCache.delete(targetSid);
+        if (cause instanceof Error) throw cause;
+        throw new Error('Scoped outbound carrier initialization failed', {
+          cause,
         });
+      });
       carrierCache.set(targetSid, pending);
       return pending;
     };
     const outbound = createOutboundCapacity({
-      pool, carrier, accountSid, carrierForAccount,
+      pool,
+      carrier,
+      accountSid,
+      carrierForAccount,
     });
     const ownsWorkspace = (workspaceId: string) =>
       ownedWorkspaces.has(workspaceId);
@@ -306,7 +370,7 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
     const admitOutboundRep = (input: Parameters<typeof outbound.admitRep>[0]) =>
       outbound.admitRep(input, [...ownedWorkspaces]);
     const operator = createInboundOperator(
-      { pool, ...config, carrier, publicUrl, authToken },
+      { pool, ...config, carrier, publicUrl, authToken, devices },
       telephony,
     );
     return {

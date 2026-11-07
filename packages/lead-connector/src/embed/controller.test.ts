@@ -496,6 +496,43 @@ describe('LeadConnector embed controller', () => {
     expect(inboundOperatorApi.heartbeat).not.toHaveBeenCalled();
   });
 
+  it('saves answering devices with the current revision and uses the committed snapshot for readiness', async () => {
+    const api = createApi(),
+      voice = createVoice(),
+      inboundOperatorApi = createInboundApi();
+    const before = createInboundSnapshot(null);
+    before.rep.ready = false;
+    before.rep.deviceRevision = 4;
+    const after = createInboundSnapshot(null);
+    after.rep.ready = false;
+    after.rep.deviceRevision = 5;
+    inboundOperatorApi.getSnapshot = mock(async () => before);
+    inboundOperatorApi.updateDevices = mock(async () => after);
+    inboundOperatorApi.setReadiness = mock(async () => after);
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    await controller.updateAnsweringPhone('+15555550123');
+    expect(inboundOperatorApi.updateDevices).toHaveBeenCalledWith({
+      revision: 4,
+      phone: '+15555550123',
+    });
+    expect(controller.getState().inboundOperator.rep.deviceRevision).toBe(5);
+    expect(controller.getState().inboundOperator.rep.ready).toBe(false);
+    expect(inboundOperatorApi.setReadiness).not.toHaveBeenCalled();
+    await controller.setInboundReadiness({
+      ready: true,
+      endpoints: [{ endpointId: 'browser', kind: 'browser' }],
+    });
+    expect(inboundOperatorApi.setReadiness).toHaveBeenCalledWith({
+      ready: true,
+      deviceRevision: 5,
+      endpoints: [{ endpointId: 'browser', kind: 'browser' }],
+    });
+  });
   it('prepares browser media before advertising browser readiness and fails closed when preparation is denied', async () => {
     const api = createApi();
     const inboundOperatorApi = createInboundApi();
@@ -998,10 +1035,18 @@ describe('LeadConnector embed controller', () => {
       recordings: true,
       transcripts: true,
     }));
-    const controller = createLeadConnectorEmbedController({ api, voice: createVoice() });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
     await controller.authenticate('opaque-parent-ciphertext');
-    controller.updateSetup({ recordingEnabled: true, transcriptionEnabled: true });
-    controller.selectTarget(normalizeClickToCallTarget({ phone: '+15550100123' })!);
+    controller.updateSetup({
+      recordingEnabled: true,
+      transcriptionEnabled: true,
+    });
+    controller.selectTarget(
+      normalizeClickToCallTarget({ phone: '+15550100123' })!,
+    );
     await controller.startCall('single');
     expect(api.startCallSession).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -1020,9 +1065,15 @@ describe('LeadConnector embed controller', () => {
 
   it('refuses recording and transcription opt-ins when the current plan does not allow them', async () => {
     const api = createApi();
-    const controller = createLeadConnectorEmbedController({ api, voice: createVoice() });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
     await controller.authenticate('opaque-parent-ciphertext');
-    controller.updateSetup({ recordingEnabled: true, transcriptionEnabled: true });
+    controller.updateSetup({
+      recordingEnabled: true,
+      transcriptionEnabled: true,
+    });
     expect(controller.getState().setup).toMatchObject({
       recordingEnabled: false,
       transcriptionEnabled: false,
@@ -1490,14 +1541,21 @@ it('keeps active media state during a renewal failure and requests bounded conte
 });
 
 it('preserves the current token through a transient secure renewal failure', async () => {
-  const api = createApi(), voice = createVoice(), recover = mock(() => undefined);
-  api.createEmbedSession = mock(async () => { throw new Error('upstream 503'); });
+  const api = createApi(),
+    voice = createVoice(),
+    recover = mock(() => undefined);
+  api.createEmbedSession = mock(async () => {
+    throw new Error('upstream 503');
+  });
   const state = createInitialEmbedState();
   state.phase = 'connected';
   state.sessionToken = 'still-valid';
   state.activeSessionId = 'connected-call';
   const controller = createLeadConnectorEmbedController({
-    api, voice, initialState: state, onSessionExpired: recover,
+    api,
+    voice,
+    initialState: state,
+    onSessionExpired: recover,
   });
   await controller.authenticate('fresh-context');
   expect(controller.getState().sessionToken).toBe('still-valid');
@@ -1508,12 +1566,17 @@ it('preserves the current token through a transient secure renewal failure', asy
 });
 
 it('rejects only the pending browser invite when secure session recovery exhausts', () => {
-  const api = createApi(), voice = createVoice();
+  const api = createApi(),
+    voice = createVoice();
   const state = createInitialEmbedState();
   state.phase = 'connected';
   state.sessionToken = 'current';
   state.activeSessionId = 'connected-call';
-  const controller = createLeadConnectorEmbedController({ api, voice, initialState: state });
+  const controller = createLeadConnectorEmbedController({
+    api,
+    voice,
+    initialState: state,
+  });
   controller.onSessionRenewalExhausted();
   expect(voice.rejectIncoming).toHaveBeenCalledTimes(1);
   expect(voice.disconnect).not.toHaveBeenCalled();

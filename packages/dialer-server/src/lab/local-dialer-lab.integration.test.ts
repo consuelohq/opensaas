@@ -1,3 +1,4 @@
+import { runBoundedQaProcess } from './bounded-qa-process';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../inbound/callback-booking-event-migration';
@@ -48,7 +49,7 @@ describeIntegration('local dialer lab service integration', () => {
         scenarioCount: number;
         allWorkersExited: boolean;
         replayWithoutEffects: boolean;
-        redisLossPreservedState: boolean;
+        postgresReplayVerified: boolean;
         deterministicReplay: boolean;
       };
       inbound: {
@@ -104,7 +105,7 @@ describeIntegration('local dialer lab service integration', () => {
     };
 
     expect(result.ok).toBe(true);
-    expect(result.qa?.level).toBe('local-http-postgres-redis');
+    expect(result.qa?.level).toBe('local-http-postgres');
     expect(result.qa?.stages.map((stage) => stage.reps)).toEqual([1, 2, 5, 20]);
     expect(
       result.qa?.stages.every(
@@ -122,7 +123,7 @@ describeIntegration('local dialer lab service integration', () => {
     expect(result.simulation?.scenarioCount).toBeGreaterThanOrEqual(14);
     expect(result.simulation?.allWorkersExited).toBe(true);
     expect(result.simulation?.replayWithoutEffects).toBe(true);
-    expect(result.simulation?.redisLossPreservedState).toBe(true);
+    expect(result.simulation?.postgresReplayVerified).toBe(true);
     expect(result.simulation?.deterministicReplay).toBe(true);
     expect(result.inbound.concurrentWinners).toBe(1);
     expect(result.inbound.replayWithoutEffects).toBe(true);
@@ -198,4 +199,42 @@ describeIntegration('local dialer lab service integration', () => {
       tempDirectoryRemoved: true,
     });
   }, 120_000);
+  it('terminates a blocked suite and cleans a daemonized child-owned PostgreSQL cluster', async () => {
+    const script = `
+      import {mkdtemp} from 'node:fs/promises';
+      import {join} from 'node:path';
+      import {tmpdir} from 'node:os';
+      const root=await mkdtemp(join(tmpdir(),'deadline-proof-'));
+      const bindir=Bun.spawnSync(['pg_config','--bindir']).stdout.toString().trim();
+      const data=join(root,'postgres');
+      const init=Bun.spawnSync([join(bindir,'initdb'),'-D',data,'--auth=trust','--username=postgres','--no-locale']);
+      if(init.exitCode!==0) throw new Error('Fixture initdb failed');
+      const listener=Bun.serve({hostname:'127.0.0.1',port:0,fetch:()=>new Response('fixture')});
+      const port=listener.port;listener.stop(true);
+      const started=Bun.spawnSync([join(bindir,'pg_ctl'),'-D',data,'-l',join(root,'pg.log'),'-o',"-h 127.0.0.1 -p "+port+" -F -c unix_socket_directories=''",'-w','start']);
+      if(started.exitCode!==0) throw new Error('Fixture PostgreSQL start failed');
+      process.stdout.write(JSON.stringify({port,data}));
+      setInterval(()=>{},1000);
+    `;
+    const result = await runBoundedQaProcess(
+      [process.execPath, '--no-env-file', '-e', script],
+      { PATH: process.env.PATH! },
+      5000,
+    );
+    expect(result.timedOut).toBe(true);
+    expect(result.exitCode).toBe(124);
+    expect(result.recoveredPostgres).toBe(1);
+    const proof = JSON.parse(result.stdout);
+    expect(await Bun.file(proof.data + '/postmaster.pid').exists()).toBe(false);
+    const { createConnection } = await import('node:net');
+    const open = await new Promise<boolean>((resolve) => {
+      const socket = createConnection({ host: '127.0.0.1', port: proof.port });
+      socket.once('connect', () => {
+        socket.destroy();
+        resolve(true);
+      });
+      socket.once('error', () => resolve(false));
+    });
+    expect(open).toBe(false);
+  }, 20000);
 });

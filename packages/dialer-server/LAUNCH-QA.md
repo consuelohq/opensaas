@@ -20,11 +20,11 @@ Read one card before clicking the GHL UI:
 
 Run a safe local component-regression subset:
 
-    bun run --cwd packages/dialer-server lab:launch run S01,S04,S07 --seed 20261105
+    bun run --cwd packages/dialer-server lab:launch run S01,S04,S07
 
 Run the complete allowlisted component matrix (no carrier or payment access):
 
-    bun run --cwd packages/dialer-server lab:launch run all --seed 20261105
+    bun run --cwd packages/dialer-server lab:launch run all
 
 Record a human observation AFTER trying the corresponding action in GHL:
 
@@ -61,8 +61,11 @@ of production Google/CRM OAuth. Synthetic actor tokens are never exported.
 seeded caller arrivals, a deterministic input digest and captured event order.
 Each stage checks a queued caller beyond available capacity, exactly one
 committed acceptance across two tabs per rep, foreign-owner rejection,
-confirmed synthetic provider participants, redis-index loss, service recreation,
-journal replay and terminal ownership/effect cleanup. A planted invalid-state
+confirmed synthetic provider participants, service recreation,
+journal replay and terminal ownership/effect cleanup. These inbound services use
+Postgres and have no Redis index dependency; this stage does not prove Redis-loss
+recovery. The separate RedisParallelStore benchmark exercises real Redis coordination.
+A planted invalid-state
 unit test proves the independent capacity oracle detects duplicate owners and
 endpoint winners. Input order is reproducible; OS/DB scheduling and race winner
 identity are not claimed to be deterministic. Timing is local synthetic timing,
@@ -222,3 +225,5 @@ deeper recovery simulations but they are a separate execution lane. Inbound
 notifications, self-service team/number setup, enterprise security and paid
 activation still have dedicated open/staging Linear issues. Do not advertise
 their completion merely because this checklist exists.
+
+Component runs use fixed fixtures, so they reject `--seed` and do not write a seed into evidence. Use the service-backed `--qa --seed` command for a seeded arrival schedule. QA child execution has a 90-second deadline; a timed-out process is killed, its private PostgreSQL clusters are stopped, partial output is retained, and the run fails before outer resource cleanup. No reroll is permitted to erase a failed run.

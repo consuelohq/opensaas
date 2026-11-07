@@ -19,6 +19,8 @@ export type InboundOperatorEndpoint = {
   healthy: boolean;
   active?: boolean;
   label: string;
+  maskedDestination?: string;
+  configurationSource?: 'workspace' | 'self';
 };
 
 export type InboundOperatorAssignment = {
@@ -69,6 +71,8 @@ export type InboundOperatorSnapshot = {
   serverTime: string;
   rep: {
     repId: string;
+    deviceRevision?: number;
+    deviceEditingAvailable?: boolean;
     ready: boolean;
     presence: InboundOperatorPresence;
     endpoints: InboundOperatorEndpoint[];
@@ -100,8 +104,13 @@ export type InboundOperatorActionResult = {
 export type InboundOperatorApi = {
   setSessionToken: (token: string | null) => void;
   getSnapshot: () => Promise<InboundOperatorSnapshot>;
+  updateDevices?: (input: {
+    revision: number;
+    phone: string | null;
+  }) => Promise<InboundOperatorSnapshot>;
   setReadiness: (input: {
     ready: boolean;
+    deviceRevision?: number;
     endpoints: Array<{ endpointId: string; kind: InboundOperatorEndpointKind }>;
   }) => Promise<InboundOperatorSnapshot>;
   heartbeat: () => Promise<InboundOperatorSnapshot>;
@@ -316,6 +325,11 @@ export const createLeadConnectorInboundOperatorApi = (options: {
     setSessionToken: (token) => {
       sessionToken = token;
     },
+    updateDevices: (input) =>
+      request<InboundOperatorSnapshot>(
+        '/v1/inbound/operator/devices',
+        toJson(input),
+      ),
     getSnapshot: () =>
       request<InboundOperatorSnapshot>('/v1/inbound/operator/snapshot'),
     setReadiness: (input) =>

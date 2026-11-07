@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1655-manage-rep-answering-devices",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2782,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2782",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2782",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2782/dev-1655-manage-rep-answering-devices",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2782",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2782/dev-1655-manage-rep-answering-devices",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1655-manage-rep-answering-devices",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b8cb71d6cd12",
+  "tmuxSession": "opensaas-dialer-dev-1655-manage-rep-answering-devices-b8cb71d6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1655-manage-rep-answering-devices/.task/dialer/dev-1655-manage-rep-answering-devices/session.json",
+  "createdAt": "2026-11-06T23:26:08.404Z"
+}

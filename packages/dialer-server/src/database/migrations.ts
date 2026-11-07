@@ -1,4 +1,8 @@
 import {
+  REP_DEVICES_MIGRATION_ID,
+  CREATE_REP_DEVICES_SQL,
+} from '../inbound/rep-devices';
+import {
   NATIVE_BILLING_MIGRATION_ID,
   initializeNativeBillingStore,
 } from '../billing/native-billing-store';
@@ -277,7 +281,8 @@ type Migration =
         | typeof DIALER_DATABASE_BASELINE_MIGRATION_ID
         | typeof DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID
         | typeof COACHING_SCRIPTS_MIGRATION_ID
-        | typeof NATIVE_BILLING_MIGRATION_ID;
+        | typeof NATIVE_BILLING_MIGRATION_ID
+        | typeof REP_DEVICES_MIGRATION_ID;
       up: MigrationUp;
       down?: never;
     }
@@ -454,6 +459,11 @@ const migrations: readonly Migration[] = [
       await database.query(PUBLIC_CHECKOUT_SCHEMA[0]);
       await initializeNativeBillingStore(database);
     },
+  },
+  {
+    id: REP_DEVICES_MIGRATION_ID,
+    up: (database) =>
+      database.query(CREATE_REP_DEVICES_SQL).then(() => undefined),
   },
 ];
 

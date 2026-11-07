@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import type { Pool } from 'pg';
-import type Redis from 'ioredis';
 import {
   capture,
   createSimulationEvidence,
@@ -28,11 +27,10 @@ import type { LabCheckpoint } from './inbound-worker-protocol';
 // Resources come exclusively from local-dialer-lab's newly created services.
 export const runInboundSimulationScenarios = async (options: {
   pool: Pool;
-  redis: Redis;
   databaseUrl: string;
   seed: number;
 }) => {
-  const { pool, redis, databaseUrl, seed } = options;
+  const { pool, databaseUrl, seed } = options;
   try {
     const journal = createPostgresInboundJournal(pool);
     const { cases, record, proofReplay } = createSimulationEvidence(pool);
@@ -493,16 +491,6 @@ export const runInboundSimulationScenarios = async (options: {
     );
 
     const workspaceId = 'rd2-dispatch-race';
-    const beforeLoss = await capture(pool, workspaceId);
-    const key = 'rd2:ephemeral-presence';
-    await redis.set(key, 'available');
-    await redis.del(key);
-    assert.equal(await redis.get(key), null);
-    assert.deepEqual(
-      await capture(pool, workspaceId),
-      beforeLoss,
-      'Lost Redis index cannot erase journal authority',
-    );
     await proofReplay(workspaceId);
     return {
       seed,
@@ -513,10 +501,9 @@ export const runInboundSimulationScenarios = async (options: {
         item.workers.every((worker) => worker.exited),
       ),
       replayWithoutEffects: true,
-      redisLossPreservedState: true,
+      postgresReplayVerified: true,
       deterministicReplay: true,
-      evidenceLevel:
-        'simulated-provider-real-postgres-redis-and-worker-processes',
+      evidenceLevel: 'simulated-provider-real-postgres-and-worker-processes',
     };
   } catch (cause: unknown) {
     throw new Error('Isolated inbound simulation failed', { cause });
