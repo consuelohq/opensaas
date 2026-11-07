@@ -693,6 +693,7 @@ root.addEventListener('click', (event) => {
         render();
       });
     }
+    if (action === 'workspace-team') void controller.loadTeam();
     if (action === 'workspace-history') workspace.screen = 'history';
     if (action === 'workspace-mercury') {
       workspace.scriptId = undefined;
@@ -701,6 +702,11 @@ root.addEventListener('click', (event) => {
     }
     if (action === 'workspace-calling') workspace.screen = 'calling';
     render();
+    return;
+  }
+  if (action === 'team-refresh') {
+    workspace.teamDraft = undefined;
+    void controller.loadTeam();
     return;
   }
   if (
@@ -1032,6 +1038,35 @@ root.addEventListener('click', (event) => {
 });
 
 root.addEventListener('change', (event) => {
+  const teamField = event.target as HTMLInputElement | HTMLSelectElement;
+  if (teamField.dataset.field === 'team-member') {
+    workspace.teamUserId = teamField.value;
+    workspace.teamDraft = undefined;
+    render();
+    return;
+  }
+  if (
+    teamField.dataset.field === 'team-enabled' ||
+    teamField.dataset.field === 'team-queue'
+  ) {
+    const form = teamField.closest<HTMLFormElement>(
+      '[data-form="team-access"]',
+    );
+    const team = controller.getState().team;
+    if (form && team) {
+      const data = new FormData(form);
+      const userId = String(data.get('userId'));
+      const member = team.members.find((m) => m.id === userId);
+      workspace.teamDraft = {
+        userId,
+        revision: team.revision,
+        enabled: member?.starter === true || data.get('enabled') === 'on',
+        queueIds: data.getAll('queueIds').map(String),
+      };
+    }
+    return;
+  }
+
   const target = event.target;
   if (
     !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)
@@ -1278,6 +1313,24 @@ root.addEventListener('submit', (event) => {
   if (!(form instanceof HTMLFormElement)) return;
   event.preventDefault();
   const data = new FormData(form);
+  if (form.dataset.form === 'team-access') {
+    const userId = String(data.get('userId') ?? '');
+    const member = controller
+      .getState()
+      .team?.members.find((m) => m.id === userId);
+    const enabled = member?.starter === true || data.get('enabled') === 'on';
+    void controller
+      .changeTeam({
+        userId,
+        enabled,
+        queueIds: enabled ? data.getAll('queueIds').map(String) : [],
+      })
+      .then((saved) => {
+        if (saved) workspace.teamDraft = undefined;
+        render();
+      });
+    return;
+  }
   if (
     form.dataset.form === 'coaching-script' &&
     workspace.scriptDraft &&

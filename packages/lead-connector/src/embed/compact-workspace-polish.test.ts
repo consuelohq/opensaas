@@ -334,3 +334,71 @@ describe('compact Dialer workspace UX', () => {
     }
   });
 });
+
+describe('CRM team access page', () => {
+  const teamState = () => {
+    const s = makeState();
+    s.team = {
+      revision: 2,
+      directoryVersion: 'a'.repeat(64),
+      paidSeats: 2,
+      assignedSeats: 1,
+      plan: 'professional',
+      queues: [{ id: 'sales', name: 'Sales' }],
+      members: [
+        {
+          id: 'admin',
+          name: 'Alice Admin',
+          role: 'admin',
+          canCall: true,
+          assigned: true,
+          starter: false,
+          queueIds: ['sales'],
+          capacityState: 'away',
+        },
+        {
+          id: 'rep',
+          name: 'Bob Rep',
+          role: 'user',
+          canCall: true,
+          assigned: false,
+          starter: false,
+          queueIds: [],
+          capacityState: 'away',
+        },
+      ],
+    };
+    return s;
+  };
+  test('uses real staff names, CRM roles and inbound memberships without per-user pricing controls', () => {
+    const d = page(teamState(), 'team');
+    expect(d.body.textContent).toContain('1 of 2 purchased seats assigned.');
+    expect(d.querySelector('select[name="userId"]')?.textContent).toContain(
+      'Alice Admin',
+    );
+    expect(d.querySelector('select[name="userId"]')?.textContent).toContain(
+      'Bob Rep',
+    );
+    expect(d.body.textContent).toContain('CRM administrator');
+    expect(d.querySelector('select[name="planCode"]')).toBeNull();
+    expect(d.querySelector('input[name="queueIds"]')).not.toBeNull();
+    expect(d.querySelector('[data-form="team-access"]')).not.toBeNull();
+    expect(d.body.textContent).toContain('does not purchase a seat');
+    expect(d.body.textContent).toContain(
+      'add them to this location in your CRM',
+    );
+  });
+  test('does not invent members while directory loading or allow saving a stale view', () => {
+    const s = makeState();
+    s.teamError = 'Only a CRM administrator can manage your team.';
+    const loading = page(s, 'team');
+    expect(loading.body.textContent).toContain(s.teamError);
+    expect(loading.querySelector('[data-form="team-access"]')).toBeNull();
+    const t = teamState();
+    t.teamError = 'Your team or plan changed. Refresh the team before saving.';
+    expect(
+      page(t, 'team').querySelector<HTMLButtonElement>('button[type="submit"]')
+        ?.disabled,
+    ).toBe(true);
+  });
+});

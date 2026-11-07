@@ -147,3 +147,10 @@ export type LeadConnectorWebhookProcessResult = {
   workspaceId: string;
   event: LeadConnectorWebhookEvent | null;
 };
+
+export type LeadConnectorTeamMember = {
+  id: string;
+  name: string;
+  role: 'admin' | 'user';
+  canCall: boolean;
+};

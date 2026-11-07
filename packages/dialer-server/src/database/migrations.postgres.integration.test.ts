@@ -1,3 +1,4 @@
+import { TEAM_ACCESS_MIGRATION_ID } from '../commercial/team-schema';
 import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
 import { COACHING_SCRIPTS_MIGRATION_ID } from '../coaching/scripts';
 import { describe, expect, it } from 'bun:test';
@@ -165,6 +166,7 @@ suite(
               COACHING_SCRIPTS_MIGRATION_ID,
               '20261031_016_native_billing',
               REP_DEVICES_MIGRATION_ID,
+              TEAM_ACCESS_MIGRATION_ID,
             ],
           ],
         );
@@ -212,7 +214,7 @@ suite(
             'SELECT migration_id, applied_at FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
           )
         ).rows;
-        expect(ledgerAfterUpgrade).toHaveLength(17);
+        expect(ledgerAfterUpgrade).toHaveLength(18);
         expect(ledgerAfterUpgrade.slice(0, 13)).toEqual(oldLedger);
 
         await migrateDialerDatabase(pool);

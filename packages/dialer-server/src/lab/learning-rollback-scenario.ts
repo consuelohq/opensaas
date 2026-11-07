@@ -1,3 +1,4 @@
+import { TEAM_ACCESS_MIGRATION_ID } from '../commercial/team-schema';
 import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
 import { COACHING_SCRIPTS_MIGRATION_ID } from '../coaching/scripts';
 import { NATIVE_BILLING_MIGRATION_ID } from '../billing/native-billing-store';
@@ -64,6 +65,7 @@ export const verifyLearningRollbackChain = async (
           COACHING_SCRIPTS_MIGRATION_ID,
           NATIVE_BILLING_MIGRATION_ID,
           REP_DEVICES_MIGRATION_ID,
+          TEAM_ACCESS_MIGRATION_ID,
         ],
       ],
     );

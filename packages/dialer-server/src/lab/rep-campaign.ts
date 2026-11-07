@@ -35,8 +35,16 @@ export const runRepCampaign = async ({
   seed: number;
 }) => {
   const stages = [];
-  for (const reps of [1, 2, 5, 20]) {
-    const plan = createRepCampaignPlan(seed, reps);
+  for (const { reps, callers, concurrentIngress } of [
+    ...[1, 2, 5, 20].map((reps) => ({
+      reps,
+      callers: reps + 1,
+      concurrentIngress: false,
+    })),
+    { reps: 20, callers: 25, concurrentIngress: true },
+    { reps: 20, callers: 40, concurrentIngress: true },
+  ]) {
+    const plan = createRepCampaignPlan(seed, reps, callers);
     const workspaceId = 'qa-' + randomUUID(),
       foreignWorkspace = workspaceId + '-foreign';
     let time = Date.UTC(2026, 10, 6, 12),
@@ -230,39 +238,53 @@ export const runRepCampaign = async ({
           (c) => c.identity.workspaceId === foreignWorkspace,
         )!;
       assert.equal((await foreign.api.getSnapshot()).offers.length, 0);
-      const scheduled = [];
-      for (const arrival of plan.arrivals) {
-        time = Date.UTC(2026, 10, 6, 12) + arrival.at;
-        const facts = {
-          AccountSid: 'qa-account',
-          CallSid: workspaceId + '-' + arrival.caller,
-          Direction: 'inbound',
-          To: numbers[0]!.did,
-        };
-        calls.set(facts.CallSid, {
-          sid: facts.CallSid,
-          accountSid: 'qa-account',
-          status: 'in-progress',
-        });
-        const path = '/webhooks/twilio/inbound/' + numbers[0]!.numberId;
-        const signature = createHmac('sha1', options.authToken)
-          .update(
-            options.publicUrl +
-              path +
-              Object.keys(facts)
-                .sort()
-                .map((k) => k + facts[k as keyof typeof facts])
-                .join(''),
-          )
-          .digest('base64');
-        const response = await fetch(baseUrl + path, {
-          method: 'POST',
-          body: new URLSearchParams(facts),
-          headers: { 'x-twilio-signature': signature },
-        });
-        assert.equal(response.status, 200, describeFailure(transportFailure));
-        scheduled.push({ caller: arrival.caller, at: arrival.at });
-      }
+      const scheduled: Array<{
+        caller: string;
+        at: number;
+        plannedAt: number;
+      }> = [];
+      const ingress = async (arrival: (typeof plan.arrivals)[number]) => {
+        try {
+          if (!concurrentIngress) time = Date.UTC(2026, 10, 6, 12) + arrival.at;
+          const facts = {
+            AccountSid: 'qa-account',
+            CallSid: workspaceId + '-' + arrival.caller,
+            Direction: 'inbound',
+            To: numbers[0]!.did,
+          };
+          calls.set(facts.CallSid, {
+            sid: facts.CallSid,
+            accountSid: 'qa-account',
+            status: 'in-progress',
+          });
+          const path = '/webhooks/twilio/inbound/' + numbers[0]!.numberId;
+          const signature = createHmac('sha1', options.authToken)
+            .update(
+              options.publicUrl +
+                path +
+                Object.keys(facts)
+                  .sort()
+                  .map((k) => k + facts[k as keyof typeof facts])
+                  .join(''),
+            )
+            .digest('base64');
+          const response = await fetch(baseUrl + path, {
+            method: 'POST',
+            body: new URLSearchParams(facts),
+            headers: { 'x-twilio-signature': signature },
+          });
+          assert.equal(response.status, 200, describeFailure(transportFailure));
+          scheduled.push({
+            caller: arrival.caller,
+            at: concurrentIngress ? 0 : arrival.at,
+            plannedAt: arrival.at,
+          });
+        } catch (cause: unknown) {
+          throw new Error('Campaign ingress failed', { cause });
+        }
+      };
+      if (concurrentIngress) await Promise.all(plan.arrivals.map(ingress));
+      else for (const arrival of plan.arrivals) await ingress(arrival);
       const tick = async () => {
         try {
           const result = await service.tick();
@@ -291,6 +313,17 @@ export const runRepCampaign = async ({
       const offered = await readCapacity();
       assert.equal(offered.filter((s) => s.owner).length, reps);
       assert.ok(inspectCapacityInvariants(offered).valid);
+      const waiting = (
+        await pool.query<{ n: number }>(
+          "SELECT count(*)::int AS n FROM dialer_inbound_entities e JOIN dialer_routing_entries r ON r.workspace_id=e.workspace_id AND r.request_id=e.entity_id WHERE e.workspace_id=$1 AND e.kind='request' AND e.snapshot->>'state' IN ('created','queued','offering') AND r.routing_state='waiting' AND NOT EXISTS(SELECT 1 FROM dialer_rep_capacity c WHERE c.workspace_id=e.workspace_id AND c.snapshot->'owner'->>'requestId'=e.entity_id)",
+          [workspaceId],
+        )
+      ).rows[0]!.n;
+      assert.equal(
+        waiting,
+        callers - reps,
+        'Every excess caller remains in the durable queue',
+      );
       let duplicateAcceptsRejected = 0;
       const beforeAccept = performance.now();
       for (const { api, identity } of local) {
@@ -362,7 +395,7 @@ export const runRepCampaign = async ({
           [workspaceId],
         )
       ).rows;
-      assert.equal(requests.length, reps + 1);
+      assert.equal(requests.length, plan.arrivals.length);
       assert.ok(
         requests.every((r) =>
           ['completed', 'abandoned', 'provider_failure'].includes(r.state),
@@ -373,6 +406,11 @@ export const runRepCampaign = async ({
       stages.push({
         reps,
         callers: plan.arrivals.length,
+        concurrentIngress,
+        ingressOrderMeaning: concurrentIngress
+          ? 'HTTP completion order; logical ingress clock is fixed for the burst'
+          : 'sequential scheduled delivery',
+        queuedBeyondCapacity: callers - reps,
         authenticatedActors: local.length,
         connected: reps,
         duplicateAcceptsRejected,

@@ -1,3 +1,5 @@
+import { LeadConnectorCompanyCredentialStore } from './index.js';
+import { listLeadConnectorTeamMembers } from './index.js';
 import { describe, expect, it } from 'bun:test';
 import { Effect, Either, Layer } from 'effect';
 
@@ -455,12 +457,10 @@ describe('LeadConnector token and resource contracts', () => {
     );
   });
 
-
   it('paginates a pipeline stage and reuses embedded contacts before hydrating missing phones', async () => {
     const harness = makeHarness((request) => {
       if (request.url.endsWith('/opportunities/search')) {
-        const page =
-          (request.body as { page?: number } | undefined)?.page ?? 1;
+        const page = (request.body as { page?: number } | undefined)?.page ?? 1;
         if (page === 1) {
           return {
             opportunities: [
@@ -794,17 +794,29 @@ describe('LeadConnector token and resource contracts', () => {
   });
 });
 
-
 describe('inbound contact owner lookup', () => {
   it('uses the installed location and exact phone endpoint without leaking contact data', async () => {
-    const harness = makeHarness(() => ({ contacts: [{
-      id: 'contact-1', locationId: 'location-1', assignedTo: 'rep-1',
-      email: 'private@example.test', phone: '+14155552671',
-    }] }));
-    harness.state.installationsByWorkspace.set('workspace-1', connectedInstallation());
-    const result = await Effect.runPromise(lookupLeadConnectorContactOwner({
-      workspaceId: 'workspace-1', phoneNumber: '+14155552671',
-    }).pipe(Effect.provide(harness.layer)));
+    const harness = makeHarness(() => ({
+      contacts: [
+        {
+          id: 'contact-1',
+          locationId: 'location-1',
+          assignedTo: 'rep-1',
+          email: 'private@example.test',
+          phone: '+14155552671',
+        },
+      ],
+    }));
+    harness.state.installationsByWorkspace.set(
+      'workspace-1',
+      connectedInstallation(),
+    );
+    const result = await Effect.runPromise(
+      lookupLeadConnectorContactOwner({
+        workspaceId: 'workspace-1',
+        phoneNumber: '+14155552671',
+      }).pipe(Effect.provide(harness.layer)),
+    );
     expect(result).toEqual({ ownerRepId: 'rep-1', ownerStatus: 'known' });
     const request = harness.state.requests[0]!;
     const url = new URL(request.url);
@@ -822,25 +834,195 @@ describe('inbound contact owner lookup', () => {
       [{ contacts: [{ locationId: 'location-1' }] }, 'missing'],
       [{ contacts: [contact, contact] }, 'ambiguous'],
       [{ contacts: [contact], nextCursor: 'another-page' }, 'ambiguous'],
-      [{ contacts: [{ ...contact, locationId: 'other-location' }] }, 'unavailable'],
+      [
+        { contacts: [{ ...contact, locationId: 'other-location' }] },
+        'unavailable',
+      ],
       [{ contacts: [{ assignedTo: 'rep-1' }] }, 'unavailable'],
       [{ malformed: true }, 'unavailable'],
     ] as const) {
       const harness = makeHarness(() => body);
-      harness.state.installationsByWorkspace.set('workspace-1', connectedInstallation());
-      expect(await Effect.runPromise(lookupLeadConnectorContactOwner({
-        workspaceId: 'workspace-1', phoneNumber: '+14155552671',
-      }).pipe(Effect.provide(harness.layer)))).toEqual({ ownerRepId: null, ownerStatus });
+      harness.state.installationsByWorkspace.set(
+        'workspace-1',
+        connectedInstallation(),
+      );
+      expect(
+        await Effect.runPromise(
+          lookupLeadConnectorContactOwner({
+            workspaceId: 'workspace-1',
+            phoneNumber: '+14155552671',
+          }).pipe(Effect.provide(harness.layer)),
+        ),
+      ).toEqual({ ownerRepId: null, ownerStatus });
     }
   });
 
   it('never looks up another installation when the workspace is disconnected', async () => {
     const harness = makeHarness(() => ({}));
-    harness.state.installationsByWorkspace.set('workspace-1', connectedInstallation());
-    const result = await Effect.runPromise(lookupLeadConnectorContactOwner({
-      workspaceId: 'workspace-2', phoneNumber: '+14155552671',
-    }).pipe(Effect.provide(harness.layer), Effect.either));
+    harness.state.installationsByWorkspace.set(
+      'workspace-1',
+      connectedInstallation(),
+    );
+    const result = await Effect.runPromise(
+      lookupLeadConnectorContactOwner({
+        workspaceId: 'workspace-2',
+        phoneNumber: '+14155552671',
+      }).pipe(Effect.provide(harness.layer), Effect.either),
+    );
     expect(Either.isLeft(result)).toBe(true);
     expect(harness.state.requests).toHaveLength(0);
+  });
+});
+
+describe('bound CRM staff directory', () => {
+  const identity = {
+    workspaceId: 'workspace-1',
+    locationId: 'location-1',
+    installationId: 'installation-1',
+  };
+  const user = (id: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    name: 'Rep ' + id,
+    roles: { type: 'account', role: 'user', locationIds: ['location-1'] },
+    permissions: { phoneCallEnabled: true },
+    deleted: false,
+    email: 'private@example.test',
+    phone: '+15555550199',
+    ...extra,
+  });
+  const seed = (h: ReturnType<typeof makeHarness>) =>
+    h.state.installationsByWorkspace.set(
+      'workspace-1',
+      connectedInstallation({ scopes: ['users.readonly'] }),
+    );
+  it('uses bound company/location and returns only normalized, location-eligible staff without private contacts', async () => {
+    const h = makeHarness(() => ({
+      users: [
+        user('a'),
+        user('foreign', {
+          roles: { type: 'account', role: 'admin', locationIds: ['elsewhere'] },
+        }),
+        user('deleted', { deleted: true }),
+        user('blocked', { permissions: { phoneCallEnabled: false } }),
+      ],
+      count: 4,
+    }));
+    seed(h);
+    const members = await Effect.runPromise(
+      listLeadConnectorTeamMembers(identity).pipe(Effect.provide(h.layer)),
+    );
+    expect(members).toEqual([
+      { id: 'a', name: 'Rep a', role: 'user', canCall: true },
+      { id: 'blocked', name: 'Rep blocked', role: 'user', canCall: false },
+    ]);
+    const req = h.state.requests[0]!;
+    const url = new URL(req.url);
+    expect(url.pathname).toBe('/users/search');
+    expect(url.searchParams.get('companyId')).toBe(identity.workspaceId);
+    expect(url.searchParams.get('locationId')).toBe(identity.locationId);
+    expect(JSON.stringify(members)).not.toContain('private@');
+    expect(JSON.stringify(members)).not.toContain('+1555');
+  });
+  it('fails before any provider query for a stale or foreign installation and missing directory scope', async () => {
+    const h = makeHarness();
+    seed(h);
+    for (const input of [
+      { ...identity, locationId: 'foreign' },
+      { ...identity, installationId: 'stale' },
+    ]) {
+      const result = await Effect.runPromise(
+        Effect.either(
+          listLeadConnectorTeamMembers(input).pipe(Effect.provide(h.layer)),
+        ),
+      );
+      expect(Either.isLeft(result)).toBe(true);
+    }
+    h.state.installationsByWorkspace.set(
+      'workspace-1',
+      connectedInstallation(),
+    );
+    expect(
+      Either.isLeft(
+        await Effect.runPromise(
+          Effect.either(
+            listLeadConnectorTeamMembers(identity).pipe(
+              Effect.provide(h.layer),
+            ),
+          ),
+        ),
+      ),
+    ).toBe(true);
+    expect(h.state.requests).toHaveLength(0);
+  });
+  it('includes unrestricted agency admins via the bound company credential while excluding foreign restricted staff', async () => {
+    const h = makeHarness(() => ({
+      users: [
+        user('agency', {
+          roles: {
+            type: 'agency',
+            role: 'admin',
+            locationIds: [],
+            restrictSubAccount: false,
+          },
+        }),
+        user('foreign', {
+          roles: { type: 'account', role: 'admin', locationIds: ['elsewhere'] },
+        }),
+      ],
+      count: 2,
+    }));
+    seed(h);
+    const company = Layer.succeed(LeadConnectorCompanyCredentialStore, {
+      getByCompanyId: () =>
+        Effect.succeed({
+          companyId: 'workspace-1',
+          accessTokenCiphertext: 'encrypted:company-access',
+          refreshTokenCiphertext: 'encrypted:company-refresh',
+          expiresAt: '2026-07-24T12:00:00.000Z',
+          scopes: ['users.readonly'],
+          connectedAt: '2026-07-23T00:00:00.000Z',
+          updatedAt: '2026-07-23T00:00:00.000Z',
+        }),
+      save: () => Effect.void,
+    });
+    const result = await Effect.runPromise(
+      listLeadConnectorTeamMembers(identity).pipe(
+        Effect.provide(Layer.merge(h.layer, company)),
+      ),
+    );
+    expect(result).toEqual([
+      { id: 'agency', name: 'Rep agency', role: 'admin', canCall: true },
+    ]);
+    const url = new URL(h.state.requests[0]!.url);
+    expect(url.searchParams.has('locationId')).toBe(false);
+    expect(url.searchParams.get('companyId')).toBe(identity.workspaceId);
+    expect(h.state.requests[0]!.headers.Authorization).toBe(
+      'Bearer company-access',
+    );
+  });
+  it('accepts HighLevel’s empty result without a count as empty, without inventing an administrator', async () => {
+    const h = makeHarness(() => ({ users: [] }));
+    seed(h);
+    expect(
+      await Effect.runPromise(
+        listLeadConnectorTeamMembers(identity).pipe(Effect.provide(h.layer)),
+      ),
+    ).toEqual([]);
+  });
+  it('fails closed for incomplete, repeated, or unbounded pagination', async () => {
+    for (const response of [
+      { users: [user('a')], count: 2 },
+      { users: [user('a'), user('a')], count: 2 },
+      { users: [], count: 1001 },
+    ]) {
+      const h = makeHarness(() => response);
+      seed(h);
+      const result = await Effect.runPromise(
+        Effect.either(
+          listLeadConnectorTeamMembers(identity).pipe(Effect.provide(h.layer)),
+        ),
+      );
+      expect(Either.isLeft(result)).toBe(true);
+    }
   });
 });

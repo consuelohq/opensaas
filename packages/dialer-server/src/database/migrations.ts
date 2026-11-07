@@ -1,4 +1,8 @@
 import {
+  TEAM_ACCESS_MIGRATION_ID,
+  TEAM_ACCESS_SCHEMA,
+} from '../commercial/team-schema';
+import {
   REP_DEVICES_MIGRATION_ID,
   CREATE_REP_DEVICES_SQL,
 } from '../inbound/rep-devices';
@@ -282,7 +286,8 @@ type Migration =
         | typeof DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID
         | typeof COACHING_SCRIPTS_MIGRATION_ID
         | typeof NATIVE_BILLING_MIGRATION_ID
-        | typeof REP_DEVICES_MIGRATION_ID;
+        | typeof REP_DEVICES_MIGRATION_ID
+        | typeof TEAM_ACCESS_MIGRATION_ID;
       up: MigrationUp;
       down?: never;
     }
@@ -464,6 +469,10 @@ const migrations: readonly Migration[] = [
     id: REP_DEVICES_MIGRATION_ID,
     up: (database) =>
       database.query(CREATE_REP_DEVICES_SQL).then(() => undefined),
+  },
+  {
+    id: TEAM_ACCESS_MIGRATION_ID,
+    up: (database) => database.query(TEAM_ACCESS_SCHEMA).then(() => undefined),
   },
 ];
 

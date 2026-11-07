@@ -14,6 +14,13 @@ export type CallingWorkspace = {
     | 'call-options'
     | 'appearance'
     | 'mercury';
+  teamUserId?: string;
+  teamDraft?: {
+    userId: string;
+    revision: number;
+    enabled: boolean;
+    queueIds: string[];
+  };
   nativeFloating?: boolean;
   locationId?: string;
   contactQuery?: string;

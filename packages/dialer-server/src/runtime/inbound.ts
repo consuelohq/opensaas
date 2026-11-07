@@ -1,3 +1,4 @@
+import { DEFAULT_REP_POLICY } from '../inbound/default-rep-policy';
 import { createRepDeviceDirectory } from '../inbound/rep-devices';
 import { createHash, randomUUID } from 'node:crypto';
 import type { RepCapacityState } from '@consuelo/dialer';
@@ -25,13 +26,6 @@ import {
 } from '../inbound/customer-entry';
 
 type Environment = Record<string, string | undefined>;
-const DEFAULT_REP_POLICY = {
-  offerMilliseconds: 12_000,
-  presenceMilliseconds: 120_000,
-  wrapUpMilliseconds: 30_000,
-  cooldownMilliseconds: 5_000,
-  escalationMilliseconds: 30_000,
-} as const;
 
 export const reconcileConfiguredRepCapacity = async (
   pool: Pool,

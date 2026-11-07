@@ -39,6 +39,9 @@ describeIntegration('local dialer lab service integration', () => {
         stages: {
           reps: number;
           connected: number;
+          callers: number;
+          concurrentIngress: boolean;
+          queuedBeyondCapacity: number;
           duplicateAcceptsRejected: number;
           authenticatedActors: number;
           clean: boolean;
@@ -106,7 +109,9 @@ describeIntegration('local dialer lab service integration', () => {
 
     expect(result.ok).toBe(true);
     expect(result.qa?.level).toBe('local-http-postgres');
-    expect(result.qa?.stages.map((stage) => stage.reps)).toEqual([1, 2, 5, 20]);
+    expect(result.qa?.stages.map((stage) => stage.reps)).toEqual([
+      1, 2, 5, 20, 20, 20,
+    ]);
     expect(
       result.qa?.stages.every(
         (stage) =>
@@ -116,6 +121,14 @@ describeIntegration('local dialer lab service integration', () => {
           stage.clean,
       ),
     ).toBe(true);
+    expect(
+      result.qa?.stages
+        .filter((s) => s.concurrentIngress)
+        .map((s) => [s.reps, s.callers, s.queuedBeyondCapacity]),
+    ).toEqual([
+      [20, 25, 5],
+      [20, 40, 20],
+    ]);
     expect(result.qa?.databaseSuites).toMatchObject({
       exitCode: 0,
       skipped: 0,

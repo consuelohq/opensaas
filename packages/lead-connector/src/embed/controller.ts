@@ -1,3 +1,4 @@
+import type { DialerTeamChange } from '../contracts/team.js';
 import type { LeadConnectorEmbedApi } from './api-client.js';
 import type { LeadConnectorAgentVoice } from './agent-voice.js';
 import { EmbedSessionExpiredError } from './api-client.js';
@@ -67,6 +68,74 @@ export const createLeadConnectorEmbedController = (input: {
     state = reduceEmbedState(state, event);
     publish();
     return state;
+  };
+
+  const teamMessage = (error: unknown): string => {
+    const code = error instanceof Error ? error.message : '';
+    if (code.includes('ADMIN_REQUIRED'))
+      return 'Only a CRM administrator can manage your team.';
+    if (code.includes('TEAM_VIEW_CHANGED'))
+      return 'Your team or plan changed. Refresh the team before saving.';
+    if (code.includes('TEAM_SEAT_LIMIT'))
+      return 'All purchased seats are assigned. Remove access from someone or add seats in Stripe.';
+    if (code.includes('TEAM_PAID_ACCESS_REQUIRED'))
+      return 'Choose a paid team plan in Stripe before assigning another rep.';
+    if (code.includes('TEAM_MEMBER_INELIGIBLE'))
+      return 'This person no longer has calling access in your CRM location. Refresh the team.';
+    if (code.includes('TEAM_INSTALLATION_CHANGED'))
+      return 'Reconnect this CRM location before managing your team.';
+    return 'Your team could not be loaded or saved. Refresh the team, or reconnect the app if staff access is missing.';
+  };
+  const loadTeam = async (): Promise<void> => {
+    if (state.teamLoading || state.teamSaving) return;
+    const token = state.sessionToken;
+    state = { ...state, teamLoading: true, teamError: null };
+    publish();
+    try {
+      if (!token || !input.api.getTeam)
+        throw new Error('TEAM_DIRECTORY_UNAVAILABLE');
+      const team = await input.api.getTeam();
+      if (token === state.sessionToken)
+        state = { ...state, team, teamError: null };
+    } catch (error: unknown) {
+      if (token === state.sessionToken)
+        state = { ...state, team: null, teamError: teamMessage(error) };
+    } finally {
+      state = { ...state, teamLoading: false };
+      publish();
+    }
+  };
+  const changeTeam = async (
+    change: Omit<DialerTeamChange, 'revision' | 'directoryVersion'>,
+  ): Promise<boolean> => {
+    if (
+      state.teamSaving ||
+      state.teamLoading ||
+      !state.team ||
+      !input.api.changeTeam
+    )
+      return false;
+    const view = state.team;
+    const token = state.sessionToken;
+    state = { ...state, teamSaving: true, teamError: null };
+    publish();
+    try {
+      const team = await input.api.changeTeam({
+        ...change,
+        revision: view.revision,
+        directoryVersion: view.directoryVersion,
+      });
+      if (token !== state.sessionToken) return false;
+      state = { ...state, team, teamError: null };
+      return true;
+    } catch (error: unknown) {
+      if (token === state.sessionToken)
+        state = { ...state, teamError: teamMessage(error) };
+      return false;
+    } finally {
+      state = { ...state, teamSaving: false };
+      publish();
+    }
   };
 
   const dispatchInbound = (
@@ -582,6 +651,8 @@ export const createLeadConnectorEmbedController = (input: {
     refreshResources,
     loadCallOperations,
     loadCommercial,
+    loadTeam,
+    changeTeam,
     loadAdministration: async (): Promise<string | null> => {
       if (!state.sessionToken)
         return 'Reconnect your session to open settings.';

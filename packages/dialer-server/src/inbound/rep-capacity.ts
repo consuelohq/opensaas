@@ -63,6 +63,21 @@ export const executeRepCapacityOnClient = async (
       [input.workspaceId, input.capacityId],
     );
     const previous = row.rows[0]?.snapshot ?? null;
+    if (
+      previous &&
+      (input.action.type === 'offer' ||
+        input.action.type === 'accept' ||
+        input.action.type === 'heartbeat' ||
+        (input.action.type === 'readiness' && input.action.ready))
+    ) {
+      const access = await client.query(
+        'SELECT enabled FROM dialer_team_access WHERE workspace_id=$1 AND user_id=$2',
+        [input.workspaceId, previous.repId],
+      );
+      if (access.rows[0]?.enabled === false)
+        throw new InboundPersistenceError('Rep access has been revoked');
+    }
+
     // Sample authority time after acquiring the lock, never from a device click timestamp.
     const clock = await client.query<{ now: Date }>(
       'SELECT clock_timestamp() AS now',

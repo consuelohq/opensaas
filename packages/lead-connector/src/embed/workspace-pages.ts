@@ -77,13 +77,45 @@ const billing = (state: LeadConnectorEmbedState): string => {
     <section class="settings-section"><h2>Invoices & payment</h2>${d.subscription ? '<p>View invoices, update your card or manage cancellation in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">Open billing portal</button>' : '<p>No invoices yet. You can use Starter without adding a card.</p>'}</section>
     ${claim(state)}`;
 };
-const team = (state: LeadConnectorEmbedState): string => {
-  const d = state.commercialDashboard;
-  if (!d) return loading();
-  const seats = d.seats;
-  const capacity = d.publicPurchase?.seats;
-  return `<p class="team-summary">${state.commercialCaller?.trial ? 'Starter includes your access.' : `${seats.length} assigned${capacity ? ' of ' + capacity + ' paid seats' : ''}.`}</p><ul class="member-list">${seats.length ? seats.map((s) => `<li class="member-row"><span class="member-avatar">${e(repName(state, s.user_id ?? s.userId).slice(0, 1))}</span><span><strong>${e(repName(state, s.user_id ?? s.userId))}</strong><small>${e(planName(state))}</small></span><span class="quiet-chip">${e(titleCase(String(s.status ?? 'active')))}</span></li>`).join('') : '<li class="member-row"><span class="member-avatar">Y</span><span><strong>You</strong><small>Starter access</small></span></li>'}</ul><section class="settings-section"><h2>Growing your team</h2><p>Team membership belongs to your CRM location. Your paid plan and seat quantity are managed in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">${d.subscription ? 'Manage paid seats' : 'Choose a team plan'}</button></section>`;
+const team = (
+  state: LeadConnectorEmbedState,
+  workspace: CallingWorkspace,
+): string => {
+  const t = state.team;
+  const refresh = `<button type="button" class="text-button" data-action="team-refresh"${state.teamLoading || state.teamSaving ? ' disabled' : ''}>${state.teamLoading ? 'Refreshing…' : 'Refresh team'}</button>`;
+  if (!t)
+    return `${refresh}<p class="page-empty"${state.teamError ? ' role="alert"' : ''}>${e(state.teamError ?? 'Loading staff from your CRM location…')}</p>`;
+  const member =
+    t.members.find((m) => m.id === workspace.teamUserId) ?? t.members[0];
+  const draft =
+    workspace.teamDraft?.userId === member?.id &&
+    workspace.teamDraft.revision === t.revision
+      ? workspace.teamDraft
+      : null;
+  const enabled =
+    draft?.enabled ?? Boolean(member?.assigned || member?.starter);
+  const queueIds = draft?.queueIds ?? member?.queueIds ?? [];
+  const busy = state.teamLoading || state.teamSaving;
+  const canEdit = Boolean(
+    member && (t.paidSeats || member.starter || member.assigned),
+  );
+  return `<div class="section-heading"><p class="team-summary">${t.paidSeats ? `${t.assignedSeats} of ${t.paidSeats} purchased seats assigned.` : 'Starter includes your personal access.'}</p>${refresh}</div>
+    ${state.teamError ? `<p class="notice notice--error" role="alert">${e(state.teamError)}</p>` : ''}
+    <p class="form-caption">Staff and roles come from your CRM. To invite someone, add them to this location in your CRM, then refresh here.</p>
+    ${
+      member
+        ? `<form data-form="team-access"><label class="field-label">Team member<select name="userId" data-field="team-member"${busy ? ' disabled' : ''}>${t.members.map((m) => `<option value="${e(m.id)}"${member.id === m.id ? ' selected' : ''}>${e(m.name)}${m.starter ? ' · You' : ''}</option>`).join('')}</select></label>
+    <p>${e(member.role === 'admin' ? 'CRM administrator' : 'CRM staff')} · ${e(member.capacityState === 'unknown' ? 'Finishing an uncertain call' : member.capacityState === 'away' ? 'Not receiving calls' : titleCase(member.capacityState))}</p>
+    ${!member.canCall ? '<p class="form-caption">Calling is unavailable for this CRM member. Existing access can be removed.</p>' : ''}
+    <label class="field-label"><span><input type="checkbox" name="enabled" data-field="team-enabled"${enabled ? ' checked' : ''}${busy || member.starter || (!member.canCall && !member.assigned) ? ' disabled' : ''}/> Allow calling${member.starter ? ' · Included with Starter' : ''}</span></label>
+    <fieldset${busy || !canEdit ? ' disabled' : ''}><legend>Inbound teams</legend>${t.queues.length ? t.queues.map((q) => `<label class="field-label"><span><input type="checkbox" name="queueIds" value="${e(q.id)}" data-field="team-queue"${queueIds.includes(q.id) ? ' checked' : ''}/> ${e(q.name)}</span></label>`).join('') : '<p class="form-caption">No inbound teams are configured for this location yet. Outbound access can still be assigned.</p>'}</fieldset>
+    <p class="form-caption">Saving pauses receiving. Existing calls finish normally; the rep starts receiving when they are ready.</p>
+    <button type="submit" class="button button--primary"${busy || !canEdit || Boolean(state.teamError) ? ' disabled' : ''}>${state.teamSaving ? 'Saving…' : 'Save access'}</button></form>`
+        : '<p class="page-empty">No eligible staff were returned by your CRM.</p>'
+    }
+    <section class="settings-section"><h2>Purchased seats</h2><p>Manage your plan and seat quantity securely in Stripe. Assigning access here does not purchase a seat or change a price.</p><button type="button" class="button button--secondary" data-action="manage-billing">${t.paidSeats ? 'Manage paid seats' : 'Choose a team plan'}</button></section>`;
 };
+
 const numbers = (
   state: LeadConnectorEmbedState,
   workspace: CallingWorkspace,
@@ -166,7 +198,7 @@ export const renderWorkspacePage = (
   workspace: CallingWorkspace,
 ): string => {
   if (workspace.screen === 'billing') return billing(state);
-  if (workspace.screen === 'team') return team(state);
+  if (workspace.screen === 'team') return team(state, workspace);
   if (workspace.screen === 'numbers') return numbers(state, workspace);
   if (workspace.screen === 'mercury') return mercury(state, workspace);
   if (workspace.screen === 'appearance')

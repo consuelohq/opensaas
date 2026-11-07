@@ -1,3 +1,4 @@
+import { bodyLimit } from 'hono/body-limit';
 import { normalizeAsyncError } from '../errors/normalize-async-error';
 import type { PublicCheckout } from '../billing/public-checkout';
 import { Effect } from 'effect';
@@ -38,6 +39,8 @@ export type CommercialRouteDependencies = {
     identity: CommercialIdentity,
     body: unknown,
   ) => Effect.Effect<Record<string, unknown>, unknown>;
+  authorizeRep?: (identity: CommercialIdentity) => Effect.Effect<void, unknown>;
+  team?: (identity: CommercialIdentity) => Effect.Effect<unknown, unknown>;
   updateTeam: (
     identity: CommercialIdentity,
     body: unknown,
@@ -86,7 +89,19 @@ const errorCode = (cause: unknown): string =>
 
 const errorStatus = (code: string): 400 | 401 | 403 | 409 | 500 => {
   if (code === 'INVALID_STRIPE_SIGNATURE') return 401;
-  if (code === 'FORBIDDEN' || code === 'ADMIN_REQUIRED') return 403;
+  if (
+    code === 'FORBIDDEN' ||
+    code === 'ADMIN_REQUIRED' ||
+    code === 'TEAM_MEMBER_INELIGIBLE' ||
+    code === 'TEAM_ACCESS_REVOKED'
+  )
+    return 403;
+  if (code === 'TEAM_VIEW_CHANGED' || code === 'TEAM_SEAT_LIMIT') return 409;
+  if (
+    code === 'TEAM_DIRECTORY_UNAVAILABLE' ||
+    code === 'TEAM_ACCESS_UNAVAILABLE'
+  )
+    return 500;
   if (code === 'NUMBER_LIMIT_REACHED' || code === 'NUMBER_ALREADY_ASSIGNED') {
     return 409;
   }
@@ -98,6 +113,7 @@ export const createCommercialRoutes = (
   dependencies: CommercialRouteDependencies,
 ) => {
   const app = new Hono<{ Variables: CommercialVariables }>();
+  app.use('/v1/commercial/team', bodyLimit({ maxSize: 16384 }));
 
   app.get('/v1/commercial/catalog', async (context) => {
     try {
@@ -185,6 +201,8 @@ export const createCommercialRoutes = (
     '/v1/commercial/billing/apply',
     mutation(dependencies.applyBillingChange),
   );
+  if (dependencies.team)
+    app.get('/v1/commercial/team', mutation(dependencies.team));
   app.patch('/v1/commercial/team', mutation(dependencies.updateTeam));
   app.post(
     '/v1/commercial/numbers/assign',

@@ -1,3 +1,6 @@
+import { listLeadConnectorTeamMembers } from '@consuelo/lead-connector';
+import { createTeamAccessService } from '../commercial/team';
+import type { Pool as TeamPool } from 'pg';
 import { createNativeCheckout } from '../billing/native-checkout';
 import {
   createNativeBillingStore,
@@ -255,6 +258,7 @@ const createRedisAdapters = (redis: IoredisLike) => ({
 let sharedResources:
   | Promise<{
       database: LeadConnectorDatabase;
+      transactionPool: TeamPool;
       redis: RailwayRedisClient;
       cache: LeadConnectorCache;
     }>
@@ -279,6 +283,7 @@ const createSharedResources = async (environment: RailwayEnvironment) => {
       await redis.connect();
       const adapters = createRedisAdapters(redis);
       return {
+        transactionPool: pool as unknown as TeamPool,
         database: {
           query: (text, values) => pool.query(text, values),
         } satisfies LeadConnectorDatabase,
@@ -674,8 +679,31 @@ export const createRailwayCommercialApplication = async (
         },
       });
     }
+    const teamAccess = shared?.transactionPool
+      ? createTeamAccessService({
+          pool: shared.transactionPool,
+          directory: async (identity) => {
+            try {
+              const layer = await createRailwayLeadConnectorApplicationLayer(
+                environment,
+                resources,
+              );
+              return await Effect.runPromise(
+                listLeadConnectorTeamMembers({
+                  workspaceId: identity.workspaceId,
+                  locationId: identity.locationId ?? '',
+                  installationId: identity.installationId ?? '',
+                }).pipe(Effect.provide(layer)),
+              );
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          },
+        })
+      : undefined;
     return createCommercialApplication({
       database: sqlClient,
+      teamAccess,
       catalog: baseCatalog,
       publicCheckout,
       publicBillingPortalConfigurationId:
@@ -693,7 +721,8 @@ export const createRailwayCommercialApplication = async (
               [workspaceId],
             );
             const owned = accountResult.rows[0] as
-              | { provider_account_id?: string; status?: string } | undefined;
+              | { provider_account_id?: string; status?: string }
+              | undefined;
             if (owned && owned.status !== 'active') {
               throw new Error('Workspace telephony account is disabled');
             }
@@ -701,9 +730,12 @@ export const createRailwayCommercialApplication = async (
             if (accountId && !/^AC[0-9a-fA-F]{32}$/.test(accountId)) {
               throw new Error('Invalid workspace Twilio account');
             }
-            const target = accountId && accountId !== masterAccountSid
-              ? twilio(masterAccountSid, masterAuthToken, { accountSid: accountId })
-              : masterTwilio;
+            const target =
+              accountId && accountId !== masterAccountSid
+                ? twilio(masterAccountSid, masterAuthToken, {
+                    accountSid: accountId,
+                  })
+                : masterTwilio;
             const call = await target.calls(providerCallId).fetch();
             const customerConnectedSeconds = Math.max(
               0,
@@ -781,26 +813,37 @@ const createDialerRuntime = (
     }
     let selected = accountDialers.get(accountSid);
     if (!selected) {
-      selected = new Dialer({
-        credentials: {
-          accountSid,
-          authAccountSid: masterSid,
-          authToken: required(environment, 'TWILIO_AUTH_TOKEN'),
+      selected = new Dialer(
+        {
+          credentials: {
+            accountSid,
+            authAccountSid: masterSid,
+            authToken: required(environment, 'TWILIO_AUTH_TOKEN'),
+          },
+          baseUrl: publicUrl,
         },
-        baseUrl: publicUrl,
-      }, parallelStore);
+        parallelStore,
+      );
       selected.withCallerIdLock(lockService);
       accountDialers.set(accountSid, selected);
     }
     return selected;
   };
-  return { publicUrl, liveDialer, testDialer, lockService, parallelStore, forAccount };
+  return {
+    publicUrl,
+    liveDialer,
+    testDialer,
+    lockService,
+    parallelStore,
+    forAccount,
+  };
 };
 
 type ProviderDialerSelectionRuntime = Pick<
   ReturnType<typeof createDialerRuntime>,
   'liveDialer' | 'testDialer' | 'parallelStore'
-> & Partial<Pick<ReturnType<typeof createDialerRuntime>, 'forAccount'>>;
+> &
+  Partial<Pick<ReturnType<typeof createDialerRuntime>, 'forAccount'>>;
 
 const selectDialerFromStoredGroup = (
   runtime: ProviderDialerSelectionRuntime,
@@ -812,7 +855,8 @@ const selectDialerFromStoredGroup = (
     providerAccountId?: unknown;
   };
   if (parsed.providerMode === 'twilio-test') {
-    if (!runtime.testDialer) throw new Error('Provider test credentials are not configured');
+    if (!runtime.testDialer)
+      throw new Error('Provider test credentials are not configured');
     return runtime.testDialer;
   }
   if (parsed.providerMode !== undefined && parsed.providerMode !== 'live') {
@@ -820,10 +864,14 @@ const selectDialerFromStoredGroup = (
   }
   if (parsed.providerAccountId !== undefined) {
     const accountSid = parsed.providerAccountId;
-    if (typeof accountSid !== 'string' || !/^AC[0-9a-fA-F]{32}$/.test(accountSid)) {
+    if (
+      typeof accountSid !== 'string' ||
+      !/^AC[0-9a-fA-F]{32}$/.test(accountSid)
+    ) {
       throw new Error('Parallel group account ownership is invalid');
     }
-    if (!runtime.forAccount) throw new Error('No scoped provider router for this account');
+    if (!runtime.forAccount)
+      throw new Error('No scoped provider router for this account');
     return runtime.forAccount(accountSid);
   }
   return runtime.liveDialer;
@@ -833,8 +881,9 @@ export const selectProviderDialerForGroup = (
   runtime: ProviderDialerSelectionRuntime,
   groupId: string,
 ): Promise<Dialer> =>
-  runtime.parallelStore.getGroup(groupId)
-    .then(raw => selectDialerFromStoredGroup(runtime, raw));
+  runtime.parallelStore
+    .getGroup(groupId)
+    .then((raw) => selectDialerFromStoredGroup(runtime, raw));
 
 const selectProviderDialerForCall = (
   runtime: ProviderDialerSelectionRuntime,
@@ -1028,20 +1077,24 @@ export const createRailwayDialerApplicationLayers = async (
     }
     const commercialEnabled =
       environment.DIALER_COMMERCIAL_ENABLED?.trim().toLowerCase() === 'true';
-    const authority = commercialEnabled && database
-      ? createWorkspaceTwilioAuthority({
-          database,
-          masterAccountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
-          masterAuthToken: required(environment, 'TWILIO_AUTH_TOKEN'),
-          parentVoiceCredentials: {
-            apiKey: environment.TWILIO_API_KEY,
-            apiSecret: environment.TWILIO_API_SECRET,
-            twimlAppSid: environment.TWILIO_TWIML_APP_SID,
-          },
-          encryptionSecret: required(environment, 'LEADCONNECTOR_TOKEN_ENCRYPTION_KEY'),
-          publicUrl,
-        })
-      : null;
+    const authority =
+      commercialEnabled && database
+        ? createWorkspaceTwilioAuthority({
+            database,
+            masterAccountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
+            masterAuthToken: required(environment, 'TWILIO_AUTH_TOKEN'),
+            parentVoiceCredentials: {
+              apiKey: environment.TWILIO_API_KEY,
+              apiSecret: environment.TWILIO_API_SECRET,
+              twimlAppSid: environment.TWILIO_TWIML_APP_SID,
+            },
+            encryptionSecret: required(
+              environment,
+              'LEADCONNECTOR_TOKEN_ENCRYPTION_KEY',
+            ),
+            publicUrl,
+          })
+        : null;
     const recordingStatusCallbackUrl =
       publicUrl + '/webhooks/twilio/recording-status';
     const pendingQueues = new Map<string, CallableTarget[]>();
@@ -1327,7 +1380,8 @@ export const createRailwayDialerApplicationLayers = async (
                     workspaceId: input.workspaceId,
                     userId: input.userId,
                     callerIds: input.callerIds,
-                  }))
+                  }),
+                )
               : null;
           const dialer =
             input.callMode === 'twilio-test'
@@ -1679,32 +1733,38 @@ export const createCoachingScriptsRuntime = async (
   }
 };
 
-
 export const createWorkspaceVoiceRuntime = async (
   environment: RailwayEnvironment,
   resources: RailwayRuntimeResources = {},
 ) => {
   try {
-  const shared = resources.database ? null : await createSharedResources(environment);
-  const database = resources.database ?? shared!.database;
-  await Effect.runPromise(initializeCommercialPersistence(database));
-  const authority = createWorkspaceTwilioAuthority({
-    database,
-    masterAccountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
-    masterAuthToken: required(environment, 'TWILIO_AUTH_TOKEN'),
-    parentVoiceCredentials: {
-      apiKey: environment.TWILIO_API_KEY,
-      apiSecret: environment.TWILIO_API_SECRET,
-      twimlAppSid: environment.TWILIO_TWIML_APP_SID,
-    },
-    encryptionSecret: required(environment, 'LEADCONNECTOR_TOKEN_ENCRYPTION_KEY'),
-    publicUrl: required(environment, 'DIALER_SERVER_PUBLIC_URL'),
-  });
-  return {
-    issueVoiceToken: authority.issueVoiceToken,
-    verifyTwilioSignature: authority.verifyTwilioSignature,
-  };
+    const shared = resources.database
+      ? null
+      : await createSharedResources(environment);
+    const database = resources.database ?? shared!.database;
+    await Effect.runPromise(initializeCommercialPersistence(database));
+    const authority = createWorkspaceTwilioAuthority({
+      database,
+      masterAccountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
+      masterAuthToken: required(environment, 'TWILIO_AUTH_TOKEN'),
+      parentVoiceCredentials: {
+        apiKey: environment.TWILIO_API_KEY,
+        apiSecret: environment.TWILIO_API_SECRET,
+        twimlAppSid: environment.TWILIO_TWIML_APP_SID,
+      },
+      encryptionSecret: required(
+        environment,
+        'LEADCONNECTOR_TOKEN_ENCRYPTION_KEY',
+      ),
+      publicUrl: required(environment, 'DIALER_SERVER_PUBLIC_URL'),
+    });
+    return {
+      issueVoiceToken: authority.issueVoiceToken,
+      verifyTwilioSignature: authority.verifyTwilioSignature,
+    };
   } catch (cause: unknown) {
-    throw new Error("Workspace Twilio voice runtime composition failed", { cause });
+    throw new Error('Workspace Twilio voice runtime composition failed', {
+      cause,
+    });
   }
 };

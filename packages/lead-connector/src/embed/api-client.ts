@@ -1,3 +1,4 @@
+import type { DialerTeamView, DialerTeamChange } from '../contracts/team.js';
 import type {
   CoachingLibrary,
   CoachingScript,
@@ -187,6 +188,12 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         '/v1/commercial/billing/apply',
         { method: 'POST', body: JSON.stringify(input) },
       ),
+    getTeam: () => request<DialerTeamView>('/v1/commercial/team'),
+    changeTeam: (change: DialerTeamChange) =>
+      request<DialerTeamView>('/v1/commercial/team', {
+        method: 'PATCH',
+        body: JSON.stringify(change),
+      }),
     updateCommercialTeam: (
       assignments: Array<{
         userId: string;
@@ -351,6 +358,10 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
   };
 };
 
-export type LeadConnectorEmbedApi = ReturnType<
-  typeof createLeadConnectorEmbedApi
->;
+type FullEmbedApi = ReturnType<typeof createLeadConnectorEmbedApi>;
+// Optional only for existing host/test adapters; the production HTTP client supplies both.
+export type LeadConnectorEmbedApi = Omit<
+  FullEmbedApi,
+  'getTeam' | 'changeTeam'
+> &
+  Partial<Pick<FullEmbedApi, 'getTeam' | 'changeTeam'>>;
