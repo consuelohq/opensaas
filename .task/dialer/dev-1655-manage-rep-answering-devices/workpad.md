@@ -20,11 +20,79 @@ started: 2026-11-06
 
 ## files changed
 
-- none yet
+- `.github/workflows/consuelo-production-release.yaml`
+- `packages/dialer-server/ANSWERING-DEVICES.md`
+- `packages/dialer-server/LAUNCH-QA.md`
+- `packages/dialer-server/scripts/launch-scenarios.ts`
+- `packages/dialer-server/scripts/local-dialer-lab.ts`
+- `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/inbound/endpoint-resolution.ts`
+- `packages/dialer-server/src/inbound/operator.test.ts`
+- `packages/dialer-server/src/inbound/operator.ts`
+- `packages/dialer-server/src/inbound/rep-devices.ts`
+- `packages/dialer-server/src/inbound/telephony-admission.ts`
+- `packages/dialer-server/src/inbound/telephony-commands.ts`
+- `packages/dialer-server/src/inbound/telephony-contracts.ts`
+- `packages/dialer-server/src/inbound/telephony-endpoints.ts`
+- `packages/dialer-server/src/inbound/telephony.integration.test.ts`
+- `packages/dialer-server/src/lab/bounded-qa-process.test.ts`
+- `packages/dialer-server/src/lab/bounded-qa-process.ts`
+- `packages/dialer-server/src/lab/historical-inbound-fixture.ts`
+- `packages/dialer-server/src/lab/inbound-simulation-scenarios.ts`
+- `packages/dialer-server/src/lab/launch-component-cli.test.ts`
+- `packages/dialer-server/src/lab/launch-release-classifier.test.ts`
+- `packages/dialer-server/src/lab/launch-scenarios.cli.test.ts`
+- `packages/dialer-server/src/lab/learning-rollback-scenario.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/lab/rep-campaign.ts`
+- `packages/dialer-server/src/routes/inbound-operator.ts`
+- `packages/dialer-server/src/runtime/inbound.ts`
+- `packages/lead-connector/src/embed/compact-workspace-polish.test.ts`
+- `packages/lead-connector/src/embed/controller.test.ts`
+- `packages/lead-connector/src/embed/controller.ts`
+- `packages/lead-connector/src/embed/inbound-operator.ts`
+- `packages/lead-connector/src/embed/internal-main.ts`
+- `packages/lead-connector/src/embed/workspace-pages.ts`
 
 ## workspace-owned: files changed
 
-- none yet
+- `.github/workflows/consuelo-production-release.yaml`
+- `packages/dialer-server/ANSWERING-DEVICES.md`
+- `packages/dialer-server/LAUNCH-QA.md`
+- `packages/dialer-server/scripts/launch-scenarios.ts`
+- `packages/dialer-server/scripts/local-dialer-lab.ts`
+- `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/inbound/endpoint-resolution.ts`
+- `packages/dialer-server/src/inbound/operator.test.ts`
+- `packages/dialer-server/src/inbound/operator.ts`
+- `packages/dialer-server/src/inbound/rep-devices.ts`
+- `packages/dialer-server/src/inbound/telephony-admission.ts`
+- `packages/dialer-server/src/inbound/telephony-commands.ts`
+- `packages/dialer-server/src/inbound/telephony-contracts.ts`
+- `packages/dialer-server/src/inbound/telephony-endpoints.ts`
+- `packages/dialer-server/src/inbound/telephony.integration.test.ts`
+- `packages/dialer-server/src/lab/bounded-qa-process.test.ts`
+- `packages/dialer-server/src/lab/bounded-qa-process.ts`
+- `packages/dialer-server/src/lab/historical-inbound-fixture.ts`
+- `packages/dialer-server/src/lab/inbound-simulation-scenarios.ts`
+- `packages/dialer-server/src/lab/launch-component-cli.test.ts`
+- `packages/dialer-server/src/lab/launch-release-classifier.test.ts`
+- `packages/dialer-server/src/lab/launch-scenarios.cli.test.ts`
+- `packages/dialer-server/src/lab/learning-rollback-scenario.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/lab/rep-campaign.ts`
+- `packages/dialer-server/src/routes/inbound-operator.ts`
+- `packages/dialer-server/src/runtime/inbound.ts`
+- `packages/lead-connector/src/embed/compact-workspace-polish.test.ts`
+- `packages/lead-connector/src/embed/controller.test.ts`
+- `packages/lead-connector/src/embed/controller.ts`
+- `packages/lead-connector/src/embed/inbound-operator.ts`
+- `packages/lead-connector/src/embed/internal-main.ts`
+- `packages/lead-connector/src/embed/workspace-pages.ts`
 
 ## workspace-owned: activity log
 
@@ -32,6 +100,8 @@ started: 2026-11-06
 - 2026-11-06 23:44:53 fs.write: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`
 - 2026-11-06 23:54:23 fs.write: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`
 - 2026-11-06 23:55:51 fs.write: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`
+- 2026-11-06 23:59:06 fs.write: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`
+- 2026-11-07 00:03:13 fs.write: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -40,6 +110,8 @@ started: 2026-11-06
 - 2026-11-06 23:53:55 `review.run`: passed — OK
 - 2026-11-06 23:54:47 `verify`: failed — COMMAND_FAILED
 - 2026-11-06 23:56:21 `verify`: passed — OK
+- 2026-11-06 23:59:54 `verify`: failed — COMMAND_FAILED
+- 2026-11-07 00:03:44 `verify`: passed — OK
 
 ## key decisions
 
@@ -89,3 +161,13 @@ Added bounded90s QA child runner with private TMPDIR. On deadline, kill Bun, inv
 Post-correction ordinary regression797pass/96gatedskip/0fail,893 cases146files. Enabled integration2pass48assertions includes11databasefiles/88cases with zero skips, multi-rep1/2/5/20 and real timeout+daemon cleanup proof. Server tsc and strict review pass. Full verify exposed a related pre-existing launch CLI main error-handling static finding after formatting; wrapped dispatch with causal error context and retained deepest sanitized CLI reason. All5launchCLIregressions pass afterward. Full publish-valid verification rerunning before push. QA0 main release workflow42313250203 succeeded; device runtime remains undeployed. No calls/readiness/provider keys/billing changes.
 
 - 2026-11-06 23:55:51 append: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`
+
+## Pre-release rep permission correction
+Initial publish0e02d732 is verified but not merged/deployed. A focused new regression exposed numbers() returning loading whenever admin-only commercialDashboard is null, blocking ordinary reps from personal device controls. Moved personal Receive controls before that guard; Call from inventory stays admin-managed. Verified red→green for null-dashboard rep rendering. Unprovisioned reps see loading/setup guidance rather than an unusable form. Final source re-verification and publish pending; no runtime changes live yet.
+
+- 2026-11-06 23:59:06 append: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`
+
+## Encryption capability review fixed
+Valid new PR2782 finding: callback-disabled deployments can omit recipient cipher. Added explicit server deviceEditingAvailable capability and disabled phone editor with guidance unless true; no plaintext fallback and no newly required secret/startup break. API rejects all edits without cipher; existing browser answering remains usable. Added UI red→green and realPG negative/no-secret browser-readiness regression. Provisioned/nonadmin/unprovisioned UI fixtures now explicit. Final ordinary800pass97gatedskip0fail; enabled lab2pass48assertions includes89selectedDBcases/11files zero skips, real deadline/daemon cleanup, multi-rep HTTP smoke. Tsc green. Remaining provisioning hypothesis separately journaled DEV1696. Reverify and push this exact source before merge; prior0e02d732 never deployed.
+
+- 2026-11-07 00:03:13 append: `.task/dialer/dev-1655-manage-rep-answering-devices/workpad.md`

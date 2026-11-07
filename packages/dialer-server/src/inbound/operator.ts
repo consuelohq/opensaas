@@ -217,6 +217,8 @@ export const createInboundOperator = (
                 capacityPhase: owner?.phase ?? null,
                 assignment,
                 deviceRevision: devices.revision,
+                deviceEditingAvailable:
+                  options.devices?.phoneEditingAvailable ?? false,
                 endpoints: projectOperatorEndpoints(
                   devices.endpoints,
                   identity.workspaceId,

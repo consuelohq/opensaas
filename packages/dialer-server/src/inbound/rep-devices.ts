@@ -14,6 +14,7 @@ export const CREATE_REP_DEVICES_SQL = `CREATE TABLE IF NOT EXISTS dialer_rep_dev
  phone_ciphertext text, updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
  PRIMARY KEY(workspace_id,rep_id))`;
 export type RepDeviceDirectory = {
+  phoneEditingAvailable: boolean;
   read: (
     client: Pick<PoolClient, 'query'>,
     workspaceId: string,
@@ -96,7 +97,7 @@ export const createRepDeviceDirectory = (options: {
         throw new Error(
           'Use an international phone number and current settings revision',
         );
-      if (normalized && !options.cipher)
+      if (!options.cipher)
         throw new Error('Answering phone encryption is unavailable');
       await withInboundTransaction(
         options.pool,
@@ -161,5 +162,5 @@ export const createRepDeviceDirectory = (options: {
       throw new Error('Could not save answering devices', { cause });
     }
   };
-  return { read, update };
+  return { read, update, phoneEditingAvailable: Boolean(options.cipher) };
 };

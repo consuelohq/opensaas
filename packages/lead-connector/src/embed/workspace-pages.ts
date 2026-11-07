@@ -89,8 +89,19 @@ const numbers = (
   workspace: CallingWorkspace,
 ): string => {
   const d = state.commercialDashboard;
-  if (!d) return loading();
+  const deviceReadOnly =
+    Boolean(state.inboundOperator.rep.assignment) ||
+    state.inboundOperator.rep.deviceEditingAvailable !== true;
   const tabs = `<div class="setup-tabs" role="tablist" aria-label="Phone number purpose"><button type="button" role="tab" aria-selected="${workspace.numberTab !== 'call-from'}" class="setup-tab${workspace.numberTab !== 'call-from' ? ' is-active' : ''}" data-action="numbers-receive">Receive calls</button><button type="button" role="tab" aria-selected="${workspace.numberTab === 'call-from'}" class="setup-tab${workspace.numberTab === 'call-from' ? ' is-active' : ''}" data-action="numbers-call-from">Call from</button></div>`;
+  if (workspace.numberTab !== 'call-from' && !state.inboundOperator.rep.repId)
+    return (
+      tabs +
+      '<p class="page-empty">' +
+      (state.inboundOperator.phase === 'error'
+        ? 'Your administrator needs to add you to an inbound team before you can configure answering devices.'
+        : 'Loading your answering devices…') +
+      '</p>'
+    );
   if (workspace.numberTab !== 'call-from')
     return (
       tabs +
@@ -106,7 +117,12 @@ const numbers = (
         )
         .join(
           '',
-        )}</div>${state.inboundOperator.error ? `<p class="notice notice--error" role="alert">${e(state.inboundOperator.error.message)}</p>` : ''}<form data-form="answering-phone"><label for="answering-phone">${state.inboundOperator.rep.endpoints.some((d) => d.kind === 'phone') ? 'Change your cell phone' : 'Add your cell phone'}<input id="answering-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 202 555 0123" required ${state.inboundOperator.rep.assignment ? 'disabled' : ''}/></label><p class="form-caption">Enter your personal number with country code. This saves the destination; it does not verify ownership or place a call. Changes pause receiving.</p><button type="submit" class="button button--secondary" ${state.inboundOperator.rep.assignment ? 'disabled' : ''}>Save cell phone</button>${state.inboundOperator.rep.endpoints.some((d) => d.kind === 'phone') ? '<button type="button" class="text-button danger-text" data-action="remove-answering-phone" ' + (state.inboundOperator.rep.assignment ? 'disabled' : '') + '>Remove cell phone</button>' : ''}</form>${state.inboundOperator.rep.assignment ? '<p role="status">Finish your call and wrap-up before changing devices.</p>' : ''}<p class="form-caption">Web audio is prepared with your microphone permission when you start receiving. These devices are separate from your Call from numbers.</p></section>`
+        )}</div>${state.inboundOperator.rep.deviceEditingAvailable !== true ? '<p class="form-caption" role="status">Your administrator needs to enable encrypted phone settings before you can edit this destination. Browser answering is still available.</p>' : ''}${state.inboundOperator.error ? `<p class="notice notice--error" role="alert">${e(state.inboundOperator.error.message)}</p>` : ''}<form data-form="answering-phone"><label for="answering-phone">${state.inboundOperator.rep.endpoints.some((d) => d.kind === 'phone') ? 'Change your cell phone' : 'Add your cell phone'}<input id="answering-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 202 555 0123" required ${deviceReadOnly ? 'disabled' : ''}/></label><p class="form-caption">Enter your personal number with country code. This saves the destination; it does not verify ownership or place a call. Changes pause receiving.</p><button type="submit" class="button button--secondary" ${deviceReadOnly ? 'disabled' : ''}>Save cell phone</button>${state.inboundOperator.rep.endpoints.some((d) => d.kind === 'phone') ? '<button type="button" class="text-button danger-text" data-action="remove-answering-phone" ' + (deviceReadOnly ? 'disabled' : '') + '>Remove cell phone</button>' : ''}</form>${state.inboundOperator.rep.assignment ? '<p role="status">Finish your call and wrap-up before changing devices.</p>' : ''}<p class="form-caption">Web audio is prepared with your microphone permission when you start receiving. These devices are separate from your Call from numbers.</p></section>`
+    );
+  if (!d)
+    return (
+      tabs +
+      '<p class="page-empty">Your workspace administrator manages Call from numbers.</p>'
     );
   const rows = d.numbers
     .map((n) => {

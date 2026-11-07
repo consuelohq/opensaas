@@ -13,6 +13,9 @@ const makeState = (): LeadConnectorEmbedState => {
   state.phase = 'ready';
   state.sessionToken = 'test-session';
   state.inboundOperator.phase = 'ready';
+  state.inboundOperator.rep.repId = 'rep';
+  state.inboundOperator.rep.deviceEditingAvailable = true;
+  state.inboundOperator.phase = 'ready';
   state.inboundOperator.rep.endpoints = [
     {
       endpointId: 'web-1',
@@ -124,6 +127,33 @@ describe('compact Dialer workspace UX', () => {
         .querySelector('input[name="phone"]')
         ?.hasAttribute('disabled'),
     ).toBe(true);
+  });
+  test('a rep can edit their own answering phone without an administrator billing dashboard', () => {
+    const state = makeState();
+    state.commercialDashboard = null;
+    const doc = page(state, 'numbers', 'inbound', 'receive');
+    expect(doc.querySelector('[data-form="answering-phone"]')).not.toBeNull();
+    expect(doc.body.textContent).not.toContain('Loading workspace settings');
+  });
+  test('an unprovisioned rep gets setup guidance rather than an unusable device form', () => {
+    const state = makeState();
+    state.inboundOperator.rep.repId = '';
+    state.inboundOperator.rep.endpoints = [];
+    state.inboundOperator.phase = 'error';
+    const doc = page(state, 'numbers', 'inbound', 'receive');
+    expect(doc.querySelector('[data-form="answering-phone"]')).toBeNull();
+    expect(doc.body.textContent).toContain(
+      'administrator needs to add you to an inbound team',
+    );
+  });
+  test('phone editing is unavailable when the server has no encryption capability', () => {
+    const state = makeState();
+    state.inboundOperator.rep.deviceEditingAvailable = false;
+    const doc = page(state, 'numbers', 'inbound', 'receive');
+    expect(
+      doc.querySelector('input[name="phone"]')?.hasAttribute('disabled'),
+    ).toBe(true);
+    expect(doc.body.textContent).toContain('encrypted phone settings');
   });
   test('device rows use borderless, bright selected, quiet inactive and pointer-hover states', () => {
     const styles = readFileSync(

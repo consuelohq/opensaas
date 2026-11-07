@@ -72,6 +72,7 @@ export type InboundOperatorSnapshot = {
   rep: {
     repId: string;
     deviceRevision?: number;
+    deviceEditingAvailable?: boolean;
     ready: boolean;
     presence: InboundOperatorPresence;
     endpoints: InboundOperatorEndpoint[];

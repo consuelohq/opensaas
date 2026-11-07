@@ -331,6 +331,44 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     ).rejects.toThrow();
     expect((await restarted.read(pool, 'workspace', 'alice')).revision).toBe(1);
   });
+  it('reports phone editing unavailable without encryption and preserves configured browser answering', async () => {
+    const endpoints = [
+      {
+        workspaceId: 'workspace',
+        repId: 'alice',
+        endpointId: 'browser',
+        kind: 'browser' as const,
+        address: 'alice',
+      },
+    ];
+    const devices = createRepDeviceDirectory({ pool, endpoints, clock });
+    const options = {
+      pool,
+      numbers: [number],
+      endpoints,
+      carrier,
+      publicUrl: 'https://voice.example',
+      authToken: 'secret',
+      clock,
+      devices,
+    };
+    const operator = createInboundOperator(
+      options,
+      createInboundTelephony(options),
+    );
+    const identity = { workspaceId: 'workspace', userId: 'alice' };
+    const snapshot = await operator.snapshot(identity);
+    expect(snapshot.rep.deviceEditingAvailable).toBe(false);
+    await expect(
+      operator.updateDevices(identity, { revision: 0, phone: null }),
+    ).rejects.toThrow();
+    await operator.readiness(identity, {
+      ready: true,
+      deviceRevision: 0,
+      endpoints: [{ endpointId: 'browser', kind: 'browser' }],
+    });
+    expect((await operator.snapshot(identity)).rep.ready).toBe(true);
+  });
   it('serializes concurrent device edits and keeps removed seed phones removed after restart', async () => {
     const endpoint = {
       workspaceId: 'workspace',
