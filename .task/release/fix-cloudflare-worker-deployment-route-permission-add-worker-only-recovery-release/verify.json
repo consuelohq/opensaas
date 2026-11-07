@@ -1,0 +1,131 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/release/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release",
+  "base": "origin/main",
+  "headSha": "dbc998f59f55fc43d42fee4af1b53ebc44fb4aff",
+  "changeHash": "de7144873bb461dd0d3d35b6218f81820b1e5f2f2cc969e03c537e523eb07c42",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml"
+  ],
+  "verifiedAt": "2026-11-07T06:41:04.208Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/release/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release/current.json",
+        ".task/release/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release/session.json",
+        ".task/release/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release/workpad.md",
+        ".task/tasks/release/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "public-production-release-isolation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Website and docs release changes must preserve the existing Dialer release classifier and keep unrelated pushes from redeploying OS authentication; manual release and MCP security controls remain explicit.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-production-release.yaml"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 800,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-release-fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/docs-production-release.test.js \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/github-workflow-policy.test.js \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 87\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/production-release-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 300\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:41:02\n\u001b[2m   Duration \u001b[22m 406ms\u001b[2m (transform 203ms, setup 0ms, import 243ms, tests 391ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 821,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-release-fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:41:04\n\u001b[2m   Duration \u001b[22m 142ms\u001b[2m (transform 29ms, setup 33ms, import 4ms, tests 2ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/production-release-mcp-security.test.ts\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
