@@ -1,7 +1,10 @@
 import { TEAM_ACCESS_MIGRATION_ID } from '../commercial/team-schema';
 import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
 import type { Pool } from 'pg';
-import { DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID } from '../database/migrations';
+import {
+  DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+  OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
+} from '../database/migrations';
 import { COACHING_SCRIPTS_MIGRATION_ID } from '../coaching/scripts';
 import { NATIVE_BILLING_MIGRATION_ID } from '../billing/native-billing-store';
 export const assertDisposableInboundDatabase = (name: string) => {
@@ -27,6 +30,7 @@ export const prepareHistoricalInboundRollback = async (pool: Pool) => {
           NATIVE_BILLING_MIGRATION_ID,
           REP_DEVICES_MIGRATION_ID,
           TEAM_ACCESS_MIGRATION_ID,
+          OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
         ],
       ],
     );

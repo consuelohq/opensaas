@@ -471,6 +471,7 @@ export const createRailwayCommercialApplication = async (
     const masterAccountSid = required(environment, 'TWILIO_ACCOUNT_SID');
     const masterAuthToken = required(environment, 'TWILIO_AUTH_TOKEN');
     const masterTwilio = twilio(masterAccountSid, masterAuthToken);
+    let completionStore: RedisParallelStore | undefined;
     const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL').replace(
       /\/$/,
       '',
@@ -717,22 +718,17 @@ export const createRailwayCommercialApplication = async (
       usage: {
         getCompletion: async (providerCallId, workspaceId) => {
           try {
-            const accountResult = await sqlClient.query(
-              'SELECT provider_account_id,status FROM dialer_workspace_telephony_accounts WHERE workspace_id=$1',
-              [workspaceId],
+            // Billing must follow the provider account that actually created
+            // this call, not an account assigned to the workspace later.
+            completionStore ??= new RedisParallelStore(
+              resources.redis ??
+                (shared ?? (await createSharedResources(environment))).redis,
             );
-            const owned = accountResult.rows[0] as
-              | { provider_account_id?: string; status?: string }
-              | undefined;
-            if (owned && owned.status !== 'active') {
-              throw new Error('Workspace telephony account is disabled');
-            }
-            const accountId = owned?.provider_account_id;
-            if (accountId && !/^AC[0-9a-fA-F]{32}$/.test(accountId)) {
-              throw new Error('Invalid workspace Twilio account');
-            }
+            const accountId = await resolvePersistedCallOwner(
+              completionStore, providerCallId, workspaceId, masterAccountSid,
+            );
             const target =
-              accountId && accountId !== masterAccountSid
+              accountId !== masterAccountSid
                 ? twilio(masterAccountSid, masterAuthToken, {
                     accountSid: accountId,
                   })
@@ -886,6 +882,58 @@ export const selectProviderDialerForGroup = (
     .getGroup(groupId)
     .then((raw) => selectDialerFromStoredGroup(runtime, raw));
 
+type StoredCallLookup = Pick<RedisParallelStore, 'getCallMapping' | 'getGroup'>;
+
+/** Only a persisted call mapping and its owning group can establish account identity. */
+export const resolvePersistedCallIdentity = async (
+  store: StoredCallLookup,
+  callSid: string,
+): Promise<{ workspaceId: string; providerAccountId: string | null }> => {
+  try {
+  const groupId = await store.getCallMapping(callSid);
+  if (!groupId) throw new Error('Persisted call ownership mapping unavailable');
+  const raw = await store.getGroup(groupId);
+  if (!raw) throw new Error('Persisted call group unavailable');
+  const value: unknown = JSON.parse(raw);
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Persisted call group is invalid');
+  }
+  const group = value as Record<string, unknown>;
+  if (group.groupId !== groupId || typeof group.workspaceId !== 'string' ||
+      !group.workspaceId || group.providerMode === 'twilio-test' ||
+      !Array.isArray(group.calls) ||
+      !group.calls.some((call) =>
+        call && typeof call === 'object' && (call as {callSid?: unknown}).callSid === callSid)) {
+    throw new Error('Persisted call ownership is inconsistent');
+  }
+  const owner = group.providerAccountId;
+  if (owner != null && (typeof owner !== 'string' ||
+      !/^AC[0-9a-fA-F]{32}$/.test(owner))) {
+    throw new Error('Persisted call account ownership is invalid');
+  }
+  return {
+    workspaceId: group.workspaceId,
+    providerAccountId: (owner as string | null | undefined) ?? null,
+  };
+  } catch (cause: unknown) {
+    if (cause instanceof Error) throw cause;
+    throw new Error('Persisted call ownership lookup failed', { cause });
+  }
+};
+
+export const resolvePersistedCallOwner = async (
+  store: StoredCallLookup,
+  callSid: string,
+  workspaceId: string,
+  parentAccountSid: string,
+): Promise<string> => {
+  const identity = await resolvePersistedCallIdentity(store, callSid);
+  if (identity.workspaceId !== workspaceId) {
+    throw new Error('Persisted call belongs to a different workspace');
+  }
+  return identity.providerAccountId ?? parentAccountSid;
+};
+
 const selectProviderDialerForCall = (
   runtime: ProviderDialerSelectionRuntime,
   callSid: string,
@@ -934,6 +982,7 @@ export const createRailwayTransferApplication = async (
           userId: options.userId,
           sessionId,
           plannedCalls: options.customerNumbers.length,
+          providerAccountId: options.providerAccountId,
         });
       try {
         const result = await dialer.parallel.initiateGroup(
@@ -985,6 +1034,7 @@ export const createRailwayTransferApplication = async (
         ),
       selectDialer: (groupId) => selectProviderDialerForGroup(runtime, groupId),
       repository,
+      parentAccountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
       publicUrl,
       generateId: () => 'transfer_' + randomUUID(),
     });
@@ -1030,6 +1080,7 @@ export const createRailwayDialerApplicationLayers = async (
           userId: options.userId,
           sessionId,
           plannedCalls: options.customerNumbers.length,
+          providerAccountId: options.providerAccountId,
         });
       try {
         const result = await dialer.parallel.initiateGroup(
@@ -1746,6 +1797,17 @@ export const createWorkspaceVoiceRuntime = async (
     await Effect.runPromise(initializeCommercialPersistence(database));
     const authority = createWorkspaceTwilioAuthority({
       database,
+      resolveMediaCall: async (callSid) => {
+        try {
+          const redis = resources.redis ??
+            (shared ?? (await createSharedResources(environment))).redis;
+          return await resolvePersistedCallIdentity(
+            new RedisParallelStore(redis), callSid,
+          );
+        } catch {
+          return null;
+        }
+      },
       masterAccountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
       masterAuthToken: required(environment, 'TWILIO_AUTH_TOKEN'),
       parentVoiceCredentials: {

@@ -149,12 +149,17 @@ describe('Twilio webhook boundary', () => {
 
   it('verifies recording callbacks and persists provider metadata without trusting callback tenant fields', async () => {
     const dependencies = createDependencies();
+    dependencies.twilioMasterAccountSid = 'AC' + '1'.repeat(32);
     const recordCallRecordingStatus = mock(() => Effect.void);
     dependencies.callOperations = {
+      resolveRecordingCallOwnership: () => Effect.succeed({
+        workspaceId: 'workspace-1',
+        providerAccountId: 'AC' + '1'.repeat(32),
+      }),
       recordCallRecordingStatus,
     } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
     const rawBody =
-      'CallSid=CA_RECORDING&RecordingSid=RE_ONE&RecordingStatus=completed&RecordingDuration=42&RecordingUrl=https%3A%2F%2Fapi.twilio.test%2Frecording&workspaceId=attacker';
+      'CallSid=CA_RECORDING&AccountSid=AC11111111111111111111111111111111&RecordingSid=RE_ONE&RecordingStatus=completed&RecordingDuration=42&RecordingUrl=https%3A%2F%2Fapi.twilio.test%2Frecording&workspaceId=attacker';
     const response = await createDialerServer(dependencies).fetch(
       new Request(
         'http://internal.test/webhooks/twilio/recording-status',
@@ -176,6 +181,7 @@ describe('Twilio webhook boundary', () => {
       contentType: 'application/x-www-form-urlencoded',
       params: {
         CallSid: 'CA_RECORDING',
+        AccountSid: 'AC11111111111111111111111111111111',
         RecordingSid: 'RE_ONE',
         RecordingStatus: 'completed',
         RecordingDuration: '42',
@@ -187,6 +193,7 @@ describe('Twilio webhook boundary', () => {
       url: 'https://dialer.example.test/webhooks/twilio/recording-status',
     });
     expect(recordCallRecordingStatus).toHaveBeenCalledWith({
+      workspaceId: 'workspace-1',
       providerCallId: 'CA_RECORDING',
       recordingSid: 'RE_ONE',
       recordingStatus: 'completed',
@@ -206,7 +213,7 @@ describe('Twilio webhook boundary', () => {
       cancel: () => Effect.die('unused'),
       processStatusCallback,
     };
-    const rawBody = 'CallSid=CA_TRANSFER&CallStatus=answered&workspaceId=attacker';
+    const rawBody = 'CallSid=CA_TRANSFER&CallStatus=answered&AccountSid=AC11111111111111111111111111111111&workspaceId=attacker';
     const response = await createDialerServer(dependencies).fetch(
       new Request(
         'http://internal.test/webhooks/twilio/transfer-status?transfer_id=transfer-one',
@@ -229,6 +236,7 @@ describe('Twilio webhook boundary', () => {
       params: {
         CallSid: 'CA_TRANSFER',
         CallStatus: 'answered',
+        AccountSid: 'AC11111111111111111111111111111111',
         workspaceId: 'attacker',
       },
       rawBody,
@@ -240,6 +248,7 @@ describe('Twilio webhook boundary', () => {
       transferId: 'transfer-one',
       callSid: 'CA_TRANSFER',
       callStatus: 'answered',
+      accountSid: 'AC11111111111111111111111111111111',
     });
   });
 
@@ -374,6 +383,146 @@ describe('Twilio webhook boundary', () => {
     expect(dependencies.application.generateTwilioCustomerTwiml).toHaveBeenCalledTimes(1);
   });
 
+  it('fences a signed foreign-account status callback after Redis expiry before history mutation', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    const foreign = 'AC' + '3'.repeat(32);
+    const callSid = 'CA' + '4'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    dependencies.application.resolveTwilioCallContext = mock(() => Effect.succeed(null));
+    const durableOwner = mock(() => Effect.succeed({
+      workspaceId: 'owner-workspace', providerAccountId: child,
+    }));
+    dependencies.callOperations = {
+      resolveStatusCallOwnership: durableOwner,
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const app = createDialerServer(dependencies);
+    const send = (accountSid: string) => app.fetch(
+      new Request('https://dialer.test/webhooks/twilio/status', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture',
+        },
+        body: new URLSearchParams({
+          AccountSid: accountSid, CallSid: callSid, CallStatus: 'completed',
+          workspaceId: 'attacker-controlled',
+        }),
+      }),
+    );
+    expect((await send(foreign)).status).toBe(401);
+    expect((await send(parent)).status).toBe(401);
+    expect(dependencies.application.processTwilioStatus).not.toHaveBeenCalled();
+    expect((await send(child)).status).toBe(200);
+    expect(dependencies.application.processTwilioStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ callSid, ownerWorkspaceId: 'owner-workspace' }),
+    );
+    expect(durableOwner).toHaveBeenCalledWith({ providerCallId: callSid });
+  });
+
+  it('rejects status callbacks with no owner or conflicting durable and live owners', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    let durable: { workspaceId: string; providerAccountId: string | null } | null = null;
+    let live: {workspaceId: string; dialerSessionId: string; providerAccountId: string} | null = null;
+    dependencies.application.resolveTwilioCallContext = mock(() => Effect.succeed(live));
+    dependencies.callOperations = {
+      resolveStatusCallOwnership: mock(() => Effect.succeed(durable)),
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const send = () => createDialerServer(dependencies).fetch(
+      new Request('https://dialer.test/webhooks/twilio/status', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture',
+        },
+        body: new URLSearchParams({
+          AccountSid: child, CallSid: 'CA' + '4'.repeat(32),
+          CallStatus: 'completed',
+        }),
+      }),
+    );
+    expect((await send()).status).toBe(401);
+    durable = { workspaceId: 'workspace-one', providerAccountId: child };
+    live = { workspaceId: 'workspace-other', dialerSessionId: 'session-1', providerAccountId: child };
+    expect((await send()).status).toBe(401);
+    expect(dependencies.application.processTwilioStatus).not.toHaveBeenCalled();
+  });
+
+  it('fences customer TwiML callbacks against durable ownership after Redis expiry', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    const foreign = 'AC' + '3'.repeat(32);
+    const callSid = 'CA' + '4'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    dependencies.application.resolveTwilioCallContext = mock(() => Effect.succeed(null));
+    dependencies.callOperations = {
+      resolveStatusCallOwnership: mock(() => Effect.succeed({
+        workspaceId: 'owner-workspace', providerAccountId: child,
+      })),
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const app = createDialerServer(dependencies);
+    const send = (accountSid: string) => app.fetch(
+      new Request('https://dialer.test/webhooks/twilio/customer-twiml', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture' },
+        body: new URLSearchParams({
+          AccountSid: accountSid, CallSid: callSid, CallStatus: 'in-progress',
+        }),
+      }),
+    );
+    expect((await send(foreign)).status).toBe(401);
+    expect(dependencies.application.generateTwilioCustomerTwiml).not.toHaveBeenCalled();
+    expect((await send(child)).status).toBe(200);
+    expect(dependencies.application.generateTwilioCustomerTwiml).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats a persisted null account as the legacy parent after Redis expires', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    const callSid = 'CA' + '7'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    dependencies.application.resolveTwilioCallContext = mock(() => Effect.succeed(null));
+    const owner = { workspaceId: 'legacy-workspace', providerAccountId: null };
+    const writeRecording = mock(() => Effect.void);
+    dependencies.callOperations = {
+      resolveStatusCallOwnership: mock(() => Effect.succeed(owner)),
+      resolveRecordingCallOwnership: mock(() => Effect.succeed(owner)),
+      recordCallRecordingStatus: writeRecording,
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const app = createDialerServer(dependencies);
+    const send = (path: 'status' | 'recording-status', accountSid: string) =>
+      app.fetch(new Request('https://dialer.test/webhooks/twilio/' + path, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture',
+        },
+        body: new URLSearchParams({
+          AccountSid: accountSid,
+          CallSid: callSid,
+          CallStatus: 'completed',
+          RecordingSid: 'RE' + '5'.repeat(32),
+          RecordingStatus: 'completed',
+        }),
+      }));
+    expect((await send('status', child)).status).toBe(401);
+    expect((await send('recording-status', child)).status).toBe(401);
+    expect(dependencies.application.processTwilioStatus).not.toHaveBeenCalled();
+    expect(writeRecording).not.toHaveBeenCalled();
+    expect((await send('status', parent)).status).toBe(200);
+    expect((await send('recording-status', parent)).status).toBe(200);
+    expect(writeRecording).toHaveBeenCalledWith(expect.objectContaining({
+      workspaceId: 'legacy-workspace', providerCallId: callSid,
+    }));
+  });
+
   it('rejects cross-account signed recording callbacks before touching call history', async () => {
     const dependencies = createDependencies();
     const parent = 'AC' + '1'.repeat(32);
@@ -389,6 +538,10 @@ describe('Twilio webhook boundary', () => {
     );
     const recordCallRecordingStatus = mock(() => Effect.void);
     dependencies.callOperations = {
+      resolveRecordingCallOwnership: () => Effect.succeed({
+        workspaceId: 'workspace-1',
+        providerAccountId: owner,
+      }),
       recordCallRecordingStatus,
     } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
     const send = (sid: string) => createDialerServer(dependencies).fetch(
@@ -410,6 +563,79 @@ describe('Twilio webhook boundary', () => {
     expect(recordCallRecordingStatus).not.toHaveBeenCalled();
     expect((await send(owner)).status).toBe(200);
     expect(recordCallRecordingStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('fences recording callbacks after Redis expiry using the persisted call owner', async () => {
+    const dependencies = createDependencies();
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    const foreign = 'AC' + '3'.repeat(32);
+    dependencies.twilioMasterAccountSid = parent;
+    // Simulate Redis group expiry while the immutable call-leg snapshot remains.
+    dependencies.application.resolveTwilioCallContext = mock(() => Effect.succeed(null));
+    const record = mock(() => Effect.void);
+    const durableOwner = mock(() => Effect.succeed({
+      workspaceId: 'workspace-one',
+      providerAccountId: child,
+    }));
+    dependencies.callOperations = {
+      recordCallRecordingStatus: record,
+      resolveRecordingCallOwnership: durableOwner,
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const app = createDialerServer(dependencies);
+    const send = (sid: string, fields?: Record<string, string>) => app.fetch(
+      new Request('https://dialer.test/webhooks/twilio/recording-status', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture',
+        },
+        body: new URLSearchParams({
+          CallSid: 'CA' + '4'.repeat(32),
+          RecordingSid: 'RE' + '5'.repeat(32),
+          RecordingStatus: 'completed',
+          AccountSid: sid,
+          workspaceId: 'forged-workspace',
+          ...fields,
+        }),
+      }),
+    );
+    expect((await send(foreign)).status).toBe(401);
+    expect((await send(parent)).status).toBe(401);
+    expect(record).not.toHaveBeenCalled();
+    expect((await send(child)).status).toBe(200);
+    expect(record).toHaveBeenCalledTimes(1);
+    expect(record).toHaveBeenCalledWith(expect.objectContaining({
+      workspaceId: 'workspace-one',
+      providerCallId: 'CA' + '4'.repeat(32),
+    }));
+    expect(durableOwner).toHaveBeenCalledWith({ providerCallId: 'CA' + '4'.repeat(32) });
+  });
+
+  it('fails closed when a signed recording callback has no trustworthy durable or Redis owner', async () => {
+    const dependencies = createDependencies();
+    dependencies.twilioMasterAccountSid = 'AC' + '1'.repeat(32);
+    dependencies.application.resolveTwilioCallContext = mock(() => Effect.succeed(null));
+    const record = mock(() => Effect.void);
+    dependencies.callOperations = {
+      recordCallRecordingStatus: record,
+      resolveRecordingCallOwnership: mock(() => Effect.succeed(null)),
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const response = await createDialerServer(dependencies).fetch(
+      new Request('https://dialer.test/webhooks/twilio/recording-status', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'valid-fixture' },
+        body: new URLSearchParams({
+          AccountSid: 'AC' + '1'.repeat(32),
+          CallSid: 'CA' + '4'.repeat(32),
+          RecordingSid: 'RE' + '5'.repeat(32),
+          RecordingStatus: 'completed',
+        }),
+      }),
+    );
+    expect(response.status).toBe(401);
+    expect(record).not.toHaveBeenCalled();
   });
 
   it('passes the authenticated Twilio AccountSid to agent conference TwiML', async () => {

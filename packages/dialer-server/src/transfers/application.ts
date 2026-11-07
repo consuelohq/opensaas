@@ -79,6 +79,7 @@ export type TransferDialer = {
 };
 
 export type TransferApplicationInput = {
+  parentAccountSid: string;
   loadGroup: (
     groupId: string,
     workspaceId: string,
@@ -246,6 +247,20 @@ export const createTransferApplication = (
             '/webhooks/twilio/transfer-status',
           transferId,
         });
+        const callbackState = await input.repository.getTransferById(transferId);
+        if (callbackState && callbackState.status !== 'initiating') {
+          if (provider.transferCallSid && callbackState.transferCallSid &&
+              provider.transferCallSid !== callbackState.transferCallSid) {
+            throw requestError('TRANSFER_CALL_MISMATCH',
+              'Early transfer callback identified a different provider call');
+          }
+          // A signed callback may arrive before Twilio returns the creation SID.
+          // Do not let the delayed initiation response regress its state.
+          return publicResult(transferId, callbackState.status, {
+            ...provider,
+            transferCallSid: callbackState.transferCallSid ?? provider.transferCallSid,
+          });
+        }
         if (!provider.success) {
           await record(input.repository, {
             ...base,
@@ -399,6 +414,17 @@ export const createTransferApplication = (
             'Transfer was not found for provider callback',
           );
         }
+        // Authenticate against the persisted group, not the workspace's
+        // current Twilio account nor untrusted callback query parameters.
+        const group = await input.loadGroup(transfer.groupId, transfer.workspaceId);
+        if (!group || group.groupId !== transfer.groupId ||
+            group.workspaceId !== transfer.workspaceId ||
+            group.dialerSessionId !== transfer.sessionId ||
+            !/^AC[a-fA-F0-9]{32}$/.test(command.accountSid) ||
+            command.accountSid !== (group.providerAccountId ?? input.parentAccountSid)) {
+          throw requestError('TRANSFER_ACCOUNT_MISMATCH',
+            'Twilio account does not own persisted transfer');
+        }
         if (
           transfer.transferCallSid &&
           transfer.transferCallSid !== command.callSid
@@ -421,6 +447,7 @@ export const createTransferApplication = (
           const status = transfer.type === 'warm' ? 'consulting' : 'completed';
           await record(input.repository, {
             ...transfer,
+            transferCallSid: transfer.transferCallSid ?? command.callSid,
             status,
             eventType:
               transfer.type === 'warm'
@@ -482,6 +509,7 @@ export const createTransferApplication = (
             : 'failed';
         await record(input.repository, {
           ...transfer,
+          transferCallSid: transfer.transferCallSid ?? command.callSid,
           status,
           eventType:
             status === 'completed'

@@ -106,7 +106,20 @@ export type CallOperationsRepositoryService = {
     sessionId: string;
     failureCode: string;
   }) => Effect.Effect<void, DialerApplicationError>;
+  resolveRecordingCallOwnership: (input: {
+    providerCallId: string;
+  }) => Effect.Effect<{
+    workspaceId: string;
+    providerAccountId: string | null;
+  } | null, DialerApplicationError>;
+  resolveStatusCallOwnership: (input: {
+    providerCallId: string;
+  }) => Effect.Effect<{
+    workspaceId: string;
+    providerAccountId: string | null;
+  } | null, DialerApplicationError>;
   recordCallRecordingStatus: (input: {
+    workspaceId: string;
     providerCallId: string;
     recordingSid: string;
     recordingStatus: string;

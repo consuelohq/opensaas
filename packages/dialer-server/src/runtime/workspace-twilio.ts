@@ -54,6 +54,10 @@ export const createWorkspaceVoiceCipher = (secret: string) => {
 
 export const createWorkspaceTwilioAuthority = (input: {
   database: Sql;
+  resolveMediaCall?: (callSid: string) => Promise<{
+    workspaceId: string;
+    providerAccountId: string | null;
+  } | null>;
   masterAccountSid: string;
   masterAuthToken: string;
   parentVoiceCredentials: { apiKey?: string; apiSecret?: string; twimlAppSid?: string };
@@ -191,10 +195,35 @@ export const createWorkspaceTwilioAuthority = (input: {
     try {
     const accountId = callback.params.AccountSid;
     if (!accountId) {
+      const path = new URL(callback.url).pathname;
+      if (path.startsWith('/webhooks/twilio/media/')) {
+        // URL is only a hint; select credentials from trusted persisted call ownership.
+        const callSid = path.slice('/webhooks/twilio/media/'.length);
+        if (!/^CA[a-fA-F0-9]{32}$/.test(callSid)) return false;
+        const bound = await input.resolveMediaCall?.(callSid);
+        if (!bound?.workspaceId) return false;
+        // A persisted per-call consent decision is required before any upgrade.
+        const allowed = await input.database.query<{ transcription_enabled: boolean }>(
+          "SELECT sessions.transcription_enabled FROM dialer_call_legs legs "+
+          "JOIN dialer_call_sessions sessions ON sessions.workspace_id=legs.workspace_id "+
+          "AND sessions.id=legs.session_id "+
+          "WHERE sessions.workspace_id=$1 AND legs.provider_call_id=$2 "+
+          "AND sessions.transcription_enabled=TRUE LIMIT 1",
+          [bound.workspaceId, callSid],
+        );
+        if (allowed.rows.length !== 1 || allowed.rows[0]?.transcription_enabled !== true) return false;
+        const boundAccount = bound.providerAccountId ?? masterSid;
+        if (!/^AC[a-fA-F0-9]{32}$/.test(boundAccount)) return false;
+        return boundAccount === masterSid
+          ? parentVerifier(callback)
+          : createTwilioSignatureVerifier(
+              await childAuthToken(boundAccount), input.publicUrl,
+            )(callback);
+      }
       // Twilio's legacy Media Stream WebSocket handshake has no form body.
       // Preserve the *parent* signed handshake only on its exact route;
       // a child stream without signed account scope remains fail-closed.
-      return new URL(callback.url).pathname === '/webhooks/twilio/media'
+      return path === '/webhooks/twilio/media'
         && parentVerifier(callback);
     }
     if (!/^AC[a-fA-F0-9]{32}$/.test(accountId)) return false;

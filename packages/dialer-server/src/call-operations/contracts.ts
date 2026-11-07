@@ -165,6 +165,7 @@ export type CallSessionUpsert = {
   startedAt: string;
   calls: Array<{
     providerCallId: string;
+    providerAccountId?: string | null;
     contactId?: string;
     position: number;
     callerIdentity?: string;
@@ -174,6 +175,7 @@ export type CallSessionUpsert = {
 
 export type CallLegTransition = {
   providerCallId: string;
+  workspaceId?: string;
   status: string;
   amdResult?: string;
   durationSeconds?: number;

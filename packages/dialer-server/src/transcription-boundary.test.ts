@@ -95,4 +95,24 @@ describe('Twilio Media Stream boundary', () => {
     });
     expect(application.completeTranscriptionSession).toHaveBeenCalledTimes(1);
   });
+  it('rejects a different CallSid or forged callId inside an otherwise authenticated stream', async () => {
+    const application = {
+      beginTranscriptionSession: mock(() => Effect.succeed({ status: 'pending' as const })),
+      processTranscriptionFrame: mock(() => Effect.succeed({ accepted: true })),
+      completeTranscriptionSession: mock(() => Effect.succeed({ status: 'ready' as const })),
+      failTranscriptionSession: mock(() => Effect.succeed({ status: 'failed' as const })),
+    };
+    for (const start of [
+      { ...startFrame, start: { ...startFrame.start, callSid: 'CA-foreign' } },
+      { ...startFrame, start: { ...startFrame.start, customParameters: { callId: 'CA-foreign' } } },
+    ]) {
+      const handlers = createTwilioMediaConnectionHandlers({
+        connectionId: 'connection-1', application, expectedCallSid: 'CA-1',
+      });
+      await handlers.open();
+      await handlers.message(JSON.stringify(start));
+    }
+    expect(application.processTranscriptionFrame).not.toHaveBeenCalled();
+    expect(application.failTranscriptionSession).toHaveBeenCalledTimes(2);
+  });
 });

@@ -33,6 +33,7 @@ import {
   rollbackDialerDatabaseMigration,
 } from '../database/migrations';
 import { createOutboundCapacity } from './outbound-capacity';
+import { createPostgresCallOperationsRepository } from '../call-operations/persistence';
 import { createInboundTelephony } from './telephony';
 import { createCallbackRecipientCipher } from './callback-recipient-cipher';
 import { createPostgresRepCapacity } from './rep-capacity';
@@ -744,6 +745,186 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
         )
       ).rowCount,
     ).toBe(0);
+  });
+
+  it('persists immutable recording owner and rejects wrong-tenant writes after recovery', async () => {
+    const child = 'AC' + '2'.repeat(32);
+    const other = 'AC' + '3'.repeat(32);
+    const callSid = 'CA' + '4'.repeat(32);
+    const repo = createPostgresCallOperationsRepository(pool);
+    const start = {
+      id: 'durable-recording-session',
+      workspaceId: 'workspace',
+      userId: 'alice',
+      source: 'direct',
+      selectionStrategy: 'single',
+      requestedFanout: 1,
+      actualFanout: 1,
+      recordingEnabled: true,
+      startedAt: clock(),
+      status: 'dialing',
+      calls: [{
+        providerCallId: callSid,
+        providerAccountId: child,
+        position: 1,
+        status: 'queued',
+      }],
+    };
+    await Effect.runPromise(repo.createOrUpdateCallSession(start));
+    // Upsert/retry after workspace cutover cannot rewrite the creation owner.
+    await Effect.runPromise(repo.createOrUpdateCallSession({
+      ...start,
+      calls: start.calls.map((call) => ({ ...call, providerAccountId: other })),
+    }));
+    const recovered = createPostgresCallOperationsRepository(pool);
+    expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
+      providerCallId: callSid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: child });
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: callSid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: child });
+
+    const unrecordedSid = 'CA' + '6'.repeat(32);
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start,
+      id: 'unrecorded-session',
+      recordingEnabled: false,
+      calls: start.calls.map((call) => ({ ...call, providerCallId: unrecordedSid })),
+    }));
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: unrecordedSid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: child });
+    expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
+      providerCallId: unrecordedSid,
+    }))).toBeNull();
+
+    const legacySid = 'CA' + '7'.repeat(32);
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start, id: 'legacy-session',
+      calls: start.calls.map((call) => ({
+        ...call, providerCallId: legacySid, providerAccountId: null,
+      })),
+    }));
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start, id: 'legacy-session',
+      calls: start.calls.map((call) => ({
+        ...call, providerCallId: legacySid, providerAccountId: other,
+      })),
+    }));
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: legacySid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: null });
+
+    await Effect.runPromise(recovered.recordCallRecordingStatus({
+      workspaceId: 'foreign-workspace', providerCallId: callSid,
+      recordingSid: 'RE' + '5'.repeat(32), recordingStatus: 'completed',
+    }));
+    expect((await pool.query<{recording_sid:string|null}>(
+      'SELECT recording_sid FROM dialer_call_sessions WHERE id=$1',
+      [start.id],
+    )).rows[0]?.recording_sid).toBeNull();
+    await Effect.runPromise(recovered.recordCallRecordingStatus({
+      workspaceId: 'workspace', providerCallId: callSid,
+      recordingSid: 'RE' + '5'.repeat(32), recordingStatus: 'completed',
+    }));
+    expect((await pool.query<{recording_sid:string|null}>(
+      'SELECT recording_sid FROM dialer_call_sessions WHERE id=$1',
+      [start.id],
+    )).rows[0]?.recording_sid).toBe('RE' + '5'.repeat(32));
+
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start, id: 'foreign-recording-session', workspaceId: 'foreign-workspace',
+      calls: start.calls.map((call) => ({ ...call, providerAccountId: other })),
+    }));
+    expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
+      providerCallId: callSid,
+    }))).toBeNull();
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: callSid,
+    }))).toBeNull();
+
+    // A late callback with a durable workspace binding may mutate only that
+    // workspace's leg, even if historic provider SIDs collide across tenants.
+    await Effect.runPromise(recovered.recordCallLegTransition({
+      workspaceId: 'workspace', providerCallId: callSid, status: 'completed',
+    }));
+    const statuses = (await pool.query<{workspace_id: string; status: string}>(
+      'SELECT workspace_id, status FROM dialer_call_legs WHERE provider_call_id=$1 ORDER BY workspace_id',
+      [callSid],
+    )).rows;
+    expect(statuses).toEqual([
+      { workspace_id: 'foreign-workspace', status: 'queued' },
+      { workspace_id: 'workspace', status: 'completed' },
+    ]);
+  });
+
+  it('retains creation-time child account ownership across workspace cutover and process restart', async () => {
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    const current = 'AC' + '3'.repeat(32);
+    let parentReads = 0;
+    let childReads = 0;
+    const parentCarrier: InboundCarrier = {
+      ...carrier,
+      call: async (sid) => {
+        parentReads++;
+        return { sid, accountSid: parent, status: 'completed' };
+      },
+    };
+    const childCarrier: InboundCarrier = {
+      ...carrier,
+      call: async (sid) => {
+        childReads++;
+        return { sid, accountSid: child, status: 'completed' };
+      },
+    };
+    const options = {
+      pool, carrier: parentCarrier, accountSid: parent, clock,
+      carrierForAccount: async (account: string) => {
+        expect(account).toBe(child);
+        return childCarrier;
+      },
+    };
+    const outbound = createOutboundCapacity(options);
+    await outbound.begin({
+      workspaceId: 'workspace', userId: 'alice',
+      sessionId: 'child-owned', plannedCalls: 1, providerAccountId: child,
+    });
+    await outbound.progress('workspace', 'child-owned', {
+      groupId: 'child-group', conferenceName: 'child-conference',
+      calls: [{ callSid: 'child-call' }],
+    });
+    await outbound.complete('workspace', 'child-owned');
+    await pool.query(
+      "INSERT INTO dialer_workspace_telephony_accounts(workspace_id,provider_account_id,status) VALUES($1,$2,'active')",
+      ['workspace', current],
+    );
+    // A fresh runtime must trust the original call binding, not the new
+    // tenant assignment, for admission, provider queries and release.
+    const restarted = createOutboundCapacity(options);
+    await expect(restarted.admitRep({
+      sessionId: 'child-owned', clientIdentity: 'user_alice',
+      callSid: 'rep-child', accountSid: current,
+    }, ['workspace'])).rejects.toThrow('Outbound provider identity mismatch');
+    await restarted.admitRep({
+      sessionId: 'child-owned', clientIdentity: 'user_alice',
+      callSid: 'rep-child', accountSid: child,
+    }, ['workspace']);
+    const bound = await pool.query<{ provider_account_id: string; rep_sid: string; status: string }>(
+      'SELECT provider_account_id,rep_sid,status FROM dialer_telephony_outbound WHERE workspace_id=$1 AND session_id=$2',
+      ['workspace', 'child-owned'],
+    );
+    expect(bound.rows[0]).toMatchObject({
+      provider_account_id: child, rep_sid: 'rep-child', status: 'succeeded',
+    });
+    await restarted.tick('workspace');
+    expect(childReads).toBe(2);
+    expect(parentReads).toBe(0);
+    expect((await pool.query<{status:string}>(
+      'SELECT status FROM dialer_telephony_outbound WHERE session_id=$1',
+      ['child-owned'],
+    )).rows[0].status).toBe('ended');
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
   });
 
   it('reserves outbound with stale, away inbound capacity without enabling inbound routing', async () => {

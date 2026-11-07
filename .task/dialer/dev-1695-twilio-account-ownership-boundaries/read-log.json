@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/lead-connector/src/contracts/team.ts"
+  ],
+  "updatedAt": "2026-11-07T06:27:59.654Z"
+}

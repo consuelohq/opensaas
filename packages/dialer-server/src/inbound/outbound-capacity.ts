@@ -24,6 +24,7 @@ import { routingTime } from './routing-store';
 type OutboundBinding = {
   workspace_id: string;
   session_id: string;
+  provider_account_id: string | null;
   request_id: string;
   capacity_id: string;
   assignment_id: string;
@@ -48,8 +49,8 @@ const OUTBOUND_REP_POLICY = {
 const OUTBOUND_BROWSER_SLOT = 'outbound-browser';
 
 /**
- * Outbound customer and browser legs must reconcile against the workspace's
- * Twilio account, not the global inbound parent account.
+ * Resolve a current workspace assignment ONLY before call creation.
+ * Never use this function to interpret an already persisted outbound binding.
  */
 export const resolveOutboundCarrierAccount = async (
   pool: Pick<Pool, 'query'>,
@@ -74,6 +75,20 @@ export const resolveOutboundCarrierAccount = async (
     if (cause instanceof Error) throw cause;
     throw new Error('Outbound provider account lookup failed', { cause });
   }
+};
+
+/** A binding without a provider account predates child-account routing. */
+export const resolveStoredOutboundAccount = (
+  row: Pick<OutboundBinding, 'provider_account_id'>,
+  parentAccountSid: string,
+): string => {
+  const stored = row.provider_account_id;
+  if (stored == null) return parentAccountSid;
+  // The equality check also preserves the older parent-only test carrier IDs.
+  if (stored !== parentAccountSid && !/^AC[a-fA-F0-9]{32}$/.test(stored)) {
+    throw new Error('Persisted outbound provider account is invalid');
+  }
+  return stored;
 };
 
 export const outboundRepIdFromClient = (clientIdentity: string): string =>
@@ -103,6 +118,7 @@ export const createOutboundCapacity = (options: {
     userId: string;
     sessionId: string;
     plannedCalls: number;
+    providerAccountId?: string;
   }) =>
     withInboundTransaction(pool, input.workspaceId, async (client) => {
       try {
@@ -112,6 +128,10 @@ export const createOutboundCapacity = (options: {
           input.plannedCalls > 20
         )
           throw new Error('Outbound fanout exceeds authority bound');
+        if (input.providerAccountId &&
+          !/^AC[a-fA-F0-9]{32}$/.test(input.providerAccountId)) {
+          throw new Error('Invalid outbound creation account');
+        }
         const existing = await client.query(
           'SELECT session_id FROM dialer_telephony_outbound WHERE workspace_id=$1 AND session_id=$2',
           [input.workspaceId, input.sessionId],
@@ -226,7 +246,7 @@ export const createOutboundCapacity = (options: {
           { clock: options.clock },
         );
         await client.query(
-          'INSERT INTO dialer_telephony_outbound(workspace_id,session_id,request_id,capacity_id,assignment_id,command_id,generation,planned_calls) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',
+          'INSERT INTO dialer_telephony_outbound(workspace_id,session_id,request_id,capacity_id,assignment_id,command_id,generation,planned_calls,provider_account_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',
           [
             input.workspaceId,
             input.sessionId,
@@ -236,6 +256,7 @@ export const createOutboundCapacity = (options: {
             command.commandId,
             state.generation,
             input.plannedCalls,
+            input.providerAccountId ?? options.accountSid,
           ],
         );
       } catch (cause: unknown) {
@@ -437,9 +458,7 @@ export const createOutboundCapacity = (options: {
       }
       if (binding.length !== 1) throw new Error('Outbound binding ambiguous');
       const row = binding[0]!;
-      const accountSid = await resolveOutboundCarrierAccount(
-        pool, row.workspace_id, options.accountSid,
-      );
+      const accountSid = resolveStoredOutboundAccount(row, options.accountSid);
       if (input.accountSid !== accountSid || !input.callSid)
         throw new Error('Outbound provider identity mismatch');
       await withInboundTransaction(pool, row.workspace_id, async (client) => {
@@ -450,6 +469,8 @@ export const createOutboundCapacity = (options: {
               [row.workspace_id, row.session_id],
             )
           ).rows[0]!;
+          if (resolveStoredOutboundAccount(current, options.accountSid) !== accountSid)
+            throw new Error('Outbound account binding changed during admission');
           const state = await readTelephonyCapacity(
             client,
             row.workspace_id,
@@ -514,9 +535,7 @@ export const createOutboundCapacity = (options: {
           );
           if (!rejected.rowCount) continue;
         }
-        const accountSid = await resolveOutboundCarrierAccount(
-          pool, row.workspace_id, options.accountSid,
-        );
+        const accountSid = resolveStoredOutboundAccount(row, options.accountSid);
         if (accountSid !== options.accountSid && !options.carrierForAccount) {
           throw new Error('Scoped outbound carrier unavailable');
         }

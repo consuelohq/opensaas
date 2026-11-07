@@ -7,6 +7,9 @@ import {
   type TransferRepository,
 } from './transfers/application';
 
+const parentAccountSid = 'AC' + '1'.repeat(32);
+const childAccountSid = 'AC' + '2'.repeat(32);
+
 const group: ParallelGroup = {
   groupId: 'group-one',
   dialerSessionId: 'session-one',
@@ -101,6 +104,7 @@ const createRuntime = () => {
     loadGroup: mock(async () => group),
     selectDialer: mock(async () => dialer),
     repository,
+    parentAccountSid,
     publicUrl: 'https://dialer.test',
     generateId: () => 'transfer-one',
   });
@@ -304,6 +308,7 @@ describe('server-authoritative transfer application', () => {
           transferId: 'transfer-one',
           callSid: 'CA_wrong',
           callStatus: 'no-answer',
+          accountSid: parentAccountSid,
         }),
       ),
     ).rejects.toThrow('provider call');
@@ -314,6 +319,7 @@ describe('server-authoritative transfer application', () => {
           transferId: 'transfer-one',
           callSid: 'CA_transfer',
           callStatus: 'no-answer',
+          accountSid: parentAccountSid,
         }),
       ),
     ).resolves.toEqual({ received: true, status: 'failed' });
@@ -325,6 +331,32 @@ describe('server-authoritative transfer application', () => {
     expect(runtime.events.at(-1)).toMatchObject({
       eventType: 'transfer_failed',
       status: 'failed',
+    });
+  });
+  it('rejects foreign account status before a transfer CallSid is persisted and pins the first signed SID', async () => {
+    const runtime = createRuntime();
+    runtime.repository.getTransferById.mockImplementation(async () => ({
+      workspaceId: 'workspace-one',
+      sessionId: 'session-one',
+      transferId: 'transfer-one',
+      groupId: 'group-one',
+      type: 'warm',
+      target: '+15550100111',
+      status: 'initiating',
+      conferenceSid: null,
+      transferCallSid: null,
+    }));
+    await expect(Effect.runPromise(runtime.application.processStatusCallback({
+      transferId: 'transfer-one', callSid: 'CA_first',
+      callStatus: 'answered', accountSid: childAccountSid,
+    }))).rejects.toThrow();
+    expect(runtime.events).toHaveLength(0);
+    await expect(Effect.runPromise(runtime.application.processStatusCallback({
+      transferId: 'transfer-one', callSid: 'CA_first',
+      callStatus: 'answered', accountSid: parentAccountSid,
+    }))).resolves.toMatchObject({received:true,status:'consulting'});
+    expect(runtime.events.at(-1)).toMatchObject({
+      transferCallSid: 'CA_first', eventType: 'transfer_consulting',
     });
   });
 
@@ -340,6 +372,7 @@ describe('server-authoritative transfer application', () => {
         loadGroup: async () => invalid,
         selectDialer: async () => runtime.dialer,
         repository: runtime.repository,
+        parentAccountSid,
         publicUrl: 'https://dialer.test',
         generateId: () => 'transfer-one',
       });

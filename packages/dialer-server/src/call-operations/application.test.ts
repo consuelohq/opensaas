@@ -65,6 +65,8 @@ const createHarness = (
     claimCallRecording: () => Effect.succeed(null),
     setCallRecordingStarted: () => Effect.void,
     setCallRecordingFailed: () => Effect.void,
+    resolveRecordingCallOwnership: () => Effect.succeed(null),
+    resolveStatusCallOwnership: () => Effect.succeed(null),
     recordCallRecordingStatus: () => Effect.void,
   };
   const provider: SpeechToTextProviderService = input.provider ?? {
@@ -124,6 +126,23 @@ const mediaFrame = (
 });
 
 describe('Effect call-operations transcription application', () => {
+  it('refuses an untrusted stream frame that claims another session or CallSid', async () => {
+    for (const parameters of [
+      { callId: 'CA-1', sessionId: 'foreign-session' },
+      { callId: 'CA-foreign', sessionId: 'session-1' },
+    ]) {
+      const harness = createHarness();
+      await Effect.runPromise(harness.application.beginTranscriptionSession(begin()));
+      const result = await Effect.runPromise(
+        harness.application.processTranscriptionFrame({
+          connectionId: 'connection-1',
+          frame: { ...startFrame(), start: { ...startFrame().start, customParameters: parameters } },
+        }),
+      );
+      expect(result.accepted).toBe(false);
+      expect(harness.statuses).not.toContain('processing');
+    }
+  });
   it('keeps inbound and outbound buffers separate and persists provider metadata only', async () => {
     const harness = createHarness();
     await Effect.runPromise(

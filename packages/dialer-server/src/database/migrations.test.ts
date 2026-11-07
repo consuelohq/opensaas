@@ -20,6 +20,7 @@ import {
   DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
   DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
   DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+  OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
   DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
   migrateDialerDatabase,
   rollbackDialerDatabaseMigration,
@@ -85,6 +86,7 @@ describe('dialer database migrations', () => {
       NATIVE_BILLING_MIGRATION_ID,
       REP_DEVICES_MIGRATION_ID,
       TEAM_ACCESS_MIGRATION_ID,
+      OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
     ]);
     expect(harness.applied).toEqual(
       new Set([
@@ -94,6 +96,7 @@ describe('dialer database migrations', () => {
         NATIVE_BILLING_MIGRATION_ID,
         REP_DEVICES_MIGRATION_ID,
         TEAM_ACCESS_MIGRATION_ID,
+        OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
       ]),
     );
     const sql = harness.calls.map((call) => call.text).join('\n');
@@ -117,6 +120,7 @@ describe('dialer database migrations', () => {
       NATIVE_BILLING_MIGRATION_ID,
       REP_DEVICES_MIGRATION_ID,
       TEAM_ACCESS_MIGRATION_ID,
+      OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
     ]);
     await expect(
       rollbackDialerDatabaseMigration(harness.database, upgradeId),
@@ -171,6 +175,7 @@ describe('dialer database migrations', () => {
         NATIVE_BILLING_MIGRATION_ID,
         REP_DEVICES_MIGRATION_ID,
         TEAM_ACCESS_MIGRATION_ID,
+        OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
       ]),
     );
   });
@@ -268,7 +273,7 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(18);
+    expect(migrationInserts).toHaveLength(19);
   });
 
   it('upgrades an RD7B schema with only the additive booking evidence migrations', async () => {
@@ -309,6 +314,7 @@ describe('dialer database migrations', () => {
         NATIVE_BILLING_MIGRATION_ID,
         REP_DEVICES_MIGRATION_ID,
         TEAM_ACCESS_MIGRATION_ID,
+        OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
       ]),
     );
   });

@@ -34,6 +34,7 @@ describe('call-operations persistence', () => {
     expect(sql).toContain('transfer_cancelled');
     expect(sql).toContain('transfer_failed');
     expect(sql).toContain('UNIQUE (workspace_id, provider_call_id)');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS provider_account_id TEXT');
     expect(sql).toContain('UNIQUE (workspace_id, session_id, idempotency_key)');
     expect(sql).not.toMatch(/audio|wav|mp3|mulaw|media_payload|raw_frame/i);
   });
@@ -101,6 +102,7 @@ describe('call-operations persistence', () => {
         calls: [
           {
             providerCallId: 'CA-1',
+            providerAccountId: 'AC' + '2'.repeat(32),
             contactId: 'contact-1',
             position: 1,
             status: 'queued',
@@ -123,6 +125,33 @@ describe('call-operations persistence', () => {
     );
     expect(String(calls[0]?.values?.[21])).toContain('CA-1');
     expect(String(calls[0]?.values?.[21])).toContain('CA-2');
+    expect(String(calls[0]?.values?.[21])).toContain('AC' + '2'.repeat(32));
+    expect(calls[0]?.text).toContain('provider_account_id = dialer_call_legs.provider_account_id');
+  });
+
+  it('rejects ambiguous recording owners and reads only recording-consented durable call legs', async () => {
+    let simulatedRows: Array<{ workspace_id: string; provider_account_id: string | null }> = [
+      { workspace_id: 'tenant-a', provider_account_id: 'AC' + '1'.repeat(32) },
+      { workspace_id: 'tenant-b', provider_account_id: 'AC' + '2'.repeat(32) },
+    ];
+    const calls: string[] = [];
+    const database: CallOperationsDatabase = {
+      query: async <TRow>(text: string) => {
+        calls.push(text);
+        return { rows: simulatedRows as TRow[], rowCount: simulatedRows.length };
+      },
+    };
+    const repository = createPostgresCallOperationsRepository(database);
+    const read = () => Effect.runPromise(repository.resolveRecordingCallOwnership({
+      providerCallId: 'CA' + '3'.repeat(32),
+    }));
+    expect(await read()).toBeNull();
+    simulatedRows = [simulatedRows[1]!];
+    expect(await read()).toEqual({
+      workspaceId: 'tenant-b', providerAccountId: 'AC' + '2'.repeat(32),
+    });
+    expect(calls[0]).toContain('sessions.recording_enabled = TRUE');
+    expect(calls[0]).toContain('LIMIT 2');
   });
 
   it('persists recording provider metadata without retaining a raw recording URL', async () => {
@@ -137,6 +166,7 @@ describe('call-operations persistence', () => {
 
     await Effect.runPromise(
       repository.recordCallRecordingStatus({
+        workspaceId: 'workspace-1',
         providerCallId: 'CA-1',
         recordingSid: 'RE-1',
         recordingStatus: 'completed',
@@ -146,6 +176,8 @@ describe('call-operations persistence', () => {
 
     expect(calls).toHaveLength(1);
     expect(calls[0]?.text).not.toContain('recording_url');
-    expect(calls[0]?.values).toEqual(['CA-1', 'RE-1', 'completed', 42]);
+    expect(calls[0]?.values).toEqual(['CA-1', 'RE-1', 'completed', 42, 'workspace-1']);
+    expect(calls[0]?.text).toContain('legs.workspace_id = $5');
+    expect(calls[0]?.text).toContain('sessions.recording_enabled = TRUE');
   });
 });
