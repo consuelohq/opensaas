@@ -146,33 +146,71 @@ export const createTeamAccessService = (input: {
           [workspace],
         )
       ).rows[0];
-      // Only a confirmed provider projection for this exact subscription may
-      // contribute paid seats. The billing service owns the grace-clock policy.
-      const confirmed =
-        purchase?.paid_at &&
-        purchase.provider_subscription_id &&
-        purchase.provider_subscription_id ===
-          subscription?.provider_subscription_id &&
-        purchase.provider_status === subscription?.status;
-      const billable =
-        confirmed &&
+      // Stripe's signed subscription is the current billing authority. A
+      // previously confirmed purchase may have a lagging status when public
+      // checkout webhooks are disabled; require its original subscription
+      // binding and paid proof, not exact agreement between status snapshots.
+      const billable = Boolean(
+        subscription?.provider_subscription_id &&
         resolveBillingAccess({
           status: subscription.status,
           paymentFailedAt: subscription.payment_failed_at,
           now: input.now?.() ?? new Date(),
           graceDays: input.paymentGraceDays,
-        }).canStartCalls;
-      const selection = purchase?.entitlement_selection;
-      const paidSeats =
+        }).canStartCalls,
+      );
+      const confirmed = Boolean(
         billable &&
+        purchase?.paid_at &&
+        purchase.provider_subscription_id &&
+        purchase.provider_subscription_id ===
+          subscription?.provider_subscription_id &&
+        ['active', 'trialing', 'past_due'].includes(
+          purchase.provider_status ?? '',
+        ),
+      );
+      const selection = purchase?.entitlement_selection;
+      let paidSeats =
+        confirmed &&
         Number.isSafeInteger(selection?.seats) &&
         selection!.seats! > 0 &&
         selection!.seats! <= 1000 &&
         ['professional', 'agency', 'enterprise'].includes(selection?.plan ?? '')
           ? selection!.seats!
           : 0;
-      const plan = paidSeats ? selection!.plan! : null;
-      return { purchase, subscription, paidSeats, plan };
+      let plan: string | null = paidSeats ? selection!.plan! : null;
+      let legacyPlanCodes: string[] = [];
+      if (!purchase && billable) {
+        // Legacy commercial checkout has no public purchase. Its verified
+        // Stripe webhook persists the authoritative subscription item codes.
+        const items = (
+          await client.query<{ item_code: string; quantity: number }>(
+            'SELECT item_code,quantity FROM dialer_workspace_subscription_items WHERE workspace_id=$1',
+            [workspace],
+          )
+        ).rows;
+        const permitted = items.filter(
+          (item) =>
+            ['single', 'standard', 'power'].includes(item.item_code) &&
+            Number.isSafeInteger(item.quantity) &&
+            item.quantity > 0 &&
+            item.quantity <= 1000,
+        );
+        const total = permitted.reduce((sum, item) => sum + item.quantity, 0);
+        if (total > 0 && total <= 1000) {
+          paidSeats = total;
+          legacyPlanCodes = permitted.map((item) => item.item_code);
+          if (legacyPlanCodes.length === 1) {
+            plan =
+              legacyPlanCodes[0] === 'single'
+                ? 'professional'
+                : legacyPlanCodes[0] === 'standard'
+                  ? 'agency'
+                  : 'enterprise';
+          }
+        }
+      }
+      return { purchase, subscription, paidSeats, plan, legacyPlanCodes };
     } catch (cause: unknown) {
       throw safeError(cause);
     }
@@ -264,6 +302,14 @@ export const createTeamAccessService = (input: {
             role: 'user',
             canCall: false,
           });
+      for (const grant of positiveGrants)
+        if (!roster.some((member) => member.id === grant.user_id))
+          roster.push({
+            id: grant.user_id,
+            name: 'Unavailable CRM member',
+            role: 'user',
+            canCall: false,
+          });
       return {
         revision,
         directoryVersion,
@@ -347,7 +393,16 @@ export const createTeamAccessService = (input: {
             throw new Error('TEAM_MEMBER_INELIGIBLE');
           const prior = before.members.find((m) => m.id === change.userId);
           if (!member && !prior) throw new Error('TEAM_MEMBER_INELIGIBLE');
-          if (prior?.starter && !change.enabled)
+          if (
+            prior?.starter &&
+            !change.enabled &&
+            members.some(
+              (known) =>
+                known.id === change.userId &&
+                known.role === 'admin' &&
+                known.canCall,
+            )
+          )
             throw new Error('INVALID_TEAM_CHANGE');
           if (
             change.enabled &&
@@ -512,12 +567,17 @@ export const createTeamAccessService = (input: {
             )
               throw new Error('TEAM_PAID_ACCESS_REQUIRED');
             const assigned = (
-              await client.query(
-                "SELECT 1 FROM dialer_team_seats WHERE workspace_id=$1 AND user_id=$2 AND status='active'",
+              await client.query<{ plan_code: string }>(
+                "SELECT plan_code FROM dialer_team_seats WHERE workspace_id=$1 AND user_id=$2 AND status='active'",
                 [identity.workspaceId, identity.userId],
               )
-            ).rows.length;
-            if (!assigned) throw new Error('TEAM_PAID_ACCESS_REQUIRED');
+            ).rows[0];
+            if (
+              !assigned ||
+              (!authority.purchase &&
+                !authority.legacyPlanCodes.includes(assigned.plan_code))
+            )
+              throw new Error('TEAM_PAID_ACCESS_REQUIRED');
             return;
           }
           const grants = (
@@ -529,7 +589,11 @@ export const createTeamAccessService = (input: {
           if (
             grants.length === 1 &&
             grants[0].user_id === identity.userId &&
-            !authority.purchase?.paid_at
+            !authority.purchase?.paid_at &&
+            members.some(
+              (member) =>
+                member.id === identity.userId && member.role === 'admin',
+            )
           )
             return;
           // An unactivated purchase cannot create a new Starter authority.

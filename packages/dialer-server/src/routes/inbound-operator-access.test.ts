@@ -31,10 +31,35 @@ it('requires current access for new receiving/acceptance while preserving away, 
     });
   expect((await post('readiness', { ready: true })).status).toBe(409);
   expect((await post('offers/accept', {})).status).toBe(409);
+  expect((await post('heartbeat', {})).status).toBe(409);
   expect(operation).not.toHaveBeenCalled();
   expect((await post('readiness', { ready: false })).status).toBe(200);
+  expect((await post('offers/decline', {})).status).toBe(200);
   expect((await post('wrap-up', {})).status).toBe(200);
   expect((await app.request('/v1/inbound/operator/snapshot')).status).toBe(200);
-  expect(operation).toHaveBeenCalledTimes(3);
-  expect(authorize).toHaveBeenCalledTimes(2);
+  expect(operation).toHaveBeenCalledTimes(4);
+  expect(authorize).toHaveBeenCalledTimes(3);
+});
+
+it('allows heartbeat renewal when authorization remains current', async () => {
+  const authorize = mock(async () => {});
+  const heartbeat = mock(async () => ({ ready: true }));
+  const operator = {
+    heartbeat,
+  } as unknown as ReturnType<typeof createInboundOperator>;
+  const app = new Hono<{ Variables: DialerVariables }>();
+  app.use('*', async (context, next) => {
+    context.set('identity', { workspaceId: 'workspace', userId: 'rep' });
+    await next();
+  });
+  app.route('/', createInboundOperatorRoutes(operator, authorize));
+  const response = await app.request('/v1/inbound/operator/heartbeat', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ ready: true });
+  expect(authorize).toHaveBeenCalledTimes(1);
+  expect(heartbeat).toHaveBeenCalledTimes(1);
 });

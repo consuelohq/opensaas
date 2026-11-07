@@ -350,6 +350,100 @@ suite('transactional CRM team access', () => {
     expect(current.members.find((m) => m.id === 'admin')?.starter).toBe(true);
     expect(current.paidSeats).toBe(0);
   });
+  it('recovers a demoted Starter owner with an audited one-seat handoff', async () => {
+    await service.assertCanCall(actor);
+    members.push({
+      id: 'second-admin',
+      name: 'Replacement Admin',
+      role: 'admin',
+      canCall: true,
+    });
+    const replacement = { ...actor, userId: 'second-admin' };
+    const initial = await service.read(replacement);
+    await expect(
+      service.update(replacement, change(initial, 'admin', false)),
+    ).rejects.toThrow('INVALID_TEAM_CHANGE');
+    members[0]!.role = 'user';
+    await expect(service.assertCanCall(actor)).rejects.toThrow(
+      'TEAM_PAID_ACCESS_REQUIRED',
+    );
+    const before = await service.read(replacement);
+    await expect(
+      service.update(replacement, change(before, 'second-admin', true, [])),
+    ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
+    const revoked = await service.update(
+      replacement,
+      change(before, 'admin', false),
+    );
+    expect(
+      revoked.members.find((member) => member.id === 'admin')?.starter,
+    ).toBe(false);
+    expect(
+      revoked.members.find((member) => member.id === 'second-admin')?.starter,
+    ).toBe(true);
+    await expect(
+      service.update(replacement, change(before, 'second-admin', true, [])),
+    ).rejects.toThrow('TEAM_VIEW_CHANGED');
+    await service.update(
+      replacement,
+      change(revoked, 'second-admin', true, []),
+    );
+    await service.assertCanCall(replacement);
+    await expect(service.assertCanCall(actor)).rejects.toThrow(
+      'TEAM_ACCESS_REVOKED',
+    );
+    expect(
+      (
+        await pool.query<{ user_id: string }>(
+          'SELECT user_id FROM dialer_team_access WHERE workspace_id=$1 AND enabled=true',
+          [workspaceId],
+        )
+      ).rows.map((row) => row.user_id),
+    ).toEqual(['second-admin']);
+    expect(
+      (
+        await pool.query<{ count: number }>(
+          'SELECT COUNT(*)::integer AS count FROM dialer_team_access_events WHERE workspace_id=$1',
+          [workspaceId],
+        )
+      ).rows[0]!.count,
+    ).toBe(3);
+  });
+  it('recovers a Starter grant after the original CRM owner disappears', async () => {
+    await service.assertCanCall(actor);
+    members.splice(0, 1);
+    members.push({
+      id: 'second-admin',
+      name: 'Replacement Admin',
+      role: 'admin',
+      canCall: true,
+    });
+    const replacement = { ...actor, userId: 'second-admin' };
+    const before = await service.read(replacement);
+    expect(
+      before.members.find((member) => member.id === 'admin'),
+    ).toMatchObject({
+      canCall: false,
+      starter: true,
+    });
+    const revoked = await service.update(
+      replacement,
+      change(before, 'admin', false),
+    );
+    await service.update(
+      replacement,
+      change(revoked, 'second-admin', true, []),
+    );
+    await service.assertCanCall(replacement);
+    expect(
+      (
+        await pool.query<{ count: number }>(
+          'SELECT COUNT(*)::integer AS count FROM dialer_team_access WHERE workspace_id=$1 AND enabled=true',
+          [workspaceId],
+        )
+      ).rows[0]!.count,
+    ).toBe(1);
+  });
   it('never authorizes a paid seat from an unsigned subscription row', async () => {
     const subscriptionId = 'sub-' + randomUUID();
     await pool.query(
@@ -361,6 +455,76 @@ suite('transactional CRM team access', () => {
       [workspaceId, 'alice'],
     );
     expect((await service.read(actor)).paidSeats).toBe(0);
+    await expect(
+      service.assertCanCall({ ...actor, userId: 'alice' }),
+    ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
+  });
+  it('retains verified legacy subscription seats without a public purchase', async () => {
+    const subscriptionId = 'sub-' + randomUUID();
+    await pool.query(
+      "INSERT INTO dialer_workspace_subscriptions(workspace_id,provider_subscription_id,status) VALUES($1,$2,'active')",
+      [workspaceId, subscriptionId],
+    );
+    await pool.query(
+      "INSERT INTO dialer_workspace_subscription_items(workspace_id,item_code,provider_item_id,provider_price_id,quantity) VALUES($1,'single',$2,'price-single',2)",
+      [workspaceId, 'si-' + randomUUID()],
+    );
+    await pool.query(
+      "INSERT INTO dialer_team_seats(workspace_id,user_id,plan_code,status) VALUES($1,$2,'single','active')",
+      [workspaceId, 'alice'],
+    );
+    expect(await service.read(actor)).toMatchObject({
+      paidSeats: 2,
+      assignedSeats: 1,
+      plan: 'professional',
+    });
+    await service.assertCanCall({ ...actor, userId: 'alice' });
+    const current = await service.read(actor);
+    await service.update(actor, change(current, 'bob'));
+    await service.assertCanCall({ ...actor, userId: 'bob' });
+    for (const scenario of [
+      { status: 'trialing', failed: null, enabled: true },
+      {
+        status: 'past_due',
+        failed: new Date('2026-11-06T12:00:00Z'),
+        enabled: true,
+      },
+      {
+        status: 'past_due',
+        failed: new Date('2026-11-03T12:00:00Z'),
+        enabled: false,
+      },
+      { status: 'canceled', failed: null, enabled: false },
+    ]) {
+      await pool.query(
+        'UPDATE dialer_workspace_subscriptions SET status=$2,payment_failed_at=$3 WHERE workspace_id=$1',
+        [workspaceId, scenario.status, scenario.failed],
+      );
+      expect((await service.read(actor)).paidSeats).toBe(
+        scenario.enabled ? 2 : 0,
+      );
+      if (scenario.enabled) {
+        await service.assertCanCall({ ...actor, userId: 'alice' });
+      } else {
+        await expect(
+          service.assertCanCall({ ...actor, userId: 'alice' }),
+        ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
+      }
+    }
+  });
+  it('cannot use a legacy seat whose plan code lacks a signed subscription item', async () => {
+    await pool.query(
+      "INSERT INTO dialer_workspace_subscriptions(workspace_id,provider_subscription_id,status) VALUES($1,$2,'active')",
+      [workspaceId, 'sub-' + randomUUID()],
+    );
+    await pool.query(
+      "INSERT INTO dialer_workspace_subscription_items(workspace_id,item_code,provider_item_id,provider_price_id,quantity) VALUES($1,'single',$2,'price-single',1)",
+      [workspaceId, 'si-' + randomUUID()],
+    );
+    await pool.query(
+      "INSERT INTO dialer_team_seats(workspace_id,user_id,plan_code,status) VALUES($1,$2,'power','active')",
+      [workspaceId, 'alice'],
+    );
     await expect(
       service.assertCanCall({ ...actor, userId: 'alice' }),
     ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
@@ -405,7 +569,25 @@ suite('transactional CRM team access', () => {
       "UPDATE dialer_workspace_subscriptions SET status='trialing' WHERE workspace_id=$1",
       [workspaceId],
     );
+    expect((await service.read(actor)).paidSeats).toBe(2);
+    await pool.query(
+      "UPDATE dialer_public_purchases SET provider_status='pending' WHERE claimed_workspace_id=$1",
+      [workspaceId],
+    );
     expect((await service.read(actor)).paidSeats).toBe(0);
+    await pool.query(
+      "UPDATE dialer_public_purchases SET provider_status='active' WHERE claimed_workspace_id=$1",
+      [workspaceId],
+    );
+    await pool.query(
+      'UPDATE dialer_public_purchases SET provider_subscription_id=$2 WHERE claimed_workspace_id=$1',
+      [workspaceId, 'sub-mismatched-' + randomUUID()],
+    );
+    expect((await service.read(actor)).paidSeats).toBe(0);
+    await pool.query(
+      'UPDATE dialer_public_purchases SET provider_subscription_id=(SELECT provider_subscription_id FROM dialer_workspace_subscriptions WHERE workspace_id=$1) WHERE claimed_workspace_id=$1',
+      [workspaceId],
+    );
     await pool.query(
       "UPDATE dialer_workspace_subscriptions SET status='active' WHERE workspace_id=$1",
       [workspaceId],

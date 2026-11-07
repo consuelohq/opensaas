@@ -4,14 +4,16 @@
   "mode": "full",
   "branch": "task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states",
   "base": "origin/task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states",
-  "headSha": "d191399695e6f0cfe928e3f5fa22e1345919bbe8",
-  "changeHash": "41b404d7d206c6c8e643a17b52dd4165d989305f2f2640898cd7c9f9311baa2b",
+  "headSha": "624084522540bada71495f9b3edac2d6ec7d257d",
+  "changeHash": "7face0e4acf8efd1589684c685f7c9695635718f08baeee9aed7f7f680b443e2",
   "changedFiles": [
+    "packages/dialer-server/TEAM-ACCESS.md",
     "packages/dialer-server/src/commercial/team.postgres.integration.test.ts",
     "packages/dialer-server/src/commercial/team.ts",
-    "packages/dialer-server/src/runtime/railway.ts"
+    "packages/dialer-server/src/routes/inbound-operator-access.test.ts",
+    "packages/dialer-server/src/routes/inbound-operator.ts"
   ],
-  "verifiedAt": "2026-11-07T05:16:49.691Z",
+  "verifiedAt": "2026-11-07T05:29:42.066Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -25,13 +27,17 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
+        ".task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states/current.json",
         ".task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states/evidence-log.json",
         ".task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states/read-log.json",
+        ".task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states/verify.json",
         ".task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states/workpad.md",
         ".task/tasks/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states.json",
+        "packages/dialer-server/TEAM-ACCESS.md",
         "packages/dialer-server/src/commercial/team.postgres.integration.test.ts",
         "packages/dialer-server/src/commercial/team.ts",
-        "packages/dialer-server/src/runtime/railway.ts"
+        "packages/dialer-server/src/routes/inbound-operator-access.test.ts",
+        "packages/dialer-server/src/routes/inbound-operator.ts"
       ],
       "matchedRules": [
         {
@@ -39,18 +45,11 @@
           "critical": true,
           "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
           "matchedFiles": [
+            "packages/dialer-server/TEAM-ACCESS.md",
             "packages/dialer-server/src/commercial/team.postgres.integration.test.ts",
             "packages/dialer-server/src/commercial/team.ts",
-            "packages/dialer-server/src/runtime/railway.ts"
-          ],
-          "origin": "explicit"
-        },
-        {
-          "id": "dialer-native-billing",
-          "critical": true,
-          "reason": "Billing edits must prove paid-only native changes, isolated component invoices, idempotent top-ups, immutable usage debits and legacy schema upgrades against disposable PostgreSQL.",
-          "matchedFiles": [
-            "packages/dialer-server/src/runtime/railway.ts"
+            "packages/dialer-server/src/routes/inbound-operator-access.test.ts",
+            "packages/dialer-server/src/routes/inbound-operator.ts"
           ],
           "origin": "explicit"
         }
@@ -89,15 +88,6 @@
           ],
           "ruleId": "dialer-server-package",
           "critical": true
-        },
-        {
-          "name": "Stripe native billing with disposable PostgreSQL",
-          "command": [
-            "bun",
-            "packages/dialer-server/scripts/verify-native-billing.ts"
-          ],
-          "ruleId": "dialer-native-billing",
-          "critical": true
         }
       ],
       "level": "pass",
@@ -121,7 +111,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 679,
+          "durationMs": 890,
           "outputTail": "$ bun x tsc\n"
         },
         {
@@ -140,7 +130,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 788,
+          "durationMs": 1119,
           "outputTail": "$ bun x tsc\n"
         },
         {
@@ -157,24 +147,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 2143,
-          "outputTail": "persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 276 pass\n 114 skip\n 0 fail\n 1755 expect() calls\nRan 390 tests across 75 files. [2.13s]\n"
-        },
-        {
-          "name": "Stripe native billing with disposable PostgreSQL",
-          "command": [
-            "bun",
-            "packages/dialer-server/scripts/verify-native-billing.ts"
-          ],
-          "cwd": ".",
-          "ruleId": "dialer-native-billing",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 3405,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-server/src/native-billing.postgres.integration.test.ts:\n(pass) native billing with durable PostgreSQL and simulated carrier-independent Stripe > isolates native subscriptions, survives partial payment/retry and projects only paid owned edits [1012.82ms]\n\npackages/dialer-server/src/native-billing.acceptance.test.ts:\n(pass) Stripe-native billing packages > keeps one recurring base item, a separate number invoice and the approved combined price [0.12ms]\n(pass) Stripe-native billing packages > requires an explicit all-seat coaching bundle and preserves base prices [0.05ms]\n(pass) Stripe-native billing packages > normalizes only one owned recurring item of the expected role and bounded quantity [0.11ms]\n\npackages/dialer-server/src/public-checkout.postgres.integration.test.ts:\n(pass) public checkout with disposable PostgreSQL and simulated Stripe > survives unknown outcomes, binds once, fences stale facts and retains legacy billing [1018.77ms]\n\npackages/dialer-server/src/database/migrations.postgres.integration.test.ts:\n(pass) LeadConnector company credential upgrades with isolated PostgreSQL > preserves existing installations, old ledger timestamps and recovered credentials, and bootstraps signed context [1052.11ms]\n\n 6 pass\n 0 fail\n 145 expect() calls\nRan 6 tests across 4 files. [3.39s]\n"
+          "durationMs": 2341,
+          "outputTail": "persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 277 pass\n 118 skip\n 0 fail\n 1761 expect() calls\nRan 395 tests across 75 files. [2.33s]\n"
         }
       ],
       "failedSuites": []
