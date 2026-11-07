@@ -1,6 +1,7 @@
 import type { LeadConnectorEmbedState } from './state-machine.js';
 import type { CallingWorkspace } from './calling-workspace.js';
 import { icon } from './workspace-icons.js';
+import { isProtectedStarterOwner } from './team-access-policy.js';
 import {
   escapeHtml as e,
   planName,
@@ -107,7 +108,7 @@ const team = (
         ? `<form data-form="team-access"><label class="field-label">Team member<select name="userId" data-field="team-member"${busy ? ' disabled' : ''}>${t.members.map((m) => `<option value="${e(m.id)}"${member.id === m.id ? ' selected' : ''}>${e(m.name)}${m.starter ? ' · You' : ''}</option>`).join('')}</select></label>
     <p>${e(member.role === 'admin' ? 'CRM administrator' : 'CRM staff')} · ${e(member.capacityState === 'unknown' ? 'Finishing an uncertain call' : member.capacityState === 'away' ? 'Not receiving calls' : titleCase(member.capacityState))}</p>
     ${!member.canCall ? '<p class="form-caption">Calling is unavailable for this CRM member. Existing access can be removed.</p>' : ''}
-    <label class="field-label"><span><input type="checkbox" name="enabled" data-field="team-enabled"${enabled ? ' checked' : ''}${busy || member.starter || (!member.canCall && !member.assigned) ? ' disabled' : ''}/> Allow calling${member.starter ? ' · Included with Starter' : ''}</span></label>
+    <label class="field-label"><span><input type="checkbox" name="enabled" data-field="team-enabled"${enabled ? ' checked' : ''}${busy || isProtectedStarterOwner(member) || (!member.canCall && !member.assigned && !member.starter) ? ' disabled' : ''}/> Allow calling${member.starter ? ' · Included with Starter' : ''}</span></label>
     <fieldset${busy || !canEdit ? ' disabled' : ''}><legend>Inbound teams</legend>${t.queues.length ? t.queues.map((q) => `<label class="field-label"><span><input type="checkbox" name="queueIds" value="${e(q.id)}" data-field="team-queue"${queueIds.includes(q.id) ? ' checked' : ''}/> ${e(q.name)}</span></label>`).join('') : '<p class="form-caption">No inbound teams are configured for this location yet. Outbound access can still be assigned.</p>'}</fieldset>
     <p class="form-caption">Saving pauses receiving. Existing calls finish normally; the rep starts receiving when they are ready.</p>
     <button type="submit" class="button button--primary"${busy || !canEdit || Boolean(state.teamError) ? ' disabled' : ''}>${state.teamSaving ? 'Saving…' : 'Save access'}</button></form>`

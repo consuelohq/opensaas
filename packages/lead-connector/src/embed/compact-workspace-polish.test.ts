@@ -7,6 +7,7 @@ import {
 } from './state-machine';
 import { renderLeadConnectorEmbed } from './view';
 import { selectedAnsweringEndpoints } from './inbound-operator-view';
+import { isProtectedStarterOwner, requestedTeamEnabled } from './team-access-policy';
 
 const makeState = (): LeadConnectorEmbedState => {
   const state = createInitialEmbedState();
@@ -400,5 +401,36 @@ describe('CRM team access page', () => {
       page(t, 'team').querySelector<HTMLButtonElement>('button[type="submit"]')
         ?.disabled,
     ).toBe(true);
+  });
+  test('protects eligible Starter owner but lets an admin revoke a stale owner', () => {
+    const state = teamState();
+    state.team!.paidSeats = 0;
+    state.team!.assignedSeats = 0;
+    const original = state.team!.members[0]!;
+    original.starter = true;
+    original.assigned = false;
+    original.queueIds = [];
+
+    let doc = page(state, 'team');
+    expect(doc.querySelector<HTMLInputElement>('[data-field="team-enabled"]')?.disabled).toBe(true);
+    expect(isProtectedStarterOwner(original)).toBe(true);
+    expect(requestedTeamEnabled(original, false)).toBe(true);
+
+    // The CRM user can no longer call. A replacement admin must be able to
+    // remove the persisted Starter grant before becoming the sole owner.
+    original.canCall = false;
+    doc = page(state, 'team');
+    const checkbox = doc.querySelector<HTMLInputElement>('[data-field="team-enabled"]');
+    expect(checkbox?.disabled).toBe(false);
+    expect(checkbox?.checked).toBe(true);
+    expect(isProtectedStarterOwner(original)).toBe(false);
+    expect(requestedTeamEnabled(original, false)).toBe(false);
+    expect(doc.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(false);
+
+    // Demotion also removes the server-side grant-protection requirement.
+    original.canCall = true;
+    original.role = 'user';
+    expect(page(state, 'team').querySelector<HTMLInputElement>('[data-field="team-enabled"]')?.disabled).toBe(false);
+    expect(requestedTeamEnabled(original, false)).toBe(false);
   });
 });

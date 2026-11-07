@@ -17,6 +17,7 @@ import { createLeadConnectorAgentVoice } from './agent-voice.js';
 import { resolveLeadConnectorContactName } from './contact-label.js';
 import { createLeadConnectorEmbedController } from './controller.js';
 import { createCombobox } from './combobox.js';
+import { requestedTeamEnabled } from './team-access-policy.js';
 import { createLeadConnectorIdleRefreshScheduler } from './idle-refresh.js';
 import {
   LEAD_CONNECTOR_PARENT_ORIGINS,
@@ -1060,7 +1061,7 @@ root.addEventListener('change', (event) => {
       workspace.teamDraft = {
         userId,
         revision: team.revision,
-        enabled: member?.starter === true || data.get('enabled') === 'on',
+        enabled: requestedTeamEnabled(member, data.get('enabled') === 'on'),
         queueIds: data.getAll('queueIds').map(String),
       };
     }
@@ -1318,7 +1319,7 @@ root.addEventListener('submit', (event) => {
     const member = controller
       .getState()
       .team?.members.find((m) => m.id === userId);
-    const enabled = member?.starter === true || data.get('enabled') === 'on';
+    const enabled = requestedTeamEnabled(member, data.get('enabled') === 'on');
     void controller
       .changeTeam({
         userId,

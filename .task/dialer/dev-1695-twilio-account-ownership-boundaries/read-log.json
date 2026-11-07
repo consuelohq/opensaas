@@ -1,11 +1,7 @@
 {
   "files": [
-    ".github/workflows/consuelo-ci.yaml",
     ".github/workflows/consuelo-production-release.yaml",
-    "packages/dialer-server/src/call-history-application.test.ts",
-    "packages/dialer-server/src/call-operations/application.ts",
-    "packages/dialer-server/src/call-operations/persistence.ts",
-    "packages/dialer-server/src/routes/twilio.ts"
+    "packages/lead-connector/src/contracts/team.ts"
   ],
-  "updatedAt": "2026-11-07T06:04:33.341Z"
+  "updatedAt": "2026-11-07T06:27:59.654Z"
 }
