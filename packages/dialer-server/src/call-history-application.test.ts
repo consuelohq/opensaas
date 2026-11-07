@@ -73,6 +73,7 @@ const createBaseApplication = (
     Effect.succeed({
       workspaceId: 'workspace-1',
       dialerSessionId: 'session-1',
+      providerAccountId: 'AC' + '2'.repeat(32),
     }),
   startCallRecording: ({ callSid }) =>
     options.recordingFails
@@ -85,6 +86,7 @@ const createBaseApplication = (
 
 const createCallOperations = (events: string[], transcriptionEnabled = true) => {
   const sessions: CallSessionSummary[] = [];
+  const storedOwners: Array<string | null> = [];
   let providerContextReads = 0;
   let recordingClaimed = false;
   const repository: CallOperationsRepositoryService = {
@@ -105,6 +107,7 @@ const createCallOperations = (events: string[], transcriptionEnabled = true) => 
     createOrUpdateCallSession: (session) =>
       Effect.sync(() => {
         events.push(`persist:${session.status}`);
+        storedOwners.push(...session.calls.map((call) => call.providerAccountId ?? null));
         sessions.push({
           id: session.id,
           workspaceId: session.workspaceId,
@@ -140,6 +143,7 @@ const createCallOperations = (events: string[], transcriptionEnabled = true) => 
       Effect.sync(() => {
         events.push(`recording-failed:${failureCode}`);
       }),
+    resolveRecordingCallOwnership: () => Effect.succeed(null),
     recordCallRecordingStatus: () => Effect.void,
   };
   return {
@@ -159,6 +163,7 @@ const createCallOperations = (events: string[], transcriptionEnabled = true) => 
     }),
     providerContextReads: () => providerContextReads,
     sessions,
+    storedOwners,
   };
 };
 
@@ -186,7 +191,7 @@ describe('call-history dialer application', () => {
     );
 
     const result = await Effect.runPromise(
-      application.startCallSession(command),
+      application.startCallSession({ ...command, sessionId: 'session-1' }),
     );
 
     expect(events[0]).toBe('persist:starting');
@@ -194,6 +199,7 @@ describe('call-history dialer application', () => {
     expect(events[2]).toBe('persist:dialing');
     expect(callOperations.sessions).toHaveLength(2);
     expect(callOperations.sessions[1]?.calls).toHaveLength(1);
+    expect(callOperations.storedOwners).toEqual(['AC' + '2'.repeat(32)]);
   });
 
   it('persists plan-derived media entitlements and starts recording once only after a human connection', async () => {

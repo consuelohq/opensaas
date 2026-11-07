@@ -165,6 +165,7 @@ export type CallSessionUpsert = {
   startedAt: string;
   calls: Array<{
     providerCallId: string;
+    providerAccountId?: string | null;
     contactId?: string;
     position: number;
     callerIdentity?: string;

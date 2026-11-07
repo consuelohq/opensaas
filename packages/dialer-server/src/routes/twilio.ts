@@ -107,15 +107,41 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
       if (callContext && !callContext.ok) {
         return dialerErrorResponse(context, callContext.error);
       }
-      if (callContext?.ok && callContext.value &&
-          !callbackAccountMatches(dependencies, verified.params.AccountSid,
-            callContext.value.providerAccountId)) {
+      // The Redis group can expire before Twilio's recording callback.
+      // Derive the call's workspace and immutable provider account from
+      // durable history; a valid signature for another child is insufficient.
+      const stored = dependencies.callOperations.resolveRecordingCallOwnership
+        ? await runApplicationEffect(
+            dependencies.callOperations.resolveRecordingCallOwnership({
+              providerCallId: callSid,
+            }),
+          )
+        : null;
+      if (stored && !stored.ok) {
+        return dialerErrorResponse(context, stored.error);
+      }
+      const bound = stored?.ok ? stored.value : null;
+      const live = callContext?.ok ? callContext.value : null;
+      const expectedAccount = bound?.providerAccountId ??
+        (live && live.workspaceId === bound?.workspaceId
+          ? live.providerAccountId ?? dependencies.twilioMasterAccountSid
+          : null);
+      if (!bound || !expectedAccount ||
+          !/^AC[0-9a-fA-F]{32}$/.test(expectedAccount) ||
+          verified.params.AccountSid !== expectedAccount ||
+          (live && (
+            live.workspaceId !== bound.workspaceId ||
+            (bound.providerAccountId !== null &&
+              live.providerAccountId !== null &&
+              live.providerAccountId !== bound.providerAccountId)
+          ))) {
         return context.json({ error: { code: 'UNAUTHORIZED',
           message: 'Twilio account does not own this recording', retryable: false } }, 401);
       }
       const duration = Number(verified.params.RecordingDuration);
       const result = await runApplicationEffect(
         dependencies.callOperations.recordCallRecordingStatus({
+          workspaceId: bound.workspaceId,
           providerCallId: callSid,
           recordingSid,
           recordingStatus,

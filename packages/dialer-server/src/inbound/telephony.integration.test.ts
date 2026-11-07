@@ -33,6 +33,7 @@ import {
   rollbackDialerDatabaseMigration,
 } from '../database/migrations';
 import { createOutboundCapacity } from './outbound-capacity';
+import { createPostgresCallOperationsRepository } from '../call-operations/persistence';
 import { createInboundTelephony } from './telephony';
 import { createCallbackRecipientCipher } from './callback-recipient-cipher';
 import { createPostgresRepCapacity } from './rep-capacity';
@@ -744,6 +745,66 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
         )
       ).rowCount,
     ).toBe(0);
+  });
+
+  it('persists immutable recording owner and rejects wrong-tenant writes after recovery', async () => {
+    const child = 'AC' + '2'.repeat(32);
+    const other = 'AC' + '3'.repeat(32);
+    const callSid = 'CA' + '4'.repeat(32);
+    const repo = createPostgresCallOperationsRepository(pool);
+    const start = {
+      id: 'durable-recording-session',
+      workspaceId: 'workspace',
+      userId: 'alice',
+      source: 'direct',
+      selectionStrategy: 'single',
+      requestedFanout: 1,
+      actualFanout: 1,
+      recordingEnabled: true,
+      startedAt: clock(),
+      status: 'dialing',
+      calls: [{
+        providerCallId: callSid,
+        providerAccountId: child,
+        position: 1,
+        status: 'queued',
+      }],
+    };
+    await Effect.runPromise(repo.createOrUpdateCallSession(start));
+    // Upsert/retry after workspace cutover cannot rewrite the creation owner.
+    await Effect.runPromise(repo.createOrUpdateCallSession({
+      ...start,
+      calls: start.calls.map((call) => ({ ...call, providerAccountId: other })),
+    }));
+    const recovered = createPostgresCallOperationsRepository(pool);
+    expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
+      providerCallId: callSid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: child });
+
+    await Effect.runPromise(recovered.recordCallRecordingStatus({
+      workspaceId: 'foreign-workspace', providerCallId: callSid,
+      recordingSid: 'RE' + '5'.repeat(32), recordingStatus: 'completed',
+    }));
+    expect((await pool.query<{recording_sid:string|null}>(
+      'SELECT recording_sid FROM dialer_call_sessions WHERE id=$1',
+      [start.id],
+    )).rows[0]?.recording_sid).toBeNull();
+    await Effect.runPromise(recovered.recordCallRecordingStatus({
+      workspaceId: 'workspace', providerCallId: callSid,
+      recordingSid: 'RE' + '5'.repeat(32), recordingStatus: 'completed',
+    }));
+    expect((await pool.query<{recording_sid:string|null}>(
+      'SELECT recording_sid FROM dialer_call_sessions WHERE id=$1',
+      [start.id],
+    )).rows[0]?.recording_sid).toBe('RE' + '5'.repeat(32));
+
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start, id: 'foreign-recording-session', workspaceId: 'foreign-workspace',
+      calls: start.calls.map((call) => ({ ...call, providerAccountId: other })),
+    }));
+    expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
+      providerCallId: callSid,
+    }))).toBeNull();
   });
 
   it('retains creation-time child account ownership across workspace cutover and process restart', async () => {

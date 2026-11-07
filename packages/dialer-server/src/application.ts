@@ -107,6 +107,22 @@ export const createCallHistoryDialerApplication = (
               ),
             ),
           );
+        const firstCall = result.calls[0];
+        const callContext = firstCall && application.resolveTwilioCallContext
+          ? yield* preserveCallFlow(
+              'resolve-created-call-account',
+              application.resolveTwilioCallContext({ callSid: firstCall.callSid }),
+              null,
+            )
+          : null;
+        // Snapshot ownership at call creation. It must never be reinterpreted
+        // using a workspace's later Twilio account assignment.
+        const providerAccountId =
+          callContext?.workspaceId === command.workspaceId &&
+          callContext?.dialerSessionId === result.sessionId &&
+          /^AC[0-9a-fA-F]{32}$/.test(callContext.providerAccountId ?? '')
+            ? callContext.providerAccountId
+            : null;
         yield* preserveCallFlow(
           'persist-call-session',
           callOperations.createOrUpdateCallSession({
@@ -133,6 +149,7 @@ export const createCallHistoryDialerApplication = (
             startedAt,
             calls: result.calls.map((call) => ({
               providerCallId: call.callSid,
+              providerAccountId,
               contactId: call.contactId,
               position: call.position,
               callerIdentity: call.callerId,

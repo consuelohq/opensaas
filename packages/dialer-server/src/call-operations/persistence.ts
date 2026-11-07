@@ -92,6 +92,7 @@ const SCHEMA_STATEMENTS = [
     workspace_id TEXT NOT NULL,
     session_id TEXT NOT NULL,
     provider_call_id TEXT NOT NULL,
+    provider_account_id TEXT,
     contact_id TEXT,
     position INTEGER,
     caller_identity TEXT,
@@ -107,6 +108,7 @@ const SCHEMA_STATEMENTS = [
     FOREIGN KEY (workspace_id, session_id)
       REFERENCES dialer_call_sessions(workspace_id, id) ON DELETE CASCADE
   )`,
+  `ALTER TABLE dialer_call_legs ADD COLUMN IF NOT EXISTS provider_account_id TEXT`,
   `CREATE TABLE IF NOT EXISTS dialer_transcript_segments (
     id TEXT NOT NULL,
     workspace_id TEXT NOT NULL,
@@ -618,15 +620,16 @@ export const createPostgresCallOperationsRepository = (
       )
       INSERT INTO dialer_call_legs (
         id, workspace_id, session_id, provider_call_id, contact_id,
-        position, caller_identity, status, role
+        position, caller_identity, status, role, provider_account_id
       )
       SELECT calls.id, session.workspace_id, session.id,
         calls.provider_call_id, calls.contact_id, calls.position,
-        calls.caller_identity, calls.status, 'active'
+        calls.caller_identity, calls.status, 'active', calls.provider_account_id
       FROM upserted_session session
       CROSS JOIN jsonb_to_recordset($22::jsonb) AS calls(
         id TEXT,
         provider_call_id TEXT,
+        provider_account_id TEXT,
         contact_id TEXT,
         position INTEGER,
         caller_identity TEXT,
@@ -634,6 +637,7 @@ export const createPostgresCallOperationsRepository = (
       )
       ON CONFLICT (workspace_id, provider_call_id) DO UPDATE SET
         contact_id = EXCLUDED.contact_id,
+        provider_account_id = COALESCE(dialer_call_legs.provider_account_id, EXCLUDED.provider_account_id),
         position = EXCLUDED.position,
         caller_identity = EXCLUDED.caller_identity,
         status = EXCLUDED.status,
@@ -666,6 +670,7 @@ export const createPostgresCallOperationsRepository = (
           request.calls.map((call) => ({
             id: randomUUID(),
             provider_call_id: call.providerCallId,
+            provider_account_id: call.providerAccountId ?? null,
             contact_id: call.contactId ?? null,
             position: call.position,
             caller_identity: call.callerIdentity ?? null,
@@ -962,6 +967,27 @@ export const createPostgresCallOperationsRepository = (
        WHERE workspace_id = $1 AND id = $2`,
       [request.workspaceId, request.sessionId, request.failureCode],
     ).pipe(Effect.asVoid),
+  resolveRecordingCallOwnership: (request) =>
+    queryEffect<{ workspace_id: string; provider_account_id: string | null }>(
+      database,
+      'resolve-recording-call-ownership',
+      `SELECT legs.workspace_id, legs.provider_account_id
+       FROM dialer_call_legs AS legs
+       JOIN dialer_call_sessions AS sessions
+         ON sessions.workspace_id = legs.workspace_id
+        AND sessions.id = legs.session_id
+       WHERE legs.provider_call_id = $1
+         AND sessions.recording_enabled = TRUE
+       LIMIT 2`,
+      [request.providerCallId],
+    ).pipe(Effect.map(({ rows }) =>
+      rows.length === 1 && rows[0]
+        ? {
+            workspaceId: rows[0].workspace_id,
+            providerAccountId: rows[0].provider_account_id,
+          }
+        : null,
+    )),
   recordCallRecordingStatus: (request) =>
     queryEffect(
       database,
@@ -975,12 +1001,15 @@ export const createPostgresCallOperationsRepository = (
        FROM dialer_call_legs AS legs
        WHERE legs.workspace_id = sessions.workspace_id
          AND legs.session_id = sessions.id
-         AND legs.provider_call_id = $1`,
+         AND legs.provider_call_id = $1
+         AND legs.workspace_id = $5
+         AND sessions.recording_enabled = TRUE`,
       [
         request.providerCallId,
         request.recordingSid,
         request.recordingStatus,
         request.recordingDurationSeconds ?? null,
+        request.workspaceId,
       ],
     ).pipe(Effect.asVoid),
 });
