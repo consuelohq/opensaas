@@ -1,3 +1,4 @@
+import { TEAM_ACCESS_MIGRATION_ID } from '../commercial/team-schema';
 import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
 import { NATIVE_BILLING_MIGRATION_ID } from '../billing/native-billing-store';
 import { COACHING_SCRIPTS_MIGRATION_ID } from '../coaching/scripts';
@@ -83,6 +84,7 @@ describe('dialer database migrations', () => {
       COACHING_SCRIPTS_MIGRATION_ID,
       NATIVE_BILLING_MIGRATION_ID,
       REP_DEVICES_MIGRATION_ID,
+      TEAM_ACCESS_MIGRATION_ID,
     ]);
     expect(harness.applied).toEqual(
       new Set([
@@ -91,6 +93,7 @@ describe('dialer database migrations', () => {
         COACHING_SCRIPTS_MIGRATION_ID,
         NATIVE_BILLING_MIGRATION_ID,
         REP_DEVICES_MIGRATION_ID,
+        TEAM_ACCESS_MIGRATION_ID,
       ]),
     );
     const sql = harness.calls.map((call) => call.text).join('\n');
@@ -113,6 +116,7 @@ describe('dialer database migrations', () => {
       COACHING_SCRIPTS_MIGRATION_ID,
       NATIVE_BILLING_MIGRATION_ID,
       REP_DEVICES_MIGRATION_ID,
+      TEAM_ACCESS_MIGRATION_ID,
     ]);
     await expect(
       rollbackDialerDatabaseMigration(harness.database, upgradeId),
@@ -166,6 +170,7 @@ describe('dialer database migrations', () => {
         COACHING_SCRIPTS_MIGRATION_ID,
         NATIVE_BILLING_MIGRATION_ID,
         REP_DEVICES_MIGRATION_ID,
+        TEAM_ACCESS_MIGRATION_ID,
       ]),
     );
   });
@@ -263,7 +268,7 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(17);
+    expect(migrationInserts).toHaveLength(18);
   });
 
   it('upgrades an RD7B schema with only the additive booking evidence migrations', async () => {
@@ -303,6 +308,7 @@ describe('dialer database migrations', () => {
         COACHING_SCRIPTS_MIGRATION_ID,
         NATIVE_BILLING_MIGRATION_ID,
         REP_DEVICES_MIGRATION_ID,
+        TEAM_ACCESS_MIGRATION_ID,
       ]),
     );
   });

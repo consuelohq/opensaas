@@ -11,6 +11,7 @@ export const qaPostgresSuites = [
   'database/migrations.postgres.integration.test.ts',
   'public-checkout.postgres.integration.test.ts',
   'native-billing.postgres.integration.test.ts',
+  'commercial/team.postgres.integration.test.ts',
 ] as const;
 export const qaPostgresEnvironment = (
   port: number,

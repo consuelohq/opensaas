@@ -1582,3 +1582,58 @@ it('rejects only the pending browser invite when secure session recovery exhaust
   expect(voice.disconnect).not.toHaveBeenCalled();
   expect(controller.getState().activeSessionId).toBe('connected-call');
 });
+
+it('keeps team loading failures local and saves only the current authoritative team revision', async () => {
+  const base = createApi();
+  const view = {
+    revision: 3,
+    directoryVersion: 'a'.repeat(64),
+    paidSeats: 2,
+    assignedSeats: 1,
+    plan: 'professional',
+    members: [],
+    queues: [],
+  };
+  const getTeam = mock(async () => view);
+  const changeTeam = mock(async (_change: unknown) => ({
+    ...view,
+    revision: 4,
+    directoryVersion: 'b'.repeat(64),
+  }));
+  const voice = createVoice();
+  const state = createInitialEmbedState();
+  state.phase = 'connected';
+  state.activeSessionId = 'ongoing';
+  state.sessionToken = 'session';
+  const controller = createLeadConnectorEmbedController({
+    api: { ...base, getTeam, changeTeam },
+    voice,
+    initialState: state,
+  });
+  await controller.loadTeam();
+  expect(controller.getState().team?.revision).toBe(3);
+  expect(
+    await controller.changeTeam({
+      userId: 'alice',
+      enabled: true,
+      queueIds: ['sales'],
+    }),
+  ).toBe(true);
+  expect(changeTeam).toHaveBeenCalledWith({
+    userId: 'alice',
+    enabled: true,
+    queueIds: ['sales'],
+    revision: 3,
+    directoryVersion: 'a'.repeat(64),
+  });
+  expect(controller.getState().team?.revision).toBe(4);
+  getTeam.mockImplementation(async () => {
+    throw new Error('ADMIN_REQUIRED');
+  });
+  await controller.loadTeam();
+  expect(controller.getState().team).toBeNull();
+  expect(controller.getState().teamError).toContain('administrator');
+  expect(controller.getState().phase).toBe('connected');
+  expect(controller.getState().activeSessionId).toBe('ongoing');
+  expect(voice.disconnect).not.toHaveBeenCalled();
+});

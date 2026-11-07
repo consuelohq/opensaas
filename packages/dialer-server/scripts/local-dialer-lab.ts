@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { TEAM_ACCESS_MIGRATION_ID } from '../src/commercial/team-schema';
 import { runBoundedQaProcess } from '../src/lab/bounded-qa-process';
 import { REP_DEVICES_MIGRATION_ID } from '../src/inbound/rep-devices';
 import { runRepCampaign } from '../src/lab/rep-campaign';
@@ -427,6 +428,7 @@ const main = async () => {
           COACHING_SCRIPTS_MIGRATION_ID,
           NATIVE_BILLING_MIGRATION_ID,
           REP_DEVICES_MIGRATION_ID,
+          TEAM_ACCESS_MIGRATION_ID,
         ],
       ],
     );

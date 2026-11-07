@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1657-configure-eligible-crm-team-access",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2785,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2785",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1657-configure-eligible-crm-team-access",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_0185fea53073",
+  "tmuxSession": "opensaas-dialer-dev-1657-configure-eligible-crm-team-access-0185fea5",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1657-configure-eligible-crm-team-access/.task/session.json",
+  "createdAt": "2026-11-07T00:06:57.833Z"
+}

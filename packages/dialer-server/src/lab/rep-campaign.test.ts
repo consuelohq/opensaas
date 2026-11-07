@@ -68,3 +68,11 @@ it('historical fixture refuses production or arbitrary database names', () => {
     assertDisposableInboundDatabase('rd5_' + 'a'.repeat(32)),
   ).not.toThrow();
 });
+
+it('bounds a 40-caller burst for 20 distinct reps without pretending 40 capacity units exist', () => {
+  const p = createRepCampaignPlan(42, 20, 40);
+  expect(p.arrivals).toHaveLength(40);
+  expect(p.actors).toHaveLength(20);
+  expect(createRepCampaignPlan(42, 20, 40)).toEqual(p);
+  expect(() => createRepCampaignPlan(42, 20, 41)).toThrow();
+});

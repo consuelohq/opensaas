@@ -1,3 +1,4 @@
+import type { TeamAccessService } from './team';
 import type { PublicCheckout } from '../billing/public-checkout';
 import { Effect, Schedule } from 'effect';
 
@@ -38,7 +39,10 @@ type CommercialApplication = CommercialRouteDependencies & {
 };
 
 export type CommercialUsageProvider = {
-  getCompletion: (providerCallId: string, workspaceId: string) => Promise<{
+  getCompletion: (
+    providerCallId: string,
+    workspaceId: string,
+  ) => Promise<{
     customerConnectedSeconds: number;
     agentConnectedSeconds: number;
     providerCostMicros: number;
@@ -198,6 +202,7 @@ export const createCommercialApplication = (input: {
   now?: () => Date;
   publicCheckout?: PublicCheckout;
   publicBillingPortalConfigurationId?: string;
+  teamAccess?: TeamAccessService;
 }): CommercialApplication => {
   const persistence = createCommercialPersistence(input.database);
   const now = input.now ?? (() => new Date());
@@ -495,6 +500,16 @@ export const createCommercialApplication = (input: {
 
   const loadCallerContext = async (identity: CommercialIdentity) => {
     try {
+      let teamDenial: string | null = null;
+      if (input.teamAccess)
+        try {
+          await input.teamAccess.assertCanCall(identity);
+        } catch (cause: unknown) {
+          teamDenial =
+            cause instanceof Error && /^TEAM_[A-Z_]+$/.test(cause.message)
+              ? cause.message
+              : 'TEAM_ACCESS_UNAVAILABLE';
+        }
       authorizeCommercialAction({
         identity: {
           workspaceId: identity.workspaceId,
@@ -573,6 +588,7 @@ export const createCommercialApplication = (input: {
           : 1,
       );
       const canStartCall =
+        !teamDenial &&
         billing.canStartCalls &&
         entitlement.canStartCall &&
         (trialEntitlement?.canStartCall ?? true);
@@ -598,11 +614,13 @@ export const createCommercialApplication = (input: {
         recordings: entitlement.recordings,
         transcripts: entitlement.transcripts,
         canStartCall,
-        denialCode: !billing.canStartCalls
-          ? 'BILLING_ACCESS_BLOCKED'
-          : !trialEntitlement?.canStartCall && trialEntitlement
-            ? 'TRIAL_LIMIT_REACHED'
-            : entitlement.denialCode,
+        denialCode:
+          teamDenial ??
+          (!billing.canStartCalls
+            ? 'BILLING_ACCESS_BLOCKED'
+            : !trialEntitlement?.canStartCall && trialEntitlement
+              ? 'TRIAL_LIMIT_REACHED'
+              : entitlement.denialCode),
         billing,
       };
     } catch (cause: unknown) {
@@ -800,8 +818,10 @@ export const createCommercialApplication = (input: {
             requestedFanout,
             // Plan entitlements are ceilings, never recording/transcription consent.
             // Omitted or false per-call flags must remain off, including trial calls.
-            recordingEnabled: caller.recordings && bodyRecord.recordingEnabled === true,
-            transcriptionEnabled: caller.transcripts && bodyRecord.transcriptionEnabled === true,
+            recordingEnabled:
+              caller.recordings && bodyRecord.recordingEnabled === true,
+            transcriptionEnabled:
+              caller.transcripts && bodyRecord.transcriptionEnabled === true,
           };
         } catch (cause: unknown) {
           throw normalizeAsyncError(cause);
@@ -891,9 +911,24 @@ export const createCommercialApplication = (input: {
           throw normalizeAsyncError(cause);
         }
       }),
+    ...(input.teamAccess
+      ? {
+          team: (identity: CommercialIdentity) =>
+            effectQuery(() => input.teamAccess!.read(identity)),
+          authorizeRep: (identity: CommercialIdentity) =>
+            effectQuery(async () => {
+              await input.teamAccess!.assertCanCall(identity);
+              const billing = await loadBillingAccess(identity.workspaceId);
+              if (!billing.canStartCalls)
+                throw new Error('BILLING_ACCESS_BLOCKED');
+            }),
+        }
+      : {}),
     updateTeam: (identity, body) =>
       effectQuery(async () => {
         try {
+          if (input.teamAccess)
+            return await input.teamAccess.update(identity, body);
           requireAdmin(identity, 'seats.manage');
           const assignmentsValue = record(body).assignments;
           if (!Array.isArray(assignmentsValue)) {

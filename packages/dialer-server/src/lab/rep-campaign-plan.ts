@@ -1,13 +1,20 @@
 import { createHash } from 'node:crypto';
 import { createDeliverySchedule } from './inbound-simulator';
-export const createRepCampaignPlan = (seed: number, reps: number) => {
+export const createRepCampaignPlan = (
+  seed: number,
+  reps: number,
+  callers = reps + 1,
+) => {
   if (
     !Number.isSafeInteger(seed) ||
     seed < 0 ||
     seed > 0xffffffff ||
     !Number.isInteger(reps) ||
     reps < 1 ||
-    reps > 20
+    reps > 20 ||
+    !Number.isInteger(callers) ||
+    callers < reps ||
+    callers > 40
   )
     throw new Error('Campaign requires seed uint32 and 1–20 reps');
   const actors = Array.from(
@@ -15,7 +22,7 @@ export const createRepCampaignPlan = (seed: number, reps: number) => {
     (_, i) => 'rep-' + String(i + 1).padStart(2, '0'),
   );
   const facts = Array.from(
-    { length: reps + 1 },
+    { length: callers },
     (_, i) => 'caller-' + String(i + 1).padStart(2, '0'),
   );
   const arrivals = createDeliverySchedule({

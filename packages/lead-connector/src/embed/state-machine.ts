@@ -1,3 +1,4 @@
+import type { DialerTeamView } from '../contracts/team.js';
 import type {
   LeadConnectorContact,
   LeadConnectorOpportunity,
@@ -226,6 +227,10 @@ export type EmbedCommercialDashboard = {
 };
 
 export type LeadConnectorEmbedState = {
+  team?: DialerTeamView | null;
+  teamLoading?: boolean;
+  teamSaving?: boolean;
+  teamError?: string | null;
   phase: LeadConnectorEmbedPhase;
   resumePhase: LeadConnectorEmbedPhase | null;
   sessionToken: string | null;
@@ -527,8 +532,10 @@ export const reduceEmbedState = (
             ? state.setup.callingMode
             : 'single',
           requestedFanout: event.caller.predictive ? requestedFanout : 1,
-          recordingEnabled: event.caller.recordings && state.setup.recordingEnabled,
-          transcriptionEnabled: event.caller.transcripts && state.setup.transcriptionEnabled,
+          recordingEnabled:
+            event.caller.recordings && state.setup.recordingEnabled,
+          transcriptionEnabled:
+            event.caller.transcripts && state.setup.transcriptionEnabled,
           callerIdNumber:
             !state.setup.preferLocalPresence &&
             state.setup.callerIdNumber &&
@@ -561,7 +568,8 @@ export const reduceEmbedState = (
       const setup = { ...state.setup, ...event.setup };
       // Even programmatic setup updates cannot enable capture beyond entitlement.
       if (!state.commercialCaller?.recordings) setup.recordingEnabled = false;
-      if (!state.commercialCaller?.transcripts) setup.transcriptionEnabled = false;
+      if (!state.commercialCaller?.transcripts)
+        setup.transcriptionEnabled = false;
       if (setup.preferLocalPresence) setup.callerIdNumber = null;
       if (state.commercialCaller?.predictive === false)
         setup.callingMode = 'single';

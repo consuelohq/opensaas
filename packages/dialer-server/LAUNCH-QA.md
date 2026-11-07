@@ -42,7 +42,6 @@ provider/server/capacity evidence is checked. Do not include raw call audio, HAR
 cookies, secrets, customer contact data or payment details in notes or exports.
 Never paste telephone numbers into Linear or a public PR.
 
-
 ## Service-backed prerequisite lane (DEV-1689)
 
 From an isolated current-main task checkout, run:
@@ -59,6 +58,7 @@ of production Google/CRM OAuth. Synthetic actor tokens are never exported.
 
 `qa.stages` contains 1, 2, 5 and 20 distinct rep identities, a separate tenant,
 seeded caller arrivals, a deterministic input digest and captured event order.
+Two additional 20-rep stages send 25 and 40 simultaneous HTTP requests. Their independent database oracle checks exactly 5 and 20 excess callers remain durably queued. The artifact records planned seed/order and actual HTTP completion order; simultaneous server scheduling is not called deterministic.
 Each stage checks a queued caller beyond available capacity, exactly one
 committed acceptance across two tabs per rep, foreign-owner rejection,
 confirmed synthetic provider participants, service recreation,
@@ -82,7 +82,7 @@ production DB URLs are inherited. The ordinary integration wrapper adds its
 own asserted resource teardown.
 
 Historical inbound rollback fixtures deliberately retain forward-only
-014/015/016 application tables while removing their ledger entries only in
+014/015/016/017/018 application tables while removing their ledger entries only in
 UUID-named disposable RD3–RD6 databases. Production rollback guards are unchanged.
 The outbound fixture initializes commercial persistence just as runtime does.
 Do not copy this historical fixture setup into production migration handling.
@@ -94,7 +94,7 @@ prints its path. Keep it when escalating; never substitute a clean rerun for
 that evidence.
 
 This is the smoke-tested foundation for Luna execution tasks DEV-1690–1693.
-The broader stress schedules, 30-minute soak and user/browser workflows remain
+The bounded 25/40-caller burst schedules are included; the 30-minute soak and user/browser workflows remain
 separate cases. No browser audio, live carrier delivery, notifications or paid
 activation is certified here. Device and team product changes remain separately
 owned by larger-model tasks DEV-1655/1657. Use a distinct evidence directory and
@@ -109,7 +109,7 @@ inbound service without separate authorization.
 1. READ-ONLY BEFORE ANY CALL: check signed GHL location, signed rep identity,
    trial/caller-ID ownership, microphone availability and current Ready/Away state.
    Independently confirm zero active provider legs/conferences, zero active session
-   ownership, and exact Redis caller-id-lock:* ownership. A green health endpoint
+   ownership, and exact Redis caller-id-lock:\* ownership. A green health endpoint
    by itself does not prove these.
 2. S21 safe inspection: open admin Team, Numbers, Receive calls and setup options.
    Confirm no raw provider ID required, one existing included test number, and
@@ -170,7 +170,7 @@ For each attempt collect:
   exact known test attempt; participant connection/mute flags; winner vs loser
   legs, actual audio observation, end time and outstanding active legs.
 - Persistence: READ-ONLY DB session, attempt ledger, rep capacity, queue state,
-  and exact caller-id-lock:* Redis keys with owner/TTL, both before and after.
+  and exact caller-id-lock:\* Redis keys with owner/TTL, both before and after.
   Mask SIDs, telephone numbers, credentials, and customer content.
 - Result: UI vs authoritative server/provider expected/actual, elapsed time,
   severity, scenario ID, trace link/receipt and proposed regression test.
@@ -227,3 +227,7 @@ activation still have dedicated open/staging Linear issues. Do not advertise
 their completion merely because this checklist exists.
 
 Component runs use fixed fixtures, so they reject `--seed` and do not write a seed into evidence. Use the service-backed `--qa --seed` command for a seeded arrival schedule. QA child execution has a 90-second deadline; a timed-out process is killed, its private PostgreSQL clusters are stopped, partial output is retained, and the run fails before outer resource cleanup. No reroll is permitted to erase a failed run.
+
+## Frozen Luna execution
+
+Use [LUNA-QA-RUNBOOK.md](./LUNA-QA-RUNBOOK.md) with the exact release receipt in DEV-1688. It fixes task ownership, command/oracle boundaries, evidence, stop rules and the order of independent lanes. Larger models own feature design, fixes, carrier authorization and verdicts beyond the frozen assertions.

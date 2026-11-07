@@ -1,3 +1,4 @@
+import type { DialerIdentity } from '../contracts';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import type { DialerVariables } from '../middleware/auth';
@@ -5,6 +6,7 @@ import type { createInboundOperator } from '../inbound/operator';
 
 export const createInboundOperatorRoutes = (
   operator: ReturnType<typeof createInboundOperator>,
+  authorizeRep?: (identity: DialerIdentity) => Promise<void>,
 ) => {
   const routes = new Hono<{ Variables: DialerVariables }>();
   routes.use('/v1/inbound/operator/*', bodyLimit({ maxSize: 8192 }));
@@ -70,9 +72,14 @@ export const createInboundOperatorRoutes = (
   ] as const) {
     routes.post('/v1/inbound/operator/' + path, async (context) => {
       try {
-        return context.json(
-          await operation(context.get('identity'), await context.req.json()),
-        );
+        const body = await context.req.json();
+        if (
+          authorizeRep &&
+          ((path === 'readiness' && body?.ready === true) ||
+            path === 'offers/accept')
+        )
+          await authorizeRep(context.get('identity'));
+        return context.json(await operation(context.get('identity'), body));
       } catch {
         return context.json(
           {

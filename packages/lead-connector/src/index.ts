@@ -127,3 +127,9 @@ export {
   createInMemoryLeadConnectorStoreLayer,
 } from './testing/in-memory.js';
 export type { InMemoryLeadConnectorState } from './testing/in-memory.js';
+
+export { listLeadConnectorTeamMembers } from './application/team-members.js';
+
+export type { DialerTeamView, DialerTeamChange } from './contracts/team.js';
+
+export type { LeadConnectorTeamMember } from './contracts/index.js';

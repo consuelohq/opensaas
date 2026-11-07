@@ -1,3 +1,4 @@
+import { TEAM_ACCESS_MIGRATION_ID } from '../commercial/team-schema';
 import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
 import type { Pool } from 'pg';
 import { DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID } from '../database/migrations';
@@ -25,6 +26,7 @@ export const prepareHistoricalInboundRollback = async (pool: Pool) => {
           COACHING_SCRIPTS_MIGRATION_ID,
           NATIVE_BILLING_MIGRATION_ID,
           REP_DEVICES_MIGRATION_ID,
+          TEAM_ACCESS_MIGRATION_ID,
         ],
       ],
     );
