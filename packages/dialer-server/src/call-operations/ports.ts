@@ -112,6 +112,12 @@ export type CallOperationsRepositoryService = {
     workspaceId: string;
     providerAccountId: string | null;
   } | null, DialerApplicationError>;
+  resolveStatusCallOwnership: (input: {
+    providerCallId: string;
+  }) => Effect.Effect<{
+    workspaceId: string;
+    providerAccountId: string | null;
+  } | null, DialerApplicationError>;
   recordCallRecordingStatus: (input: {
     workspaceId: string;
     providerCallId: string;

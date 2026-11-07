@@ -579,6 +579,8 @@ export const createCallOperationsApplication = (input: {
     }) => input.repository.setCallRecordingFailed(request),
     resolveRecordingCallOwnership: (request: { providerCallId: string }) =>
       input.repository.resolveRecordingCallOwnership(request),
+    resolveStatusCallOwnership: (request: { providerCallId: string }) =>
+      input.repository.resolveStatusCallOwnership(request),
     recordCallRecordingStatus: (request: {
       workspaceId: string;
       providerCallId: string;

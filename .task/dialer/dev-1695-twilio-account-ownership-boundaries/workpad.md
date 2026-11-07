@@ -23,6 +23,7 @@ started: 2026-11-07
 - `packages/dialer-server/src/call-operations/persistence.test.ts`
 - `packages/dialer-server/src/call-operations/persistence.ts`
 - `packages/dialer-server/src/call-operations/ports.ts`
+- `packages/dialer-server/src/contracts.ts`
 - `packages/dialer-server/src/inbound/telephony.integration.test.ts`
 - `packages/dialer-server/src/routes/twilio.ts`
 - `packages/dialer-server/src/twilio-boundary.test.ts`
@@ -78,10 +79,14 @@ No-test waiver: none. Record actual red and green outcomes below before producti
 
 ## workspace-owned: files changed
 
+- `packages/dialer-server/src/application.ts`
 - `packages/dialer-server/src/call-history-application.test.ts`
 - `packages/dialer-server/src/call-operations/application.test.ts`
 - `packages/dialer-server/src/call-operations/application.ts`
+- `packages/dialer-server/src/call-operations/contracts.ts`
+- `packages/dialer-server/src/call-operations/persistence.test.ts`
 - `packages/dialer-server/src/call-operations/persistence.ts`
+- `packages/dialer-server/src/call-operations/ports.ts`
 - `packages/dialer-server/src/contracts.ts`
 - `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
 - `packages/dialer-server/src/database/migrations.test.ts`
@@ -110,14 +115,18 @@ No-test waiver: none. Record actual red and green outcomes below before producti
 - 2026-11-07 05:11:31 fs.write: `.task/dialer/dev-1695-twilio-account-ownership-boundaries/workpad.md`
 - 2026-11-07 05:15:03 fs.write: `.task/dialer/dev-1695-twilio-account-ownership-boundaries/workpad.md`
 - 2026-11-07 05:49:35 fs.write: `.task/dialer/dev-1695-twilio-account-ownership-boundaries/workpad.md`
+- 2026-11-07 06:06:36 fs.write: `.task/dialer/dev-1695-twilio-account-ownership-boundaries/workpad.md`
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-ci.yaml`
+- `.github/workflows/consuelo-production-release.yaml`
 - `packages/dialer-server/src/call-history-application.test.ts`
 - `packages/dialer-server/src/call-operations/application.ts`
 - `packages/dialer-server/src/call-operations/persistence.ts`
 - `packages/dialer-server/src/database/migrations.ts`
 - `packages/dialer-server/src/lab/historical-inbound-fixture.ts`
+- `packages/dialer-server/src/routes/twilio.ts`
 - `packages/dialer-server/src/runtime/inbound.ts`
 - `packages/dialer-server/src/runtime/railway.ts`
 
@@ -134,6 +143,9 @@ No-test waiver: none. Record actual red and green outcomes below before producti
 - 2026-11-07 05:53:21 `review.run`: passed — OK
 - 2026-11-07 05:54:00 `review.run`: passed — OK
 - 2026-11-07 05:54:16 `verify`: passed — OK
+- 2026-11-07 06:03:48 `review.run`: passed — OK
+- 2026-11-07 06:05:35 `review.run`: passed — OK
+- 2026-11-07 06:07:00 `verify`: passed — OK
 
 ## 2026-11-07 P1 recording ownership audit follow-up
 
@@ -169,3 +181,34 @@ Deployment finding: exact billing release job 42343259764 returns 'Invalid RAILW
 - 2026-11-07 05:51:56 apply-patch: `packages/dialer-server/src/call-history-application.test.ts`
 - 2026-11-07 05:51:56 apply-patch: `packages/dialer-server/src/call-operations/persistence.test.ts`
 - 2026-11-07 05:52:12 apply-patch: `packages/dialer-server/src/inbound/telephony.integration.test.ts`
+
+- 2026-11-07 06:01:48 apply-patch: `packages/dialer-server/src/twilio-boundary.test.ts`
+- 2026-11-07 06:02:01 apply-patch: `packages/dialer-server/src/call-operations/ports.ts`
+- 2026-11-07 06:02:01 apply-patch: `packages/dialer-server/src/call-operations/application.ts`
+- 2026-11-07 06:02:01 apply-patch: `packages/dialer-server/src/call-operations/contracts.ts`
+- 2026-11-07 06:02:01 apply-patch: `packages/dialer-server/src/contracts.ts`
+- 2026-11-07 06:02:01 apply-patch: `packages/dialer-server/src/application.ts`
+- 2026-11-07 06:02:11 apply-patch: `packages/dialer-server/src/call-operations/persistence.ts`
+- 2026-11-07 06:02:11 apply-patch: `packages/dialer-server/src/call-history-application.test.ts`
+- 2026-11-07 06:02:11 apply-patch: `packages/dialer-server/src/call-operations/application.test.ts`
+- 2026-11-07 06:02:18 apply-patch: `packages/dialer-server/src/routes/twilio.ts`
+- 2026-11-07 06:02:33 apply-patch: `packages/dialer-server/src/inbound/telephony.integration.test.ts`
+- 2026-11-07 06:03:14 apply-patch: `packages/dialer-server/src/twilio-boundary.test.ts`
+
+- 2026-11-07 06:03:27 apply-patch: `packages/dialer-server/src/routes/twilio.ts`
+
+- 2026-11-07 06:04:05 apply-patch: `packages/dialer-server/src/call-operations/persistence.ts`
+- 2026-11-07 06:04:05 apply-patch: `packages/dialer-server/src/call-operations/persistence.test.ts`
+- 2026-11-07 06:04:05 apply-patch: `packages/dialer-server/src/routes/twilio.ts`
+- 2026-11-07 06:04:11 apply-patch: `packages/dialer-server/src/twilio-boundary.test.ts`
+- 2026-11-07 06:04:11 apply-patch: `packages/dialer-server/src/inbound/telephony.integration.test.ts`
+
+## 2026-11-07 follow-up — status and customer TwiML callback security
+
+Security reproduction (RED): with Redis group mapping absent, a signed fixture for another active child AccountSid returned HTTP 200 on `/webhooks/twilio/status` and called the call-history persistence layer. A signed foreign child on `/webhooks/twilio/customer-twiml` likewise produced HTTP 200 instead of 401. Both are separate from the already-fixed recording-status bug. After fix, signed callbacks resolve immutable Postgres call-leg owner, reject foreign/ambiguous/different live vs durable accounts, and allow validated Redis-only startup window. The route passes the authenticated owner workspace into `processTwilioStatus`; Postgres call-leg transition updates are workspace-scoped. Recorded owner null is immutable legacy parent, never rewritten by a later workspace child account assignment. Recording and TwiML reuse the same owner-matching check.
+
+Green: `bun test packages/dialer-server/src`: 296 pass / 120 opt-in skipped / 0 fail. `bun test packages/dialer-server/src/inbound/telephony.integration.test.ts` against isolated local PG: 32/32 pass, 193 assertions, including status owner without consent, duplicate CallSid in two workspaces, scoped leg transition and legacy null owner. `bun packages/dialer-server/scripts/verify-native-billing.ts`: 6/6 passed. `bun run --cwd packages/dialer-server typecheck` passed. `review.run strict` against origin/main: 0 blockers. Isolated PG fixture stopped and removed.
+
+Deployment gate: DEV-1697 merge SHA e75e6e36 is in main but GitHub Actions production release fails at `Configure dialer edge identity secret` with `Invalid RAILWAY_TOKEN`. Verified GitHub environment `consuelo dialer / production` has secret `RAILWAY_DIALER_PROJECT_TOKEN` last updated 2026-09-21; Railway project contains the corresponding project token metadata. Local authenticated Railway user may read project tokens but `projectTokenCreate` for this exact project+environment returned GraphQL `Not Authorized`. No new token was created, no GitHub secret mutated, no Twilio/Stripe secrets touched. **Do not circumvent this credential/role gate via ad-hoc deploy.** The PR can pass exact-source verification; production release/smoke is blocked until an authorized Railway admin restores a valid scoped deployment token.
+
+- 2026-11-07 06:06:36 append: `.task/dialer/dev-1695-twilio-account-ownership-boundaries/workpad.md`

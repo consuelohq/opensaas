@@ -126,7 +126,7 @@ describe('call-operations persistence', () => {
     expect(String(calls[0]?.values?.[21])).toContain('CA-1');
     expect(String(calls[0]?.values?.[21])).toContain('CA-2');
     expect(String(calls[0]?.values?.[21])).toContain('AC' + '2'.repeat(32));
-    expect(calls[0]?.text).toContain('COALESCE(dialer_call_legs.provider_account_id, EXCLUDED.provider_account_id)');
+    expect(calls[0]?.text).toContain('provider_account_id = dialer_call_legs.provider_account_id');
   });
 
   it('rejects ambiguous recording owners and reads only recording-consented durable call legs', async () => {

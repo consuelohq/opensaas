@@ -169,6 +169,7 @@ export const createCallHistoryDialerApplication = (
               'persist-call-transition',
               callOperations.recordCallLegTransition({
                 providerCallId: input.callSid,
+                ...(input.ownerWorkspaceId ? { workspaceId: input.ownerWorkspaceId } : {}),
                 status: input.callStatus,
                 ...(input.answeredBy ? { amdResult: input.answeredBy } : {}),
                 ...(input.callDuration &&

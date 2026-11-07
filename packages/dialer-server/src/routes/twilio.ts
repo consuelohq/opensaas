@@ -5,12 +5,29 @@ import { runApplicationEffect } from '../effect-runner';
 import { dialerErrorResponse, invalidRequestResponse } from '../errors';
 import { verifyAndParseTwilioRequest } from '../middleware/twilio';
 
+type CallOwner = { workspaceId: string; providerAccountId?: string | null };
+
 const callbackAccountMatches = (
   dependencies: DialerServerDependencies,
   accountSid: string | undefined,
-  groupAccountSid: string | null | undefined,
-): boolean => !dependencies.twilioMasterAccountSid ||
-  accountSid === (groupAccountSid ?? dependencies.twilioMasterAccountSid);
+  live: CallOwner | null,
+  bound: CallOwner | null,
+): boolean => {
+  const master = dependencies.twilioMasterAccountSid;
+  if (!master) return true;
+  if (!live && !bound) return false;
+  // Null persisted account is a legacy parent-owned call, not a reason to
+  // reinterpret it using the workspace's current child account.
+  const expected = bound
+    ? bound.providerAccountId ?? master
+    : live?.providerAccountId ?? master;
+  return /^AC[0-9a-fA-F]{32}$/.test(expected) &&
+    accountSid === expected &&
+    (!live || !bound || (
+      live.workspaceId === bound.workspaceId &&
+      (live.providerAccountId ?? master) === expected
+    ));
+};
 
 const callbackInput = (params: Record<string, string>) => ({
   callSid: params.CallSid,
@@ -44,14 +61,31 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
       if (callContext && !callContext.ok) {
         return dialerErrorResponse(context, callContext.error);
       }
-      if (callContext?.ok && callContext.value &&
-          !callbackAccountMatches(dependencies, verified.params.AccountSid,
-            callContext.value.providerAccountId)) {
+      const stored = dependencies.callOperations?.resolveStatusCallOwnership
+        ? await runApplicationEffect(
+            dependencies.callOperations.resolveStatusCallOwnership({
+              providerCallId: input.callSid,
+            }),
+          )
+        : null;
+      if (stored && !stored.ok) {
+        return dialerErrorResponse(context, stored.error);
+      }
+      const bound = stored?.ok ? stored.value : null;
+      const live = callContext?.ok ? callContext.value : null;
+      // Redis can expire before a late status callback arrives. A valid
+      // child-account signature does not prove ownership of this CallSid.
+      if (!callbackAccountMatches(dependencies, verified.params.AccountSid, live, bound)) {
         return context.json({ error: { code: 'UNAUTHORIZED',
           message: 'Twilio account does not own this call', retryable: false } }, 401);
       }
       const result = await runApplicationEffect(
-        dependencies.application.processTwilioStatus(input),
+        dependencies.application.processTwilioStatus({
+          ...input,
+          ...(dependencies.twilioMasterAccountSid && (bound?.workspaceId ?? live?.workspaceId)
+            ? { ownerWorkspaceId: bound?.workspaceId ?? live?.workspaceId }
+            : {}),
+        }),
       );
       if (!result.ok) return dialerErrorResponse(context, result.error);
       if (
@@ -122,19 +156,9 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
       }
       const bound = stored?.ok ? stored.value : null;
       const live = callContext?.ok ? callContext.value : null;
-      const expectedAccount = bound?.providerAccountId ??
-        (live && live.workspaceId === bound?.workspaceId
-          ? live.providerAccountId ?? dependencies.twilioMasterAccountSid
-          : null);
-      if (!bound || !expectedAccount ||
-          !/^AC[0-9a-fA-F]{32}$/.test(expectedAccount) ||
-          verified.params.AccountSid !== expectedAccount ||
-          (live && (
-            live.workspaceId !== bound.workspaceId ||
-            (bound.providerAccountId !== null &&
-              live.providerAccountId !== null &&
-              live.providerAccountId !== bound.providerAccountId)
-          ))) {
+      if (!bound || !callbackAccountMatches(
+        dependencies, verified.params.AccountSid, live, bound,
+      )) {
         return context.json({ error: { code: 'UNAUTHORIZED',
           message: 'Twilio account does not own this recording', retryable: false } }, 401);
       }
@@ -257,9 +281,19 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
       if (callContext && !callContext.ok) {
         return dialerErrorResponse(context, callContext.error);
       }
-      if (callContext?.ok && callContext.value &&
-          !callbackAccountMatches(dependencies, verified.params.AccountSid,
-            callContext.value.providerAccountId)) {
+      const stored = dependencies.callOperations?.resolveStatusCallOwnership
+        ? await runApplicationEffect(
+            dependencies.callOperations.resolveStatusCallOwnership({
+              providerCallId: input.callSid,
+            }),
+          )
+        : null;
+      if (stored && !stored.ok) {
+        return dialerErrorResponse(context, stored.error);
+      }
+      const bound = stored?.ok ? stored.value : null;
+      const live = callContext?.ok ? callContext.value : null;
+      if (!callbackAccountMatches(dependencies, verified.params.AccountSid, live, bound)) {
         return context.json({ error: { code: 'UNAUTHORIZED',
           message: 'Twilio account does not own this leg', retryable: false } }, 401);
       }

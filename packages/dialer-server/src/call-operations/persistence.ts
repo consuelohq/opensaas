@@ -637,7 +637,7 @@ export const createPostgresCallOperationsRepository = (
       )
       ON CONFLICT (workspace_id, provider_call_id) DO UPDATE SET
         contact_id = EXCLUDED.contact_id,
-        provider_account_id = COALESCE(dialer_call_legs.provider_account_id, EXCLUDED.provider_account_id),
+        provider_account_id = dialer_call_legs.provider_account_id,
         position = EXCLUDED.position,
         caller_identity = EXCLUDED.caller_identity,
         status = EXCLUDED.status,
@@ -699,6 +699,7 @@ export const createPostgresCallOperationsRepository = (
              END,
              updated_at = NOW()
          WHERE provider_call_id = $1
+           AND ($6::text IS NULL OR workspace_id = $6)
          RETURNING workspace_id, session_id`,
         [
           request.providerCallId,
@@ -706,6 +707,7 @@ export const createPostgresCallOperationsRepository = (
           request.amdResult ?? null,
           request.durationSeconds ?? null,
           request.terminalOutcome ?? null,
+          request.workspaceId ?? null,
         ],
       );
       const leg = update.rows[0];
@@ -967,6 +969,26 @@ export const createPostgresCallOperationsRepository = (
        WHERE workspace_id = $1 AND id = $2`,
       [request.workspaceId, request.sessionId, request.failureCode],
     ).pipe(Effect.asVoid),
+  resolveStatusCallOwnership: (request) =>
+    queryEffect<{ workspace_id: string; provider_account_id: string | null }>(
+      database,
+      'resolve-status-call-ownership',
+      `SELECT legs.workspace_id, legs.provider_account_id
+       FROM dialer_call_legs AS legs
+       JOIN dialer_call_sessions AS sessions
+         ON sessions.workspace_id = legs.workspace_id
+        AND sessions.id = legs.session_id
+       WHERE legs.provider_call_id = $1
+       LIMIT 2`,
+      [request.providerCallId],
+    ).pipe(Effect.map(({ rows }) =>
+      rows.length === 1 && rows[0]
+        ? {
+            workspaceId: rows[0].workspace_id,
+            providerAccountId: rows[0].provider_account_id,
+          }
+        : null,
+    )),
   resolveRecordingCallOwnership: (request) =>
     queryEffect<{ workspace_id: string; provider_account_id: string | null }>(
       database,

@@ -175,6 +175,7 @@ export type CallSessionUpsert = {
 
 export type CallLegTransition = {
   providerCallId: string;
+  workspaceId?: string;
   status: string;
   amdResult?: string;
   durationSeconds?: number;

@@ -128,7 +128,7 @@ export type DialerServerApplication = {
     DialerApplicationError
   >;
   processTwilioStatus: (
-    input: ParallelCallbackInput,
+    input: ParallelCallbackInput & { ownerWorkspaceId?: string },
   ) => Effect.Effect<ParallelCallbackResult, DialerApplicationError>;
   generateTwilioCustomerTwiml: (
     input: ParallelTwimlInput,

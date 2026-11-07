@@ -780,6 +780,40 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
       providerCallId: callSid,
     }))).toEqual({ workspaceId: 'workspace', providerAccountId: child });
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: callSid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: child });
+
+    const unrecordedSid = 'CA' + '6'.repeat(32);
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start,
+      id: 'unrecorded-session',
+      recordingEnabled: false,
+      calls: start.calls.map((call) => ({ ...call, providerCallId: unrecordedSid })),
+    }));
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: unrecordedSid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: child });
+    expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
+      providerCallId: unrecordedSid,
+    }))).toBeNull();
+
+    const legacySid = 'CA' + '7'.repeat(32);
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start, id: 'legacy-session',
+      calls: start.calls.map((call) => ({
+        ...call, providerCallId: legacySid, providerAccountId: null,
+      })),
+    }));
+    await Effect.runPromise(recovered.createOrUpdateCallSession({
+      ...start, id: 'legacy-session',
+      calls: start.calls.map((call) => ({
+        ...call, providerCallId: legacySid, providerAccountId: other,
+      })),
+    }));
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: legacySid,
+    }))).toEqual({ workspaceId: 'workspace', providerAccountId: null });
 
     await Effect.runPromise(recovered.recordCallRecordingStatus({
       workspaceId: 'foreign-workspace', providerCallId: callSid,
@@ -805,6 +839,23 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect(await Effect.runPromise(recovered.resolveRecordingCallOwnership({
       providerCallId: callSid,
     }))).toBeNull();
+    expect(await Effect.runPromise(recovered.resolveStatusCallOwnership({
+      providerCallId: callSid,
+    }))).toBeNull();
+
+    // A late callback with a durable workspace binding may mutate only that
+    // workspace's leg, even if historic provider SIDs collide across tenants.
+    await Effect.runPromise(recovered.recordCallLegTransition({
+      workspaceId: 'workspace', providerCallId: callSid, status: 'completed',
+    }));
+    const statuses = (await pool.query<{workspace_id: string; status: string}>(
+      'SELECT workspace_id, status FROM dialer_call_legs WHERE provider_call_id=$1 ORDER BY workspace_id',
+      [callSid],
+    )).rows;
+    expect(statuses).toEqual([
+      { workspace_id: 'foreign-workspace', status: 'queued' },
+      { workspace_id: 'workspace', status: 'completed' },
+    ]);
   });
 
   it('retains creation-time child account ownership across workspace cutover and process restart', async () => {

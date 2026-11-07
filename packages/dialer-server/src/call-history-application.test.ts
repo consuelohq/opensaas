@@ -144,6 +144,7 @@ const createCallOperations = (events: string[], transcriptionEnabled = true) => 
         events.push(`recording-failed:${failureCode}`);
       }),
     resolveRecordingCallOwnership: () => Effect.succeed(null),
+    resolveStatusCallOwnership: () => Effect.succeed(null),
     recordCallRecordingStatus: () => Effect.void,
   };
   return {

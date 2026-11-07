@@ -66,6 +66,7 @@ const createHarness = (
     setCallRecordingStarted: () => Effect.void,
     setCallRecordingFailed: () => Effect.void,
     resolveRecordingCallOwnership: () => Effect.succeed(null),
+    resolveStatusCallOwnership: () => Effect.succeed(null),
     recordCallRecordingStatus: () => Effect.void,
   };
   const provider: SpeechToTextProviderService = input.provider ?? {
