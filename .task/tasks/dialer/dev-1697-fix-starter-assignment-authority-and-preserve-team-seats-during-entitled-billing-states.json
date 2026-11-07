@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2791,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2791",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_cdf6023531d6",
+  "tmuxSession": "opensaas-dialer-dev-1697-fix-starter-assignment-authority-and-pr-cdf60235",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states/.task/session.json",
+  "createdAt": "2026-11-07T05:07:58.530Z"
+}

@@ -1,0 +1,23 @@
+{
+  "files": [
+    ".task/dialer/dev-1697-fix-starter-assignment-authority-and-preserve-team-seats-during-entitled-billing-states/workpad.md",
+    "packages/dialer-server/INBOUND-TESTING.md",
+    "packages/dialer-server/TEAM-ACCESS.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/billing/native-checkout.ts",
+    "packages/dialer-server/src/billing/public-checkout-store.ts",
+    "packages/dialer-server/src/billing/public-checkout.ts",
+    "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+    "packages/dialer-server/src/commercial/application.ts",
+    "packages/dialer-server/src/commercial/persistence.ts",
+    "packages/dialer-server/src/commercial/team-schema.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/lab/qa-postgres-suites.ts",
+    "packages/dialer-server/src/routes/commercial.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer-server/src/teams/application.ts",
+    "packages/lead-connector/src/infrastructure/persistent-stores.ts"
+  ],
+  "updatedAt": "2026-11-07T05:13:55.927Z"
+}

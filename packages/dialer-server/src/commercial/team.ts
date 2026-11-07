@@ -11,6 +11,7 @@ import {
   type RepCapacityState,
 } from '@consuelo/dialer';
 import type { DialerIdentity } from '../contracts';
+import { resolveBillingAccess } from '../billing/application';
 import { executeRepCapacityOnClient } from '../inbound/rep-capacity';
 import { DEFAULT_REP_POLICY } from '../inbound/default-rep-policy';
 
@@ -42,6 +43,8 @@ const safeError = (cause: unknown): Error =>
 export const createTeamAccessService = (input: {
   pool: Pool;
   directory: (identity: DialerIdentity) => Promise<LeadConnectorTeamMember[]>;
+  paymentGraceDays: number;
+  now?: () => Date;
 }): TeamAccessService => {
   const directory = async (identity: DialerIdentity, admin: boolean) => {
     try {
@@ -118,6 +121,62 @@ export const createTeamAccessService = (input: {
       throw safeError(cause);
     }
   };
+  const commercialAuthority = async (client: PoolClient, workspace: string) => {
+    try {
+      const purchase = (
+        await client.query<{
+          entitlement_selection: { seats?: number; plan?: string } | null;
+          generation: string;
+          provider_status: string | null;
+          provider_subscription_id: string | null;
+          paid_at: Date | null;
+        }>(
+          `SELECT entitlement_selection,generation,provider_status,provider_subscription_id,paid_at
+         FROM dialer_public_purchases WHERE claimed_workspace_id=$1`,
+          [workspace],
+        )
+      ).rows[0];
+      const subscription = (
+        await client.query<{
+          provider_subscription_id: string | null;
+          status: string;
+          payment_failed_at: Date | null;
+        }>(
+          'SELECT provider_subscription_id,status,payment_failed_at FROM dialer_workspace_subscriptions WHERE workspace_id=$1',
+          [workspace],
+        )
+      ).rows[0];
+      // Only a confirmed provider projection for this exact subscription may
+      // contribute paid seats. The billing service owns the grace-clock policy.
+      const confirmed =
+        purchase?.paid_at &&
+        purchase.provider_subscription_id &&
+        purchase.provider_subscription_id ===
+          subscription?.provider_subscription_id &&
+        purchase.provider_status === subscription?.status;
+      const billable =
+        confirmed &&
+        resolveBillingAccess({
+          status: subscription.status,
+          paymentFailedAt: subscription.payment_failed_at,
+          now: input.now?.() ?? new Date(),
+          graceDays: input.paymentGraceDays,
+        }).canStartCalls;
+      const selection = purchase?.entitlement_selection;
+      const paidSeats =
+        billable &&
+        Number.isSafeInteger(selection?.seats) &&
+        selection!.seats! > 0 &&
+        selection!.seats! <= 1000 &&
+        ['professional', 'agency', 'enterprise'].includes(selection?.plan ?? '')
+          ? selection!.seats!
+          : 0;
+      const plan = paidSeats ? selection!.plan! : null;
+      return { purchase, subscription, paidSeats, plan };
+    } catch (cause: unknown) {
+      throw safeError(cause);
+    }
+  };
   const view = async (
     client: PoolClient,
     identity: DialerIdentity,
@@ -131,30 +190,8 @@ export const createTeamAccessService = (input: {
           [workspace],
         )
       ).rows[0];
-      const purchase = (
-        await client.query(
-          `SELECT p.entitlement_selection,p.generation,p.provider_status,p.paid_at,s.status AS subscription_status FROM dialer_public_purchases p LEFT JOIN dialer_workspace_subscriptions s ON s.workspace_id=p.claimed_workspace_id AND s.provider_subscription_id=p.provider_subscription_id WHERE p.claimed_workspace_id=$1`,
-          [workspace],
-        )
-      ).rows[0];
-      const selection = purchase?.entitlement_selection;
-      const paid = Boolean(
-        purchase?.paid_at &&
-        purchase.provider_status === 'active' &&
-        purchase.subscription_status === 'active',
-      );
-      const paidSeats =
-        paid &&
-        Number.isSafeInteger(selection?.seats) &&
-        selection.seats > 0 &&
-        selection.seats <= 1000
-          ? Number(selection.seats)
-          : 0;
-      const plan =
-        paidSeats &&
-        ['professional', 'agency', 'enterprise'].includes(selection?.plan)
-          ? String(selection.plan)
-          : null;
+      const { purchase, subscription, paidSeats, plan } =
+        await commercialAuthority(client, workspace);
       const seats = (
         await client.query(
           'SELECT user_id,status,plan_code FROM dialer_team_seats WHERE workspace_id=$1 ORDER BY user_id LIMIT 1001',
@@ -187,6 +224,21 @@ export const createTeamAccessService = (input: {
         )
       ).rows;
       if (capacity.length > 1000) throw new Error('TEAM_ACCESS_UNAVAILABLE');
+      const positiveGrants = access.filter((entry) => entry.enabled);
+      const starterOwner =
+        !subscription && !purchase?.paid_at && positiveGrants.length === 1
+          ? positiveGrants[0].user_id
+          : !purchase &&
+              !subscription &&
+              positiveGrants.length === 0 &&
+              members.some(
+                (member) =>
+                  member.id === identity.userId &&
+                  member.role === 'admin' &&
+                  member.canCall,
+              )
+            ? identity.userId
+            : null;
       const revision = Number(config?.revision ?? 0);
       const directoryVersion = hash([
         identity.workspaceId,
@@ -195,6 +247,7 @@ export const createTeamAccessService = (input: {
         members,
         revision,
         purchase ?? null,
+        subscription ?? null,
         seats,
         access,
         queues.map((q) => [q.queue_id, q.version]),
@@ -226,8 +279,7 @@ export const createTeamAccessService = (input: {
               (s) => s.user_id === m.id && s.status === 'active',
             ),
             starter:
-              !purchase &&
-              m.id === identity.userId &&
+              m.id === starterOwner &&
               !access.some((a) => a.user_id === m.id && !a.enabled),
             queueIds: queues
               .filter((q) => q.policy.profiles.some((p) => p.repId === m.id))
@@ -433,7 +485,7 @@ export const createTeamAccessService = (input: {
     identity,
   ) => {
     try {
-      await directory(identity, false);
+      const members = await directory(identity, false);
       await transaction(identity, async (client) => {
         try {
           const denied = (
@@ -443,13 +495,22 @@ export const createTeamAccessService = (input: {
             )
           ).rows.length;
           if (denied) throw new Error('TEAM_ACCESS_REVOKED');
-          const subscription = (
-            await client.query(
-              'SELECT provider_subscription_id,status FROM dialer_workspace_subscriptions WHERE workspace_id=$1',
-              [identity.workspaceId],
+          const authority = await commercialAuthority(
+            client,
+            identity.workspaceId,
+          );
+          if (authority.subscription) {
+            if (
+              !authority.subscription.provider_subscription_id ||
+              !resolveBillingAccess({
+                status: authority.subscription.status,
+                paymentFailedAt: authority.subscription.payment_failed_at,
+                now: input.now?.() ?? new Date(),
+                graceDays: input.paymentGraceDays,
+              }).canStartCalls ||
+              !authority.paidSeats
             )
-          ).rows[0];
-          if (subscription?.provider_subscription_id) {
+              throw new Error('TEAM_PAID_ACCESS_REQUIRED');
             const assigned = (
               await client.query(
                 "SELECT 1 FROM dialer_team_seats WHERE workspace_id=$1 AND user_id=$2 AND status='active'",
@@ -457,7 +518,50 @@ export const createTeamAccessService = (input: {
               )
             ).rows.length;
             if (!assigned) throw new Error('TEAM_PAID_ACCESS_REQUIRED');
+            return;
           }
+          const grants = (
+            await client.query<{ user_id: string }>(
+              'SELECT user_id FROM dialer_team_access WHERE workspace_id=$1 AND enabled=true ORDER BY user_id LIMIT 2',
+              [identity.workspaceId],
+            )
+          ).rows;
+          if (
+            grants.length === 1 &&
+            grants[0].user_id === identity.userId &&
+            !authority.purchase?.paid_at
+          )
+            return;
+          // An unactivated purchase cannot create a new Starter authority.
+          if (
+            authority.purchase ||
+            grants.length ||
+            !members.some(
+              (member) =>
+                member.id === identity.userId && member.role === 'admin',
+            )
+          )
+            throw new Error('TEAM_PAID_ACCESS_REQUIRED');
+          // The first live-directory-verified CRM administrator gets a durable
+          // Starter grant. Workspace transaction locking makes this exclusive.
+          await client.query(
+            'INSERT INTO dialer_team_access(workspace_id,user_id,enabled) VALUES($1,$2,true) ON CONFLICT(workspace_id,user_id) DO UPDATE SET enabled=true,updated_at=clock_timestamp()',
+            [identity.workspaceId, identity.userId],
+          );
+          const revision = (
+            await client.query<{ revision: number }>(
+              `INSERT INTO dialer_team_configuration(workspace_id,revision,location_id)
+               VALUES($1,1,$2)
+               ON CONFLICT(workspace_id) DO UPDATE SET revision=dialer_team_configuration.revision+1,
+                 location_id=EXCLUDED.location_id,updated_at=clock_timestamp()
+               RETURNING revision`,
+              [identity.workspaceId, identity.locationId],
+            )
+          ).rows[0].revision;
+          await client.query(
+            'INSERT INTO dialer_team_access_events(workspace_id,revision,actor_id,user_id,enabled,queue_ids) VALUES($1,$2,$3,$3,true,$4)',
+            [identity.workspaceId, revision, identity.userId, '[]'],
+          );
         } catch (cause: unknown) {
           throw safeError(cause);
         }

@@ -20,6 +20,7 @@ import type {
 } from '@consuelo/dialer';
 import { migrateDialerDatabase } from '../database/migrations';
 import { initializeCommercialPersistence } from './persistence';
+import { initializePublicCheckoutStore } from '../billing/public-checkout-store';
 import { createTeamAccessService } from './team';
 import { createPostgresInboundRouting } from '../inbound/routing';
 import { createPostgresRepCapacity } from '../inbound/rep-capacity';
@@ -55,9 +56,12 @@ suite('transactional CRM team access', () => {
   let members: LeadConnectorTeamMember[];
   let workspaceId: string;
   let actor: typeof identity;
+  let testNow = new Date('2026-11-07T12:00:00.000Z');
   const service = createTeamAccessService({
     pool,
     directory: async () => structuredClone(members),
+    paymentGraceDays: 3,
+    now: () => testNow,
   });
   const queue = (workspace: string): InboundQueuePolicy => ({
     schemaVersion: 1,
@@ -84,6 +88,12 @@ suite('transactional CRM team access', () => {
         },
       }),
     );
+    await initializePublicCheckoutStore({
+      query: async (sql, values) => {
+        const result = await pool.query(sql, values ? [...values] : []);
+        return { rows: result.rows, rowCount: result.rowCount ?? undefined };
+      },
+    });
   }, 30000);
   afterAll(async () => {
     await pool.end();
@@ -92,6 +102,7 @@ suite('transactional CRM team access', () => {
   });
   beforeEach(async () => {
     workspaceId = 'company-' + randomUUID();
+    testNow = new Date('2026-11-07T12:00:00.000Z');
     actor = {
       ...identity,
       workspaceId,
@@ -269,6 +280,255 @@ suite('transactional CRM team access', () => {
     expect(next.members.find((m) => m.id === 'admin')?.queueIds).toEqual([
       'sales',
     ]);
+  });
+  it('bootstraps one explicit Starter authority, not arbitrary CRM membership', async () => {
+    const unassigned = { ...actor, userId: 'alice', role: 'user' };
+    const foreign = { ...actor, userId: 'foreign', role: 'admin' };
+    members.push({
+      id: 'second-admin',
+      name: 'Another Admin',
+      role: 'admin',
+      canCall: true,
+    });
+    await expect(service.assertCanCall(unassigned)).rejects.toThrow(
+      'TEAM_PAID_ACCESS_REQUIRED',
+    );
+    await expect(service.assertCanCall(foreign)).rejects.toThrow(
+      'TEAM_MEMBER_INELIGIBLE',
+    );
+    await service.assertCanCall(actor);
+    await service.assertCanCall(actor);
+    expect(
+      (
+        await pool.query(
+          'SELECT user_id FROM dialer_team_access WHERE workspace_id=$1 AND enabled=true',
+          [workspaceId],
+        )
+      ).rows.map((row) => row.user_id),
+    ).toEqual(['admin']);
+    await expect(
+      service.assertCanCall({ ...actor, userId: 'second-admin' }),
+    ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
+    const current = await service.read(actor);
+    expect(current.members.find((m) => m.id === 'admin')?.starter).toBe(true);
+    expect(current.members.find((m) => m.id === 'second-admin')?.starter).toBe(
+      false,
+    );
+    await service.update(actor, change(current, 'admin'));
+    await expect(service.assertCanCall(unassigned)).rejects.toThrow(
+      'TEAM_PAID_ACCESS_REQUIRED',
+    );
+  });
+  it('never infers free team access from a claimed but unactivated purchase', async () => {
+    const id = randomUUID();
+    await pool.query(
+      `INSERT INTO dialer_public_purchases(id,selection,claim_hash,origin,provider_status,claimed_workspace_id,entitlement_selection)
+       VALUES($1,'{}','fixture','https://fixture.test','pending',$2,$3)`,
+      [id, workspaceId, JSON.stringify({ plan: 'professional', seats: 3 })],
+    );
+    expect((await service.read(actor)).paidSeats).toBe(0);
+    await expect(service.assertCanCall(actor)).rejects.toThrow(
+      'TEAM_PAID_ACCESS_REQUIRED',
+    );
+    await expect(
+      service.assertCanCall({ ...actor, userId: 'alice' }),
+    ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
+  });
+  it('preserves an existing explicit Starter owner while a purchase is pending', async () => {
+    await service.assertCanCall(actor);
+    const id = randomUUID();
+    await pool.query(
+      `INSERT INTO dialer_public_purchases(id,selection,claim_hash,origin,provider_status,claimed_workspace_id,entitlement_selection)
+       VALUES($1,'{}','fixture','https://fixture.test','pending',$2,$3)`,
+      [id, workspaceId, JSON.stringify({ plan: 'professional', seats: 2 })],
+    );
+    await service.assertCanCall(actor);
+    await expect(
+      service.assertCanCall({ ...actor, userId: 'alice' }),
+    ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
+    const current = await service.read(actor);
+    expect(current.members.find((m) => m.id === 'admin')?.starter).toBe(true);
+    expect(current.paidSeats).toBe(0);
+  });
+  it('never authorizes a paid seat from an unsigned subscription row', async () => {
+    const subscriptionId = 'sub-' + randomUUID();
+    await pool.query(
+      "INSERT INTO dialer_workspace_subscriptions(workspace_id,provider_subscription_id,status) VALUES($1,$2,'active')",
+      [workspaceId, subscriptionId],
+    );
+    await pool.query(
+      "INSERT INTO dialer_team_seats(workspace_id,user_id,plan_code,status) VALUES($1,$2,'single','active')",
+      [workspaceId, 'alice'],
+    );
+    expect((await service.read(actor)).paidSeats).toBe(0);
+    await expect(
+      service.assertCanCall({ ...actor, userId: 'alice' }),
+    ).rejects.toThrow('TEAM_PAID_ACCESS_REQUIRED');
+  });
+  it('projects only signed matching purchased quantity in active, trialing and unexpired grace', async () => {
+    await paid(2);
+    const cases = [
+      { status: 'active', failedAt: null, seats: 2 },
+      { status: 'trialing', failedAt: null, seats: 2 },
+      {
+        status: 'past_due',
+        failedAt: new Date('2026-11-06T12:00:00Z'),
+        seats: 2,
+      },
+      {
+        status: 'past_due',
+        failedAt: new Date('2026-11-03T12:00:00Z'),
+        seats: 0,
+      },
+      { status: 'canceled', failedAt: null, seats: 0 },
+      { status: 'incomplete_expired', failedAt: null, seats: 0 },
+      { status: 'pending', failedAt: null, seats: 0 },
+    ] as const;
+    for (const scenario of cases) {
+      await pool.query(
+        'UPDATE dialer_public_purchases SET provider_status=$2,generation=generation+1 WHERE claimed_workspace_id=$1',
+        [workspaceId, scenario.status],
+      );
+      await pool.query(
+        'UPDATE dialer_workspace_subscriptions SET status=$2,payment_failed_at=$3 WHERE workspace_id=$1',
+        [workspaceId, scenario.status, scenario.failedAt],
+      );
+      const current = await service.read(actor);
+      expect(current.paidSeats).toBe(scenario.seats);
+      expect(current.plan).toBe(scenario.seats ? 'professional' : null);
+    }
+    await pool.query(
+      "UPDATE dialer_public_purchases SET provider_status='active' WHERE claimed_workspace_id=$1",
+      [workspaceId],
+    );
+    await pool.query(
+      "UPDATE dialer_workspace_subscriptions SET status='trialing' WHERE workspace_id=$1",
+      [workspaceId],
+    );
+    expect((await service.read(actor)).paidSeats).toBe(0);
+    await pool.query(
+      "UPDATE dialer_workspace_subscriptions SET status='active' WHERE workspace_id=$1",
+      [workspaceId],
+    );
+    await pool.query(
+      'UPDATE dialer_public_purchases SET paid_at=NULL WHERE claimed_workspace_id=$1',
+      [workspaceId],
+    );
+    expect((await service.read(actor)).paidSeats).toBe(0);
+  });
+  it('maintains purchased-seat CAS under an entitled trialing subscription', async () => {
+    await paid(1);
+    await pool.query(
+      "UPDATE dialer_public_purchases SET provider_status='trialing' WHERE claimed_workspace_id=$1",
+      [workspaceId],
+    );
+    await pool.query(
+      "UPDATE dialer_workspace_subscriptions SET status='trialing' WHERE workspace_id=$1",
+      [workspaceId],
+    );
+    const first = await service.read(actor);
+    expect(first.paidSeats).toBe(1);
+    const outcomes = await Promise.allSettled([
+      service.update(actor, change(first, 'alice')),
+      service.update(actor, change(first, 'bob')),
+    ]);
+    expect(
+      outcomes.filter((value) => value.status === 'fulfilled'),
+    ).toHaveLength(1);
+    expect((await service.read(actor)).assignedSeats).toBe(1);
+  });
+  it('authorizes assigned seats throughout valid trialing and grace, then denies expired grace', async () => {
+    await paid(1);
+    await service.update(actor, change(await service.read(actor), 'alice'));
+    const assignee = { ...actor, userId: 'alice' };
+    await service.assertCanCall(assignee);
+    for (const status of ['trialing', 'past_due'] as const) {
+      await pool.query(
+        'UPDATE dialer_public_purchases SET provider_status=$2 WHERE claimed_workspace_id=$1',
+        [workspaceId, status],
+      );
+      await pool.query(
+        'UPDATE dialer_workspace_subscriptions SET status=$2,payment_failed_at=$3 WHERE workspace_id=$1',
+        [
+          workspaceId,
+          status,
+          status === 'past_due' ? new Date('2026-11-06T12:00:00.000Z') : null,
+        ],
+      );
+      await service.assertCanCall(assignee);
+    }
+    testNow = new Date('2026-11-09T12:00:00.000Z');
+    await expect(service.assertCanCall(assignee)).rejects.toThrow(
+      'TEAM_PAID_ACCESS_REQUIRED',
+    );
+    const state = await service.read(actor);
+    expect(state.assignedSeats).toBe(1);
+    expect(state.paidSeats).toBe(0);
+  });
+  it('uses the exact grace expiry boundary and rejects stale provider projections', async () => {
+    await paid(2);
+    await pool.query(
+      "UPDATE dialer_public_purchases SET provider_status='past_due' WHERE claimed_workspace_id=$1",
+      [workspaceId],
+    );
+    await pool.query(
+      "UPDATE dialer_workspace_subscriptions SET status='past_due',payment_failed_at=$2 WHERE workspace_id=$1",
+      [workspaceId, new Date('2026-11-04T12:00:00.000Z')],
+    );
+    testNow = new Date('2026-11-07T11:59:59.999Z');
+    expect((await service.read(actor)).paidSeats).toBe(2);
+    testNow = new Date('2026-11-07T12:00:00.000Z');
+    expect((await service.read(actor)).paidSeats).toBe(0);
+    await pool.query(
+      "UPDATE dialer_workspace_subscriptions SET status='active',payment_failed_at=NULL WHERE workspace_id=$1",
+      [workspaceId],
+    );
+    await pool.query(
+      "UPDATE dialer_public_purchases SET provider_status='active' WHERE claimed_workspace_id=$1",
+      [workspaceId],
+    );
+    const before = await service.read(actor);
+    await service.update(actor, change(before, 'alice'));
+    const purchase = (
+      await pool.query<{
+        id: string;
+        generation: string;
+        provider_subscription_id: string;
+        entitlement_selection: unknown;
+      }>(
+        'SELECT id,generation,provider_subscription_id,entitlement_selection FROM dialer_public_purchases WHERE claimed_workspace_id=$1',
+        [workspaceId],
+      )
+    ).rows[0]!;
+    const projection = async (generation: number) =>
+      (
+        await pool.query<{ applied: boolean }>(
+          'SELECT dialer_project_public_purchase($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8) AS applied',
+          [
+            purchase.id,
+            generation,
+            'cus-fixture',
+            purchase.provider_subscription_id,
+            'active',
+            '[]',
+            JSON.stringify(purchase.entitlement_selection),
+            true,
+          ],
+        )
+      ).rows[0]!.applied;
+    const generation = Number(purchase.generation);
+    await pool.query(
+      'UPDATE dialer_public_purchases SET generation=generation+1 WHERE claimed_workspace_id=$1',
+      [workspaceId],
+    );
+    expect(await projection(generation)).toBe(false);
+    expect(await projection(generation + 1)).toBe(true);
+    expect(await projection(generation + 1)).toBe(true);
+    expect((await service.read(actor)).assignedSeats).toBe(1);
+    expect((await service.read(actor)).paidSeats).toBe(2);
+    await expect(service.update(actor, change(before, 'bob'))).rejects.toThrow(
+      'TEAM_VIEW_CHANGED',
+    );
   });
   it('rechecks the signed paid projection after a downgrade and preserves existing assignments', async () => {
     await paid(2);
