@@ -1,0 +1,20 @@
+{
+  "area": "release",
+  "stream": "stream/release",
+  "taskBranch": "task/release/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release",
+  "baseBranch": "stream/release",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2793,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2793",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2793",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2793/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2793",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2793/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-release-fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5e8df71cd03a",
+  "tmuxSession": "opensaas-release-fix-cloudflare-worker-deployment-route-permissio-5e8df71c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-release-fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release/.task/release/fix-cloudflare-worker-deployment-route-permission-add-worker-only-recovery-release/session.json",
+  "createdAt": "2026-11-07T06:38:40.468Z"
+}

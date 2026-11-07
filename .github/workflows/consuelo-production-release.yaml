@@ -20,6 +20,11 @@ on:
           - os
           - os-device-auth
           - dialer
+      dialer_worker_only:
+        description: Deploy only the LeadConnector Worker on existing routes; do not restart Railway.
+        required: false
+        default: false
+        type: boolean
       migrate_mcp_origin_waf:
         description: Migrate the managed OS MCP rules to the canonical connector-origin hostname class.
         required: false
@@ -52,9 +57,20 @@ jobs:
       - name: Classify dialer release changes
         id: classify
         shell: bash
+        env:
+          CONSUELO_DIALER_WORKER_ONLY: ${{ inputs.dialer_worker_only || 'false' }}
         run: |
           set -euo pipefail
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${CONSUELO_DIALER_WORKER_ONLY:-false}" == "true" ]]; then
+              if [[ "${{ inputs.target }}" != "dialer" ]]; then
+                echo "::error::Worker-only release requires target=dialer"
+                exit 1
+              fi
+              echo "release=false" >> "$GITHUB_OUTPUT"
+              echo "frontend_only=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
             case "${{ inputs.target }}" in
               all|dialer) echo "release=true" >> "$GITHUB_OUTPUT" ;;
               *) echo "release=false" >> "$GITHUB_OUTPUT" ;;
@@ -534,14 +550,30 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
-          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-dialer.ndjson
-        run: bun run --cwd packages/lead-connector release:deploy-worker
+        run: |
+          set -euo pipefail
+          # A Worker update must not reconcile existing custom domains/routes.
+          # The deployment token intentionally has Workers Scripts permission,
+          # not the broader Zone Workers Routes edit permission.
+          bunx wrangler@4.135.0 versions upload +            --config packages/lead-connector/wrangler.jsonc +            --keep-vars +            --tag "dialer-$GITHUB_SHA" +            --message "Dialer source $GITHUB_SHA"
+          bunx wrangler@4.135.0 versions deploy +            --config packages/lead-connector/wrangler.jsonc +            --version-tag "dialer-$GITHUB_SHA" +            --message "Dialer source $GITHUB_SHA" +            --yes
 
       - name: Capture LeadConnector worker version
-        run: >-
-          bun packages/lead-connector/scripts/read-wrangler-deployment.ts
-          "$RUNNER_TEMP/wrangler-dialer.ndjson"
-          > "$RUNNER_TEMP/cloudflare-deployment.json"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          bunx wrangler@4.135.0 deployments list +            --config packages/lead-connector/wrangler.jsonc +            --json > "$RUNNER_TEMP/worker-deployments.json"
+          jq -e --arg sha "$GITHUB_SHA" '
+            .[-1] |
+            ((.annotations["workers/message"] // "") | contains($sha)) and
+            ((.versions | length) == 1) and
+            (.versions[0].percentage == 100) and
+            ((.versions[0].version_id | type) == "string")
+          ' "$RUNNER_TEMP/worker-deployments.json" > /dev/null
+          version_id="$(jq -er '.[-1].versions[0].version_id' "$RUNNER_TEMP/worker-deployments.json")"
+          jq -n +            --arg workerName "consuelo-lead-connector-embed" +            --arg versionId "$version_id" +            '{workerName: $workerName, versionId: $versionId, targets: ["https://calls.consuelohq.com"]}' +            > "$RUNNER_TEMP/cloudflare-deployment.json"
 
       - name: Verify LeadConnector worker
         env:
