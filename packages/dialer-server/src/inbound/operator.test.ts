@@ -62,14 +62,40 @@ describe('inbound operator projection helpers', () => {
         healthy: true,
         active: false,
         label: 'Forwarding phone',
+        maskedDestination: '••• ••• 0123',
+        configurationSource: 'workspace',
       },
     ]);
+  });
+
+  it('distinguishes saved destination from reachability without exposing the phone', () => {
+    const projected = projectOperatorEndpoints(
+      [
+        {
+          workspaceId: 'workspace',
+          repId: 'rep',
+          endpointId: 'phone',
+          kind: 'phone',
+          address: syntheticPhone,
+        },
+      ],
+      'workspace',
+      'rep',
+      [],
+    );
+    expect(projected[0]?.maskedDestination).toBe('••• ••• 0123');
+    expect(projected[0]?.configurationSource).toBe('workspace');
+    expect(JSON.stringify(projected)).not.toContain(syntheticPhone);
   });
 
   it('projects an active assignment against the queue that owns its request', () => {
     const first = policy('first');
     const second = policy('second');
-    expect(selectOperatorQueuePolicy([first, second], 'rep', 'second')).toEqual(second);
-    expect(selectOperatorQueuePolicy([first, second], 'rep', null)).toEqual(first);
+    expect(selectOperatorQueuePolicy([first, second], 'rep', 'second')).toEqual(
+      second,
+    );
+    expect(selectOperatorQueuePolicy([first, second], 'rep', null)).toEqual(
+      first,
+    );
   });
 });

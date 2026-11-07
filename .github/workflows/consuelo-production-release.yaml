@@ -99,7 +99,7 @@ jobs:
               packages/dialer-server/src/lab/launch-scenarios.cli.test.ts|\
               packages/dialer-server/src/lab/launch-release-classifier.test.ts|\
               packages/dialer-server/src/lab/learning-rollback-scenario.ts|\
-              packages/dialer-server/src/lab/rep-campaign.ts|\
+              packages/dialer-server/src/lab/bounded-qa-process.ts|packages/dialer-server/src/lab/bounded-qa-process.test.ts|packages/dialer-server/src/lab/launch-component-cli.test.ts|packages/dialer-server/src/lab/rep-campaign.ts|\
               packages/dialer-server/src/lab/rep-campaign-plan.ts|\
               packages/dialer-server/src/lab/rep-campaign.test.ts|\
               packages/dialer-server/src/lab/qa-postgres-suites.ts|\
@@ -157,7 +157,7 @@ jobs:
               packages/dialer-server/src/lab/launch-scenarios.cli.test.ts|\
               packages/dialer-server/src/lab/launch-release-classifier.test.ts|\
               packages/dialer-server/src/lab/learning-rollback-scenario.ts|\
-              packages/dialer-server/src/lab/rep-campaign.ts|\
+              packages/dialer-server/src/lab/bounded-qa-process.ts|packages/dialer-server/src/lab/bounded-qa-process.test.ts|packages/dialer-server/src/lab/launch-component-cli.test.ts|packages/dialer-server/src/lab/rep-campaign.ts|\
               packages/dialer-server/src/lab/rep-campaign-plan.ts|\
               packages/dialer-server/src/lab/rep-campaign.test.ts|\
               packages/dialer-server/src/lab/qa-postgres-suites.ts|\

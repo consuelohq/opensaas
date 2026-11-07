@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { runBoundedQaProcess } from '../src/lab/bounded-qa-process';
+import { REP_DEVICES_MIGRATION_ID } from '../src/inbound/rep-devices';
 import { runRepCampaign } from '../src/lab/rep-campaign';
 import {
   qaPostgresSuites,
@@ -359,33 +361,36 @@ const main = async () => {
         })
       | undefined;
     if (process.argv.includes('--qa')) {
-      const campaign = await runRepCampaign({ pool, redis, seed });
-      const suite = Bun.spawn(
-        [
-          'bun',
-          '--no-env-file',
-          'test',
-          ...qaPostgresSuites.map((file) =>
-            join(import.meta.dir, '../src', file),
-          ),
-        ],
-        {
-          stdout: 'pipe',
-          stderr: 'pipe',
-          env: qaPostgresEnvironment(postgresPort, process.env),
-        },
-      );
-      const [stdout, stderr, exitCode] = await Promise.all([
-        new Response(suite.stdout).text(),
-        new Response(suite.stderr).text(),
-        suite.exited,
-      ]);
+      const campaign = await runRepCampaign({ pool, seed });
+      const { stdout, stderr, exitCode, timedOut, recoveredPostgres } =
+        await runBoundedQaProcess(
+          [
+            'bun',
+            '--no-env-file',
+            'test',
+            ...qaPostgresSuites.map((file) =>
+              join(import.meta.dir, '../src', file),
+            ),
+          ],
+          qaPostgresEnvironment(postgresPort, process.env),
+        );
       if (exitCode !== 0) {
         const diagnostic = await mkdtemp(
           join(tmpdir(), 'consuelo-qa-db-failure-'),
         );
         const log = join(diagnostic, 'database-suites.log');
-        await writeFile(log, stdout + '\n' + stderr, { mode: 0o600 });
+        await writeFile(
+          log,
+          stdout +
+            '\n' +
+            stderr +
+            (timedOut
+              ? '\nQA child deadline exceeded; terminated before cleanup.'
+              : '') +
+            '\nRecovered owned PostgreSQL clusters: ' +
+            recoveredPostgres,
+          { mode: 0o600 },
+        );
         process.stderr.write('Database failure evidence: ' + log + '\n');
       }
       qa = {
@@ -408,7 +413,6 @@ const main = async () => {
     const inbound = await runInboundJournalScenarios(pool);
     const simulation = await runInboundSimulationScenarios({
       pool,
-      redis,
       databaseUrl,
       seed,
     });
@@ -422,6 +426,7 @@ const main = async () => {
           DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
           COACHING_SCRIPTS_MIGRATION_ID,
           NATIVE_BILLING_MIGRATION_ID,
+          REP_DEVICES_MIGRATION_ID,
         ],
       ],
     );

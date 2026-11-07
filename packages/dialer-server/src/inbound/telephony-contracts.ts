@@ -27,6 +27,7 @@ export type InboundEndpoint = {
   endpointId: string;
   kind: 'browser' | 'phone';
   address: string;
+  configurationSource?: 'workspace' | 'self';
 };
 export type TelephonySession = {
   workspace_id: string;

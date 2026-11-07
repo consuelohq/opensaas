@@ -1,3 +1,4 @@
+import { resolveRepEndpoints } from './endpoint-resolution';
 import { decodeRoutingRequestMetadata } from '@consuelo/dialer';
 import type {
   InboundEndpoint,
@@ -125,7 +126,18 @@ export const createTelephonyEndpoints = (
               "SELECT snapshot FROM dialer_rep_capacity WHERE workspace_id=$1 AND snapshot->'owner'->>'assignmentId'=$2",
               [number.workspaceId, effect.assignment_id],
             );
-            return { effect, state: row.rows[0]?.snapshot, session };
+            const state = row.rows[0]?.snapshot;
+            const target = state
+              ? (
+                  await resolveRepEndpoints(
+                    options,
+                    client,
+                    number.workspaceId,
+                    state.repId,
+                  )
+                ).endpoints.find((e) => e.endpointId === effect.endpoint_id)
+              : undefined;
+            return { effect, state, session, target };
           } catch (cause: unknown) {
             if (cause instanceof Error) throw cause;
             throw new Error('Async operation rejected with a non-Error cause', {
@@ -135,14 +147,12 @@ export const createTelephonyEndpoints = (
         },
       );
       if (action === 'status') return '<Response/>';
-      const { state, effect, session } = found;
-      if (!state?.owner || !['waiting', 'callback_requested'].includes(session.mode)) return hangupTwiml();
-      const target = options.endpoints.find(
-        (item) =>
-          item.workspaceId === number.workspaceId &&
-          item.repId === state.repId &&
-          item.endpointId === effect.endpoint_id,
-      );
+      const { state, effect, session, target } = found;
+      if (
+        !state?.owner ||
+        !['waiting', 'callback_requested'].includes(session.mode)
+      )
+        return hangupTwiml();
       if (!target) return hangupTwiml();
       if (
         action === 'accept' &&

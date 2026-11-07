@@ -1,7 +1,13 @@
+import { resolveRepEndpoints } from './endpoint-resolution';
 import { phoneRingTimeoutSeconds } from './phone-offer-policy';
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import { classifyTwilioCreateFailure, createAgentVoiceIdentity, type RepCapacityState, type InboundStoredCommand } from '@consuelo/dialer';
+import {
+  classifyTwilioCreateFailure,
+  createAgentVoiceIdentity,
+  type RepCapacityState,
+  type InboundStoredCommand,
+} from '@consuelo/dialer';
 import {
   withInboundTransaction,
   readInboundSnapshot,
@@ -68,8 +74,16 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
             )
           ).rows[0]?.command;
           if (!command) return;
+          const configured = (
+            await resolveRepEndpoints(
+              options,
+              client,
+              state.workspaceId,
+              state.repId,
+            )
+          ).endpoints;
           const targets = owner.endpoints.map((endpoint) =>
-            options.endpoints.find(
+            configured.find(
               (target) =>
                 target.workspaceId === state.workspaceId &&
                 target.repId === state.repId &&
@@ -320,11 +334,24 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
               );
               return null;
             }
+            const target =
+              effect.kind === 'offer'
+                ? (
+                    await resolveRepEndpoints(
+                      options,
+                      client,
+                      effect.workspace_id,
+                      state.repId,
+                    )
+                  ).endpoints.find((e) => e.endpointId === effect.endpoint_id)
+                : undefined;
+            if (effect.kind === 'offer' && !target)
+              throw new Error('Effect endpoint unavailable');
             await client.query(
               "UPDATE dialer_telephony_effects SET status='dispatched',updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2",
               [effect.workspace_id, effect.effect_id],
             );
-            return { effect, state, session };
+            return { effect, state, session, target };
           } catch (cause: unknown) {
             if (cause instanceof Error) throw cause;
             throw new Error('Async operation rejected with a non-Error cause', {
@@ -334,7 +361,7 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
         },
       );
       if (!claimed) return;
-      const { effect, state, session } = claimed;
+      const { effect, state, session, target } = claimed;
       const number = options.numbers.find(
         (item) => item.numberId === session.number_id,
       );
@@ -342,12 +369,6 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
       let callSid = effect.call_sid;
       try {
         if (effect.kind === 'offer') {
-          const target = options.endpoints.find(
-            (item) =>
-              item.workspaceId === effect.workspace_id &&
-              item.repId === state.repId &&
-              item.endpointId === effect.endpoint_id,
-          );
           if (!target) throw new Error('Effect endpoint unavailable');
           const call = await options.carrier.offer({
             to:
@@ -367,13 +388,25 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
               'status',
               effect.effect_id,
             ),
-            timeoutSeconds: target.kind === 'phone'
-              ? phoneRingTimeoutSeconds(Date.parse(state.owner!.offerExpiresAt) -
-                  Date.parse(options.clock?.() ?? new Date().toISOString()))
-              : Math.max(1, Math.min(60, Math.ceil(
-                  (Date.parse(state.owner!.offerExpiresAt) -
-                    Date.parse(options.clock?.() ?? new Date().toISOString())) / 1000,
-                ))),
+            timeoutSeconds:
+              target.kind === 'phone'
+                ? phoneRingTimeoutSeconds(
+                    Date.parse(state.owner!.offerExpiresAt) -
+                      Date.parse(options.clock?.() ?? new Date().toISOString()),
+                  )
+                : Math.max(
+                    1,
+                    Math.min(
+                      60,
+                      Math.ceil(
+                        (Date.parse(state.owner!.offerExpiresAt) -
+                          Date.parse(
+                            options.clock?.() ?? new Date().toISOString(),
+                          )) /
+                          1000,
+                      ),
+                    ),
+                  ),
           });
           if (call.accountSid !== number.accountSid)
             throw new Error('Provider account mismatch');
@@ -409,7 +442,11 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
           classifyTwilioCreateFailure(cause) === 'not_created';
         await pool.query(
           "UPDATE dialer_telephony_effects SET status=$3,updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='dispatched'",
-          [effect.workspace_id, effect.effect_id, definitivelyRejected ? 'failed' : 'unknown'],
+          [
+            effect.workspace_id,
+            effect.effect_id,
+            definitivelyRejected ? 'failed' : 'unknown',
+          ],
         );
         if (definitivelyRejected) {
           await settleCommands(effect.workspace_id, effect.assignment_id);

@@ -1,4 +1,5 @@
-import {COACHING_SCRIPTS_MIGRATION_ID} from '../coaching/scripts';
+import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
+import { COACHING_SCRIPTS_MIGRATION_ID } from '../coaching/scripts';
 import { NATIVE_BILLING_MIGRATION_ID } from '../billing/native-billing-store';
 import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
@@ -57,11 +58,14 @@ export const verifyLearningRollbackChain = async (
     );
     await client.query(
       'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = ANY($1::text[])',
-      [[
-        DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
-        COACHING_SCRIPTS_MIGRATION_ID,
-        NATIVE_BILLING_MIGRATION_ID,
-      ]],
+      [
+        [
+          DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+          COACHING_SCRIPTS_MIGRATION_ID,
+          NATIVE_BILLING_MIGRATION_ID,
+          REP_DEVICES_MIGRATION_ID,
+        ],
+      ],
     );
     await client.query('SAVEPOINT newer_migration_guard');
     await assert.rejects(() =>
