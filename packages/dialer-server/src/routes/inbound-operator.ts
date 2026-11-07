@@ -76,6 +76,7 @@ export const createInboundOperatorRoutes = (
         if (
           authorizeRep &&
           ((path === 'readiness' && body?.ready === true) ||
+            path === 'heartbeat' ||
             path === 'offers/accept')
         )
           await authorizeRep(context.get('identity'));
