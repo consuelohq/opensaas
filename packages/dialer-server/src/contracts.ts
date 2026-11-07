@@ -104,6 +104,7 @@ export type DialerTransferApplication = {
     transferId: string;
     callSid: string;
     callStatus: string;
+    accountSid: string;
   }) => Effect.Effect<
     { received: true; status: DialerTransferStatus },
     DialerApplicationError

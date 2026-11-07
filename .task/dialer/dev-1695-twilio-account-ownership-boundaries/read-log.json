@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/dialer/dev-1695-twilio-account-ownership-boundaries/pg-fixture/server.log",
+    "packages/dialer-server/src/call-history-application.test.ts",
+    "packages/dialer-server/src/call-operations/application.ts",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/lab/historical-inbound-fixture.ts",
+    "packages/dialer-server/src/runtime/inbound.ts",
+    "packages/dialer-server/src/runtime/railway.ts"
+  ],
+  "updatedAt": "2026-11-07T05:15:41.702Z"
+}

@@ -3,6 +3,7 @@ import type { Pool } from 'pg';
 import {
   outboundRepIdFromClient,
   resolveOutboundCarrierAccount,
+  resolveStoredOutboundAccount,
 } from './outbound-capacity';
 
 const parent='AC'+'1'.repeat(32);
@@ -40,5 +41,11 @@ describe('DEV-1686 outbound-capacity account and Web client identity fencing', (
     const stored=await resolveOutboundCarrierAccount(pool,workspace,parent);
     expect(stored).not.toBe(other);
     expect(stored).not.toBe(parent);
+  });
+  it('uses the creation account, not the newly assigned workspace account', () => {
+    expect(resolveStoredOutboundAccount({provider_account_id:parent},child)).toBe(parent);
+    expect(resolveStoredOutboundAccount({provider_account_id:child},parent)).toBe(child);
+    expect(resolveStoredOutboundAccount({provider_account_id:null},child)).toBe(child);
+    expect(() => resolveStoredOutboundAccount({provider_account_id:'invalid'},parent)).toThrow();
   });
 });

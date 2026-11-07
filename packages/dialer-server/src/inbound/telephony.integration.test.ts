@@ -746,6 +746,75 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     ).toBe(0);
   });
 
+  it('retains creation-time child account ownership across workspace cutover and process restart', async () => {
+    const parent = 'AC' + '1'.repeat(32);
+    const child = 'AC' + '2'.repeat(32);
+    const current = 'AC' + '3'.repeat(32);
+    let parentReads = 0;
+    let childReads = 0;
+    const parentCarrier: InboundCarrier = {
+      ...carrier,
+      call: async (sid) => {
+        parentReads++;
+        return { sid, accountSid: parent, status: 'completed' };
+      },
+    };
+    const childCarrier: InboundCarrier = {
+      ...carrier,
+      call: async (sid) => {
+        childReads++;
+        return { sid, accountSid: child, status: 'completed' };
+      },
+    };
+    const options = {
+      pool, carrier: parentCarrier, accountSid: parent, clock,
+      carrierForAccount: async (account: string) => {
+        expect(account).toBe(child);
+        return childCarrier;
+      },
+    };
+    const outbound = createOutboundCapacity(options);
+    await outbound.begin({
+      workspaceId: 'workspace', userId: 'alice',
+      sessionId: 'child-owned', plannedCalls: 1, providerAccountId: child,
+    });
+    await outbound.progress('workspace', 'child-owned', {
+      groupId: 'child-group', conferenceName: 'child-conference',
+      calls: [{ callSid: 'child-call' }],
+    });
+    await outbound.complete('workspace', 'child-owned');
+    await pool.query(
+      "INSERT INTO dialer_workspace_telephony_accounts(workspace_id,provider_account_id,status) VALUES($1,$2,'active')",
+      ['workspace', current],
+    );
+    // A fresh runtime must trust the original call binding, not the new
+    // tenant assignment, for admission, provider queries and release.
+    const restarted = createOutboundCapacity(options);
+    await expect(restarted.admitRep({
+      sessionId: 'child-owned', clientIdentity: 'user_alice',
+      callSid: 'rep-child', accountSid: current,
+    }, ['workspace'])).rejects.toThrow('Outbound provider identity mismatch');
+    await restarted.admitRep({
+      sessionId: 'child-owned', clientIdentity: 'user_alice',
+      callSid: 'rep-child', accountSid: child,
+    }, ['workspace']);
+    const bound = await pool.query<{ provider_account_id: string; rep_sid: string; status: string }>(
+      'SELECT provider_account_id,rep_sid,status FROM dialer_telephony_outbound WHERE workspace_id=$1 AND session_id=$2',
+      ['workspace', 'child-owned'],
+    );
+    expect(bound.rows[0]).toMatchObject({
+      provider_account_id: child, rep_sid: 'rep-child', status: 'succeeded',
+    });
+    await restarted.tick('workspace');
+    expect(childReads).toBe(2);
+    expect(parentReads).toBe(0);
+    expect((await pool.query<{status:string}>(
+      'SELECT status FROM dialer_telephony_outbound WHERE session_id=$1',
+      ['child-owned'],
+    )).rows[0].status).toBe('ended');
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+  });
+
   it('reserves outbound with stale, away inbound capacity without enabling inbound routing', async () => {
     const rep = (await capacity.read('workspace', 'slot'))!;
     await capacity.execute({

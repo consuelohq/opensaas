@@ -162,6 +162,7 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
           transferId,
           callSid,
           callStatus,
+          accountSid: verified.params.AccountSid ?? '',
         }),
       );
       return result.ok

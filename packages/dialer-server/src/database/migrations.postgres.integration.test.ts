@@ -22,6 +22,7 @@ import {
 } from '@consuelo/lead-connector';
 import {
   DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+  OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
   migrateDialerDatabase,
   rollbackDialerDatabaseMigration,
 } from './migrations';
@@ -167,6 +168,7 @@ suite(
               '20261031_016_native_billing',
               REP_DEVICES_MIGRATION_ID,
               TEAM_ACCESS_MIGRATION_ID,
+              OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
             ],
           ],
         );
@@ -214,7 +216,7 @@ suite(
             'SELECT migration_id, applied_at FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
           )
         ).rows;
-        expect(ledgerAfterUpgrade).toHaveLength(18);
+        expect(ledgerAfterUpgrade).toHaveLength(19);
         expect(ledgerAfterUpgrade.slice(0, 13)).toEqual(oldLedger);
 
         await migrateDialerDatabase(pool);

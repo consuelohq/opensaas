@@ -83,14 +83,17 @@ const createBaseApplication = (
         }),
 });
 
-const createCallOperations = (events: string[]) => {
+const createCallOperations = (events: string[], transcriptionEnabled = true) => {
   const sessions: CallSessionSummary[] = [];
   let providerContextReads = 0;
   let recordingClaimed = false;
   const repository: CallOperationsRepositoryService = {
     resolveTranscriptionSettings: () =>
       Effect.succeed({ enabled: true, language: 'en', retentionDays: 30 }),
-    resolveTranscriptionContextForSession: () => Effect.succeed(null),
+    resolveTranscriptionContextForSession: () => Effect.succeed({
+      workspaceId: 'workspace-1', sessionId: 'session-1',
+      enabled: transcriptionEnabled, language: 'en', retentionDays: 30,
+    }),
     resolveTranscriptionContext: () =>
       Effect.sync(() => {
         providerContextReads += 1;
@@ -259,7 +262,19 @@ describe('call-history dialer application', () => {
     );
 
     expect(twiml).toContain('track="both_tracks"');
+    expect(twiml).toContain('webhooks/twilio/media/CA-1');
     expect(twiml).toContain('name="sessionId" value="session-1"');
     expect(callOperations.providerContextReads()).toBe(0);
+  });
+  it('does not emit any stream when persisted session consent is OFF, regardless of workspace defaults', async () => {
+    const events: string[] = [];
+    const callOperations = createCallOperations(events, false);
+    const application = createCallHistoryDialerApplication(
+      createBaseApplication(events), callOperations.application,
+    );
+    const twiml = await Effect.runPromise(
+      application.generateTwilioCustomerTwiml({ callSid: 'CA-1' }),
+    );
+    expect(twiml).not.toContain('<Stream');
   });
 });

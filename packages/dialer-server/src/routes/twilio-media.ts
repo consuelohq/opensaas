@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { Effect } from 'effect';
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { upgradeWebSocket } from 'hono/bun';
 
 import type { TwilioMediaFrame } from '../call-operations/contracts';
@@ -113,6 +113,7 @@ const runBoundaryEffect = async (effect: Effect.Effect<unknown, unknown>) => {
 
 export const createTwilioMediaConnectionHandlers = (input: {
   connectionId: string;
+  expectedCallSid?: string;
   application: Pick<
     CallOperationsApplication,
     | 'beginTranscriptionSession'
@@ -160,6 +161,17 @@ export const createTwilioMediaConnectionHandlers = (input: {
         await fail('INVALID_MEDIA_FRAME');
         return;
       }
+      if (input.expectedCallSid && (
+        (frame.event === 'start' && (
+          frame.start.callSid !== input.expectedCallSid ||
+          (frame.start.customParameters.callId != null &&
+            frame.start.customParameters.callId !== input.expectedCallSid)
+        )) ||
+        (frame.event === 'stop' && frame.stop.callSid !== input.expectedCallSid)
+      )) {
+        await fail('MEDIA_START_CALL_MISMATCH');
+        return;
+      }
       const isStop = frame.event === 'stop';
       if (isStop) terminal = true;
       try {
@@ -198,7 +210,7 @@ export const createTwilioMediaRoutes = (
 ) => {
   const routes = new Hono();
 
-  routes.get('/webhooks/twilio/media', async (context) => {
+  const handleMediaUpgrade = async (context: Context) => {
     const verified = await verifyAndParseTwilioRequest(context, dependencies);
     if (verified instanceof Response) return verified;
     if (!dependencies.callOperations) {
@@ -216,6 +228,7 @@ export const createTwilioMediaRoutes = (
 
     const handlers = createTwilioMediaConnectionHandlers({
       connectionId: randomUUID(),
+      expectedCallSid: context.req.param('callSid'),
       application: dependencies.callOperations,
     });
     return upgradeWebSocket(context, {
@@ -227,7 +240,9 @@ export const createTwilioMediaRoutes = (
       onClose: () => void handlers.close(),
       onError: () => void handlers.error(),
     });
-  });
+  };
+  routes.get('/webhooks/twilio/media', handleMediaUpgrade);
+  routes.get('/webhooks/twilio/media/:callSid', handleMediaUpgrade);
 
   return routes;
 };

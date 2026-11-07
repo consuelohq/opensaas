@@ -80,6 +80,8 @@ export const DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID =
   '20260815_005_learning_observation_integrity';
 export const DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID =
   '20261029_014_lead_connector_company_credentials';
+export const OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID =
+  '20261107_019_outbound_account_ownership';
 
 const CREATE_MIGRATION_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS consuelo_dialer_schema_migrations (
@@ -287,7 +289,8 @@ type Migration =
         | typeof COACHING_SCRIPTS_MIGRATION_ID
         | typeof NATIVE_BILLING_MIGRATION_ID
         | typeof REP_DEVICES_MIGRATION_ID
-        | typeof TEAM_ACCESS_MIGRATION_ID;
+        | typeof TEAM_ACCESS_MIGRATION_ID
+        | typeof OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID;
       up: MigrationUp;
       down?: never;
     }
@@ -473,6 +476,14 @@ const migrations: readonly Migration[] = [
   {
     id: TEAM_ACCESS_MIGRATION_ID,
     up: (database) => database.query(TEAM_ACCESS_SCHEMA).then(() => undefined),
+  },
+  {
+    id: OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
+    // Forward-only: keep existing bindings and leave old parent-owned rows NULL.
+    up: (database) =>
+      database.query(
+        'ALTER TABLE dialer_telephony_outbound ADD COLUMN IF NOT EXISTS provider_account_id text',
+      ).then(() => undefined),
   },
 ];
 

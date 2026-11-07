@@ -344,14 +344,18 @@ export const createCallOperationsApplication = (input: {
     Effect.gen(function* () {
       if (frame.event !== 'start' || session.terminal)
         return { accepted: false };
-      const providerCallId =
-        frame.start.customParameters.callId || frame.start.callSid;
-      const sessionId = frame.start.customParameters.sessionId;
-      const context = sessionId
-        ? yield* input.repository.resolveTranscriptionContextForSession(
-            sessionId,
-          )
-        : yield* input.repository.resolveTranscriptionContext(providerCallId);
+      const providerCallId = frame.start.callSid;
+      if (frame.start.customParameters.callId &&
+          frame.start.customParameters.callId !== providerCallId) {
+        return { accepted: false };
+      }
+      // Resolve the session by this provider leg. Twilio customParameters
+      // are not an authority for selecting another tenant's transcript.
+      const context = yield* input.repository.resolveTranscriptionContext(providerCallId);
+      if (frame.start.customParameters.sessionId &&
+          frame.start.customParameters.sessionId !== context?.sessionId) {
+        return { accepted: false };
+      }
       session.streamSid = frame.start.streamSid;
       session.providerCallId = providerCallId;
       session.context = context;
@@ -589,14 +593,11 @@ export const createCallOperationsApplication = (input: {
         if (!input.config.streamUrl) return request.twiml;
         let context: TranscriptionContext | null;
         if (request.workspaceId && request.sessionId) {
-          const settings = yield* input.repository.resolveTranscriptionSettings(
-            request.workspaceId,
+          // Workspace defaults cannot override a persisted per-call consent decision.
+          const persisted = yield* input.repository.resolveTranscriptionContextForSession(
+            request.sessionId,
           );
-          context = {
-            workspaceId: request.workspaceId,
-            sessionId: request.sessionId,
-            ...settings,
-          };
+          context = persisted?.workspaceId === request.workspaceId ? persisted : null;
         } else {
           context = yield* input.repository.resolveTranscriptionContext(
             request.providerCallId,
@@ -607,7 +608,9 @@ export const createCallOperationsApplication = (input: {
         }
         const stream = [
           '<Start>',
-          `<Stream url="${escapeXml(input.config.streamUrl)}" track="both_tracks">`,
+          // Twilio Media Streams do not accept query parameters; the URL path
+          // is a lookup hint, checked against persisted call ownership on upgrade.
+          `<Stream url="${escapeXml(input.config.streamUrl.replace(/\/$/, '') + '/' + encodeURIComponent(request.providerCallId))}" track="both_tracks">`,
           `<Parameter name="callId" value="${escapeXml(request.providerCallId)}" />`,
           `<Parameter name="sessionId" value="${escapeXml(context.sessionId)}" />`,
           '</Stream>',

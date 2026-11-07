@@ -206,7 +206,7 @@ describe('Twilio webhook boundary', () => {
       cancel: () => Effect.die('unused'),
       processStatusCallback,
     };
-    const rawBody = 'CallSid=CA_TRANSFER&CallStatus=answered&workspaceId=attacker';
+    const rawBody = 'CallSid=CA_TRANSFER&CallStatus=answered&AccountSid=AC11111111111111111111111111111111&workspaceId=attacker';
     const response = await createDialerServer(dependencies).fetch(
       new Request(
         'http://internal.test/webhooks/twilio/transfer-status?transfer_id=transfer-one',
@@ -229,6 +229,7 @@ describe('Twilio webhook boundary', () => {
       params: {
         CallSid: 'CA_TRANSFER',
         CallStatus: 'answered',
+        AccountSid: 'AC11111111111111111111111111111111',
         workspaceId: 'attacker',
       },
       rawBody,
@@ -240,6 +241,7 @@ describe('Twilio webhook boundary', () => {
       transferId: 'transfer-one',
       callSid: 'CA_TRANSFER',
       callStatus: 'answered',
+      accountSid: 'AC11111111111111111111111111111111',
     });
   });
 

@@ -468,7 +468,7 @@ export const createPostgresCallOperationsRepository = (
       database,
       'resolve-transcription-context',
       `SELECT sessions.workspace_id, sessions.id AS session_id,
-        COALESCE(settings.transcription_enabled, FALSE) AS transcription_enabled,
+        sessions.transcription_enabled AS transcription_enabled,
         settings.transcription_language,
         COALESCE(settings.transcript_retention_days, 30) AS transcript_retention_days
        FROM dialer_call_legs legs

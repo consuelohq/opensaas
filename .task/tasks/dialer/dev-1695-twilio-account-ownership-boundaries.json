@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1695-twilio-account-ownership-boundaries",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2790,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2790",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1695-twilio-account-ownership-boundaries",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_449a2d0c2289",
+  "tmuxSession": "opensaas-dialer-dev-1695-twilio-account-ownership-boundaries-449a2d0c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1695-twilio-account-ownership-boundaries/.task/session.json",
+  "createdAt": "2026-11-07T05:07:37.112Z"
+}
