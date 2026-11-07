@@ -1,0 +1,16 @@
+{
+  "files": [
+    "packages/dialer-server/TEAM-ACCESS.md",
+    "packages/dialer-server/src/billing/native-checkout.ts",
+    "packages/dialer-server/src/commercial/application.ts",
+    "packages/dialer-server/src/commercial/persistence.ts",
+    "packages/dialer-server/src/commercial/team-schema.ts",
+    "packages/dialer-server/src/commercial/team.postgres.integration.test.ts",
+    "packages/dialer-server/src/commercial/team.ts",
+    "packages/dialer-server/src/plans/catalog.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/lead-connector/src/application/team-members.ts",
+    "packages/lead-connector/src/embed/internal-main.ts"
+  ],
+  "updatedAt": "2026-11-07T05:28:40.552Z"
+}

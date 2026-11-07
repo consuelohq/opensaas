@@ -683,6 +683,7 @@ export const createRailwayCommercialApplication = async (
     const teamAccess = shared?.transactionPool
       ? createTeamAccessService({
           pool: shared.transactionPool,
+          paymentGraceDays: baseCatalog.paymentGraceDays,
           directory: async (identity) => {
             try {
               const layer = await createRailwayLeadConnectorApplicationLayer(
