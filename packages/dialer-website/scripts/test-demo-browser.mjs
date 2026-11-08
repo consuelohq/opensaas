@@ -94,6 +94,14 @@ try {
     assert.match(await page.locator('[data-demo-title]').innerText(), /A person picked up/);
     if (width === 1440 || width === 375)
       await page.screenshot({ path: join(artifacts, 'connected-' + width + '.png') });
+    // Visible transfer controls are safely disabled with explicit feedback.
+    await frame.locator('[data-disclosure="transfer"] summary').click();
+    await frame.locator('[data-form="transfer"] input[name="to"]').fill('+12025550177');
+    await frame.locator('[data-form="transfer"] button[type="submit"]').click();
+    assert.match(
+      await frame.locator('[data-demo-toast]').innerText(),
+      /Transfers are disabled in this simulated demo/,
+    );
     await frame.locator('[data-action="script-next"]').click();
     await frame.locator('[data-action="hang-up"]').click();
     await frame.locator('[data-form="disposition"]').waitFor();
@@ -104,10 +112,19 @@ try {
     assert.equal(await frame.locator('[data-action="select-call"]').count() >= 2, true);
     assert.match(await frame.locator('[data-demo-crm-outcome]').innerText(), /follow-up/i);
     await page.getByText('The call is handled.', { exact: true }).waitFor();
+    assert.equal(await frame.locator('[data-demo-contacted-count]').innerText(), '8');
     if (width === 1440) await page.screenshot({ path: join(artifacts, 'history-' + width + '.png') });
 
     // Incoming routing with browser answering and wrap-up.
     await page.locator('[data-demo-flow="inbound"]').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#consuelo-demo-frame')?.contentDocument
+        ?.querySelector('[data-demo-contacted-count]')?.textContent === '7',
+    );
+    assert.equal(await frame.locator('[data-demo-contacted-count]').innerText(), '7');
+    assert.equal(await frame.locator('[data-demo-crm-outcome]').innerText(), 'Call logged');
+    assert.equal(await frame.locator('[data-demo-crm-card] strong').innerText(), 'Alex Rivera');
+    assert.equal(await frame.locator('[data-demo-toast]').isHidden(), true);
     await frame.locator('[data-action="inbound-readiness"]').click();
     await frame.locator('[data-action="inbound-accept"]').waitFor({ timeout: 8000 });
     assert.match(await page.locator('[data-demo-title]').innerText(), /right rep/);
@@ -123,13 +140,35 @@ try {
 
     // Mercury script mode and reset.
     await page.locator('[data-demo-flow="mercury"]').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#consuelo-demo-frame')?.contentDocument
+        ?.querySelector('[data-demo-contacted-count]')?.textContent === '7',
+    );
+    assert.equal(await frame.locator('[data-demo-contacted-count]').innerText(), '7');
     await frame.getByText('Scripts for your calling day.').waitFor();
     await frame.locator('[data-action="script-open"]').click();
     await frame.locator('.script-reader').waitFor();
     assert.match(await frame.locator('.script-reader').innerText(), /Northstar Insurance/);
     await page.locator('[data-demo-reset]').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#consuelo-demo-frame')?.contentDocument
+        ?.querySelector('[data-demo-contacted-count]')?.textContent === '7',
+    );
     await frame.getByText('Scripts for your calling day.').waitFor();
     await page.locator('[data-demo-flow="outbound"]').click();
+    await frame.locator('[data-action="start-configured"]').waitFor();
+    await frame.locator('[data-action="workspace-settings"]').click();
+    await frame.locator('[data-action="workspace-numbers"]').click();
+    await frame.getByRole('heading', { name: 'Phone numbers' }).waitFor();
+    await frame.locator('[data-action="workspace-settings"]').first().click();
+    await frame.locator('[data-action="workspace-appearance"]').click();
+    await frame.locator('[data-action="workspace-theme"][data-theme-value="dark"]').click();
+    assert.equal(
+      await frame.locator('[data-action="workspace-theme"][data-theme-value="dark"]').getAttribute('aria-pressed'),
+      'true',
+    );
+    await page.locator('[data-demo-reset]').click();
+    assert.equal(await frame.locator('[data-demo-contacted-count]').innerText(), '7');
     await frame.locator('[data-action="start-configured"]').waitFor();
     await frame.locator('[data-action="workspace-call-options"]').click();
     await frame.locator('[data-combobox-field="line-count"] .combobox__trigger').click();

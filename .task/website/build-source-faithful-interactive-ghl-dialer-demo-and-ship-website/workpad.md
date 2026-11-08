@@ -15,16 +15,12 @@ started: 2026-11-08
 
 ## files changed
 
-- `packages/dialer-website/.gitignore`
-- `packages/dialer-website/astro.config.mjs`
-- `packages/dialer-website/package.json`
-- `packages/dialer-website/scripts/materialize-public-assets.ts`
-- `packages/dialer-website/src/pages/demo.astro`
+- `packages/dialer-website/CLAIMS.md`
 - `packages/dialer-website/scripts/test-demo-browser.mjs`
+- `packages/dialer-website/src/pages/demo.astro`
 - `packages/dialer-website/src/pages/demo/workspace.astro`
 - `packages/dialer-website/src/scripts/demo/dialer-simulator.ts`
 - `packages/dialer-website/tests/interactive-demo.test.ts`
-
 
 ## key decisions
 
@@ -84,6 +80,7 @@ no-test waiver: none.
 
 ## workspace-owned: files changed
 
+- `packages/dialer-website/CLAIMS.md`
 - `packages/dialer-website/scripts/test-demo-browser.mjs`
 - `packages/dialer-website/src/pages/demo.astro`
 - `packages/dialer-website/src/pages/demo/workspace.astro`
@@ -116,6 +113,9 @@ no-test waiver: none.
 - 2026-11-08 15:38:44 apply-patch: `packages/dialer-website/src/pages/demo/workspace.astro`
 - 2026-11-08 15:38:44 apply-patch: `packages/dialer-website/tests/interactive-demo.test.ts`
 - 2026-11-08 15:38:52 fs.write: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
+- 2026-11-08 15:55:12 fs.write: `packages/dialer-website/CLAIMS.md`
+- 2026-11-08 15:56:28 fs.write: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
+- 2026-11-08 15:58:52 fs.write: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
 
 ## Implementation and focused QA
 - Created source-faithful simulated Dialer using the genuine `renderLeadConnectorEmbed` and `reduceEmbedState`/`createInitialEmbedState` from `packages/lead-connector/src/embed/`; actual first-party embed CSS/fonts/logo; fictional GHL CRM context only. No customer data or live authentication.
@@ -150,3 +150,30 @@ no-test waiver: none.
 - 2026-11-08 15:47:17 apply-patch: `packages/dialer-website/tests/interactive-demo.test.ts`
 - 2026-11-08 15:47:27 `review.run`: passed — OK
 - 2026-11-08 15:49:33 `verify`: passed — OK
+- 2026-11-08 15:53:36 apply-patch: `packages/dialer-website/tests/interactive-demo.test.ts`
+- 2026-11-08 15:55:05 apply-patch: `packages/dialer-website/src/pages/demo.astro`
+- 2026-11-08 15:55:12 append: `packages/dialer-website/CLAIMS.md`
+- 2026-11-08 15:55:28 apply-patch: `packages/dialer-website/src/scripts/demo/dialer-simulator.ts`
+- 2026-11-08 15:55:36 apply-patch: `packages/dialer-website/scripts/test-demo-browser.mjs`
+- 2026-11-08 15:56:04 apply-patch: `packages/dialer-website/scripts/test-demo-browser.mjs`
+- 2026-11-08 15:56:37 `review.run`: passed — OK
+- 2026-11-08 15:58:44 `verify`: passed — OK
+
+## Code review follow-up — 2026-11-08
+- Exact initial source `7521b3f6`, portable CI follow-up `56d643b`, and all 11 GitHub checks passed. Original live Cloudflare Pages deploy already served working demo.
+- Codex reviewed SHA `56d643b` and identified current-scope findings: narrative copy/claims bypassing typed content module (P1), simulated CRM counts/toast persisting across reset or flow switch, settings controls not responding, and connected call transfer form silently swallowed (P2). Older findings on .github workflow and dialer-server files are NOT in current website-only PR diff and are out of scope.
+- Test-first coverage expanded for claims registry and reset/settings/transfer (RED: 6 passed, 2 expected failures), then implemented fixes: exported typed interactiveDemoStories and interactiveDemoPage in data/dialer-content.ts, imported into public demo page; appended grounded Interactive simulation claims to CLAIMS.md; reset CRM baseline/count/toast/theme and completed count in setFlow; support numbers/appearance/theme UI and show explicit offline feedback for team and unsupported actions; transfer form explicitly refuses live transfer with visible toast.
+- Browser E2E now asserts transfer feedback, reset baseline, flow switch resets, phone numbers and dark theme controls; initial E2E caught a state propagation timing race after parent postMessage (8 vs 7), corrected test to wait for child frame reset, focused desktop E2E then passed fully.
+- Scoped to packages/dialer-website + task records only. Need final green production build, 49+ tests, strict review, full publish-valid verification, task.push update #2794, exact-head GitHub CI+review, website-only release, production live smoke.
+
+- 2026-11-08 15:56:28 append: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
+
+## Final review remediation verified
+- Source-derived interactiveDemoStories and interactiveDemoPage moved to `src/data/dialer-content.ts`; `demo.astro` imports copy for both initial markup and client state; `CLAIMS.md` documents each simulation claim with exact first-party implementation boundaries.
+- Reset implementation now restores fictional CRM card Alex Rivera, count 7, Call logged, hides stale toast, resets completed counter and theme. Switching between outbound/inbound/Mercury resets the mock state identically.
+- Phone numbers settings (receive/call-from), appearance theme controls are simulated; team/unsupported controls show explicit offline feedback. Connected transfer form displays safety explanation and never invokes a provider.
+- Expanded demo browser tests verify transfer feedback, reset/switch baseline, settings/appearance, plus original outbound/inbound/Mercury/line-count flows; detected race in postMessage update and fixed test by waiting for iframe count to update (no production behavior change required).
+- Focused RED verified 2 missing regressions; GREEN 8/8; production build passed 11 Astro routes with 0 errors/0 warnings/7 pre-existing hints; full package tests 51/51, 344 assertions; strict review 0 blockers.
+- Full Consuelo `verify` on origin/main (existing asynchronous worker) finished PASSED, publishValid=true, 0 failed suites, including full 8-viewport marketing and 3-viewport demo browser suites. Safe to update source PR #2794 with only website files; repeat exact-head GitHub CI and merge to main when safe, then Cloudflare Pages-only deploy and live smoke.
+
+- 2026-11-08 15:58:52 append: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`

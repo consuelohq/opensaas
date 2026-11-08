@@ -206,6 +206,21 @@ export const mountDialerSimulation = (document: Document): void => {
   };
   const setFlow = (next: DemoFlow) => {
     clearTimers();
+    completed = 0;
+    ++toastId;
+    const crmCard = document.querySelector<HTMLElement>('[data-demo-crm-card]');
+    const cardName = crmCard?.querySelector('strong');
+    if (cardName) cardName.textContent = 'Alex Rivera';
+    const count = document.querySelector<HTMLElement>('[data-demo-contacted-count]');
+    if (count) count.textContent = '7';
+    const status = document.querySelector<HTMLElement>('[data-demo-crm-outcome]');
+    if (status) status.textContent = 'Call logged';
+    const notice = document.querySelector<HTMLElement>('[data-demo-toast]');
+    if (notice) {
+      notice.hidden = true;
+      notice.textContent = '';
+    }
+    document.documentElement.dataset.theme = 'light';
     flow = next;
     state = createSyntheticDialerState();
     workspace = {
@@ -231,7 +246,7 @@ export const mountDialerSimulation = (document: Document): void => {
     }
     const status = document.querySelector<HTMLElement>('[data-demo-crm-outcome]');
     if (status) status.textContent = outcome + ' · saved in demo';
-    if (count) count.textContent = String(8 + completed);
+    if (count) count.textContent = String(7 + completed);
   };
   const appendCall = (contactId: string, name: string, outcome: string, note = '') => {
     completed++;
@@ -417,7 +432,17 @@ export const mountDialerSimulation = (document: Document): void => {
       case 'workspace-settings': workspace = { ...workspace, screen: 'settings' }; break;
       case 'workspace-history': workspace = { ...workspace, screen: 'history' }; break;
       case 'workspace-mercury': workspace = { ...workspace, screen: 'mercury' }; break;
+      case 'workspace-numbers': workspace = { ...workspace, screen: 'numbers', numberTab: 'receive' }; break;
+      case 'numbers-receive': workspace = { ...workspace, numberTab: 'receive' }; break;
+      case 'numbers-call-from': workspace = { ...workspace, numberTab: 'call-from' }; break;
       case 'workspace-appearance': workspace = { ...workspace, screen: 'appearance' }; break;
+      case 'workspace-theme': {
+        const choice = button.dataset.themeValue;
+        if (choice !== 'system' && choice !== 'light' && choice !== 'dark') return;
+        workspace = { ...workspace, theme: choice };
+        document.documentElement.dataset.theme = choice === 'dark' ? 'dark' : 'light';
+        break;
+      }
       case 'workspace-minimize':
       case 'workspace-expand':
         toast('The live calling window can minimize over your CRM.');
@@ -476,11 +501,13 @@ export const mountDialerSimulation = (document: Document): void => {
       }
       case 'workspace-billing':
       case 'manage-billing':
+      case 'workspace-team':
       case 'script-new':
       case 'script-edit':
         toast('This setup action is disabled in the simulated demo.');
         return;
       default:
+        toast('This control needs a connected GoHighLevel account and is not available in the offline demo.');
         return;
     }
     render();
@@ -519,6 +546,10 @@ export const mountDialerSimulation = (document: Document): void => {
     const data = new FormData(form);
     const disposition = String(data.get('disposition') || 'connected');
     const note = String(data.get('note') || '');
+    if (form.dataset.form === 'transfer') {
+      toast('Transferring a call requires a real connection. Transfers are disabled in this simulated demo.');
+      return;
+    }
     if (form.dataset.form === 'disposition' && state.phase === 'wrapping-up') {
       const winner = state.selectedTargets[0];
       appendCall(winner?.contactId ?? 'demo-avery', winner?.name ?? 'Avery Morgan', disposition, note);

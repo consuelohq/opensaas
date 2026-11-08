@@ -30,3 +30,18 @@ Earlier positioning references: https://www.kixie.com/ and https://www.nooks.ai/
 ## Historical audit
 
 The Oct 28 website verified old deployed prices $59/$99/$159, 1/3/10 capacity, one included number and $1.99 extra numbers. Those values are superseded **only in this launch draft**, not silently in billing. Production domain ownership changed after that audit; current main already includes the separate public-domain cutover. This task preserves those routes and only deploys the preview project.
+
+## Interactive simulation claims — 2026-11-08
+
+The public `/demo` is an **ungated, offline product walkthrough** of Consuelo’s embedded GHL calling workspace. It uses the first-party `renderLeadConnectorEmbed`, `createInitialEmbedState` and `reduceEmbedState` implementations from `packages/lead-connector/src/embed`, plus first-party embed CSS, logo and font sources. This proves interface fidelity, **not live carrier integration or paid activation**. The surrounding GHL opportunity pipeline is a deliberately fictional illustration, not a captured or authenticated GHL customer account.
+
+| Website demo statement | Grounding | Limit / disclosure |
+| --- | --- | --- |
+| The same embedded Dialer workspace appears inside GoHighLevel | `packages/lead-connector/src/embed/view.ts`, `calling-workspace.ts`, `workspace-theme.css`, `state-machine.ts` | The core Dialer window is rendered with first-party components, but the host GHL pipeline is a simulated example; minor host layout variations are possible |
+| Three lines, one conversation / parallel dialing | `view.ts` configured queue and call-session rendering; isolated deterministic demo reducer in `packages/dialer-website/src/scripts/demo/dialer-simulator.ts` | Fictional 202-555-01xx leads, deterministic timer-based pickup; no Twilio calls, no measured answer-rate or conversion improvement |
+| Inbound routing to a browser and call wrap-up | `workspace-pages.ts`, `inbound-operator-view.ts`, `calling-workspace.ts` | Simulated rep availability, offer, answer and disposition; no incoming call, routing number, microphone or forwarding phone is actually used |
+| Mercury script cues appear in the call | `script-presentation.ts`, `workspace-pages.ts`, `coaching-scripts.ts` | Replays a fictional prewritten playbook in **script mode** only; no live AI response generation, real recording, transcription or claims that AI mode is generally available |
+| Calls and outcomes stay with the customer context | `view.ts` call history, synthetic DOM update and test fixtures | Simulated in-memory CRM history and pipeline card only; absolutely no actual GHL API operation or customer record mutation |
+| No sign-in, no live phone calls, no real customer data | `/demo/workspace/` CSP `connect-src 'none'`, no transport client, isolated state, sample `example.test` identities | Not a production account or a genuine customer testimonial. A separate production checkout is necessary to activate real service |
+
+Demo narrative and presentation copy belong to the typed `interactiveDemoStories` and `interactiveDemoPage` exports in `src/data/dialer-content.ts`. CTA goes to `/pricing` and must not be interpreted as a free paid-plan entitlement; existing checkout and Stripe behavior remain unchanged. Research on short choose-your-own-path demo guidance informed presentation only; no competitor DOM, proprietary screenshots or brand assets were copied.

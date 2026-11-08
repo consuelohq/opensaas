@@ -56,4 +56,24 @@ describe('interactive GHL Dialer demo', () => {
     expect(browserTest).toContain('/usr/bin/google-chrome');
     expect(browserTest).toContain('find((path) => existsSync(path))');
   });
+
+  it('keeps guided demo copy in the typed content module and records its simulation claims', () => {
+    const content = read('src/data/dialer-content.ts');
+    const page = read('src/pages/demo.astro');
+    expect(content).toContain('export const interactiveDemoStories');
+    expect(content).toContain('export const interactiveDemoPage');
+    expect(page).toContain('interactiveDemoStories');
+    expect(page).not.toContain('const stories: Record<DemoFlow');
+    expect(read('CLAIMS.md')).toContain('Interactive simulation claims');
+  });
+
+  it('resets fictional CRM state and explains unsupported settings and transfers', () => {
+    const simulator = read('src/scripts/demo/dialer-simulator.ts');
+    expect(simulator).toContain("count.textContent = '7'");
+    expect(simulator).toContain("status.textContent = 'Call logged'");
+    expect(simulator).toContain("case 'workspace-numbers':");
+    expect(simulator).toContain("case 'workspace-appearance':");
+    expect(simulator).toContain("case 'workspace-theme':");
+    expect(simulator).toContain("form.dataset.form === 'transfer'");
+  });
 });

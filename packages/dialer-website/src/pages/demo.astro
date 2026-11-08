@@ -2,6 +2,7 @@
 import SiteHeader from '../components/site/SiteHeader.astro';
 import SiteFooter from '../components/site/SiteFooter.astro';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
+import { interactiveDemoPage, interactiveDemoStories } from '../data/dialer-content';
 ---
 
 <MarketingLayout
@@ -12,9 +13,9 @@ import MarketingLayout from '../layouts/MarketingLayout.astro';
   <SiteHeader pageSections={[]} />
   <main class="demo-page" id="demo">
     <div class="demo-page__intro">
-      <p class="demo-page__eyebrow"><span class="demo-page__indicator"></span> THE REAL WORKSPACE. A SAFE SIMULATION.</p>
-      <h1>See how a good <em>calling day</em> feels.</h1>
-      <p>Explore the same Consuelo Dialer interface your team uses inside GoHighLevel. Fictional leads, simulated calls, and no account required.</p>
+      <p class="demo-page__eyebrow"><span class="demo-page__indicator"></span> {interactiveDemoPage.eyebrow}</p>
+      <h1>{interactiveDemoPage.titleLead} <em>{interactiveDemoPage.titleEmphasis}</em> {interactiveDemoPage.titleTail}</h1>
+      <p>{interactiveDemoPage.description}</p>
     </div>
 
     <section class="demo-experience" aria-label="Interactive dialer demo">
@@ -30,7 +31,7 @@ import MarketingLayout from '../layouts/MarketingLayout.astro';
       <div class="demo-experience__body">
         <div class="demo-stage">
           <div class="demo-stage__top">
-            <span><span class="demo-stage__live"></span> WORKING SIMULATION</span>
+            <span><span class="demo-stage__live"></span> {interactiveDemoPage.badge}</span>
             <span>CONSUELO × GOHIGHLEVEL</span>
           </div>
           <iframe
@@ -49,9 +50,9 @@ import MarketingLayout from '../layouts/MarketingLayout.astro';
             <span>EXPLORE BY CLICKING</span>
           </div>
           <div class="demo-narrative__copy">
-            <span class="demo-narrative__step" data-demo-step>01 — READY TO CALL</span>
-            <h2 data-demo-title>Three lines.<br />One conversation.</h2>
-            <p data-demo-description>Pick a list and press Start calling. Watch how the dialer finds a human answer and clears the other lines.</p>
+            <span class="demo-narrative__step" data-demo-step>{interactiveDemoStories.outbound.ready.step}</span>
+            <h2 data-demo-title>{interactiveDemoStories.outbound.ready.title}</h2>
+            <p data-demo-description>{interactiveDemoStories.outbound.ready.description}</p>
           </div>
           <div class="demo-narrative__activity" aria-label="Demo progress">
             <div class="demo-narrative__progress"><span data-demo-progress style="width:16.6%"></span></div>
@@ -59,23 +60,23 @@ import MarketingLayout from '../layouts/MarketingLayout.astro';
           </div>
           <div class="demo-narrative__tip">
             <span class="demo-narrative__tip-number">↗</span>
-            <p data-demo-tip>Start in the Consuelo window. Everything you click is simulated—it won't call or update anyone's real CRM.</p>
+            <p data-demo-tip>{interactiveDemoStories.outbound.ready.tip}</p>
           </div>
           <div class="demo-narrative__bottom">
-            <a href="/pricing" class="demo-narrative__cta">TRY CONSUELO WITH YOUR TEAM <span aria-hidden="true">↗</span></a>
+            <a href="/pricing" class="demo-narrative__cta">{interactiveDemoPage.getStartedLabel} <span aria-hidden="true">↗</span></a>
             <p>Already on GoHighLevel? No separate CRM to learn.</p>
           </div>
         </aside>
       </div>
       <div class="demo-experience__foot">
-        <span><span class="demo-experience__safe-dot"></span> No sign-in. No live phone calls. No real customer data.</span>
+        <span><span class="demo-experience__safe-dot"></span> {interactiveDemoPage.safetyLabel}</span>
         <a href="/pricing">Explore plans <span aria-hidden="true">↗</span></a>
       </div>
     </section>
 
     <section class="demo-closing" aria-label="Get started">
-      <p>READY FOR THE REAL THING?</p>
-      <h2>Less dialing.<br /><em>More talking.</em></h2>
+      <p>{interactiveDemoPage.closingEyebrow}</p>
+      <h2>{interactiveDemoPage.closingTitleLead}<br /><em>{interactiveDemoPage.closingTitleEmphasis}</em></h2>
       <a href="/pricing">GET STARTED <span aria-hidden="true">↗</span></a>
     </section>
     <div class="demo-footer"><SiteFooter /></div>
@@ -83,7 +84,8 @@ import MarketingLayout from '../layouts/MarketingLayout.astro';
 </MarketingLayout>
 
 <script>
-  type DemoFlow = 'outbound' | 'inbound' | 'mercury';
+  import { interactiveDemoStories } from '../data/dialer-content';
+  type DemoFlow = keyof typeof interactiveDemoStories;
   const frame = document.querySelector<HTMLIFrameElement>('#consuelo-demo-frame');
   const flowButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-demo-flow]'));
   const reset = document.querySelector<HTMLButtonElement>('[data-demo-reset]');
@@ -96,26 +98,7 @@ import MarketingLayout from '../layouts/MarketingLayout.astro';
   const status = document.querySelector<HTMLElement>('[data-demo-status]');
   let activeFlow: DemoFlow = 'outbound';
 
-  const stories: Record<DemoFlow, Record<string, { step: string; title: string; description: string; tip: string; percent: number }>> = {
-    outbound: {
-      ready: { step: '01 — READY TO CALL', title: 'Three lines. One conversation.', description: 'Pick a list and press Start calling. Watch how the dialer finds a human answer and clears the other lines.', tip: 'Open Calling options to change the number of lines and caller ID. The controls come directly from the actual dialer.', percent: 16 },
-      dialing: { step: '02 — CALLING IN PARALLEL', title: 'You focus on the talk.', description: 'Three fictional prospects are being dialed. The simulated pickup will automatically focus the winning line.', tip: 'This is a timer-driven simulation—not a Twilio call. No customer is contacted.', percent: 40 },
-      connected: { step: '03 — LIVE ANSWER', title: 'A person picked up.', description: 'Avery answered. The other lines ended, and your Mercury script appeared beside the conversation.', tip: 'Try Next in the script, then Hang up to save a disposition.', percent: 70 },
-      'wrap-up': { step: '04 — THE NEXT STEP', title: 'Close the loop.', description: 'Select a call outcome and leave a note. Just as in the real workflow, the activity is ready to be written back to the CRM.', tip: 'Choose Follow up, write a note, and press Save and close.', percent: 85 },
-      saved: { step: '05 — CRM UPDATED', title: 'The call is handled.', description: 'Your fictional call now appears in the call history, with its disposition and note. The GHL sample pipeline reflects it too.', tip: 'Open Call history to inspect the activity or restart the demo to try again.', percent: 100 },
-    },
-    inbound: {
-      ready: { step: '01 — RECEIVE INBOUND', title: 'Never lose the handoff.', description: 'Your team can be ready to receive inbound calls in the browser or on a forwarding phone.', tip: 'Press Start receiving calls. A fictional inbound offer will appear shortly.', percent: 16 },
-      available: { step: '02 — YOU ARE AVAILABLE', title: 'Stay in your CRM.', description: 'The operator is available. You can keep working while the routing system finds the right rep.', tip: 'The simulation will present Jordan Blake as an incoming caller.', percent: 32 },
-      offering: { step: '03 — INCOMING CALL', title: 'The right rep gets the ring.', description: 'The lead has been routed to your browser. You can answer without switching to a separate call application.', tip: 'Press Answer call to connect the simulated caller.', percent: 56 },
-      connected: { step: '04 — CONNECTED', title: 'Pick up and get to work.', description: 'You are on the call. The workspace shows live status and keeps your script at hand.', tip: 'Press End call to wrap up the conversation.', percent: 75 },
-      'wrap-up': { step: '05 — WRAP-UP', title: 'Every call has an outcome.', description: 'Save the result before the next inbound call. Your activity stays attached to the fictional customer record.', tip: 'Choose a disposition and Save and finish.', percent: 88 },
-      saved: { step: '06 — FINISHED', title: 'Recorded in the CRM.', description: 'The example inbound call is in the history. Your team can move directly to the next conversation.', tip: 'Switch to outbound dialing or explore Mercury.', percent: 100 },
-    },
-    mercury: {
-      ready: { step: '01 — MERCURY', title: 'Your script, in the moment.', description: 'Mercury organizes the talking points for your team. Script mode shows one cue at a time while you speak.', tip: 'Open First conversation to read the playbook. AI mode is marked coming soon in the actual interface.', percent: 35 },
-    },
-  };
+  const stories = interactiveDemoStories;
   const renderStory = (flow: DemoFlow, stage: string) => {
     const scene = stories[flow][stage] ?? stories[flow].ready;
     if (!scene) return;

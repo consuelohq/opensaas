@@ -271,3 +271,41 @@ export const homeWorkspaceClose = {
   secondaryLabel: 'INTERACTIVE DEMO',
   secondaryHref: '/demo',
 };
+
+export type InteractiveDemoFlow = 'outbound' | 'inbound' | 'mercury';
+export type InteractiveDemoStory = {
+  step: string; title: string; description: string; tip: string; percent: number;
+};
+export const interactiveDemoStories: Record<InteractiveDemoFlow, Record<string, InteractiveDemoStory>> = {
+    outbound: {
+      ready: { step: '01 — READY TO CALL', title: 'Three lines. One conversation.', description: 'Pick a list and press Start calling. Watch how the dialer finds a human answer and clears the other lines.', tip: 'Open Calling options to change the number of lines and caller ID. The controls come directly from the actual dialer.', percent: 16 },
+      dialing: { step: '02 — CALLING IN PARALLEL', title: 'You focus on the talk.', description: 'Three fictional prospects are being dialed. The simulated pickup will automatically focus the winning line.', tip: 'This is a timer-driven simulation—not a Twilio call. No customer is contacted.', percent: 40 },
+      connected: { step: '03 — LIVE ANSWER', title: 'A person picked up.', description: 'Avery answered. The other lines ended, and your Mercury script appeared beside the conversation.', tip: 'Try Next in the script, then Hang up to save a disposition.', percent: 70 },
+      'wrap-up': { step: '04 — THE NEXT STEP', title: 'Close the loop.', description: 'Select a call outcome and leave a note. Just as in the real workflow, the activity is ready to be written back to the CRM.', tip: 'Choose Follow up, write a note, and press Save and close.', percent: 85 },
+      saved: { step: '05 — CRM UPDATED', title: 'The call is handled.', description: 'Your fictional call now appears in the call history, with its disposition and note. The GHL sample pipeline reflects it too.', tip: 'Open Call history to inspect the activity or restart the demo to try again.', percent: 100 },
+    },
+    inbound: {
+      ready: { step: '01 — RECEIVE INBOUND', title: 'Never lose the handoff.', description: 'Your team can be ready to receive inbound calls in the browser or on a forwarding phone.', tip: 'Press Start receiving calls. A fictional inbound offer will appear shortly.', percent: 16 },
+      available: { step: '02 — YOU ARE AVAILABLE', title: 'Stay in your CRM.', description: 'The operator is available. You can keep working while the routing system finds the right rep.', tip: 'The simulation will present Jordan Blake as an incoming caller.', percent: 32 },
+      offering: { step: '03 — INCOMING CALL', title: 'The right rep gets the ring.', description: 'The lead has been routed to your browser. You can answer without switching to a separate call application.', tip: 'Press Answer call to connect the simulated caller.', percent: 56 },
+      connected: { step: '04 — CONNECTED', title: 'Pick up and get to work.', description: 'You are on the call. The workspace shows live status and keeps your script at hand.', tip: 'Press End call to wrap up the conversation.', percent: 75 },
+      'wrap-up': { step: '05 — WRAP-UP', title: 'Every call has an outcome.', description: 'Save the result before the next inbound call. Your activity stays attached to the fictional customer record.', tip: 'Choose a disposition and Save and finish.', percent: 88 },
+      saved: { step: '06 — FINISHED', title: 'Recorded in the CRM.', description: 'The example inbound call is in the history. Your team can move directly to the next conversation.', tip: 'Switch to outbound dialing or explore Mercury.', percent: 100 },
+    },
+    mercury: {
+      ready: { step: '01 — MERCURY', title: 'Your script, in the moment.', description: 'Mercury organizes the talking points for your team. Script mode shows one cue at a time while you speak.', tip: 'Open First conversation to read the playbook. AI mode is marked coming soon in the actual interface.', percent: 35 },
+    },
+  };
+export const interactiveDemoPage = {
+  eyebrow: 'THE REAL WORKSPACE. A SAFE SIMULATION.',
+  titleLead: 'See how a good',
+  titleEmphasis: 'calling day',
+  titleTail: 'feels.',
+  description: 'Explore the same Consuelo Dialer interface your team uses inside GoHighLevel. Fictional leads, simulated calls, and no account required.',
+  badge: 'WORKING SIMULATION',
+  getStartedLabel: 'TRY CONSUELO WITH YOUR TEAM',
+  safetyLabel: 'No sign-in. No live phone calls. No real customer data.',
+  closingEyebrow: 'READY FOR THE REAL THING?',
+  closingTitleLead: 'Less dialing.',
+  closingTitleEmphasis: 'More talking.',
+} as const;
