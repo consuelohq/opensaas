@@ -14,7 +14,7 @@ export const dialerHero = {
   description:
     'Multi-line dialing and inbound call routing, built into GoHighLevel. Reach out, pick up, and keep the customer record close.',
   primaryLabel: 'GET STARTED',
-  secondaryLabel: 'SEE HOW IT WORKS',
+  secondaryLabel: 'INTERACTIVE DEMO',
 };
 export const homeFeaturePreviewItems = [
   {
@@ -22,8 +22,6 @@ export const homeFeaturePreviewItems = [
     label: 'INBOUND',
     title: 'Be there when\nthey call.',
     body: 'Give incoming calls a path to the right rep. Route by availability and queue rules, answer in the browser or on a phone, and offer a callback or voicemail when the team is busy.',
-    ctaLabel: 'Explore inbound calling',
-    ctaHref: '/how-it-works#inbound',
     icon: 'inbound',
   },
   {
@@ -31,8 +29,6 @@ export const homeFeaturePreviewItems = [
     label: 'OUTBOUND',
     title: 'Less dialing.\nMore talking.',
     body: 'Work your GoHighLevel contact and opportunity queues with multi-line dialing. Connect a live answer to an available rep, with local presence and the customer record close at hand.',
-    ctaLabel: 'Explore outbound calling',
-    ctaHref: '/how-it-works#outbound',
     icon: 'outbound',
   },
   {
@@ -40,8 +36,6 @@ export const homeFeaturePreviewItems = [
     label: 'ANALYTICS',
     title: 'Know what\nhappened next.',
     body: 'Review call activity, outcomes and history without losing the customer context. See who needs a follow-up and use the record of each conversation to plan the next one.',
-    ctaLabel: 'Explore call history',
-    ctaHref: '/how-it-works#analytics',
     icon: 'analytics',
   },
   {
@@ -49,8 +43,6 @@ export const homeFeaturePreviewItems = [
     label: 'AI ASSISTANT',
     title: 'Your playbook.\nRight on cue.',
     body: 'Add Mercury coaching to bring scripts into the conversation, get a suggested response in AI mode, and review uploaded transcripts with your team. A little help while the rep does the selling.',
-    ctaLabel: 'Meet Mercury coaching',
-    ctaHref: '/pricing#addons',
     icon: 'mercury',
   },
 ] as const;
@@ -185,7 +177,7 @@ export const homeFaqItems: HomeFaqItem[] = [
       },
     ],
     linkLabel: 'See the calling flow',
-    linkHref: '/how-it-works#inbound',
+    linkHref: '/#inbound',
   },
   {
     question: 'What happens when nobody can answer?',
@@ -275,7 +267,7 @@ export const homeWorkspaceClose = {
   description:
     'Outbound dialing. Inbound routing. One place for your team to work the call.',
   primaryLabel: 'GET STARTED',
-  primaryHref: '/get-started',
-  secondaryLabel: 'COMPARE PLANS',
-  secondaryHref: '/pricing',
+  primaryHref: '/pricing',
+  secondaryLabel: 'INTERACTIVE DEMO',
+  secondaryHref: '/demo',
 };

@@ -3,6 +3,8 @@
 /guides https://docs.consuelohq.com/ 301
 /guides/ https://docs.consuelohq.com/ 301
 /faq /#faq 302
+/how-it-works /#features 301
+/how-it-works/ /#features 301
 
 /blog https://os.consuelohq.com/about/blog/ 302
 /blog/* https://os.consuelohq.com/about/blog/:splat 302

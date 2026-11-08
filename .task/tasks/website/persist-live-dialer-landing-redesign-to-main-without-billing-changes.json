@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/persist-live-dialer-landing-redesign-to-main-without-billing-changes",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2780,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2780",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-persist-live-dialer-landing-redesign-to-main-without-billing-changes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_45726914266c",
+  "tmuxSession": "opensaas-website-persist-live-dialer-landing-redesign-to-main-wit-45726914",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-persist-live-dialer-landing-redesign-to-main-without-billing-changes/.task/session.json",
+  "createdAt": "2026-11-06T05:05:10.403Z"
+}

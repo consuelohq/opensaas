@@ -1,0 +1,80 @@
+---
+import SiteHeader from '../components/site/SiteHeader.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import CloudField from '../components/visuals/CloudField.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+---
+
+<MarketingLayout
+  title="Interactive demo"
+  description="Preview Consuelo Dialer's sales-calling workflow. The interactive walkthrough is being prepared."
+  canonicalPath="/demo"
+>
+  <SiteHeader pageSections={[]} />
+  <main>
+    <section class="demo-waitlist" aria-labelledby="demo-title">
+      <CloudField />
+      <div class="demo-waitlist__content">
+        <p class="demo-waitlist__eyebrow">CONSUELO DIALER / INTERACTIVE DEMO</p>
+        <h1 id="demo-title">See the dialer <em>in action.</em></h1>
+        <p>The guided walkthrough is being prepared. In the meantime, explore what Consuelo can do or choose a plan to try it with your team.</p>
+        <div class="demo-waitlist__actions">
+          <a class="demo-waitlist__primary" href="/pricing">GET STARTED <span aria-hidden="true">↗</span></a>
+          <a class="demo-waitlist__secondary" href="/#features">EXPLORE CAPABILITIES <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </section>
+    <SiteFooter />
+  </main>
+</MarketingLayout>
+
+<style>
+  main { background: var(--site-color-brand); color: var(--site-color-on-brand); }
+  .demo-waitlist {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    min-height: 90svh;
+    overflow: hidden;
+    padding: clamp(10rem, 14vw, 13rem) var(--site-gutter) var(--site-space-8);
+    text-align: center;
+  }
+  .demo-waitlist__content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    justify-items: center;
+    gap: var(--site-space-5);
+    width: min(100%, 64rem);
+  }
+  .demo-waitlist__eyebrow { margin: 0; font: 650 var(--site-text-xs)/1 var(--site-font-mono); letter-spacing: var(--site-tracking-control); }
+  .demo-waitlist h1 { margin: 0; font: 430 clamp(3.5rem, 7vw, 7rem)/0.96 var(--site-font-display); text-wrap: balance; }
+  .demo-waitlist h1 em { display: block; font-style: normal; }
+  .demo-waitlist__content > p:not(.demo-waitlist__eyebrow) {
+    max-width: 36rem;
+    margin: 0;
+    font: 400 var(--site-text-md)/var(--site-leading-body) var(--site-font-body);
+    text-wrap: balance;
+  }
+  .demo-waitlist__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--site-space-4); margin-top: var(--site-space-4); }
+  .demo-waitlist__actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--site-space-2);
+    min-height: 3rem;
+    padding: var(--site-space-3) var(--site-space-5);
+    font: 650 var(--site-text-xs)/1 var(--site-font-mono);
+    letter-spacing: var(--site-tracking-control);
+    text-decoration: none;
+    transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  }
+  .demo-waitlist__primary { background: var(--site-color-on-brand); color: var(--site-color-brand); }
+  .demo-waitlist__secondary { color: var(--site-color-on-brand); border: 1px solid currentColor; }
+  .demo-waitlist__primary:hover, .demo-waitlist__primary:focus-visible { background: var(--site-color-soft-white); }
+  .demo-waitlist__secondary:hover, .demo-waitlist__secondary:focus-visible { background: var(--site-color-on-brand); color: var(--site-color-brand); }
+  .demo-waitlist__actions a:focus-visible { outline: 2px solid currentColor; outline-offset: var(--site-space-1); }
+  @media (max-width: 600px) { .demo-waitlist { min-height: 80svh; padding-top: var(--dialer-hero-mobile-top); } .demo-waitlist h1 { font-size: clamp(2.65rem, 11vw, 4rem); } }
+  @media (prefers-reduced-motion: reduce) { .demo-waitlist__actions a { transition: none; } }
+</style>
