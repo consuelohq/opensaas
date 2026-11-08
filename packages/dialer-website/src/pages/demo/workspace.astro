@@ -1,0 +1,176 @@
+---
+import appCss from '../../../../lead-connector/src/embed/styles.css?raw';
+import workspaceCss from '../../../../lead-connector/src/embed/workspace-theme.css?raw';
+const originalStyles = appCss + '\n' + workspaceCss.replaceAll(
+  'https://calls.consuelohq.com/fonts/',
+  '/demo/assets/',
+);
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'" />
+    <title>Consuelo Dialer — interactive workspace simulation</title>
+    <style is:inline set:html={originalStyles} />
+  </head>
+  <body class="ghl-demo-body">
+    <div class="ghl-simulation" data-demo-shell>
+      <aside class="ghl-sidebar" aria-hidden="true">
+        <div class="ghl-sidebar__mark">H</div>
+        <div class="ghl-sidebar__location"> <span class="ghl-location__initial">N</span> Northstar Insurance <span>⌄</span> </div>
+        <div class="ghl-sidebar__section">WORKSPACE</div>
+        <div class="ghl-sidebar__item"><span>▦</span> Dashboard</div>
+        <div class="ghl-sidebar__item"><span>♧</span> Conversations</div>
+        <div class="ghl-sidebar__item"><span>♙</span> Calendars</div>
+        <div class="ghl-sidebar__item"><span>◉</span> Contacts</div>
+        <div class="ghl-sidebar__item ghl-sidebar__item--active"><span>◫</span> Opportunities</div>
+        <div class="ghl-sidebar__item"><span>♧</span> Automation</div>
+        <div class="ghl-sidebar__section ghl-sidebar__section--later">YOUR TOOLS</div>
+        <div class="ghl-sidebar__item"><span>◉</span> Consuelo Dialer</div>
+        <div class="ghl-sidebar__foot">Sample location <span>DEMO</span></div>
+      </aside>
+
+      <div class="ghl-main">
+        <header class="ghl-topbar" aria-hidden="true">
+          <span>Northstar Insurance <span class="ghl-topbar__sep">/</span> Opportunities</span>
+          <div class="ghl-topbar__right"><span>◷</span><span>◉</span><span class="ghl-topbar__avatar">AM</span></div>
+        </header>
+        <main class="ghl-crm" aria-hidden="true">
+          <div class="ghl-crm__heading">
+            <div><span>PIPELINE</span><h1>Sales pipeline</h1><p>Track prospects from first contact to conversion.</p></div>
+            <span class="ghl-crm__new">+ New opportunity</span>
+          </div>
+          <div class="ghl-crm__filters"><span>All pipelines⌄</span><span>Insurance · New inquiries⌄</span><span>☷ Filters</span><span>⊞ Board view</span></div>
+          <div class="ghl-board">
+            <div class="ghl-board__column">
+              <header><span>New inquiries</span><strong>18</strong></header>
+              <div class="ghl-board__lead"><strong>Avery Morgan</strong><small>Life insurance · Quote requested</small><span>New · Today</span></div>
+              <div class="ghl-board__lead"><strong>Riley Chen</strong><small>Homeowners · Follow-up</small><span>New · Today</span></div>
+              <div class="ghl-board__lead"><strong>Jordan Blake</strong><small>Auto insurance · Inquiry</small><span>New · Today</span></div>
+              <div class="ghl-board__lead"><strong>Casey Ellis</strong><small>Life insurance · New lead</small><span>New · Yesterday</span></div>
+            </div>
+            <div class="ghl-board__column">
+              <header><span>Contacted</span><strong data-demo-contacted-count>7</strong></header>
+              <div class="ghl-board__lead ghl-board__lead--featured" data-demo-crm-card><strong>Alex Rivera</strong><small>Life insurance · Discovery completed</small><span data-demo-crm-outcome>Call logged</span></div>
+              <div class="ghl-board__lead"><strong>Taylor Reed</strong><small>Homeowners · Interested</small><span>Called · Yesterday</span></div>
+            </div>
+            <div class="ghl-board__column">
+              <header><span>Proposal sent</span><strong>4</strong></header>
+              <div class="ghl-board__lead"><strong>Sam Carter</strong><small>Life insurance · Policy review</small><span>Proposal shared</span></div>
+            </div>
+            <div class="ghl-board__column">
+              <header><span>Won</span><strong>12</strong></header>
+              <div class="ghl-board__lead"><strong>Morgan Lee</strong><small>Auto policy · Activated</small><span>Closed won</span></div>
+            </div>
+          </div>
+        </main>
+      </div>
+      <div class="ghl-demo-scrim" aria-hidden="true"></div>
+
+      <section class="demo-window" aria-label="Consuelo calling window">
+        <div class="demo-window__chrome">
+          <span class="demo-window__dot"></span><span>Consuelo Dialer</span><span class="demo-window__label">IN GOHIGHLEVEL</span>
+          <span class="demo-window__spacer"></span><span>▣</span>
+        </div>
+        <div id="dialer-sim-app" data-demo-dialer aria-live="polite"></div>
+      </section>
+      <div class="ghl-demo-stamp" role="note"><span></span> All people and calls are simulated. No calls placed.</div>
+      <div class="ghl-demo-toast" role="status" data-demo-toast hidden></div>
+    </div>
+    <script>
+      import { mountDialerSimulation } from '../../scripts/demo/dialer-simulator.ts';
+      mountDialerSimulation(document);
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  * { box-sizing: border-box; }
+  html, body { min-width: 300px; width: 100%; height: 100%; margin: 0; overflow: hidden; }
+  .ghl-demo-body { background: #f8f9fc !important; color: #18243b; font-family: Consuelo Interface,Inter,system-ui,sans-serif; color-scheme: light; }
+  .ghl-simulation { width: 100%; height: 100dvh; min-height: 360px; position: relative; overflow: hidden; }
+  .ghl-sidebar { position: absolute; z-index: 1; inset: 0 auto 0 0; width: 206px; padding: 18px 11px; color: #b9c5d8; background: #152035; font-size: 12px; }
+  .ghl-sidebar__mark { display: grid; place-items: center; width: 29px; height: 29px; color: white; font: 700 16px/1 system-ui; border: 1px solid #5a83ff; border-radius: 8px; background:#2851c5; margin: 3px 0 23px 8px; }
+  .ghl-sidebar__location { display: flex; align-items: center; gap: 8px; padding: 10px 7px; border-radius: 7px; background: #202e45; font-weight: 600; font-size: 11px; color: #fff; white-space: nowrap; }
+  .ghl-location__initial { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 5px; background: #a1afe8; color: #23365d; }
+  .ghl-sidebar__location span:last-child { margin-left:auto; }
+  .ghl-sidebar__section { margin: 32px 8px 12px; color:#8293ad; font-size: 9px; letter-spacing:.1em; font-weight:700; }
+  .ghl-sidebar__section--later { margin-top: 31px; }
+  .ghl-sidebar__item { display: flex; align-items: center; gap: 12px; height: 35px; padding: 0 12px; border-radius: 5px; font-size:11px; }
+  .ghl-sidebar__item span { width: 18px; text-align: center; font-size: 14px; }
+  .ghl-sidebar__item--active { background:#253550; color:white; font-weight:600; }
+  .ghl-sidebar__foot { position: absolute; bottom: 22px; left:19px; right:18px; display:flex; justify-content:space-between; gap:7px; font-size: 10px; color:#8b9bb6; }
+  .ghl-sidebar__foot span { letter-spacing:.1em; }
+  .ghl-main { position:absolute; left: 206px; inset-block:0; right:0; background:#f8f9fc; }
+  .ghl-topbar { display: flex; height:61px; align-items:center; justify-content:space-between; padding:0 26px; background:white; border-bottom:1px solid #e7eaf0; font-size:12px; font-weight:600; }
+  .ghl-topbar__sep { margin:0 8px; color:#aab2c0; }
+  .ghl-topbar__right { display:flex; align-items:center; gap:24px; color:#8793a7; font-size:15px; }
+  .ghl-topbar__avatar { display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#e2e7fa; color:#4663ab; font-size:10px; font-weight:700; }
+  .ghl-crm { padding: 30px 25px; }
+  .ghl-crm__heading { display:flex; justify-content:space-between; align-items:center; }
+  .ghl-crm__heading h1 { font: 600 24px/1.2 system-ui,sans-serif; margin:4px 0; }
+  .ghl-crm__heading span:first-child { font-size:9px; font-weight:700; color:#7d8aa1; letter-spacing:.12em; }
+  .ghl-crm__heading p { margin:6px 0 0; font-size:11px; color:#8b94a6; }
+  .ghl-crm__new { display:inline-block; background:#2765d8; color:white; padding:10px 14px; border-radius:6px; font-size:10px; }
+  .ghl-crm__filters { display:flex; gap:13px; margin:27px 0 18px; font-size:11px; color:#627085; }
+  .ghl-crm__filters span { padding:7px 11px; border:1px solid #e2e7ee; border-radius:6px; background:white; }
+  .ghl-board { display:grid; grid-template-columns:repeat(4,minmax(175px,1fr)); gap:13px; min-width:700px; }
+  .ghl-board__column { border-radius:9px; background:#edf0f4; min-height:510px; padding:12px; }
+  .ghl-board__column header { display:flex; justify-content:space-between; margin-bottom:13px; font-size:11px; font-weight:700; }
+  .ghl-board__column header strong { color:#8790a0; }
+  .ghl-board__lead { padding:13px 12px; margin-bottom:10px; background:white; border:1px solid #ebedf0; border-radius:7px; box-shadow:0 2px 5px #0f213009; display:grid; gap:8px; }
+  .ghl-board__lead strong { font-size:11px; }
+  .ghl-board__lead small { font-size:10px; color:#8a93a2; }
+  .ghl-board__lead span { font-size:9px; color:#697eab; }
+  .ghl-board__lead--featured { outline:1px solid #c7d2fa; }
+  .ghl-demo-scrim { position:absolute; z-index:2; inset:0; background:rgba(17,26,46,.22); pointer-events:none; }
+  .demo-window { position:absolute; z-index:3; inset:50% auto auto 50%; transform:translate(-50%,-50%); display:flex; flex-direction:column; width:min(445px,calc(100% - 40px)); height:min(590px,calc(100% - 44px)); border:1px solid #e7e8e5; border-radius:13px; box-shadow:0 25px 100px #111c2b3d,0 1px 8px #0b142022; background:#fff; overflow:hidden; }
+  .demo-window__chrome { display:flex; gap:9px; flex:0 0 29px; padding:7px 14px; align-items:center; background:#f8f8f6; border-bottom:1px solid #e9e9e5; color:#6f716e; font:500 10px/1 system-ui,sans-serif; }
+  .demo-window__dot { width:7px; height:7px; border-radius:50%; background:#319e68; }
+  .demo-window__label { font-size:8px; letter-spacing:.09em; color:#9a9e9c; }
+  .demo-window__spacer { flex:1; }
+  #dialer-sim-app { display:flex; flex:1; min-height:0; min-width:0; background:#fff; }
+  #dialer-sim-app > .calling-workspace { width:100%; height:100%; margin:0; border:0; border-radius:0; box-shadow:none; }
+  #dialer-sim-app > .calling-workspace .workspace-content { padding-block:18px; }
+  #dialer-sim-app > .calling-workspace .workspace-header { padding:13px 20px; }
+  #dialer-sim-app > .calling-workspace .workspace-header .workspace-brand img { border:none; border-radius:0; }
+  #dialer-sim-app > .calling-workspace .direction-tabs { margin:12px 20px 0; }
+  #dialer-sim-app > .calling-workspace .workspace-footer { padding:10px 20px; }
+  .ghl-demo-stamp { position:absolute; z-index:4; bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; width:max-content; max-width:calc(100% - 20px); padding:8px 13px; background:#131d31e8; border:1px solid #ffffff1a; border-radius:999px; color:#fff; font:500 10px/1.35 system-ui,sans-serif; text-align:center; }
+  .ghl-demo-stamp span { flex:0 0 7px; height:7px; border-radius:50%; background:#7dd6aa; }
+  .ghl-demo-toast { position:absolute; z-index:5; top:45px; right:20px; padding:11px 15px; background:#152035; color:white; border-radius:8px; box-shadow:0 8px 28px #0002; font-size:12px; max-width:280px; }
+  .ghl-demo-toast[hidden] { display:none; }
+  @media (max-width:800px) {
+    .ghl-sidebar { width:58px; padding-inline:5px; }
+    .ghl-sidebar__mark { margin-left:8px; }
+    .ghl-sidebar__location, .ghl-sidebar__section,.ghl-sidebar__item { font-size:0; padding-inline:0; justify-content:center; }
+    .ghl-sidebar__item span { font-size:16px; }
+    .ghl-sidebar__foot { display:none; }
+    .ghl-main { left:58px; }
+    .ghl-board { grid-template-columns:repeat(3,minmax(160px,1fr)); }
+    .ghl-crm__heading { display:block; }
+    .ghl-crm__new { display:none; }
+  }
+  @media (max-width:540px) {
+    .ghl-sidebar { width:40px; padding:12px 0; }
+    .ghl-sidebar__mark { width:25px; height:25px; margin-left:6px; }
+    .ghl-sidebar__item { height:30px; }
+    .ghl-main { left:40px; }
+    .ghl-topbar { padding:0 14px; }
+    .ghl-topbar__right { display:none; }
+    .ghl-crm { padding:16px 12px; }
+    .ghl-demo-scrim { background:rgba(17,26,46,.14); }
+    .demo-window { width:calc(100% - 18px); height:calc(100% - 58px); top:9px; left:9px; transform:none; }
+    .demo-window__chrome { flex-basis:25px; padding:6px 12px; }
+    .ghl-demo-stamp { bottom:7px; font-size:9px; padding:5px 8px; }
+    #dialer-sim-app > .calling-workspace .workspace-content { padding:14px 15px; }
+    #dialer-sim-app > .calling-workspace .workspace-header { padding:11px 13px; }
+    #dialer-sim-app > .calling-workspace .direction-tabs { margin:10px 13px 0; }
+    #dialer-sim-app > .calling-workspace .workspace-footer { padding:9px 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *:before, *:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+</style>

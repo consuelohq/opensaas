@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2794,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2794",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-build-source-faithful-interactive-ghl-dialer-demo-and-ship-website",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_35cce62169f5",
+  "tmuxSession": "opensaas-website-build-source-faithful-interactive-ghl-dialer-dem-35cce621",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/.task/session.json",
+  "createdAt": "2026-11-08T15:29:12.304Z"
+}

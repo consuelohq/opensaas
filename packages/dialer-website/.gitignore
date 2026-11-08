@@ -50,3 +50,8 @@ public/generated/
 /public/apple-touch-icon.png
 
 /public/consuelo-dialer-pricing-og-20261030.png
+
+# Exact first-party embed assets are materialized from lead-connector sources.
+# Never send binary WOFF2 files through the UTF-8 task publish path.
+/public/consuelo-logo.svg
+/public/demo/assets/
