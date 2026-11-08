@@ -11,7 +11,8 @@ export default defineConfig({
   integrations: [react(), icon(), sitemap({
     filter: (page) => {
       const pathname = new URL(page).pathname;
-      return !pathname.startsWith('/calls/api/') && !/^\/login(?:\/|$)/.test(pathname)
+      return !pathname.startsWith('/calls/api/') && !pathname.startsWith('/demo/workspace/')
+        && !/^\/login(?:\/|$)/.test(pathname)
         && !/^\/404(?:\.|\/|$)/.test(pathname) && !/\.(?:txt|xml|md)$/.test(pathname);
     },
   })],

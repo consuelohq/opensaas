@@ -1,80 +1,241 @@
 ---
 import SiteHeader from '../components/site/SiteHeader.astro';
 import SiteFooter from '../components/site/SiteFooter.astro';
-import CloudField from '../components/visuals/CloudField.astro';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
 ---
 
 <MarketingLayout
   title="Interactive demo"
-  description="Preview Consuelo Dialer's sales-calling workflow. The interactive walkthrough is being prepared."
+  description="Try Consuelo Dialer's actual GoHighLevel calling workspace with fictional leads. Place simulated calls, answer an inbound call, and explore Mercury without signing up."
   canonicalPath="/demo"
 >
   <SiteHeader pageSections={[]} />
-  <main>
-    <section class="demo-waitlist" aria-labelledby="demo-title">
-      <CloudField />
-      <div class="demo-waitlist__content">
-        <p class="demo-waitlist__eyebrow">CONSUELO DIALER / INTERACTIVE DEMO</p>
-        <h1 id="demo-title">See the dialer <em>in action.</em></h1>
-        <p>The guided walkthrough is being prepared. In the meantime, explore what Consuelo can do or choose a plan to try it with your team.</p>
-        <div class="demo-waitlist__actions">
-          <a class="demo-waitlist__primary" href="/pricing">GET STARTED <span aria-hidden="true">↗</span></a>
-          <a class="demo-waitlist__secondary" href="/#features">EXPLORE CAPABILITIES <span aria-hidden="true">↗</span></a>
+  <main class="demo-page" id="demo">
+    <div class="demo-page__intro">
+      <p class="demo-page__eyebrow"><span class="demo-page__indicator"></span> THE REAL WORKSPACE. A SAFE SIMULATION.</p>
+      <h1>See how a good <em>calling day</em> feels.</h1>
+      <p>Explore the same Consuelo Dialer interface your team uses inside GoHighLevel. Fictional leads, simulated calls, and no account required.</p>
+    </div>
+
+    <section class="demo-experience" aria-label="Interactive dialer demo">
+      <div class="demo-experience__toolbar">
+        <div class="demo-experience__modes" role="group" aria-label="Choose a demo workflow">
+          <button type="button" data-demo-flow="outbound" aria-pressed="true">Outbound dialing</button>
+          <button type="button" data-demo-flow="inbound" aria-pressed="false">Inbound routing</button>
+          <button type="button" data-demo-flow="mercury" aria-pressed="false">Mercury scripts</button>
         </div>
+        <button type="button" class="demo-experience__reset" data-demo-reset aria-label="Restart this demo">↺ <span>Restart</span></button>
+      </div>
+
+      <div class="demo-experience__body">
+        <div class="demo-stage">
+          <div class="demo-stage__top">
+            <span><span class="demo-stage__live"></span> WORKING SIMULATION</span>
+            <span>CONSUELO × GOHIGHLEVEL</span>
+          </div>
+          <iframe
+            id="consuelo-demo-frame"
+            src="/demo/workspace/"
+            title="Interactive Consuelo Dialer"
+            loading="eager"
+            referrerpolicy="no-referrer"
+            allow="none"
+          ></iframe>
+        </div>
+
+        <aside class="demo-narrative" aria-live="polite">
+          <div class="demo-narrative__meta">
+            <span data-demo-flow-name>OUTBOUND / 01</span>
+            <span>EXPLORE BY CLICKING</span>
+          </div>
+          <div class="demo-narrative__copy">
+            <span class="demo-narrative__step" data-demo-step>01 — READY TO CALL</span>
+            <h2 data-demo-title>Three lines.<br />One conversation.</h2>
+            <p data-demo-description>Pick a list and press Start calling. Watch how the dialer finds a human answer and clears the other lines.</p>
+          </div>
+          <div class="demo-narrative__activity" aria-label="Demo progress">
+            <div class="demo-narrative__progress"><span data-demo-progress style="width:16.6%"></span></div>
+            <div class="demo-narrative__status"><span data-demo-status-dot></span><span data-demo-status>READY FOR A CALL</span></div>
+          </div>
+          <div class="demo-narrative__tip">
+            <span class="demo-narrative__tip-number">↗</span>
+            <p data-demo-tip>Start in the Consuelo window. Everything you click is simulated—it won't call or update anyone's real CRM.</p>
+          </div>
+          <div class="demo-narrative__bottom">
+            <a href="/pricing" class="demo-narrative__cta">TRY CONSUELO WITH YOUR TEAM <span aria-hidden="true">↗</span></a>
+            <p>Already on GoHighLevel? No separate CRM to learn.</p>
+          </div>
+        </aside>
+      </div>
+      <div class="demo-experience__foot">
+        <span><span class="demo-experience__safe-dot"></span> No sign-in. No live phone calls. No real customer data.</span>
+        <a href="/pricing">Explore plans <span aria-hidden="true">↗</span></a>
       </div>
     </section>
-    <SiteFooter />
+
+    <section class="demo-closing" aria-label="Get started">
+      <p>READY FOR THE REAL THING?</p>
+      <h2>Less dialing.<br /><em>More talking.</em></h2>
+      <a href="/pricing">GET STARTED <span aria-hidden="true">↗</span></a>
+    </section>
+    <div class="demo-footer"><SiteFooter /></div>
   </main>
 </MarketingLayout>
 
+<script>
+  type DemoFlow = 'outbound' | 'inbound' | 'mercury';
+  const frame = document.querySelector<HTMLIFrameElement>('#consuelo-demo-frame');
+  const flowButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-demo-flow]'));
+  const reset = document.querySelector<HTMLButtonElement>('[data-demo-reset]');
+  const flowName = document.querySelector<HTMLElement>('[data-demo-flow-name]');
+  const stepLabel = document.querySelector<HTMLElement>('[data-demo-step]');
+  const title = document.querySelector<HTMLElement>('[data-demo-title]');
+  const description = document.querySelector<HTMLElement>('[data-demo-description]');
+  const tip = document.querySelector<HTMLElement>('[data-demo-tip]');
+  const progress = document.querySelector<HTMLElement>('[data-demo-progress]');
+  const status = document.querySelector<HTMLElement>('[data-demo-status]');
+  let activeFlow: DemoFlow = 'outbound';
+
+  const stories: Record<DemoFlow, Record<string, { step: string; title: string; description: string; tip: string; percent: number }>> = {
+    outbound: {
+      ready: { step: '01 — READY TO CALL', title: 'Three lines. One conversation.', description: 'Pick a list and press Start calling. Watch how the dialer finds a human answer and clears the other lines.', tip: 'Open Calling options to change the number of lines and caller ID. The controls come directly from the actual dialer.', percent: 16 },
+      dialing: { step: '02 — CALLING IN PARALLEL', title: 'You focus on the talk.', description: 'Three fictional prospects are being dialed. The simulated pickup will automatically focus the winning line.', tip: 'This is a timer-driven simulation—not a Twilio call. No customer is contacted.', percent: 40 },
+      connected: { step: '03 — LIVE ANSWER', title: 'A person picked up.', description: 'Avery answered. The other lines ended, and your Mercury script appeared beside the conversation.', tip: 'Try Next in the script, then Hang up to save a disposition.', percent: 70 },
+      'wrap-up': { step: '04 — THE NEXT STEP', title: 'Close the loop.', description: 'Select a call outcome and leave a note. Just as in the real workflow, the activity is ready to be written back to the CRM.', tip: 'Choose Follow up, write a note, and press Save and close.', percent: 85 },
+      saved: { step: '05 — CRM UPDATED', title: 'The call is handled.', description: 'Your fictional call now appears in the call history, with its disposition and note. The GHL sample pipeline reflects it too.', tip: 'Open Call history to inspect the activity or restart the demo to try again.', percent: 100 },
+    },
+    inbound: {
+      ready: { step: '01 — RECEIVE INBOUND', title: 'Never lose the handoff.', description: 'Your team can be ready to receive inbound calls in the browser or on a forwarding phone.', tip: 'Press Start receiving calls. A fictional inbound offer will appear shortly.', percent: 16 },
+      available: { step: '02 — YOU ARE AVAILABLE', title: 'Stay in your CRM.', description: 'The operator is available. You can keep working while the routing system finds the right rep.', tip: 'The simulation will present Jordan Blake as an incoming caller.', percent: 32 },
+      offering: { step: '03 — INCOMING CALL', title: 'The right rep gets the ring.', description: 'The lead has been routed to your browser. You can answer without switching to a separate call application.', tip: 'Press Answer call to connect the simulated caller.', percent: 56 },
+      connected: { step: '04 — CONNECTED', title: 'Pick up and get to work.', description: 'You are on the call. The workspace shows live status and keeps your script at hand.', tip: 'Press End call to wrap up the conversation.', percent: 75 },
+      'wrap-up': { step: '05 — WRAP-UP', title: 'Every call has an outcome.', description: 'Save the result before the next inbound call. Your activity stays attached to the fictional customer record.', tip: 'Choose a disposition and Save and finish.', percent: 88 },
+      saved: { step: '06 — FINISHED', title: 'Recorded in the CRM.', description: 'The example inbound call is in the history. Your team can move directly to the next conversation.', tip: 'Switch to outbound dialing or explore Mercury.', percent: 100 },
+    },
+    mercury: {
+      ready: { step: '01 — MERCURY', title: 'Your script, in the moment.', description: 'Mercury organizes the talking points for your team. Script mode shows one cue at a time while you speak.', tip: 'Open First conversation to read the playbook. AI mode is marked coming soon in the actual interface.', percent: 35 },
+    },
+  };
+  const renderStory = (flow: DemoFlow, stage: string) => {
+    const scene = stories[flow][stage] ?? stories[flow].ready;
+    if (!scene) return;
+    const human = { outbound: 'OUTBOUND', inbound: 'INBOUND', mercury: 'MERCURY' }[flow];
+    if (flowName) flowName.textContent = human + ' / ' + scene.step.slice(0, 2);
+    if (stepLabel) stepLabel.textContent = scene.step;
+    if (title) title.textContent = scene.title;
+    if (description) description.textContent = scene.description;
+    if (tip) tip.textContent = scene.tip;
+    if (progress) progress.style.width = scene.percent + '%';
+    if (status) status.textContent = stage === 'saved' ? 'SIMULATED CRM SYNC COMPLETE' : stage === 'connected' ? 'SIMULATED CALL CONNECTED' : stage.toUpperCase().replaceAll('-', ' ');
+  };
+  const send = (action: 'reset' | 'flow', flow?: DemoFlow) => {
+    frame?.contentWindow?.postMessage({ channel: 'consuelo-demo-control', action, flow }, window.location.origin);
+  };
+  flowButtons.forEach((button) => button.addEventListener('click', () => {
+    const flow = button.dataset.demoFlow as DemoFlow;
+    if (!stories[flow]) return;
+    activeFlow = flow;
+    flowButtons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+    renderStory(flow, 'ready');
+    send('flow', flow);
+  }));
+  reset?.addEventListener('click', () => { renderStory(activeFlow, 'ready'); send('reset'); });
+  window.addEventListener('message', (event: MessageEvent) => {
+    if (event.origin !== window.location.origin || event.source !== frame?.contentWindow) return;
+    const data = event.data;
+    if (!data || data.channel !== 'consuelo-demo-v1' || data.flow !== activeFlow) return;
+    renderStory(activeFlow, data.stage);
+  });
+  renderStory(activeFlow, 'ready');
+</script>
+
 <style>
-  main { background: var(--site-color-brand); color: var(--site-color-on-brand); }
-  .demo-waitlist {
-    position: relative;
-    isolation: isolate;
-    display: grid;
-    place-items: center;
-    min-height: 90svh;
-    overflow: hidden;
-    padding: clamp(10rem, 14vw, 13rem) var(--site-gutter) var(--site-space-8);
-    text-align: center;
+  .demo-page { background: #fff; color:#151515; }
+  .demo-page__intro { background: #0000f2; color:#fff; padding:clamp(9rem,15vw,12rem) var(--site-gutter) clamp(3.4rem,6vw,6rem); text-align:center; display:grid; justify-items:center; gap:21px; }
+  .demo-page__eyebrow { display:flex; align-items:center; justify-content:center; gap:10px; margin:0; font:600 10px/1.5 var(--site-font-mono); letter-spacing:.11em; }
+  .demo-page__indicator { width:7px; height:7px; background:#a7ffce; border-radius:50%; box-shadow:0 0 0 5px #a7ffce20; }
+  .demo-page__intro h1 { max-width:1000px; margin:0; font:430 clamp(3.7rem,7.6vw,8rem)/.96 var(--site-font-display); letter-spacing:-.035em; text-wrap:balance; }
+  .demo-page__intro h1 em { font-style:normal; opacity:.78; }
+  .demo-page__intro > p:last-child { max-width:580px; margin:0; font:400 clamp(14px,1.5vw,18px)/1.5 var(--site-font-body); text-wrap:balance; }
+  .demo-experience { max-width:1700px; margin:0 auto; padding:clamp(25px,4vw,56px) clamp(18px,3.5vw,62px) 100px; }
+  .demo-experience__toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:19px; }
+  .demo-experience__modes { display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
+  .demo-experience__modes button,.demo-experience__reset { font:600 11px/1.3 var(--site-font-body); border:0; background:transparent; color:#5a5a5a; padding:12px 17px; border-radius:6px; cursor:pointer; transition:background .18s,color .18s; }
+  .demo-experience__modes button[aria-pressed=true] { color:#fff; background:#151515; }
+  .demo-experience__modes button:hover:not([aria-pressed=true]),.demo-experience__reset:hover { background:#f0f0ee; color:#151515; }
+  .demo-experience__reset { padding-inline:11px; flex:0 0 auto; }
+  .demo-experience__body { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(285px,.72fr); align-items:stretch; gap:clamp(16px,2.2vw,30px); }
+  .demo-stage { min-width:0; overflow:hidden; background:#e6e9f1; border-radius:10px; box-shadow:0 16px 65px #1414140b; }
+  .demo-stage__top { height:35px; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 17px; background:#f5f5f3; color:#777; font:600 9px/1 var(--site-font-mono); letter-spacing:.07em; }
+  .demo-stage__top > span:first-child { display:inline-flex; align-items:center; gap:7px; color:#333; }
+  .demo-stage__live { width:6px; height:6px; border-radius:50%; background:#2fa36a; }
+  .demo-stage iframe { display:block; width:100%; height:clamp(610px,50vw,750px); border:0; background:#f8f9fc; }
+  .demo-narrative { display:flex; flex-direction:column; min-width:0; gap:20px; padding:clamp(18px,2vw,30px) clamp(10px,1.4vw,24px); }
+  .demo-narrative__meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font:700 10px/1.4 var(--site-font-mono); letter-spacing:.09em; }
+  .demo-narrative__meta span:last-child { color:#999; font-size:9px; }
+  .demo-narrative__copy { display:grid; gap:17px; margin-top:clamp(25px,4.8vw,78px); }
+  .demo-narrative__step { color:#0000f2; font:600 10px/1.5 var(--site-font-mono); letter-spacing:.09em; }
+  .demo-narrative__copy h2 { max-width:440px; margin:0; font:430 clamp(2.8rem,4.2vw,5rem)/1.03 var(--site-font-display); letter-spacing:-.02em; text-wrap:balance; }
+  .demo-narrative__copy > p { max-width:390px; margin:0; color:#606060; font:400 15px/1.7 var(--site-font-body); }
+  .demo-narrative__activity { margin-top:auto; display:grid; gap:13px; }
+  .demo-narrative__progress { width:100%; height:2px; background:#e7e7e5; overflow:hidden; }
+  .demo-narrative__progress span { display:block; height:100%; background:#0000f2; transition:width .45s ease; }
+  .demo-narrative__status { display:flex; align-items:center; gap:7px; color:#626262; font:700 10px/1.4 var(--site-font-mono); letter-spacing:.04em; }
+  .demo-narrative__status > span:first-child { width:7px; height:7px; border-radius:50%; background:#25a66e; }
+  .demo-narrative__tip { display:flex; align-items:flex-start; gap:10px; padding:12px 0; }
+  .demo-narrative__tip-number { color:#0000f2; font-size:18px; line-height:1; }
+  .demo-narrative__tip p { margin:0; max-width:420px; color:#7a7a7a; font:400 13px/1.55 var(--site-font-body); }
+  .demo-narrative__bottom { display:grid; gap:10px; }
+  .demo-narrative__cta { display:inline-flex; align-items:center; justify-content:space-between; gap:10px; width:100%; min-height:49px; padding:15px 17px; background:#0000f2; color:#fff; font:700 10px/1 var(--site-font-mono); letter-spacing:.035em; text-decoration:none; transition:background .2s ease; }
+  .demo-narrative__cta:hover { background:#1717ad; }
+  .demo-narrative__bottom p { margin:0; color:#969696; font:400 11px/1.4 var(--site-font-body); }
+  .demo-experience__foot { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:18px; font:500 11px/1.5 var(--site-font-body); color:#858585; }
+  .demo-experience__foot > span { display:inline-flex; align-items:center; gap:8px; }
+  .demo-experience__safe-dot { width:7px; height:7px; border-radius:50%; background:#389c72; flex:0 0 auto; }
+  .demo-experience__foot a { color:#222; text-decoration:underline; text-underline-offset:3px; }
+  .demo-closing { display:grid; justify-items:center; gap:23px; padding:clamp(90px,14vw,180px) 22px; text-align:center; background:#0000f2; color:#fff; }
+  .demo-closing p { margin:0; font:700 10px/1.2 var(--site-font-mono); letter-spacing:.12em; }
+  .demo-closing h2 { margin:0; font:430 clamp(3.8rem,8vw,8.5rem)/.93 var(--site-font-display); letter-spacing:-.03em; }
+  .demo-closing h2 em { font-style:normal; opacity:.8; }
+  .demo-closing a { display:inline-flex; gap:14px; justify-content:center; align-items:center; min-width:200px; padding:17px 22px; background:#fff; color:#0000f2; text-decoration:none; font:700 11px/1 var(--site-font-mono); letter-spacing:.06em; }
+  .demo-footer { background:var(--site-color-brand); color:var(--site-color-on-brand); }
+  .demo-page :is(button,a):focus-visible { outline:2px solid #0000f2; outline-offset:3px; }
+  .demo-closing a:focus-visible { outline-color:#fff; }
+  @media (max-width:1100px) {
+    .demo-experience__body { grid-template-columns:minmax(0,1.5fr) minmax(265px,.85fr); }
+    .demo-narrative__copy { margin-top:8px; }
+    .demo-narrative__copy h2 { font-size:clamp(2.6rem,4.1vw,4rem); }
+    .demo-narrative { padding-inline:6px; }
   }
-  .demo-waitlist__content {
-    position: relative;
-    z-index: 2;
-    display: grid;
-    justify-items: center;
-    gap: var(--site-space-5);
-    width: min(100%, 64rem);
+  @media (max-width:860px) {
+    .demo-experience__body { grid-template-columns:1fr; }
+    .demo-narrative { gap:17px; padding:20px 8px 8px; }
+    .demo-narrative__copy { gap:10px; margin:5px 0; }
+    .demo-narrative__copy h2 { font-size:clamp(2.8rem,7vw,4rem); }
+    .demo-narrative__activity { margin-top:15px; }
+    .demo-narrative__bottom { max-width:450px; }
+    .demo-stage iframe { height:min(690px,80dvh); min-height:490px; }
   }
-  .demo-waitlist__eyebrow { margin: 0; font: 650 var(--site-text-xs)/1 var(--site-font-mono); letter-spacing: var(--site-tracking-control); }
-  .demo-waitlist h1 { margin: 0; font: 430 clamp(3.5rem, 7vw, 7rem)/0.96 var(--site-font-display); text-wrap: balance; }
-  .demo-waitlist h1 em { display: block; font-style: normal; }
-  .demo-waitlist__content > p:not(.demo-waitlist__eyebrow) {
-    max-width: 36rem;
-    margin: 0;
-    font: 400 var(--site-text-md)/var(--site-leading-body) var(--site-font-body);
-    text-wrap: balance;
+  @media (max-width:600px) {
+    .demo-page__intro { padding:9.5rem 18px 48px; gap:17px; }
+    .demo-page__intro h1 { font-size:clamp(3rem,13vw,5rem); }
+    .demo-page__intro > p:last-child { font-size:14px; }
+    .demo-experience { padding:22px 10px 75px; }
+    .demo-experience__toolbar { flex-direction:column; align-items:stretch; gap:5px; margin-bottom:12px; }
+    .demo-experience__modes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
+    .demo-experience__modes button { font-size:10px; line-height:1.1; padding:13px 4px; }
+    .demo-experience__reset { align-self:flex-end; padding:8px 12px; }
+    .demo-stage { border-radius:6px; }
+    .demo-stage__top { height:28px; font-size:8px; padding-inline:9px; }
+    .demo-stage__top > span:last-child { display:none; }
+    .demo-stage iframe { height:635px; min-height:0; }
+    .demo-narrative__meta span:last-child { font-size:8px; }
+    .demo-experience__foot { align-items:flex-start; font-size:10px; }
+    .demo-experience__foot > span { max-width:70%; }
+    .demo-closing { padding:95px 20px; }
+    .demo-closing h2 { font-size:clamp(3.5rem,12vw,5.5rem); }
   }
-  .demo-waitlist__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--site-space-4); margin-top: var(--site-space-4); }
-  .demo-waitlist__actions a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--site-space-2);
-    min-height: 3rem;
-    padding: var(--site-space-3) var(--site-space-5);
-    font: 650 var(--site-text-xs)/1 var(--site-font-mono);
-    letter-spacing: var(--site-tracking-control);
-    text-decoration: none;
-    transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  @media (prefers-reduced-motion:reduce) {
+    .demo-narrative__progress span, .demo-narrative__cta,.demo-experience__modes button,.demo-experience__reset { transition:none; }
   }
-  .demo-waitlist__primary { background: var(--site-color-on-brand); color: var(--site-color-brand); }
-  .demo-waitlist__secondary { color: var(--site-color-on-brand); border: 1px solid currentColor; }
-  .demo-waitlist__primary:hover, .demo-waitlist__primary:focus-visible { background: var(--site-color-soft-white); }
-  .demo-waitlist__secondary:hover, .demo-waitlist__secondary:focus-visible { background: var(--site-color-on-brand); color: var(--site-color-brand); }
-  .demo-waitlist__actions a:focus-visible { outline: 2px solid currentColor; outline-offset: var(--site-space-1); }
-  @media (max-width: 600px) { .demo-waitlist { min-height: 80svh; padding-top: var(--dialer-hero-mobile-top); } .demo-waitlist h1 { font-size: clamp(2.65rem, 11vw, 4rem); } }
-  @media (prefers-reduced-motion: reduce) { .demo-waitlist__actions a { transition: none; } }
 </style>

@@ -12,7 +12,7 @@
     "build": "bun scripts/materialize-public-assets.ts && astro check && astro build",
     "preview": "astro preview",
     "test": "bun test tests",
-    "test:browser": "node scripts/test-marketing-browser.mjs",
+    "test:browser": "node scripts/test-marketing-browser.mjs && node scripts/test-demo-browser.mjs",
     "generate:social-card": "bun scripts/generate-social-card.ts",
     "astro": "astro",
     "test:pricing-browser": "node scripts/test-pricing-browser.mjs"
