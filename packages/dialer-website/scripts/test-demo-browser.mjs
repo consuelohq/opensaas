@@ -32,7 +32,15 @@ const server = createServer((req, res) => {
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = 'http://127.0.0.1:' + server.address().port;
-const exec = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const exec =
+  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ||
+  [
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/usr/bin/google-chrome',
+    '/opt/google/chrome/chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+  ].find((path) => existsSync(path));
 let browser;
 const emit = (data) => process.stdout.write(JSON.stringify(data) + '\n');
 try {

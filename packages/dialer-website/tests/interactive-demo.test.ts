@@ -49,4 +49,11 @@ describe('interactive GHL Dialer demo', () => {
     expect(materializer).toContain("data.toString('ascii', 0, 4) !== 'wOF2'");
     expect(read('.gitignore')).toContain('/public/demo/assets/');
   });
+
+  it('launches the browser demo regression on Linux CI as well as macOS', () => {
+    const browserTest = read('scripts/test-demo-browser.mjs');
+    expect(browserTest).toContain('PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH');
+    expect(browserTest).toContain('/usr/bin/google-chrome');
+    expect(browserTest).toContain('find((path) => existsSync(path))');
+  });
 });

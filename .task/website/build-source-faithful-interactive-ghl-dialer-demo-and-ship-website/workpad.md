@@ -15,11 +15,16 @@ started: 2026-11-08
 
 ## files changed
 
-- `packages/dialer-website/scripts/test-demo-browser.mjs`
+- `packages/dialer-website/.gitignore`
+- `packages/dialer-website/astro.config.mjs`
+- `packages/dialer-website/package.json`
+- `packages/dialer-website/scripts/materialize-public-assets.ts`
 - `packages/dialer-website/src/pages/demo.astro`
+- `packages/dialer-website/scripts/test-demo-browser.mjs`
 - `packages/dialer-website/src/pages/demo/workspace.astro`
 - `packages/dialer-website/src/scripts/demo/dialer-simulator.ts`
 - `packages/dialer-website/tests/interactive-demo.test.ts`
+
 
 ## key decisions
 
@@ -141,3 +146,7 @@ no-test waiver: none.
 - 2026-11-08 15:42:13 apply-patch: `packages/dialer-website/tests/interactive-demo.test.ts`
 - 2026-11-08 15:42:38 `review.run`: passed — OK
 - 2026-11-08 15:44:38 `verify`: passed — OK
+- 2026-11-08 15:47:07 apply-patch: `packages/dialer-website/scripts/test-demo-browser.mjs`
+- 2026-11-08 15:47:17 apply-patch: `packages/dialer-website/tests/interactive-demo.test.ts`
+- 2026-11-08 15:47:27 `review.run`: passed — OK
+- 2026-11-08 15:49:33 `verify`: passed — OK
