@@ -180,6 +180,7 @@ export const mountDialerSimulation = (document: Document): void => {
   let flow: DemoFlow = 'outbound';
   let timerIds: number[] = [];
   let toastId = 0;
+  let toastTimer: number | null = null;
   let completed = 0;
 
   const clearTimers = () => {
@@ -189,25 +190,36 @@ export const mountDialerSimulation = (document: Document): void => {
   const later = (fn: () => void, delay: number) => {
     timerIds.push(host.setTimeout(fn, delay));
   };
-  const notify = (stage: string, label: string) => {
+  const clearToast = () => {
+    if (toastTimer !== null) host.clearTimeout(toastTimer);
+    toastTimer = null;
+    ++toastId;
+  };
+  const notify = (stage: string, label: string, directionChange = false) => {
     const data: DemoState = { flow, stage, label };
-    if (host.parent !== host) host.parent.postMessage({ channel: 'consuelo-demo-v1', ...data }, host.location.origin);
+    if (host.parent !== host) host.parent.postMessage({ channel: 'consuelo-demo-v1', ...data, directionChange }, host.location.origin);
   };
   const toast = (message: string) => {
     const el = document.querySelector<HTMLElement>('[data-demo-toast]');
     if (!el) return;
     el.textContent = message;
     el.hidden = false;
-    const ticket = ++toastId;
-    later(() => { if (ticket === toastId) el.hidden = true; }, 3500);
+    clearToast();
+    const ticket = toastId;
+    toastTimer = host.setTimeout(() => {
+      if (ticket === toastId) {
+        el.hidden = true;
+        toastTimer = null;
+      }
+    }, 3500);
   };
   const render = () => {
     app.innerHTML = renderLeadConnectorEmbed(state, { surface: 'overlay', workspace });
   };
-  const setFlow = (next: DemoFlow) => {
+  const setFlow = (next: DemoFlow, origin: 'parent' | 'embedded' = 'parent') => {
     clearTimers();
     completed = 0;
-    ++toastId;
+    clearToast();
     const crmCard = document.querySelector<HTMLElement>('[data-demo-crm-card]');
     const cardName = crmCard?.querySelector('strong');
     if (cardName) cardName.textContent = 'Alex Rivera';
@@ -234,7 +246,7 @@ export const mountDialerSimulation = (document: Document): void => {
       scriptStep: 0,
     };
     render();
-    notify('ready', next === 'inbound' ? 'Choose where inbound calls ring.' : next === 'mercury' ? 'Browse the real Mercury script workspace.' : 'Choose a list and start calling.');
+    notify('ready', next === 'inbound' ? 'Choose where inbound calls ring.' : next === 'mercury' ? 'Browse the real Mercury script workspace.' : 'Choose a list and start calling.', origin === 'embedded');
   };
 
   const updateCrm = (contactName: string, outcome: string) => {
@@ -413,8 +425,8 @@ export const mountDialerSimulation = (document: Document): void => {
         }
         break;
       }
-      case 'workspace-inbound': setFlow('inbound'); return;
-      case 'workspace-outbound': setFlow('outbound'); return;
+      case 'workspace-inbound': setFlow('inbound', 'embedded'); return;
+      case 'workspace-outbound': setFlow('outbound', 'embedded'); return;
       case 'start-configured': beginOutbound(); return;
       case 'stop':
         clearTimers();
@@ -578,7 +590,10 @@ export const mountDialerSimulation = (document: Document): void => {
     else if (message.action === 'flow' && ['outbound', 'inbound', 'mercury'].includes(message.flow)) setFlow(message.flow as DemoFlow);
   });
 
-  host.addEventListener('pagehide', clearTimers);
+  host.addEventListener('pagehide', () => {
+    clearTimers();
+    clearToast();
+  });
   render();
   notify('ready', 'Choose a list and start calling.');
 };

@@ -17,6 +17,7 @@ started: 2026-11-08
 
 - `packages/dialer-website/CLAIMS.md`
 - `packages/dialer-website/scripts/test-demo-browser.mjs`
+- `packages/dialer-website/src/data/dialer-content.ts`
 - `packages/dialer-website/src/pages/demo.astro`
 - `packages/dialer-website/src/pages/demo/workspace.astro`
 - `packages/dialer-website/src/scripts/demo/dialer-simulator.ts`
@@ -82,6 +83,7 @@ no-test waiver: none.
 
 - `packages/dialer-website/CLAIMS.md`
 - `packages/dialer-website/scripts/test-demo-browser.mjs`
+- `packages/dialer-website/src/data/dialer-content.ts`
 - `packages/dialer-website/src/pages/demo.astro`
 - `packages/dialer-website/src/pages/demo/workspace.astro`
 - `packages/dialer-website/src/scripts/demo/dialer-simulator.ts`
@@ -116,6 +118,7 @@ no-test waiver: none.
 - 2026-11-08 15:55:12 fs.write: `packages/dialer-website/CLAIMS.md`
 - 2026-11-08 15:56:28 fs.write: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
 - 2026-11-08 15:58:52 fs.write: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
+- 2026-11-08 16:01:31 fs.write: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
 
 ## Implementation and focused QA
 - Created source-faithful simulated Dialer using the genuine `renderLeadConnectorEmbed` and `reduceEmbedState`/`createInitialEmbedState` from `packages/lead-connector/src/embed/`; actual first-party embed CSS/fonts/logo; fictional GHL CRM context only. No customer data or live authentication.
@@ -158,6 +161,8 @@ no-test waiver: none.
 - 2026-11-08 15:56:04 apply-patch: `packages/dialer-website/scripts/test-demo-browser.mjs`
 - 2026-11-08 15:56:37 `review.run`: passed — OK
 - 2026-11-08 15:58:44 `verify`: passed — OK
+- 2026-11-08 16:01:19 `review.run`: passed — OK
+- 2026-11-08 16:03:36 `verify`: passed — OK
 
 ## Code review follow-up — 2026-11-08
 - Exact initial source `7521b3f6`, portable CI follow-up `56d643b`, and all 11 GitHub checks passed. Original live Cloudflare Pages deploy already served working demo.
@@ -177,3 +182,18 @@ no-test waiver: none.
 - Full Consuelo `verify` on origin/main (existing asynchronous worker) finished PASSED, publishValid=true, 0 failed suites, including full 8-viewport marketing and 3-viewport demo browser suites. Safe to update source PR #2794 with only website files; repeat exact-head GitHub CI and merge to main when safe, then Cloudflare Pages-only deploy and live smoke.
 
 - 2026-11-08 15:58:52 append: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`
+
+- 2026-11-08 15:59:53 apply-patch: `packages/dialer-website/tests/interactive-demo.test.ts`
+- 2026-11-08 16:00:11 apply-patch: `packages/dialer-website/src/pages/demo.astro`
+- 2026-11-08 16:00:11 apply-patch: `packages/dialer-website/src/data/dialer-content.ts`
+- 2026-11-08 16:00:11 apply-patch: `packages/dialer-website/package.json`
+- 2026-11-08 16:00:21 apply-patch: `packages/dialer-website/src/scripts/demo/dialer-simulator.ts`
+- 2026-11-08 16:00:39 apply-patch: `packages/dialer-website/scripts/test-demo-browser.mjs`
+
+## Final interactive synchronization follow-up
+- Reviewed CodeRabbit factual findings after first remediation: address iframe late-load race, parent guide/embedded direction desync and fixed-count/prospect copy; fresh-dev asset generation. Deferred only cosmetic token deduplication and extra repeat inbound scheduling because no safety/flow blocker.
+- Test-first new source checks RED 8 pass/2 expected fail then GREEN 10/10. Added browser E2E that reloads iframe while Mercury tab selected, asserts the same tab resumes, and switches direction inside live widget verifying parent guide follows. Desktop E2E passes. Added independent toast timer from call lifecycle so starting/stopping calls cannot leave stale notices; on reset/pagehide clear it.
+- Demo copy now neutral for 1–3 line counts and any chosen contact, all in typed content. `bun run dev` materializes first-party assets on a clean checkout.
+- Production Astro build successful, full unit tests 53/53, 352 expectations, strict review zero must-fix. Start exact-head formal verification and publish #2794 before main merge; live Pages deployment currently older safe release.
+
+- 2026-11-08 16:01:31 append: `.task/website/build-source-faithful-interactive-ghl-dialer-demo-and-ship-website/workpad.md`

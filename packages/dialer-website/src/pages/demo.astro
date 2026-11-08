@@ -114,6 +114,7 @@ import { interactiveDemoPage, interactiveDemoStories } from '../data/dialer-cont
   const send = (action: 'reset' | 'flow', flow?: DemoFlow) => {
     frame?.contentWindow?.postMessage({ channel: 'consuelo-demo-control', action, flow }, window.location.origin);
   };
+  frame?.addEventListener('load', () => send('flow', activeFlow));
   flowButtons.forEach((button) => button.addEventListener('click', () => {
     const flow = button.dataset.demoFlow as DemoFlow;
     if (!stories[flow]) return;
@@ -126,7 +127,17 @@ import { interactiveDemoPage, interactiveDemoStories } from '../data/dialer-cont
   window.addEventListener('message', (event: MessageEvent) => {
     if (event.origin !== window.location.origin || event.source !== frame?.contentWindow) return;
     const data = event.data;
-    if (!data || data.channel !== 'consuelo-demo-v1' || data.flow !== activeFlow) return;
+    if (!data || data.channel !== 'consuelo-demo-v1') return;
+    if (data.flow !== activeFlow) {
+      if (data.directionChange === true && data.stage === 'ready' && (data.flow === 'inbound' || data.flow === 'outbound')) {
+        activeFlow = data.flow;
+        flowButtons.forEach((item) => item.setAttribute('aria-pressed', String(item.dataset.demoFlow === activeFlow)));
+      } else {
+        // The iframe may have been loading when a workflow was selected.
+        if (data.stage === 'ready') send('flow', activeFlow);
+        return;
+      }
+    }
     renderStory(activeFlow, data.stage);
   });
   renderStory(activeFlow, 'ready');

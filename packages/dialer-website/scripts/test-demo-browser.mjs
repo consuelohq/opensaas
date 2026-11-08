@@ -146,6 +146,9 @@ try {
     );
     assert.equal(await frame.locator('[data-demo-contacted-count]').innerText(), '7');
     await frame.getByText('Scripts for your calling day.').waitFor();
+    // The parent keeps its Mercury choice even if the embedded frame reloads.
+    await frame.locator('body').evaluate(() => location.reload());
+    await frame.getByText('Scripts for your calling day.').waitFor({ timeout: 9000 });
     await frame.locator('[data-action="script-open"]').click();
     await frame.locator('.script-reader').waitFor();
     assert.match(await frame.locator('.script-reader').innerText(), /Northstar Insurance/);
@@ -155,6 +158,14 @@ try {
         ?.querySelector('[data-demo-contacted-count]')?.textContent === '7',
     );
     await frame.getByText('Scripts for your calling day.').waitFor();
+    await page.locator('[data-demo-flow="outbound"]').click();
+    await frame.locator('[data-action="start-configured"]').waitFor();
+    // In-window direction tabs synchronize the selected parent guide.
+    await frame.locator('[data-action="workspace-inbound"]').click();
+    await page.waitForFunction(() =>
+      document.querySelector('[data-demo-flow="inbound"]')?.getAttribute('aria-pressed') === 'true',
+    );
+    assert.match(await page.locator('[data-demo-title]').innerText(), /handoff/);
     await page.locator('[data-demo-flow="outbound"]').click();
     await frame.locator('[data-action="start-configured"]').waitFor();
     await frame.locator('[data-action="workspace-settings"]').click();

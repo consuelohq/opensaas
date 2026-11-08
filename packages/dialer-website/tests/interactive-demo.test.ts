@@ -76,4 +76,21 @@ describe('interactive GHL Dialer demo', () => {
     expect(simulator).toContain("case 'workspace-theme':");
     expect(simulator).toContain("form.dataset.form === 'transfer'");
   });
+
+  it('synchronizes embedded direction changes and late iframe startup with the parent guide', () => {
+    const parent = read('src/pages/demo.astro');
+    const simulator = read('src/scripts/demo/dialer-simulator.ts');
+    expect(parent).toContain("frame?.addEventListener('load'");
+    expect(parent).toContain('data.directionChange === true');
+    expect(simulator).toContain("setFlow('inbound', 'embedded')");
+    expect(simulator).toContain("setFlow('outbound', 'embedded')");
+    expect(simulator).toContain('directionChange');
+  });
+
+  it('keeps demo narrative neutral across contact selection and line count', () => {
+    const content = read('src/data/dialer-content.ts');
+    expect(content).not.toContain('Three fictional prospects are being dialed');
+    expect(content).not.toContain('Avery answered. The other lines ended');
+    expect(read('package.json')).toContain('bun scripts/materialize-public-assets.ts && astro dev');
+  });
 });
