@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1703-stable-script-first-on-call-workspace",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2799,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2799",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1703-stable-script-first-on-call-workspace",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9f2a8162c4a9",
+  "tmuxSession": "opensaas-dialer-dev-1703-stable-script-first-on-call-workspace-9f2a8162",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1703-stable-script-first-on-call-workspace/.task/session.json",
+  "createdAt": "2026-11-13T20:28:23.845Z"
+}

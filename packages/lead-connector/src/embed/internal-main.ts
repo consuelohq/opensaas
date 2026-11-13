@@ -9,7 +9,8 @@ import {
   canPersistWorkspacePreferences,
   selectScriptIdAfterReload,
 } from './workspace-recovery.js';
-import { scriptSteps } from './script-presentation.js';
+import { mercuryCallScope } from './mercury-call.js';
+import { mercuryAction, synchronizeMercuryScope } from './mercury-workspace.js';
 import { createNativeWorkspaceLauncher } from './native-workspace.js';
 import { createLeadConnectorEmbedApi } from './api-client.js';
 import { createLeadConnectorInboundOperatorApi } from './inbound-operator.js';
@@ -414,6 +415,10 @@ const paint = (): void => {
       ? workspace.locationId + ':' + state.inboundOperator.rep.repId
       : null;
   const callMode = activeCallingMode(state);
+  synchronizeMercuryScope(
+    workspace,
+    callMode ? mercuryCallScope(state, callMode) : null,
+  );
   if (
     scope &&
     canRestoreWorkspacePreferences(scope, preferenceScope, Boolean(callMode))
@@ -603,18 +608,7 @@ root.addEventListener('click', (event) => {
     }
     return;
   }
-  if (action === 'script-next' || action === 'script-previous') {
-    const script = workspace.coachingLibrary?.scripts.find(
-      (s) => s.id === workspace.activeScriptId,
-    );
-    const count = script ? scriptSteps(script.content).length : 0;
-    workspace.scriptStep = Math.max(
-      0,
-      Math.min(
-        count - 1,
-        (workspace.scriptStep ?? 0) + (action === 'script-next' ? 1 : -1),
-      ),
-    );
+  if (mercuryAction(workspace, action)) {
     render();
     return;
   }
