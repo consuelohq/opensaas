@@ -6,13 +6,17 @@ import { scriptSteps } from './script-presentation.js';
 export const receiveMercuryView = (
   workspace: CallingWorkspace,
   view: MercuryCueView,
+  authoritative = false,
 ): boolean => {
   if (view.scopeKey !== workspace.mercuryScope) return false;
   const history = workspace.mercuryHistory ?? [];
   const latest = history.at(-1);
   if (latest && view.revision <= latest.revision) return false;
   workspace.mercuryHistory = [...history, view].slice(-24);
-  if (!workspace.mercuryPinned && workspace.mercuryManualIndex === undefined)
+  if (
+    authoritative ||
+    (!workspace.mercuryPinned && workspace.mercuryManualIndex === undefined)
+  )
     workspace.mercuryCard = view;
   return true;
 };
@@ -23,11 +27,14 @@ export const synchronizeMercuryScope = (
 ): void => {
   if (workspace.mercuryScope === (scopeKey ?? undefined)) return;
   workspace.mercuryScope = scopeKey ?? undefined;
+  workspace.mercuryCaller = undefined;
   workspace.mercuryCard = undefined;
   workspace.mercuryHistory = [];
   workspace.mercuryManualIndex = undefined;
   workspace.mercuryPinned = false;
   workspace.confirmedConnection = undefined;
+  workspace.mercuryRemote = false;
+  workspace.mercuryFeedStatus = 'idle';
   workspace.scriptStep = 0;
 };
 

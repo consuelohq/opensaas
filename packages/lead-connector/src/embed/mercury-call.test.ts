@@ -224,3 +224,79 @@ it('does not replay a previously changed point fade on unchanged polling snapsho
   replaceWorkspace(root, page(update));
   expect(root.querySelectorAll('[data-cue-changed]')).toHaveLength(0);
 });
+
+it('labels a published but manual-only server feed as reference rather than live coaching', () => {
+  const doc = new JSDOM(
+    renderMercuryCue(
+      {
+        ...workspace,
+        mercuryRemote: true,
+        mercuryCard: { ...card, status: 'manual' },
+      },
+      card.scopeKey,
+    ),
+  ).window.document;
+  expect(doc.querySelector('.mercury-cue-status')?.textContent).toContain(
+    'Manual reference',
+  );
+  expect(
+    doc.querySelector('[data-action="script-next"]')?.hasAttribute('disabled'),
+  ).toBe(false);
+  const waiting = new JSDOM(
+    renderMercuryCue(
+      { ...workspace, mercuryFeedStatus: 'unavailable' },
+      card.scopeKey,
+    ),
+  ).window.document;
+  expect(waiting.querySelector('.mercury-cue-status')?.textContent).toContain(
+    'Live assistance unavailable',
+  );
+});
+
+it('retains the offered customer context only for the same inbound assignment generation', async () => {
+  const { mercuryCallScope, observeMercuryCaller, renderCallIdentity } =
+    await import('./mercury-call');
+  const state = createInitialEmbedState();
+  state.inboundOperator.offers = [
+    {
+      assignmentId: 'a',
+      requestId: 'r',
+      generation: 1,
+      queueId: 'q',
+      queueName: 'Life insurance',
+      callerLabel: 'Jordan Taylor',
+      waitingSeconds: 0,
+      offerExpiresAt: '2026-11-13T12:00:00Z',
+      ownerRepId: 'rep',
+      eligibleEndpoints: ['web'],
+    },
+  ];
+  const ws: CallingWorkspace = {
+    screen: 'calling',
+    mode: 'inbound',
+    compact: false,
+  };
+  ws.mercuryScope = mercuryCallScope(state, 'inbound') ?? undefined;
+  observeMercuryCaller(ws, state);
+  state.inboundOperator.offers = [];
+  state.inboundOperator.rep.assignment = {
+    assignmentId: 'a',
+    requestId: 'r',
+    generation: 1,
+    phase: 'connected',
+    offerExpiresAt: null,
+    endpointId: 'web',
+    externalStarted: true,
+    connectedAt: '2026-11-13T12:00:00Z',
+    unknownSince: null,
+    wrapUpUntil: null,
+  };
+  expect(renderCallIdentity(state, ws)).toContain('Jordan Taylor');
+  expect(renderCallIdentity(state, ws)).toContain('Life insurance');
+  state.inboundOperator.rep.assignment = {
+    ...state.inboundOperator.rep.assignment,
+    assignmentId: 'b',
+    generation: 2,
+  };
+  expect(renderCallIdentity(state, ws)).not.toContain('Jordan Taylor');
+});

@@ -1,5 +1,6 @@
 import type { LeadConnectorEmbedState } from './state-machine.js';
 import type { CallingWorkspace } from './calling-workspace.js';
+import { renderMercuryPublication } from './mercury-authoring.js';
 import { icon } from './workspace-icons.js';
 import { isProtectedStarterOwner } from './team-access-policy.js';
 import {
@@ -186,7 +187,7 @@ const mercury = (
       ? lib?.scripts.find((s) => s.id === workspace.scriptId)
       : null;
   if (active && !draft)
-    return `<div class="script-reader">${e(active.content)}</div>${active.canEdit ? `<button type="button" class="button button--secondary" data-action="script-edit" data-script-id="${e(active.id)}">Edit script</button>` : ''}`;
+    return `${renderMercuryPublication(active, workspace.mercuryPublication)}<div class="script-reader">${e(active.content)}</div>${active.canEdit ? `<button type="button" class="button button--secondary" data-action="script-edit" data-script-id="${e(active.id)}">Edit script</button>` : ''}`;
   if (draft)
     return `<form data-form="coaching-script"><label class="file-import">${icon('upload')}<span>Import a script</span><input type="file" data-field="script-file" accept=".txt,.md,text/plain,text/markdown" /></label><label>Script name<input name="title" required maxlength="120" value="${e(draft.title)}" placeholder="e.g. First conversation" /></label><label>Script<textarea name="content" required maxlength="100000" rows="11" placeholder="Your opening, discovery questions and next steps…">${e(draft.content)}</textarea></label><p class="form-caption">Saved scripts are shared with this workspace. Live AI coaching is configured separately.</p><div class="button-row"><button type="button" class="button button--secondary" data-action="script-cancel">Cancel</button><button type="submit" class="button button--primary"${workspace.scriptSaving ? ' disabled' : ''}>${workspace.scriptSaving ? 'Saving…' : 'Save script'}</button></div></form>`;
   return (
