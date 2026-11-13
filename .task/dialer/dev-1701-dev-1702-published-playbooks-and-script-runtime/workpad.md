@@ -15,23 +15,22 @@ started: 2026-11-13
 
 ## files changed
 
-- `packages/dialer-server/src/coaching/scripts.ts`
-- `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
-- `packages/dialer-server/src/database/migrations.test.ts`
-- `packages/dialer-server/src/database/migrations.ts`
-- `packages/dialer-server/src/routes/coaching.ts`
-- `packages/dialer-server/src/runtime/railway.ts`
-- `packages/dialer-server/src/coaching/README.md`
 - `packages/dialer-server/src/coaching/cue-service.ts`
 - `packages/dialer-server/src/coaching/playbook-store.ts`
 - `packages/dialer-server/src/coaching/playbooks-engine.test.ts`
 - `packages/dialer-server/src/coaching/playbooks.postgres.integration.test.ts`
 - `packages/dialer-server/src/coaching/playbooks.ts`
+- `packages/dialer-server/src/coaching/README.md`
 - `packages/dialer-server/src/coaching/review-regressions.test.ts`
 - `packages/dialer-server/src/coaching/script-engine.ts`
+- `packages/dialer-server/src/coaching/scripts.ts`
+- `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/routes/coaching.ts`
 - `packages/dialer-server/src/routes/mercury.ts`
 - `packages/dialer-server/src/runtime/coaching.ts`
-
+- `packages/dialer-server/src/runtime/railway.ts`
 
 ## key decisions
 
@@ -79,8 +78,14 @@ Default runtime live policy must fail closed/manual-reference until signed Mercu
 - `packages/dialer-server/src/coaching/README.md`
 - `packages/dialer-server/src/coaching/review-regressions.test.ts`
 - `packages/dialer-server/src/coaching/script-engine.ts`
+- `packages/dialer-server/src/coaching/scripts.ts`
+- `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/routes/coaching.ts`
 - `packages/dialer-server/src/routes/mercury.ts`
 - `packages/dialer-server/src/runtime/coaching.ts`
+- `packages/dialer-server/src/runtime/railway.ts`
 
 ## workspace-owned: activity log
 
@@ -118,12 +123,15 @@ Default runtime live policy must fail closed/manual-reference until signed Mercu
 - 2026-11-13 21:20:13 fs.write: `packages/dialer-server/src/coaching/README.md`
 - 2026-11-13 21:25:57 fs.write: `.task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/workpad.md`
 - 2026-11-13 21:26:59 fs.write: `.task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/workpad.md`
+- 2026-11-13 21:33:12 fs.write: `.task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-11-13 21:21:10 `review.run`: passed — OK
 - 2026-11-13 21:23:26 `review.run`: passed — OK
 - 2026-11-13 21:26:48 `verify`: passed — OK
+- 2026-11-13 21:32:27 `review.run`: passed — OK
+- 2026-11-13 21:33:18 `verify`: passed — OK
 
 ## Final checkpoint evidence and scope limits
 
@@ -146,3 +154,9 @@ NotDone / remainingacceptance: UIbrowserupload/preview/save/reload+liveapp.fetch
 FINAL strict review: zero findings after typed exception boundaries. Latest actual no-rules UI-equivalent PG/Hono path green27assertions trc_426f0a32f620. Latest focusedcoaching29tests142asserts + servertsc+compiledbuildgreen trc_5290bb20c91f (then sourceheading-only default provenPG). FormalFULLverify currenthash trc_dd9ca8af564a: passed/publishValid:true againstorigin/main; sixregistrysuitespassed including fullHono, nativebillingdisposablePG, prerequisites/CIcontracts; DBguard3risks0findings. No provider/modelnetworkcalls or credentials. Independentcoreproof inherited/preserved. PublishingtaskOnlytrue; rootownsretargetintegration99bcb4, exactheadCI/review/merge/release. DoNOTmark1701/1702Donefromthischeckpoint; remainingacceptance is README.
 
 - 2026-11-13 21:26:59 append: `.task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/workpad.md`
+
+## Actual UI adapter roundtrip correction
+
+Root held archive after Terra independently reproduced real UIpreview→Hono400 (trc_a95dab30b748, owned coaching-replay/client-roundtrip.postgres.integration.test.ts). Our prior Hono fixture supplied a publication ordinal onpreview and therefore did NOT establish that cross-boundary contract. Corrected canonicalbackendpreview to accept savedexpectedRevision ONLY, authorize source, derivecurrentpublishedMAXordinal fromstorage, andreturn {preview,expectedPublishedVersion}; publish stillrequires exactordinal+approved and CASchecks savedrevision. No default0forhistory. OwningPGregression red trc_445ae458b214→green trc_aca7b4536e89: initialbarepreviewordinal0; missingpublishordinal400; existingV1 +savedrev2 barepreviewordinal1/version2→exactpublishV2; samecallpinV1 persists.29focusedtests148assertions+servertscgreen, strictreviewzero; freshformalverifybeforefollowupsameleafpush. No task.prre-invocation; rootalreadyretargetedleafintegration. Prior31d938is superseded oncefollowup published; Terra ownsindependentactualclientroundtrip verdict.
+
+- 2026-11-13 21:33:12 append: `.task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/workpad.md`

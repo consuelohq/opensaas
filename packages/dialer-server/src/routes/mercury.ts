@@ -86,8 +86,9 @@ export function createMercuryRoutes(options: {
             !input ||
             !Number.isSafeInteger(input.expectedRevision) ||
             input.expectedRevision < 1 ||
-            !Number.isSafeInteger(input.expectedPublishedVersion) ||
-            input.expectedPublishedVersion < 0 ||
+            (action === 'publish' &&
+              (!Number.isSafeInteger(input.expectedPublishedVersion) ||
+                input.expectedPublishedVersion < 0)) ||
             (action === 'publish' && input.approved !== true)
           )
             throw new Error();
@@ -97,7 +98,7 @@ export function createMercuryRoutes(options: {
               error: {
                 code: 'INVALID_PLAYBOOK',
                 message:
-                  'Use saved revision, published revision, approved version labels and explicit approval.',
+                  'Use a saved revision for preview. Publication also needs its current published revision and explicit approval.',
                 retryable: false,
               },
             },
@@ -105,20 +106,23 @@ export function createMercuryRoutes(options: {
           );
         }
         try {
+          if (action === 'preview') {
+            const preview = await options.playbooks.preview(
+              c.get('identity'),
+              c.req.param('id')!,
+              input,
+            );
+            return c.json({
+              preview,
+              expectedPublishedVersion: preview.version - 1,
+            });
+          }
           return c.json(
-            action === 'preview'
-              ? {
-                  preview: await options.playbooks.preview(
-                    c.get('identity'),
-                    c.req.param('id')!,
-                    input,
-                  ),
-                }
-              : await options.playbooks.publish(
-                  c.get('identity'),
-                  c.req.param('id')!,
-                  input,
-                ),
+            await options.playbooks.publish(
+              c.get('identity'),
+              c.req.param('id')!,
+              input,
+            ),
           );
         } catch (e: unknown) {
           if (e instanceof PlaybookValidationError)

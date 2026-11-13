@@ -7,7 +7,7 @@ This server layer extends the existing100KB TXT/Markdown script library. It does
 All routes sit behind existing authenticated `/v1/*` middleware and no-store coaching middleware. Browser/model workspace/member IDs are ignored.
 
 - Existing `GET /v1/coaching/scripts` and revision-aware `PUT /v1/coaching/scripts/:id` remain. Server projections include `canEdit`/`canPublish` for creator/admin authority.
-- `POST /v1/coaching/scripts/:id/preview`: `{expectedRevision,expectedPublishedVersion}` → `{preview:CompiledPlaybook}`.
+- `POST /v1/coaching/scripts/:id/preview`: `{expectedRevision}` → `{preview:CompiledPlaybook,expectedPublishedVersion:number}`. Preview derives the current publication ordinal from authorized storage, including existing version history; publish submits that exact ordinal and still fails409 on a race.
 - `POST .../:id/publish`: same revisions plus `approved:true` → `{version,sourceRevision,createdAt,compiled}`. Optional advanced `rules` must be explicitly author-approved. Preview/save is not publication.
 - `GET .../:id/versions` → `{versions:[{version,sourceRevision,createdAt,publishedVersion}]}`.
 - `DELETE .../:id` with `{expectedRevision}` archives the script, prevents new pins and preserves immutable publications/current-call pins.
