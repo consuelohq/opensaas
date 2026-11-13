@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2800,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2800",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1701-dev-1702-published-playbooks-and-script-runtime",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_39a6ade72e32",
+  "tmuxSession": "opensaas-dialer-dev-1701-dev-1702-published-playbooks-and-script-39a6ade7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1701-dev-1702-published-playbooks-and-script-runtime/.task/session.json",
+  "createdAt": "2026-11-13T20:44:47.311Z"
+}

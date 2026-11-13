@@ -1,3 +1,4 @@
+import { PLAYBOOK_PUBLICATIONS_MIGRATION_ID } from '../coaching/playbook-store';
 import { TRANSCRIPT_TIMING_MIGRATION_ID } from '../call-operations/transcript-schema';
 import { TEAM_ACCESS_MIGRATION_ID } from '../commercial/team-schema';
 import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
@@ -171,6 +172,7 @@ suite(
               TEAM_ACCESS_MIGRATION_ID,
               OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
               TRANSCRIPT_TIMING_MIGRATION_ID,
+      PLAYBOOK_PUBLICATIONS_MIGRATION_ID,
             ],
           ],
         );
@@ -218,7 +220,7 @@ suite(
             'SELECT migration_id, applied_at FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
           )
         ).rows;
-        expect(ledgerAfterUpgrade).toHaveLength(20);
+        expect(ledgerAfterUpgrade).toHaveLength(21);
         expect(ledgerAfterUpgrade.slice(0, 13)).toEqual(oldLedger);
 
         await migrateDialerDatabase(pool);

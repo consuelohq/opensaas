@@ -2,6 +2,7 @@ import {
   TRANSCRIPT_TIMING_MIGRATION_ID,
   TRANSCRIPT_TIMING_SCHEMA_SQL,
 } from '../call-operations/transcript-schema';
+import { PLAYBOOK_PUBLICATIONS_MIGRATION_ID, CREATE_PLAYBOOK_PUBLICATIONS_SQL } from '../coaching/playbook-store';
 import {
   TEAM_ACCESS_MIGRATION_ID,
   TEAM_ACCESS_SCHEMA,
@@ -295,7 +296,8 @@ type Migration =
         | typeof REP_DEVICES_MIGRATION_ID
         | typeof TEAM_ACCESS_MIGRATION_ID
         | typeof OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID
-        | typeof TRANSCRIPT_TIMING_MIGRATION_ID;
+        | typeof TRANSCRIPT_TIMING_MIGRATION_ID
+        | typeof PLAYBOOK_PUBLICATIONS_MIGRATION_ID;
       up: MigrationUp;
       down?: never;
     }
@@ -502,6 +504,10 @@ const migrations: readonly Migration[] = [
     id: TRANSCRIPT_TIMING_MIGRATION_ID,
     up: (database) =>
       database.query(TRANSCRIPT_TIMING_SCHEMA_SQL).then(() => undefined),
+  },
+  {
+    id: PLAYBOOK_PUBLICATIONS_MIGRATION_ID,
+    up: (database) => database.query(CREATE_PLAYBOOK_PUBLICATIONS_SQL).then(() => undefined),
   },
 ];
 
