@@ -7,7 +7,7 @@ import {
   initializeNativeBillingStore,
 } from '../billing/native-billing-store';
 import { createStripePublicCheckoutProvider } from '../billing/stripe-public-provider';
-import { createCoachingScripts } from '../coaching/scripts';
+import { createCoachingRuntime } from './coaching';
 import { createPublicCheckout } from '../billing/public-checkout';
 import {
   createPublicCheckoutStore,
@@ -1779,9 +1779,16 @@ export const createCoachingScriptsRuntime = async (
   environment: RailwayEnvironment,
 ) => {
   try {
-    const { database } = await createSharedResources(environment);
+    const { database, redis } = await createSharedResources(environment);
     await migrateDialerDatabase(database);
-    return createCoachingScripts(database);
+    return createCoachingRuntime(database, { resolveSessionId: async (identity, groupId) => {
+      const raw = await new RedisParallelStore(redis).getGroup(groupId);
+      if (!raw) return null;
+      const group: unknown = JSON.parse(raw);
+      if (!group || typeof group !== 'object' || Array.isArray(group)) return null;
+      const value = group as Record<string, unknown>;
+      return value.groupId === groupId && value.workspaceId === identity.workspaceId && value.userId === identity.userId && typeof value.dialerSessionId === 'string' ? value.dialerSessionId : null;
+    } });
   } catch (cause: unknown) {
     throw new Error('Coaching script runtime composition failed', { cause });
   }
