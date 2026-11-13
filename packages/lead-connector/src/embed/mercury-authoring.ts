@@ -9,6 +9,7 @@ export type MercuryPreview = {
   cards: {
     id: string;
     title: string;
+    listenFor: string[];
     points: { id: string; text: string; exact: string; source: string }[];
   }[];
 };
@@ -39,6 +40,30 @@ export const parseMercuryPreview = (input: unknown): MercuryPreview => {
     return invalid();
   const cards = input.preview.playbook.cards;
   if (cards.length < 1 || cards.length > 256) return invalid();
+  const listening = new Map<string, string[]>();
+  const rules = input.preview.rules;
+  if (rules !== undefined && (!Array.isArray(rules) || rules.length > 1000))
+    return invalid();
+  for (const rule of Array.isArray(rules) ? rules : []) {
+    if (
+      !record(rule) ||
+      !text(rule.cardId, 200) ||
+      !cards.some((card) => record(card) && card.id === rule.cardId) ||
+      !Array.isArray(rule.aliases) ||
+      rule.aliases.length > 128
+    )
+      return invalid();
+    const aliases: string[] = [];
+    for (const alias of rule.aliases) {
+      if (!text(alias, 200)) return invalid();
+      aliases.push(alias);
+    }
+    const combined = [
+      ...new Set([...(listening.get(rule.cardId) ?? []), ...aliases]),
+    ];
+    if (combined.length > 128) return invalid();
+    listening.set(rule.cardId, combined);
+  }
   const ids = new Set<string>();
   return {
     cards: cards.map((card) => {
@@ -57,6 +82,7 @@ export const parseMercuryPreview = (input: unknown): MercuryPreview => {
       return {
         id: card.id,
         title: card.title,
+        listenFor: listening.get(card.id) ?? [],
         points: card.slots.map((slot) => {
           if (
             !record(slot) ||
@@ -162,7 +188,7 @@ export const renderMercuryPublication = (
   <button type="button" class="button button--secondary" data-action="script-preview" data-script-id="${e(script.id)}"${current?.pending ? ' disabled' : ''}>${current?.pending ? 'Working…' : 'Preview talking points'}</button>
   ${
     current?.preview
-      ? `<div class="publication-preview">${current.preview.cards.map((card) => `<article><h3>${e(card.title)}</h3><ul>${card.points.map((point) => `<li><strong>${e(point.text)}</strong><details><summary>Source &amp; exact wording</summary><p>${e(point.source)}</p><p>${e(point.exact)}</p></details></li>`).join('')}</ul></article>`).join('')}</div>
+      ? `<div class="publication-preview">${current.preview.cards.map((card) => `<article><h3>${e(card.title)}</h3><p class="form-caption">${card.listenFor.length ? 'Listen for: ' + e(card.listenFor.join(' · ')) : 'Manual selection for this card.'}</p><ul>${card.points.map((point) => `<li><strong>${e(point.text)}</strong><details><summary>Source &amp; exact wording</summary><p>${e(point.source)}</p><p>${e(point.exact)}</p></details></li>`).join('')}</ul></article>`).join('')}</div>
   <form data-publication data-preview-key="${current.requestKey}" data-form="coaching-publication-${current.requestKey}"><label class="option-toggle"><input type="checkbox" name="approved" required /><span>I approve these exact points and source wording for this saved revision.</span></label><p class="form-caption">Publishing approves this reference. Live assistance also requires your workspace’s call and capture policy.</p><button type="submit" class="button button--primary"${current.pending ? ' disabled' : ''}>Publish approved version</button></form>`
       : ''
   }

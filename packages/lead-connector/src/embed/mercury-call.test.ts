@@ -300,3 +300,18 @@ it('retains the offered customer context only for the same inbound assignment ge
   };
   expect(renderCallIdentity(state, ws)).not.toContain('Jordan Taylor');
 });
+
+it('does not claim server coaching stopped when admission ownership is unknown', () => {
+  const doc = new JSDOM(
+    renderMercuryCue(
+      { ...workspace, coachingMode: 'off', mercuryFeedStatus: 'unknown' },
+      card.scopeKey,
+    ),
+  ).window.document;
+  expect(doc.querySelector('.mercury-cue-status')?.textContent).toContain(
+    'Assistance status unknown',
+  );
+  expect(doc.querySelector('.mercury-cue-status')?.textContent).not.toContain(
+    'Coaching off',
+  );
+});

@@ -16,6 +16,7 @@ started: 2026-11-13
 ## files changed
 
 - `packages/lead-connector/src/embed/calling-workspace.ts`
+- `packages/lead-connector/src/embed/coaching-scripts.ts`
 - `packages/lead-connector/src/embed/controller.test.ts`
 - `packages/lead-connector/src/embed/controller.ts`
 - `packages/lead-connector/src/embed/inbound-operator-view.ts`
@@ -36,6 +37,7 @@ started: 2026-11-13
 - `packages/lead-connector/src/embed/view.test.ts`
 - `packages/lead-connector/src/embed/view.ts`
 - `packages/lead-connector/src/embed/workspace-dom.ts`
+- `packages/lead-connector/src/embed/workspace-pages.ts`
 - `packages/lead-connector/src/embed/workspace-theme.css`
 
 ## key decisions
@@ -100,6 +102,7 @@ no-test waiver: none.
 ## workspace-owned: files changed
 
 - `packages/lead-connector/src/embed/calling-workspace.ts`
+- `packages/lead-connector/src/embed/coaching-scripts.ts`
 - `packages/lead-connector/src/embed/controller.test.ts`
 - `packages/lead-connector/src/embed/controller.ts`
 - `packages/lead-connector/src/embed/inbound-operator-view.ts`
@@ -120,16 +123,11 @@ no-test waiver: none.
 - `packages/lead-connector/src/embed/view.test.ts`
 - `packages/lead-connector/src/embed/view.ts`
 - `packages/lead-connector/src/embed/workspace-dom.ts`
+- `packages/lead-connector/src/embed/workspace-pages.ts`
 - `packages/lead-connector/src/embed/workspace-theme.css`
 
 ## workspace-owned: activity log
 
-- 2026-11-13 20:34:03 fs.write: `packages/lead-connector/src/embed/workspace-theme.css`
-- 2026-11-13 20:34:17 apply-patch: `packages/lead-connector/src/embed/workspace-dom.ts`
-- 2026-11-13 20:35:58 write: `packages/lead-connector/src/embed/mercury-workspace.test.ts`
-- 2026-11-13 20:35:58 fs.write: `packages/lead-connector/src/embed/mercury-workspace.test.ts`
-- 2026-11-13 20:36:33 write: `packages/lead-connector/src/embed/mercury-workspace.ts`
-- 2026-11-13 20:36:33 fs.write: `packages/lead-connector/src/embed/mercury-workspace.ts`
 - 2026-11-13 20:36:34 apply-patch: `packages/lead-connector/src/embed/calling-workspace.ts`
 - 2026-11-13 20:36:34 apply-patch: `packages/lead-connector/src/embed/internal-main.ts`
 - 2026-11-13 20:36:34 apply-patch: `packages/lead-connector/src/embed/view.test.ts`
@@ -174,6 +172,12 @@ no-test waiver: none.
 - 2026-11-13 21:19:29 fs.write: `packages/lead-connector/src/embed/mercury-feed.test.ts`
 - 2026-11-13 21:20:42 fs.write: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
 - 2026-11-13 21:20:54 fs.write: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
+- 2026-11-13 21:23:48 fs.write: `packages/lead-connector/src/embed/mercury-feed.test.ts`
+- 2026-11-13 21:23:49 fs.write: `packages/lead-connector/src/embed/mercury-call.test.ts`
+- 2026-11-13 21:25:32 fs.write: `packages/lead-connector/src/embed/mercury-authoring.test.ts`
+- 2026-11-13 21:26:40 fs.write: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
+- 2026-11-13 21:27:03 fs.write: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
+- 2026-11-13 21:27:13 fs.write: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -192,6 +196,8 @@ no-test waiver: none.
 - 2026-11-13 21:16:11 `review.run`: passed — OK
 - 2026-11-13 21:20:07 `review.run`: passed — OK
 - 2026-11-13 21:20:43 `verify`: passed — OK
+- 2026-11-13 21:26:52 `review.run`: passed — OK
+- 2026-11-13 21:27:04 `verify`: passed — OK
 
 ## Implementation and proof checkpoint — 2026-11-13
 
@@ -325,3 +331,29 @@ Authoring contract corrected by root before publication: implementation version 
 Formal verify after final projection-token implementation: passed=true,publishValid=true (trc_c9b9ff0c551b). Full LeadConnector provider contract registry suite passed; strict review0findings; DB guard0risks/findings. Source ready for coordinator exact-SHA CI and combined real Hono adapter proof. No new owned process was started during feed/authoring follow-up.
 
 - 2026-11-13 21:20:54 append: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
+
+- 2026-11-13 21:23:16 apply-patch: `packages/lead-connector/src/embed/mercury-feed.ts`
+- 2026-11-13 21:23:48 append: `packages/lead-connector/src/embed/mercury-feed.test.ts`
+
+- 2026-11-13 21:23:49 append: `packages/lead-connector/src/embed/mercury-call.test.ts`
+
+- 2026-11-13 21:25:32 append: `packages/lead-connector/src/embed/mercury-authoring.test.ts`
+
+- 2026-11-13 21:26:01 apply-patch: `packages/lead-connector/src/embed/mercury-authoring.ts`
+## Safety correction superseding unknown-admission recovery
+
+Root independent review caught that reading the latest authorized projectionToken after a lost admission response does NOT prove it is our admission: another device may have reopened the projection. SHA116925e0329a0581c4a2749c898826071fb47d17 was held from integration and is superseded by this follow-up. Removed automatic read-latest-token/Off/re-admission. Unknown admission now stays explicit unknown/manual reference for that caller; no token is guessed/adopted and no unknown projection is mutated. Off does not falsely claim confirmed worker termination. Own successful admission responses remain safe token authority; late foreign-token polls are rejected. A different caller starts its own scoped admission without touching the old unknown projection. Server terminal cleanup and future own-admission correlation are required for automatic recovery; default live authority remains absent/manual-only.
+
+Original adversarial red trc_2ea331b7b356 caught the unsafe read; green trc_99bcbc7cad77 covers no read/Off/rebind, unknown status and caller-bound state. This supersedes the earlier workpad claim that latest-authorized-read token recovery was safe.
+
+Core minimum baseline update: omitted rules derives exact normalized source-heading aliases (no synonyms/model/industry facts), explicit rules:[] is manual-only. UI Preview now displays meaningful Listen for aliases per card, or Manual selection for this card when no phrases exist, before explicit approval. Original red trc_7fa7d10f15c0;6authoringtests green trc_690484c3a81d. Plaintext with3–4bullets may use saved title as heading. Existing inline formatting guidance/manual fallback remains; no semantic AI claim.
+
+- 2026-11-13 21:26:40 append: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
+
+Final safe-source focused gates:243embedtests/1329assertions across32files green and tsc green (trc_b99c54d808ab), browser build green (trc_a527c8ec274f), strict origin/main review0findings (trc_291debde2d8f). Formal verify rerun after the unknown-ownership correction and listening-preview addition; coordinator must use the next pushed SHA, not held116925.
+
+- 2026-11-13 21:27:03 append: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`
+
+Final safe-source formal verify passed=true,publishValid=true (trc_5c1b3f159c76): strict0findings, full LeadConnector contract registry suite passed, DB guard0risks/findings. No remaining owned transient process. Ready for exact-source coordinator CI/route roundtrip and integration review; DEV1703 remains In Progress pending integrated release acceptance.
+
+- 2026-11-13 21:27:13 append: `.task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md`

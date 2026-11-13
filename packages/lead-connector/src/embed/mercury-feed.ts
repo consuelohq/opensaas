@@ -13,6 +13,7 @@ export type MercuryFeedStatus =
   | 'updating'
   | 'reconnecting'
   | 'unavailable'
+  | 'unknown'
   | 'denied';
 type Configuration = {
   scopeKey: string;
@@ -110,16 +111,17 @@ export const createMercuryFeed = (input: {
   const close = async (epoch: number): Promise<boolean> => {
     const scope = createdScope;
     if (!scope) return true;
-    try {
-      // Recover uncertain admission through authority; never manufacture a control token.
-      if (!createdToken) {
-        const recovered = await input.api.read(
-          scope,
-          0,
-          new AbortController().signal,
-        );
-        createdToken = recovered.projectionToken;
+    if (!createdToken) {
+      // The latest server projection may belong to another device. Only our own
+      // admission response proves which token we may use to mutate it.
+      if (active && active.scopeKey !== scope) {
+        createdScope = null;
+        return true;
       }
+      if (current(epoch)) input.onStatus('unknown');
+      return false;
+    }
+    try {
       await input.api.control(
         scope,
         'off',
@@ -182,6 +184,13 @@ export const createMercuryFeed = (input: {
           createdToken = null;
         }
         failed(error, epoch);
+        if (
+          !deny(error) &&
+          createdScope === next.scopeKey &&
+          !createdToken &&
+          current(epoch)
+        )
+          input.onStatus('unknown');
       }
     });
   };

@@ -162,18 +162,20 @@ export const renderMercuryCue = (
         : (workspace.scriptStep ?? 0) >= Math.max(0, manualCount - 4)));
   const feedStatus = workspace.mercuryFeedStatus;
   const assistanceStatus =
-    feedStatus === 'connecting'
-      ? 'Connecting assistance · manual script available'
-      : feedStatus === 'updating'
-        ? 'Updating your talking points'
-        : feedStatus === 'reconnecting'
-          ? 'Assistance reconnecting · your call controls still work'
-          : feedStatus === 'unavailable' || feedStatus === 'denied'
-            ? 'Live assistance unavailable · manual script available'
-            : statusText(view);
+    feedStatus === 'unknown'
+      ? 'Assistance status unknown · continue with your manual script'
+      : feedStatus === 'connecting'
+        ? 'Connecting assistance · manual script available'
+        : feedStatus === 'updating'
+          ? 'Updating your talking points'
+          : feedStatus === 'reconnecting'
+            ? 'Assistance reconnecting · your call controls still work'
+            : feedStatus === 'unavailable' || feedStatus === 'denied'
+              ? 'Live assistance unavailable · manual script available'
+              : statusText(view);
   return `<section class="mercury-cue" data-mercury-scope="${e(scopeKey)}" aria-label="Mercury call assistance">
     <div class="mercury-cue-tools"><span class="mercury-label">Mercury</span><div class="mercury-mode" role="group" aria-label="Mercury mode">${(['off', 'script'] as const).map((value) => `<button type="button" data-action="coaching-mode" data-mode="${value}" aria-pressed="${mode === value}">${value === 'off' ? 'Off' : 'Script'}</button>`).join('')}<button type="button" data-mode="ai" disabled title="AI suggestions are not available yet">AI</button></div></div>
-    <p class="mercury-cue-status" role="status">${enabled ? e(assistanceStatus) : 'Coaching off'}</p>
+    <p class="mercury-cue-status" role="status">${enabled || feedStatus === 'unknown' ? e(assistanceStatus) : 'Coaching off'}</p>
     <h2 class="mercury-cue-heading">${e(view?.heading ?? (enabled ? 'Your next talking points' : 'Stay focused on the conversation'))}</h2>
     <ol class="mercury-points" aria-label="${view?.kind === 'approved' ? 'Approved talking points' : 'Manual script excerpts'}">${Array.from({ length: 4 }, (_, i) => `<li data-cue-slot="${e(points[i]?.slotId ?? String(i))}"${points[i] ? '' : ' aria-hidden="true"'}>${e(points[i]?.text ?? '')}</li>`).join('')}</ol>
     ${enabled ? `<div class="mercury-navigation"><button type="button" class="text-button" data-action="script-previous"${previousDisabled ? ' disabled' : ''}>Previous</button><button type="button" class="text-button" data-action="mercury-pin" aria-pressed="${Boolean(workspace.mercuryPinned)}"${view && workspace.mercuryFeedStatus !== 'updating' ? '' : ' disabled'}>${workspace.mercuryPinned ? 'Unpin' : 'Pin'}</button><button type="button" class="text-button" data-action="script-next"${nextDisabled ? ' disabled' : ''}>Next</button></div>${card ? `<button type="button" class="text-button mercury-return" data-action="mercury-auto"${workspace.mercuryPinned || workspace.mercuryManualIndex !== undefined ? '' : ' disabled'}>Return to auto</button>` : ''}<details class="mercury-source" data-disclosure="mercury-source"><summary>Source &amp; exact wording</summary>${points.map((p) => `<p><strong>${e(p.source)}</strong><span>${e(p.exact)}</span></p>`).join('') || '<p>No script is selected. Open Mercury in Settings to choose one.</p>'}</details>` : ''}

@@ -422,18 +422,22 @@ it('requires opaque projection tokens and never adopts a different projection fr
   feed.dispose();
 });
 
-it('recovers an unknown admission token through an authorized read before sending Off', async () => {
+it('never steals the latest projection token to clean up an unknown admission', async () => {
+  const statuses: string[] = [];
   const api: MercuryFeedApi = {
     start: mock(async () => {
       throw new Error('Response lost after possible commit');
     }),
-    read: mock(async () => response()),
+    read: mock(async () => ({
+      ...response(),
+      projectionToken: 'another-device-current-token',
+    })),
     control: mock(async (scope) => response(scope)),
   };
   const feed = createMercuryFeed({
     api,
     onView: () => {},
-    onStatus: () => {},
+    onStatus: (status) => statuses.push(status),
     schedule: () => () => {},
   });
   const config = {
@@ -446,17 +450,14 @@ it('recovers an unknown admission token through an authorized read before sendin
   await flush();
   feed.configure({ ...config, enabled: false });
   await flush();
-  expect(api.read).toHaveBeenCalledWith(
-    'outbound:a',
-    0,
-    expect.any(AbortSignal),
-  );
-  expect(api.control).toHaveBeenCalledWith(
-    'outbound:a',
-    'off',
-    'opaque:outbound:a',
-    expect.any(AbortSignal),
-  );
+  expect(api.read).not.toHaveBeenCalled();
+  expect(api.control).not.toHaveBeenCalled();
+  expect(statuses.at(-1)).toBe('unknown');
+  feed.configure(config);
+  await flush();
+  expect(api.start).toHaveBeenCalledTimes(1);
+  expect(api.control).not.toHaveBeenCalled();
+  feed.dispose();
 });
 
 it('uses the newly admitted opaque token after same-call Off and reopen', async () => {
@@ -508,5 +509,49 @@ it('uses the newly admitted opaque token after same-call Off and reopen', async 
     'token-2',
     expect.any(AbortSignal),
   );
+  feed.dispose();
+});
+
+it('bounds an unknown admission to that caller and never controls it when a new caller starts', async () => {
+  let starts = 0;
+  const api: MercuryFeedApi = {
+    start: mock(async (command) => {
+      if (++starts === 1) throw new Error('Unknown admission');
+      return response(command.scopeKey);
+    }),
+    read: mock(async () => response()),
+    control: mock(async (scope) => response(scope)),
+  };
+  const delivered: Array<MercuryCueView | null> = [];
+  const feed = createMercuryFeed({
+    api,
+    onView: (v) => delivered.push(v),
+    onStatus: () => {},
+    schedule: () => () => {},
+  });
+  feed.configure({
+    scopeKey: 'outbound:a',
+    scriptId: 'script',
+    enabled: true,
+    authEpoch: 'one',
+  });
+  await flush();
+  feed.configure({
+    scopeKey: '',
+    scriptId: 'script',
+    enabled: false,
+    authEpoch: 'one',
+  });
+  await flush();
+  feed.configure({
+    scopeKey: 'outbound:b',
+    scriptId: 'script',
+    enabled: true,
+    authEpoch: 'one',
+  });
+  await flush();
+  expect(delivered.at(-1)?.scopeKey).toBe('outbound:b');
+  expect(api.control).not.toHaveBeenCalled();
+  expect(api.read).not.toHaveBeenCalled();
   feed.dispose();
 });

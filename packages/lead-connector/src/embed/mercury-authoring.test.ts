@@ -206,3 +206,42 @@ it('puts the publish preview entry before a long saved script without changing t
   );
   expect(html).toContain('data-action="script-edit"');
 });
+
+it('shows the exact source-derived listening phrases before approval and distinguishes manual-only cards', () => {
+  const preview = parseMercuryPreview({
+    preview: {
+      ...compiled,
+      rules: [
+        {
+          cardId: 'family',
+          aliases: ['family priorities'],
+          required: [],
+          forbidden: [],
+          priority: 0,
+          speaker: 'customer',
+          nextCardIds: [],
+        },
+      ],
+    },
+  });
+  const html = renderMercuryPublication(script, {
+    scriptId: 'script',
+    savedRevision: 2,
+    expectedPublishedVersion: 0,
+    requestKey: 20,
+    preview,
+    pending: false,
+  });
+  expect(html).toContain('Listen for: family priorities');
+  const manual = parseMercuryPreview({ preview: { ...compiled, rules: [] } });
+  expect(
+    renderMercuryPublication(script, {
+      scriptId: 'script',
+      savedRevision: 2,
+      expectedPublishedVersion: 0,
+      requestKey: 21,
+      preview: manual,
+      pending: false,
+    }),
+  ).toContain('Manual selection for this card');
+});
