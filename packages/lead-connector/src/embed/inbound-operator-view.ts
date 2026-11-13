@@ -68,6 +68,7 @@ export const renderInboundOperatorPanel = (
   options: {
     selectedEndpointIds?: readonly string[];
     scriptHtml?: string;
+    onCallHeader?: string;
   } = {},
 ): string => {
   const status = inboundPresentation(state);
@@ -88,8 +89,7 @@ export const renderInboundOperatorPanel = (
       ));
   const busy = state.rep.assignment !== null || state.offers.length > 0;
   return `<section class="inbound-operator-panel" aria-label="Incoming calls" data-inbound-phase="${state.phase}"${state.rep.assignment ? ` data-assignment-id="${escapeHtml(state.rep.assignment.assignmentId)}"` : ''}>
-    <div class="calling-heading"><h1>${status.active ? status.label : 'Inbound calls'}</h1><p>${status.detail}</p></div>
-    ${status.active ? `<div class="session-banner" data-status="${status.status}"><span class="session-dot" aria-hidden="true"></span><span data-session-status role="status">${status.label}</span>${status.active ? '<button type="button" class="text-button" data-action="workspace-minimize">Minimize ↘</button>' : ''}</div>` : ''}
+    ${options.onCallHeader ?? `<div class="calling-heading"><h1>${status.active ? status.label : 'Inbound calls'}</h1><p>${status.detail}</p></div>${status.active ? `<div class="session-banner" data-status="${status.status}"><span class="session-dot" aria-hidden="true"></span><span data-session-status role="status">${status.label}</span><button type="button" class="text-button" data-action="workspace-minimize">Minimize ↘</button></div>` : ''}`}
     ${state.error ? `<div class="notice notice--error" role="alert">${escapeHtml(state.error.message)}</div>` : ''}
     ${status.status === 'reconnecting' ? '<div class="recovery-note"><p>Your place is protected while we check the connection.</p><button type="button" class="button button--secondary" data-action="inbound-reconnect">Reconnect</button></div>' : ''}
     ${!state.rep.assignment || state.rep.assignment.phase === 'offering' ? renderOffers(state) : ''}${renderWrapUp(state)}${options.scriptHtml ?? ''}

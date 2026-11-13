@@ -264,6 +264,7 @@ export type LeadConnectorEmbedState = {
   selectionStrategy: 'single' | 'predictive';
   activeSessionId: string | null;
   callSession: EmbedCallSession | null;
+  callEnding: boolean;
   callLegs: EmbedCallLeg[];
   activeCalls: EmbedAdminCall[];
   callHistory: EmbedAdminCall[];
@@ -320,10 +321,13 @@ export type EmbedStateEvent =
       targets: LeadConnectorClickToCallTarget[];
     }
   | { type: 'START_REQUESTED'; strategy: 'single' | 'predictive' }
+  | { type: 'START_CANCELED' }
   | { type: 'SESSION_UPDATED'; session: EmbedCallSession }
   | { type: 'PAUSED' }
   | { type: 'RESUMED' }
   | { type: 'STOP_REQUESTED' }
+  | { type: 'END_REQUESTED' }
+  | { type: 'END_SETTLED' }
   | {
       type: 'TRANSFER_STARTED';
       transferType: 'cold' | 'warm';
@@ -398,6 +402,7 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   selectionStrategy: 'single',
   activeSessionId: null,
   callSession: null,
+  callEnding: false,
   callLegs: [],
   activeCalls: [],
   callHistory: [],
@@ -599,6 +604,13 @@ export const reduceEmbedState = (
         selectionStrategy: event.strategy,
         error: null,
       };
+    case 'START_CANCELED':
+      return {
+        ...state,
+        phase: state.selectedTargets.length ? 'target-selected' : 'ready',
+        callEnding: false,
+        error: null,
+      };
     case 'SESSION_UPDATED':
       return {
         ...state,
@@ -630,7 +642,11 @@ export const reduceEmbedState = (
         resumePhase: null,
       };
     case 'STOP_REQUESTED':
-      return { ...state, phase: 'wrapping-up' };
+      return { ...state, phase: 'wrapping-up', callEnding: false };
+    case 'END_REQUESTED':
+      return { ...state, callEnding: true };
+    case 'END_SETTLED':
+      return { ...state, callEnding: false };
     case 'TRANSFER_STARTED':
       return {
         ...state,
