@@ -1,3 +1,4 @@
+import { TRANSCRIPT_TIMING_SCHEMA_SQL } from './transcript-schema';
 import { randomUUID } from 'node:crypto';
 
 import { DialerInfrastructureError } from '@consuelo/dialer';
@@ -162,6 +163,7 @@ const SCHEMA_STATEMENTS = [
     ON dialer_call_legs(workspace_id, session_id, position)`,
   `CREATE INDEX IF NOT EXISTS dialer_transcript_segments_session_idx
     ON dialer_transcript_segments(workspace_id, session_id, sequence, created_at)`,
+  TRANSCRIPT_TIMING_SCHEMA_SQL,
 ];
 
 export const initializeCallOperationsPersistence = (
@@ -204,6 +206,8 @@ type SessionRow = {
   recording_duration_seconds?: number | string | null;
   transcription_enabled?: boolean;
   transcript_status?: CallSessionSummary['transcriptStatus'];
+  transcript_coverage?: CallSessionSummary['transcriptCoverage'];
+  transcript_failure_code?: string | null;
   transcript_provider?: string | null;
   transcript_model?: string | null;
   transcript_language?: string | null;
@@ -232,6 +236,8 @@ type EventRow = {
 };
 
 type TranscriptionContextRow = {
+  provider_account_id?: string | null;
+  contact_id?: string | null;
   workspace_id: string;
   session_id: string;
   transcription_enabled: boolean;
@@ -314,6 +320,11 @@ const mapSession = (
     recordingSid: row.recording_sid ?? null,
     recordingDurationSeconds: numberOrNull(row.recording_duration_seconds),
     transcriptStatus: row.transcript_status ?? null,
+    transcriptCoverage:
+      row.transcription_enabled === false
+        ? 'disabled'
+        : (row.transcript_coverage ?? null),
+    transcriptFailureCode: row.transcript_failure_code ?? null,
     transcriptProvider: row.transcript_provider ?? null,
     transcriptModel: row.transcript_model ?? null,
     transcriptLanguage: row.transcript_language ?? null,
@@ -352,7 +363,7 @@ const repositoryFailure = (operation: string, cause: unknown) =>
     cause,
   });
 
-const queryEffect = <TRow>(
+const queryEffect = <TRow,>(
   database: CallOperationsDatabase,
   operation: string,
   text: string,
@@ -471,19 +482,19 @@ export const createPostgresCallOperationsRepository = (
       'resolve-transcription-context',
       `SELECT sessions.workspace_id, sessions.id AS session_id,
         sessions.transcription_enabled AS transcription_enabled,
-        settings.transcription_language,
-        COALESCE(settings.transcript_retention_days, 30) AS transcript_retention_days
+        settings.transcription_language, legs.provider_account_id, legs.contact_id,
+        COALESCE(sessions.transcript_retention_days, settings.transcript_retention_days, 30) AS transcript_retention_days
        FROM dialer_call_legs legs
        JOIN dialer_call_sessions sessions
          ON sessions.workspace_id = legs.workspace_id AND sessions.id = legs.session_id
        LEFT JOIN dialer_workspace_settings settings
          ON settings.workspace_id = sessions.workspace_id
        WHERE legs.provider_call_id = $1
-       LIMIT 1`,
+       LIMIT 2`,
       [providerCallId],
     ).pipe(
       Effect.map(({ rows }) => {
-        const row = rows[0];
+        const row = rows.length === 1 ? rows[0] : undefined;
         return row
           ? {
               workspaceId: row.workspace_id,
@@ -491,6 +502,10 @@ export const createPostgresCallOperationsRepository = (
               enabled: row.transcription_enabled,
               language: row.transcription_language,
               retentionDays: Number(row.transcript_retention_days),
+              providerAccountId: row.provider_account_id,
+              trackRoles: row.contact_id
+                ? { inbound: 'customer' as const }
+                : {},
             }
           : null;
       }),
@@ -505,6 +520,10 @@ export const createPostgresCallOperationsRepository = (
            transcript_model = COALESCE($5, transcript_model),
            transcript_language = COALESCE($6, transcript_language),
            transcript_failure_code = $7,
+           transcript_coverage = CASE WHEN $3 = 'ready' THEN CASE WHEN $7 = 'MEDIA_GAP' THEN 'partial' ELSE 'complete' END
+             WHEN $3 = 'failed' THEN CASE WHEN EXISTS (
+               SELECT 1 FROM dialer_transcript_segments segments WHERE segments.workspace_id = $1 AND segments.session_id = $2
+             ) THEN 'partial' ELSE 'unavailable' END ELSE 'pending' END,
            transcript_retention_days = COALESCE(
              transcript_retention_days,
              (SELECT transcript_retention_days FROM dialer_workspace_settings WHERE workspace_id = $1),
@@ -526,15 +545,33 @@ export const createPostgresCallOperationsRepository = (
     queryEffect<{ inserted: boolean }>(
       database,
       'append-transcript-segment',
-      `INSERT INTO dialer_transcript_segments (
+      `WITH locked AS (
+        SELECT workspace_id, id FROM dialer_call_sessions
+        WHERE workspace_id = $2 AND id = $3 AND transcription_enabled = TRUE
+        FOR UPDATE
+      ), inserted AS (
+      INSERT INTO dialer_transcript_segments (
         id, workspace_id, session_id, provider_call_id, sequence,
         idempotency_key, track, speaker, text, start_ms, end_ms,
-        language, confidence, provider, model, created_at
-      ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
-      )
+        language, confidence, provider, model, created_at, metadata
+      ) SELECT
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17::jsonb
+      FROM locked sessions
+      WHERE sessions.workspace_id = $2 AND sessions.id = $3
+        AND EXISTS (SELECT 1 FROM dialer_call_legs legs WHERE legs.workspace_id = $2 AND legs.session_id = $3 AND legs.provider_call_id = $4)
       ON CONFLICT (workspace_id, session_id, idempotency_key) DO NOTHING
-      RETURNING TRUE AS inserted`,
+      RETURNING id, workspace_id, session_id
+      ), advanced AS (
+        UPDATE dialer_call_sessions sessions SET transcript_cursor = transcript_cursor + 1
+        FROM locked WHERE sessions.workspace_id = locked.workspace_id AND sessions.id = locked.id
+          AND EXISTS (SELECT 1 FROM inserted)
+        RETURNING sessions.transcript_cursor
+      ), emitted AS (
+        INSERT INTO dialer_transcript_outbox(workspace_id, session_id, event_id, cursor, event_type, payload)
+        SELECT inserted.workspace_id, inserted.session_id, inserted.id, advanced.transcript_cursor,
+          'transcript-segment-persisted', jsonb_build_object('schemaVersion', 1, 'transcriptSegmentId', inserted.id)
+        FROM inserted CROSS JOIN advanced RETURNING event_id
+      ) SELECT EXISTS(SELECT 1 FROM emitted) AS inserted`,
       [
         segment.id,
         segment.workspaceId,
@@ -552,6 +589,7 @@ export const createPostgresCallOperationsRepository = (
         segment.provider,
         segment.model,
         segment.createdAt,
+        JSON.stringify(segment.metadata ?? {}),
       ],
     ).pipe(
       Effect.map(({ rows }) => ({ inserted: rows[0]?.inserted === true })),
@@ -563,6 +601,7 @@ export const createPostgresCallOperationsRepository = (
       `UPDATE dialer_call_sessions
        SET transcript_status = 'failed',
            transcript_failure_code = 'PROCESS_RESTARTED',
+           transcript_coverage = CASE WHEN EXISTS (SELECT 1 FROM dialer_transcript_segments segments WHERE segments.workspace_id = dialer_call_sessions.workspace_id AND segments.session_id = dialer_call_sessions.id) THEN 'partial' ELSE 'unavailable' END,
            updated_at = NOW()
        WHERE transcript_status IN ('pending', 'processing')
          AND updated_at < NOW() - INTERVAL '5 minutes'
@@ -848,6 +887,7 @@ export const createPostgresCallOperationsRepository = (
       provider: 'groq';
       model: string;
       created_at: string | Date;
+      metadata?: TranscriptSegment['metadata'];
     }>(
       database,
       'get-call-transcript',
@@ -874,6 +914,9 @@ export const createPostgresCallOperationsRepository = (
           provider: row.provider,
           model: row.model,
           createdAt: new Date(row.created_at).toISOString(),
+          ...(row.metadata?.schemaVersion === 1
+            ? { metadata: row.metadata }
+            : {}),
         })),
       ),
     ),
@@ -981,14 +1024,16 @@ export const createPostgresCallOperationsRepository = (
        WHERE legs.provider_call_id = $1
        LIMIT 2`,
       [request.providerCallId],
-    ).pipe(Effect.map(({ rows }) =>
-      rows.length === 1 && rows[0]
-        ? {
-            workspaceId: rows[0].workspace_id,
-            providerAccountId: rows[0].provider_account_id,
-          }
-        : null,
-    )),
+    ).pipe(
+      Effect.map(({ rows }) =>
+        rows.length === 1 && rows[0]
+          ? {
+              workspaceId: rows[0].workspace_id,
+              providerAccountId: rows[0].provider_account_id,
+            }
+          : null,
+      ),
+    ),
   resolveRecordingCallOwnership: (request) =>
     queryEffect<{ workspace_id: string; provider_account_id: string | null }>(
       database,
@@ -1002,14 +1047,16 @@ export const createPostgresCallOperationsRepository = (
          AND sessions.recording_enabled = TRUE
        LIMIT 2`,
       [request.providerCallId],
-    ).pipe(Effect.map(({ rows }) =>
-      rows.length === 1 && rows[0]
-        ? {
-            workspaceId: rows[0].workspace_id,
-            providerAccountId: rows[0].provider_account_id,
-          }
-        : null,
-    )),
+    ).pipe(
+      Effect.map(({ rows }) =>
+        rows.length === 1 && rows[0]
+          ? {
+              workspaceId: rows[0].workspace_id,
+              providerAccountId: rows[0].provider_account_id,
+            }
+          : null,
+      ),
+    ),
   recordCallRecordingStatus: (request) =>
     queryEffect(
       database,

@@ -358,6 +358,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@consuelo/contacts": "workspace:*",
+        "@consuelo/conversation": "workspace:*",
         "@consuelo/dialer": "workspace:*",
         "@consuelo/lead-connector": "workspace:*",
         "effect": "^3.21.3",
