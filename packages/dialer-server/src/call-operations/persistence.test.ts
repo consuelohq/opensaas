@@ -42,7 +42,7 @@ describe('call-operations persistence', () => {
   it('uses a workspace-scoped idempotent insert for transcript metadata', async () => {
     const calls: Array<{ text: string; values?: readonly unknown[] }> = [];
     const database: CallOperationsDatabase = {
-      query: async <TRow>(text: string, values?: readonly unknown[]) => {
+      query: async <TRow,>(text: string, values?: readonly unknown[]) => {
         calls.push({ text, values });
         return { rows: [{ inserted: true }] as TRow[], rowCount: 1 };
       },
@@ -73,6 +73,8 @@ describe('call-operations persistence', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]?.text).toContain('ON CONFLICT');
     expect(calls[0]?.text).toContain('workspace_id');
+    expect(calls[0]?.text).toContain('transcription_enabled');
+    expect(calls[0]?.text).toContain('metadata');
     expect(calls[0]?.values).toContain('workspace-1');
     expect(JSON.stringify(calls[0]?.values)).not.toContain('audio');
   });
@@ -80,7 +82,7 @@ describe('call-operations persistence', () => {
   it('atomically upserts the canonical session and all provider legs', async () => {
     const calls: Array<{ text: string; values?: readonly unknown[] }> = [];
     const database: CallOperationsDatabase = {
-      query: async <TRow>(text: string, values?: readonly unknown[]) => {
+      query: async <TRow,>(text: string, values?: readonly unknown[]) => {
         calls.push({ text, values });
         return { rows: [] as TRow[], rowCount: 0 };
       },
@@ -126,29 +128,41 @@ describe('call-operations persistence', () => {
     expect(String(calls[0]?.values?.[21])).toContain('CA-1');
     expect(String(calls[0]?.values?.[21])).toContain('CA-2');
     expect(String(calls[0]?.values?.[21])).toContain('AC' + '2'.repeat(32));
-    expect(calls[0]?.text).toContain('provider_account_id = dialer_call_legs.provider_account_id');
+    expect(calls[0]?.text).toContain(
+      'provider_account_id = dialer_call_legs.provider_account_id',
+    );
   });
 
   it('rejects ambiguous recording owners and reads only recording-consented durable call legs', async () => {
-    let simulatedRows: Array<{ workspace_id: string; provider_account_id: string | null }> = [
+    let simulatedRows: Array<{
+      workspace_id: string;
+      provider_account_id: string | null;
+    }> = [
       { workspace_id: 'tenant-a', provider_account_id: 'AC' + '1'.repeat(32) },
       { workspace_id: 'tenant-b', provider_account_id: 'AC' + '2'.repeat(32) },
     ];
     const calls: string[] = [];
     const database: CallOperationsDatabase = {
-      query: async <TRow>(text: string) => {
+      query: async <TRow,>(text: string) => {
         calls.push(text);
-        return { rows: simulatedRows as TRow[], rowCount: simulatedRows.length };
+        return {
+          rows: simulatedRows as TRow[],
+          rowCount: simulatedRows.length,
+        };
       },
     };
     const repository = createPostgresCallOperationsRepository(database);
-    const read = () => Effect.runPromise(repository.resolveRecordingCallOwnership({
-      providerCallId: 'CA' + '3'.repeat(32),
-    }));
+    const read = () =>
+      Effect.runPromise(
+        repository.resolveRecordingCallOwnership({
+          providerCallId: 'CA' + '3'.repeat(32),
+        }),
+      );
     expect(await read()).toBeNull();
     simulatedRows = [simulatedRows[1]!];
     expect(await read()).toEqual({
-      workspaceId: 'tenant-b', providerAccountId: 'AC' + '2'.repeat(32),
+      workspaceId: 'tenant-b',
+      providerAccountId: 'AC' + '2'.repeat(32),
     });
     expect(calls[0]).toContain('sessions.recording_enabled = TRUE');
     expect(calls[0]).toContain('LIMIT 2');
@@ -157,7 +171,7 @@ describe('call-operations persistence', () => {
   it('persists recording provider metadata without retaining a raw recording URL', async () => {
     const calls: Array<{ text: string; values?: readonly unknown[] }> = [];
     const database: CallOperationsDatabase = {
-      query: async <TRow>(text: string, values?: readonly unknown[]) => {
+      query: async <TRow,>(text: string, values?: readonly unknown[]) => {
         calls.push({ text, values });
         return { rows: [] as TRow[], rowCount: 0 };
       },
@@ -176,7 +190,13 @@ describe('call-operations persistence', () => {
 
     expect(calls).toHaveLength(1);
     expect(calls[0]?.text).not.toContain('recording_url');
-    expect(calls[0]?.values).toEqual(['CA-1', 'RE-1', 'completed', 42, 'workspace-1']);
+    expect(calls[0]?.values).toEqual([
+      'CA-1',
+      'RE-1',
+      'completed',
+      42,
+      'workspace-1',
+    ]);
     expect(calls[0]?.text).toContain('legs.workspace_id = $5');
     expect(calls[0]?.text).toContain('sessions.recording_enabled = TRUE');
   });

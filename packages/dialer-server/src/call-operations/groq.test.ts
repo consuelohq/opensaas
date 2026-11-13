@@ -4,6 +4,59 @@ import { Effect } from 'effect';
 import { createGroqSpeechToTextProvider } from './groq';
 
 describe('Groq speech-to-text adapter', () => {
+  it('requests and validates provider word/segment timing and quality without treating duration as speech', async () => {
+    const provider = createGroqSpeechToTextProvider({
+      apiKey: 'fixture',
+      fetch: async (_request, init) => {
+        expect(
+          (init?.body as FormData).getAll('timestamp_granularities[]'),
+        ).toEqual(['word', 'segment']);
+        expect(init?.signal).toBeInstanceOf(AbortSignal);
+        return Response.json({
+          text: 'hello',
+          duration: 9,
+          words: [
+            { word: 'hello', start: 0.2, end: 0.6 },
+            { word: 'bad', start: -1, end: 0.2 },
+          ],
+          segments: [
+            {
+              id: 0,
+              text: 'hello',
+              start: 0.2,
+              end: 0.6,
+              avg_logprob: -0.3,
+              no_speech_prob: 0.05,
+              compression_ratio: 1.2,
+            },
+          ],
+        });
+      },
+    });
+    const result = await Effect.runPromise(
+      provider.transcribe({
+        audio: new Uint8Array([1]),
+        encoding: 'audio/wav',
+        track: 'inbound',
+        model: 'whisper-large-v3-turbo',
+      }),
+    );
+    expect(result).toMatchObject({
+      text: 'hello',
+      words: [{ text: 'hello', startMs: 200, endMs: 600 }],
+      segments: [
+        {
+          text: 'hello',
+          startMs: 200,
+          endMs: 600,
+          averageLogProbability: -0.3,
+          noSpeechProbability: 0.05,
+          compressionRatio: 1.2,
+        },
+      ],
+    });
+    expect(result.endMs).toBeUndefined();
+  });
   it('uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata', async () => {
     const transport = mock(
       async (_input: string | URL | Request, init?: RequestInit) => {
@@ -39,7 +92,7 @@ describe('Groq speech-to-text adapter', () => {
     expect(result).toEqual({
       text: 'Hello there',
       language: 'en',
-      endMs: 1250,
+      audioDurationMs: 1250,
     });
     expect(transport).toHaveBeenCalledTimes(1);
     expect(transport.mock.calls[0]?.[0]).toBe(

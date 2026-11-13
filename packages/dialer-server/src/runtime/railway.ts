@@ -388,12 +388,12 @@ export const createRailwayCallOperationsApplication = async (
     const chunkBytes = positiveInteger(
       environment,
       'DIALER_TRANSCRIPTION_CHUNK_BYTES',
-      160_000,
+      16_000,
     );
     const maxBufferBytesPerTrack = positiveInteger(
       environment,
       'DIALER_TRANSCRIPTION_MAX_BUFFER_BYTES',
-      240_000,
+      48_000,
     );
     if (maxBufferBytesPerTrack < chunkBytes) {
       throw new Error(
@@ -411,6 +411,8 @@ export const createRailwayCallOperationsApplication = async (
           environment.GROQ_TRANSCRIPTION_MODEL?.trim() ??
           'whisper-large-v3-turbo',
         chunkBytes,
+        overlapBytes: Math.min(1_600, Math.floor(chunkBytes / 4)),
+        vadEnabled: true,
         maxBufferBytesPerTrack,
         providerTimeoutMs: positiveInteger(
           environment,

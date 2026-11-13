@@ -1,3 +1,4 @@
+import { TRANSCRIPT_TIMING_MIGRATION_ID } from '../call-operations/transcript-schema';
 import { TEAM_ACCESS_MIGRATION_ID } from '../commercial/team-schema';
 import { REP_DEVICES_MIGRATION_ID } from '../inbound/rep-devices';
 import { NATIVE_BILLING_MIGRATION_ID } from '../billing/native-billing-store';
@@ -30,7 +31,7 @@ const createDatabaseHarness = (initialApplied: readonly string[] = []) => {
   const applied = new Set<string>(initialApplied);
   const calls: Array<{ text: string; values: readonly unknown[] }> = [];
   const database: LeadConnectorDatabase = {
-    query: async <T>(text: string, values: readonly unknown[] = []) => {
+    query: async <T,>(text: string, values: readonly unknown[] = []) => {
       calls.push({ text, values });
       if (
         text.includes(
@@ -87,6 +88,7 @@ describe('dialer database migrations', () => {
       REP_DEVICES_MIGRATION_ID,
       TEAM_ACCESS_MIGRATION_ID,
       OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
+      TRANSCRIPT_TIMING_MIGRATION_ID,
     ]);
     expect(harness.applied).toEqual(
       new Set([
@@ -97,9 +99,11 @@ describe('dialer database migrations', () => {
         REP_DEVICES_MIGRATION_ID,
         TEAM_ACCESS_MIGRATION_ID,
         OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
+        TRANSCRIPT_TIMING_MIGRATION_ID,
       ]),
     );
     const sql = harness.calls.map((call) => call.text).join('\n');
+    expect(sql).toContain('dialer_transcript_outbox');
     expect(sql).toContain(
       'CREATE TABLE IF NOT EXISTS consuelo_lead_connector_company_credentials',
     );
@@ -121,6 +125,7 @@ describe('dialer database migrations', () => {
       REP_DEVICES_MIGRATION_ID,
       TEAM_ACCESS_MIGRATION_ID,
       OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
+      TRANSCRIPT_TIMING_MIGRATION_ID,
     ]);
     await expect(
       rollbackDialerDatabaseMigration(harness.database, upgradeId),
@@ -176,6 +181,7 @@ describe('dialer database migrations', () => {
         REP_DEVICES_MIGRATION_ID,
         TEAM_ACCESS_MIGRATION_ID,
         OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
+        TRANSCRIPT_TIMING_MIGRATION_ID,
       ]),
     );
   });
@@ -273,7 +279,7 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(19);
+    expect(migrationInserts).toHaveLength(20);
   });
 
   it('upgrades an RD7B schema with only the additive booking evidence migrations', async () => {
@@ -315,6 +321,7 @@ describe('dialer database migrations', () => {
         REP_DEVICES_MIGRATION_ID,
         TEAM_ACCESS_MIGRATION_ID,
         OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
+        TRANSCRIPT_TIMING_MIGRATION_ID,
       ]),
     );
   });

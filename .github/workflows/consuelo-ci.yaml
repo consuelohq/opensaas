@@ -102,6 +102,7 @@ jobs:
         run: |
           bun run --cwd packages/logger build
           bun run --cwd packages/contacts build
+          bun run --cwd packages/conversation build
 
       - name: Run workspace verify
         if: needs.consuelo-changes.outputs.verify == 'true'
@@ -165,6 +166,7 @@ jobs:
         run: |
           bun run --cwd packages/logger build
           bun run --cwd packages/contacts build
+          bun run --cwd packages/conversation build
 
       - name: Run dialer release package tests
         if: needs.consuelo-changes.outputs.dialer == 'true'
@@ -172,6 +174,7 @@ jobs:
           bun test packages/conversation/tests
           bun test packages/dialer/src
           bun test packages/dialer-server/src
+          CONSUELO_RUN_TRANSCRIPTION_POSTGRES=1 bun test packages/dialer-server/src/call-operations/media.postgres.integration.test.ts
           bun test packages/lead-connector/src
 
       - name: Typecheck dialer release packages
