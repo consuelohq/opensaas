@@ -11,6 +11,7 @@ WORKDIR /app
 COPY --from=dependencies /app /app
 RUN bun run --cwd packages/logger build
 RUN bun run --cwd packages/contacts build
+RUN bun run --cwd packages/conversation build
 RUN bun run --cwd packages/dialer build
 RUN bun run --cwd packages/lead-connector build
 RUN bun run --cwd packages/dialer-server build

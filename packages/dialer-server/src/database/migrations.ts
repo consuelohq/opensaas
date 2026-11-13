@@ -1,4 +1,8 @@
 import {
+  TRANSCRIPT_TIMING_MIGRATION_ID,
+  TRANSCRIPT_TIMING_SCHEMA_SQL,
+} from '../call-operations/transcript-schema';
+import {
   TEAM_ACCESS_MIGRATION_ID,
   TEAM_ACCESS_SCHEMA,
 } from '../commercial/team-schema';
@@ -290,7 +294,8 @@ type Migration =
         | typeof NATIVE_BILLING_MIGRATION_ID
         | typeof REP_DEVICES_MIGRATION_ID
         | typeof TEAM_ACCESS_MIGRATION_ID
-        | typeof OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID;
+        | typeof OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID
+        | typeof TRANSCRIPT_TIMING_MIGRATION_ID;
       up: MigrationUp;
       down?: never;
     }
@@ -462,10 +467,16 @@ const migrations: readonly Migration[] = [
   {
     id: NATIVE_BILLING_MIGRATION_ID,
     up: async (database) => {
-      // Public checkout previously initialized this durable parent lazily.
-      // Native bookkeeping is forward-only; never delete paid purchase history.
-      await database.query(PUBLIC_CHECKOUT_SCHEMA[0]);
-      await initializeNativeBillingStore(database);
+      try {
+        // Public checkout previously initialized this durable parent lazily.
+        // Native bookkeeping is forward-only; never delete paid purchase history.
+        await database.query(PUBLIC_CHECKOUT_SCHEMA[0]);
+        await initializeNativeBillingStore(database);
+      } catch (cause: unknown) {
+        throw new Error('Failed to initialize native billing schema', {
+          cause,
+        });
+      }
     },
   },
   {
@@ -481,9 +492,16 @@ const migrations: readonly Migration[] = [
     id: OUTBOUND_ACCOUNT_OWNERSHIP_MIGRATION_ID,
     // Forward-only: keep existing bindings and leave old parent-owned rows NULL.
     up: (database) =>
-      database.query(
-        'ALTER TABLE dialer_telephony_outbound ADD COLUMN IF NOT EXISTS provider_account_id text',
-      ).then(() => undefined),
+      database
+        .query(
+          'ALTER TABLE dialer_telephony_outbound ADD COLUMN IF NOT EXISTS provider_account_id text',
+        )
+        .then(() => undefined),
+  },
+  {
+    id: TRANSCRIPT_TIMING_MIGRATION_ID,
+    up: (database) =>
+      database.query(TRANSCRIPT_TIMING_SCHEMA_SQL).then(() => undefined),
   },
 ];
 
