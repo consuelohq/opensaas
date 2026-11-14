@@ -78,8 +78,12 @@ html, body {background:var(--trace-bg)!important;color:var(--trace-cream)!import
 #tbmLiveTraceModal .trxJson,
 #tbmLiveTraceModal .trxLatency,
 #tbmLiveTraceModal .trxTokens {color:var(--trace-muted)!important}
+#tbmLiveTraceModal .trxRow [data-trace-tooltip],
 #tbmLiveTraceModal .trxInputCell,
-#tbmLiveTraceModal .trxOutputCell {cursor:default!important}
+#tbmLiveTraceModal .trxOutputCell {cursor:pointer!important}
+#tbmLiveTraceModal .trxHead>div:nth-child(2) {font-size:inherit!important}
+/* The old mobile stylesheet creates a second Time via ::before. */
+#tbmLiveTraceModal .trxHead>div:nth-child(2)::before {content:none!important;display:none!important}
 #tbmLiveTraceModal .trxHoverCard {
   max-width:min(380px,calc(100vw - 24px));
   padding:10px 12px;
@@ -100,8 +104,8 @@ html, body {background:var(--trace-bg)!important;color:var(--trace-cream)!import
   text-decoration:underline;
   text-decoration-color:color-mix(in srgb,var(--branch-color-light,var(--ti-text)) 42%,transparent);
 }
-/* Table: desktop is horizontally scrollable, but the useful first 8 columns
-   occupy only 1406px, so Output is already visible on a normal wide screen. */
+/* Keep the main reading window through Output visible before horizontal scroll.
+   The virtualized content must expand with the header on wide monitors. */
 #tbmLiveTraceModal .trxShell .trxTablePane {
   min-width:0!important;
   max-width:100%!important;
@@ -119,8 +123,8 @@ html, body {background:var(--trace-bg)!important;color:var(--trace-cream)!import
 #tbmLiveTraceModal .trxShell .trxTable,
 #tbmLiveTraceModal .trxShell.closed .trxTable {
   box-sizing:border-box!important;
-  width:max(100%,1874px)!important;
-  min-width:1874px!important;
+  width:max(100%,1924px)!important;
+  min-width:1924px!important;
   max-width:none!important;
   padding-right:0!important;
 }
@@ -132,15 +136,18 @@ html, body {background:var(--trace-bg)!important;color:var(--trace-cream)!import
   display:grid!important;
   box-sizing:border-box!important;
   width:100%!important;
-  min-width:1874px!important;
+  min-width:1924px!important;
   max-width:none!important;
-  grid-template-columns:24px 94px 156px 80px 92px minmax(370px,1.3fr) minmax(300px,1fr) minmax(290px,1fr) 140px 148px 82px 98px!important;
+  grid-template-columns:24px 94px 156px 80px 92px minmax(455px,1.6fr) minmax(290px,.95fr) minmax(285px,.95fr) 136px 140px 78px 94px!important;
 }
 #tbmLiveTraceModal .trxShell .trxSkeletonRows,
 #tbmLiveTraceModal .trxShell [data-trace-virtual-content] {
-  min-width:1874px!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:1924px!important;
   max-width:none!important;
 }
+#tbmLiveTraceModal .trxShell .trxRow {padding-inline:0!important}
 #tbmLiveTraceModal .trxShell .trxRow > div,
 #tbmLiveTraceModal .trxShell .trxHead > div {
   min-width:0;
@@ -159,6 +166,10 @@ html, body {background:var(--trace-bg)!important;color:var(--trace-cream)!import
   transform:translateY(-.5px) scale(1.018)!important;
   transform-origin:left center;
   filter:brightness(1.225)!important;
+}
+html.trace-keyboard-navigation #tbmLiveTraceModal .trxShell .trxRow:hover:not(.selected) > div {
+  transform:none!important;
+  filter:none!important;
 }
 @media(prefers-color-scheme:light) {
   #tbmLiveTraceModal .trxShell .trxRow:is(:hover,.selected) > div,

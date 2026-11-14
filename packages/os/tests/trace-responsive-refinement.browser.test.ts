@@ -23,12 +23,12 @@ const rows = [
   },
 ];
 
-async function openFixture(browser: Browser, width: number, scheme: 'dark'|'light' = 'dark'): Promise<Page> {
+async function openFixture(browser: Browser, width: number, scheme: 'dark'|'light' = 'dark', fixtureRows: typeof rows = rows): Promise<Page> {
   const page = await browser.newPage({viewport:{width,height:820}, colorScheme:scheme});
   await page.route('**/*', route => {
     const pathname = new URL(route.request().url()).pathname;
     if(pathname==='/tracing') return route.fulfill({contentType:'text/html',body:buildObservabilityTracesSite()});
-    if(pathname==='/gateway/traces/recent') return route.fulfill({json:{ok:true,data:{direction:'older',rows,nextCursor:null}}});
+    if(pathname==='/gateway/traces/recent') return route.fulfill({json:{ok:true,data:{direction:'older',rows:fixtureRows,nextCursor:null}}});
     if(pathname==='/gateway/traces/events') return route.fulfill({contentType:'text/event-stream',body:'event: heartbeat\\ndata: {}\\n\\n'});
     return route.fulfill({status:404,body:''});
   });
@@ -62,6 +62,11 @@ async function layout(page: Page) {
       outputRight:output.getBoundingClientRect().right,
       contentRight:scroll.getBoundingClientRect().right,
       timeHeaderCount:visible.filter(x=>x==='Time').length,
+      headingPseudo:getComputedStyle(get('.trxHead > div:nth-child(2)'),'::before').content,
+      rowRight:get('.trxRow').getBoundingClientRect().right,
+      headerRight:get('.trxHead').getBoundingClientRect().right,
+      rowGrid:getComputedStyle(get('.trxRow')).gridTemplateColumns,
+      headerGrid:getComputedStyle(get('.trxHead')).gridTemplateColumns,
     };
   });
 }
@@ -121,8 +126,23 @@ describe('Tracing responsive refinements', () => {
         const l=await layout(page);
         expect(l.visible).toEqual(['Time','Tool','Session']);
         expect(l.timeHeaderCount).toBe(1);
+        expect(l.headingPseudo).not.toBe('"Time"');
         expect(l.sessionWidth).toBeGreaterThanOrEqual(140);
         expect(l.scrollWidth).toBeLessThanOrEqual(l.clientWidth+1);
+        await page.close();
+      }
+    }finally{await browser.close();}
+  },25000);
+
+  browserTest('wide tables stretch virtual rows to the same full width as the header',async()=>{
+    const browser=await chromium.launch({headless:true});
+    try{
+      for(const width of [2000,2560]){
+        const page=await openFixture(browser,width);
+        const l=await layout(page);
+        expect(l.rowRight).toBeCloseTo(l.headerRight,0);
+        expect(l.rowGrid).toBe(l.headerGrid);
+        expect(l.sessionWidth).toBeGreaterThanOrEqual(430);
         await page.close();
       }
     }finally{await browser.close();}
@@ -179,8 +199,10 @@ describe('Tracing responsive refinements', () => {
       expect(await inputCell.getAttribute('data-trace-tooltip'))
         .toContain('packages/os/scripts/lib/observability-traces-site.ts');
       expect(await outputCell.getAttribute('data-trace-tooltip'))
-        .toMatch(/^Returned [\d,]+ characters$/);
-      expect(await inputCell.evaluate(el => getComputedStyle(el).cursor)).toBe('default');
+        .toMatch(/^(?:Read: Task Workflow|Returned [\d,]+ characters)$/);
+      expect(await inputCell.evaluate(el => getComputedStyle(el).cursor)).toBe('pointer');
+      expect(await outputCell.evaluate(el => getComputedStyle(el).cursor)).toBe('pointer');
+      expect(await page.locator('.trxRow .trxTokens').first().evaluate(el => getComputedStyle(el).cursor)).toBe('pointer');
       const row=page.locator('.trxRow[data-trace-key]').first();
       await row.hover();
       const hover=await page.evaluate(()=>{
@@ -198,6 +220,36 @@ describe('Tracing responsive refinements', () => {
       for(const x of css.filter(Boolean) as Array<{q:string,border:string}>){
         expect(parseFloat(x.border)).toBe(0);
       }
+    }finally{await browser.close();}
+  },30000);
+
+  browserTest('repeated arrows ignore synthetic pointerover after navigation until the pointer actually moves',async()=>{
+    const browser=await chromium.launch({headless:true});
+    try{
+      const fixtures=Array.from({length:32},(_,i)=>({
+        ...rows[0],
+        id:'keyboard-'+i,traceId:'keyboard-'+i,
+        startTime:new Date(Date.parse('2026-11-14T04:45:09Z')-i*1000).toISOString()
+      }));
+      const page=await openFixture(browser,1200,'dark',fixtures);
+      const first=page.locator('.trxRow[data-trace-key="keyboard-0"]');
+      await first.hover();
+      await page.keyboard.press('ArrowDown');
+      expect(await page.evaluate(()=>(window as typeof window & {__traceKeyboardKey?:string}).__traceKeyboardKey)).toBe('keyboard-1');
+      // Scroll and virtualization can fire a pointerover at the stationary mouse.
+      await first.dispatchEvent('pointerover',{pointerType:'mouse',clientX:120,clientY:210});
+      await page.keyboard.press('ArrowDown');
+      expect(await page.evaluate(()=>(window as typeof window & {__traceKeyboardKey?:string}).__traceKeyboardKey)).toBe('keyboard-2');
+      await page.keyboard.press('ArrowDown');
+      expect(await page.evaluate(()=>(window as typeof window & {__traceKeyboardKey?:string}).__traceKeyboardKey)).toBe('keyboard-3');
+      expect(await page.locator('html').evaluate(el=>el.classList.contains('trace-keyboard-navigation'))).toBe(true);
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(()=>document.querySelector('.tiInspector')?.getAttribute('data-ti-trace-key')==='keyboard-3');
+      expect(await page.locator('.tiInspector').getAttribute('data-ti-trace-key')).toBe('keyboard-3');
+      // Only a real cursor movement gives hover navigation back control.
+      await page.mouse.move(350,600);
+      expect(await page.locator('html').evaluate(el=>el.classList.contains('trace-keyboard-navigation'))).toBe(false);
+      await page.close();
     }finally{await browser.close();}
   },30000);
 });

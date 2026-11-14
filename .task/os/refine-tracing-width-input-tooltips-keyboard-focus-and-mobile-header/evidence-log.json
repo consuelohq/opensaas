@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+  "events": [
+    {
+      "id": "162596c6-dbfa-427b-9ef1-a7724ff14d9c",
+      "occurred_at": "2026-11-14T06:04:46.620Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "81f72ed6-2902-4408-9088-d5da9b1442df",
+      "occurred_at": "2026-11-14T06:04:46.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/observability-traces-site.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "58676b2f-74d3-472b-aebe-ec5d598566eb",
+      "occurred_at": "2026-11-14T06:04:52.126Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/observability-traces-site.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "b3cea4f9-2291-45d4-8ad0-5f45a205718a",
+      "occurred_at": "2026-11-14T06:05:06.011Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/observability-traces-site.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "ca2c5b86-75f3-468c-ad73-39a975360e14",
+      "occurred_at": "2026-11-14T06:05:06.151Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-site-inspector/table-formatters.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "2fe119fe-f08f-4572-b103-77c2da8d0f6f",
+      "occurred_at": "2026-11-14T06:05:06.323Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/assets/vendor/observability-traces-v38/mobile.css",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "32924e67-1124-4955-a5a7-a325668d759e",
+      "occurred_at": "2026-11-14T06:05:07.412Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-site-inspector/model.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "df8451dd-50f4-4207-b45f-9c2a14b834b8",
+      "occurred_at": "2026-11-14T06:05:26.181Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-site-inspector/browser.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "1895e276-fec6-4d36-ab42-a907d3ba6888",
+      "occurred_at": "2026-11-14T06:05:32.227Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-site-inspector/browser.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "a8aea596-bf6d-40d9-819d-8a559dc34e91",
+      "occurred_at": "2026-11-14T06:06:47.838Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/redaction.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "833e9e34-0997-4747-8b66-e857240ad684",
+      "occurred_at": "2026-11-14T06:07:24.475Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-chrome.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "bdaa6cec-18f9-4ecc-a66c-269a8ea41598",
+      "occurred_at": "2026-11-14T06:08:29.026Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-chrome.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    },
+    {
+      "id": "41d2b26e-fa7e-44e4-a442-ee0d87555ccb",
+      "occurred_at": "2026-11-14T06:16:36.993Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-14T06:16:37.178Z"
+}

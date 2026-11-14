@@ -447,9 +447,9 @@ export function workspaceChromeClientScript(): string {
           const key = shortcutDigit(index);
           const badge = document.createElement('kbd');
           badge.dataset.routeKey = '';
-          badge.textContent = key;
+          badge.textContent = '⌃⇧' + key;
           link.append(badge);
-          link.setAttribute('aria-keyshortcuts', key);
+          link.setAttribute('aria-keyshortcuts', 'Control+Shift+' + key);
         });
       };
       annotateRouteShortcuts();
@@ -500,7 +500,7 @@ export function workspaceChromeClientScript(): string {
           dialog.append(subtitle, list);
         };
         addSection('Navigation', shortcutRoutes().map((link, index) => ({
-          key: shortcutDigit(index),
+          key: 'Ctrl+Shift+' + shortcutDigit(index),
           label: link.querySelector('span')?.textContent?.trim() || link.textContent?.trim() || 'Route',
         })));
         addSection('Universal', [
@@ -662,16 +662,18 @@ export function workspaceChromeClientScript(): string {
           }
           return;
         }
-        if (!event.defaultPrevented && !event.isComposing && !event.metaKey && !event.ctrlKey && !event.altKey && !isEditing(event.target)) {
-          if (event.key === '?' || (event.key === '/' && event.shiftKey)) {
+        if (!event.defaultPrevented && !event.isComposing && !event.metaKey && !event.altKey && !isEditing(event.target)) {
+          if (!event.ctrlKey && (event.key === '?' || (event.key === '/' && event.shiftKey))) {
             event.preventDefault();
             event.stopImmediatePropagation();
             setMenuOpen(false);
             openShortcutsDialog();
             return;
           }
-          if (!event.shiftKey && /^[0-9]$/.test(event.key)) {
-            const index = event.key === '0' ? 9 : Number(event.key) - 1;
+          // Bare and Option+digits belong to external launchers (e.g. Raycast).
+          if (event.ctrlKey && event.shiftKey && /^Digit[0-9]$/.test(event.code)) {
+            const digit = Number(event.code.slice(-1));
+            const index = digit === 0 ? 9 : digit - 1;
             const link = shortcutRoutes()[index];
             if (link) {
               event.preventDefault();
