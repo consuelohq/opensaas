@@ -144,6 +144,14 @@ let fontPreferenceInitialized = false;
 let hoverOpenTimer = 0;
 let hoverCloseTimer = 0;
 let hoverTarget: HTMLElement | null = null;
+let hoverIntentTarget: HTMLElement | null = null;
+let hoverSuppressedTarget: HTMLElement | null = null;
+let hoverCooldownUntil = 0;
+let hoverPointerX = 0;
+let hoverPointerY = 0;
+let hoverLastX = 0;
+let hoverLastDirection = 0;
+let hoverReversals = 0;
 let currentFacets: TraceFilterFacets = {
   tools: [],
   branches: [],
@@ -943,6 +951,10 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     (cell) => {
       setTraceTooltip(cell, branch);
       applySessionColor(cell, branch);
+      cell.dataset.traceSessionFilter = branch;
+      cell.setAttribute('role', 'button');
+      cell.setAttribute('aria-label', 'Filter to session ' + branch);
+      cell.tabIndex = 0;
     },
   );
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
@@ -1003,6 +1015,10 @@ function appendChildCells(
     (cell) => {
       setTraceTooltip(cell, branch);
       applySessionColor(cell, branch);
+      cell.dataset.traceSessionFilter = branch;
+      cell.setAttribute('role', 'button');
+      cell.setAttribute('aria-label', 'Filter to session ' + branch);
+      cell.tabIndex = 0;
     },
   );
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
@@ -1108,12 +1124,25 @@ function ensureTraceTableControls(): void {
   }
 }
 
+function syncActiveSessionChip(): void {
+  const chip = document.querySelector<HTMLButtonElement>('[data-trace-active-session]');
+  if (!chip) return;
+  const active = filters.branches.size === 1 ? [...filters.branches][0] : '';
+  chip.hidden = !active || active === NO_FILTER_MATCH;
+  if (!chip.hidden) {
+    chip.textContent = '×  ' + stripTaskPrefix(active);
+    chip.setAttribute('aria-label', 'Clear session filter: ' + active);
+    chip.title = 'Show all sessions';
+  }
+}
+
 function renderTraceFilterPanel(): void {
   const panel = document.querySelector<HTMLElement>('.trxFilterPanel');
   const content = panel?.querySelector<HTMLElement>(
     '[data-trace-filter-content]',
   );
   if (!panel || !content) return;
+  syncActiveSessionChip();
   const fragment = document.createDocumentFragment();
   fragment.append(
     createFilterSection('tools', 'Tools', currentFacets.tools),
@@ -1338,6 +1367,13 @@ function prepareTraceFooter(footer: HTMLElement): void {
   filtersButton.type = 'button';
   filtersButton.dataset.showFilters = '';
   filtersButton.textContent = 'filters';
+  const filterActions = document.createElement('div');
+  filterActions.className = 'trxFooterFilterActions';
+  const sessionChip = document.createElement('button');
+  sessionChip.type = 'button';
+  sessionChip.dataset.traceActiveSession = '';
+  sessionChip.hidden = true;
+  filterActions.append(filtersButton, sessionChip);
   const count = document.createElement('span');
   count.className = 'trxTraceTotal';
   const value = document.createElement('b');
@@ -1351,8 +1387,9 @@ function prepareTraceFooter(footer: HTMLElement): void {
   scrollTop.textContent = 'Scroll to top';
   scrollTop.setAttribute('aria-label', 'Scroll trace history to top');
   scrollTop.hidden = true;
-  footer.append(filtersButton, count, scrollTop);
+  footer.append(filterActions, count, scrollTop);
   footer.dataset.traceFooterPrepared = 'true';
+  syncActiveSessionChip();
 }
 
 function currentSelectedRootKey(): string {
@@ -1506,23 +1543,39 @@ function ensureTraceHoverCard(): HTMLElement {
 }
 
 function showTraceHoverCard(target: HTMLElement): void {
+  if (
+    !target.isConnected ||
+    target === hoverSuppressedTarget ||
+    performance.now() < hoverCooldownUntil
+  ) return;
   const text = target.dataset.traceTooltip;
   if (!text) return;
+  const rect = target.getBoundingClientRect();
+  const list = target.closest<HTMLElement>('[data-trace-virtual-list]');
+  const bounds = list?.getBoundingClientRect();
+  // Virtual rows can leave the viewport while the pointer stays stationary.
+  // Never pin a tooltip to the top-left for an off-screen former hover target.
+  if (
+    rect.bottom <= 0 || rect.top >= innerHeight ||
+    rect.right <= 0 || rect.left >= innerWidth ||
+    (bounds && (rect.bottom <= bounds.top || rect.top >= bounds.bottom))
+  ) return;
   const card = ensureTraceHoverCard();
   card.textContent = text;
   hoverTarget = target;
   target.setAttribute('aria-describedby', card.id);
   card.hidden = false;
-  const rect = target.getBoundingClientRect();
   const left = Math.max(
     12,
     Math.min(rect.left, window.innerWidth - card.offsetWidth - 12),
   );
   const below = rect.bottom + 8;
-  const top =
-    below + card.offsetHeight < window.innerHeight - 12
-      ? below
-      : Math.max(12, rect.top - card.offsetHeight - 8);
+  const above = rect.top - card.offsetHeight - 8;
+  const top = below + card.offsetHeight < window.innerHeight - 12
+    ? below
+    : above >= 12
+      ? above
+      : Math.max(12, Math.min(rect.top, window.innerHeight - card.offsetHeight - 12));
   card.style.left = `${Math.round(left)}px`;
   card.style.top = `${Math.round(top)}px`;
 }
@@ -1534,11 +1587,30 @@ function hideTraceHoverCard(): void {
   hoverTarget = null;
 }
 
-function scheduleTraceHoverOpen(target: HTMLElement): void {
+function dismissTraceHoverCard(suppress = false): void {
   window.clearTimeout(hoverOpenTimer);
   window.clearTimeout(hoverCloseTimer);
+  if (suppress) {
+    hoverSuppressedTarget = hoverTarget ?? hoverIntentTarget;
+    hoverCooldownUntil = performance.now() + 480;
+  }
+  hideTraceHoverCard();
+}
+
+function scheduleTraceHoverOpen(target: HTMLElement, event: PointerEvent): void {
+  window.clearTimeout(hoverOpenTimer);
+  window.clearTimeout(hoverCloseTimer);
+  if (target === hoverSuppressedTarget || performance.now() < hoverCooldownUntil) return;
   if (hoverTarget === target && !ensureTraceHoverCard().hidden) return;
-  hoverOpenTimer = window.setTimeout(() => showTraceHoverCard(target), 1_000);
+  if (hoverIntentTarget !== target) {
+    hoverIntentTarget = target;
+    hoverPointerX = event.clientX;
+    hoverPointerY = event.clientY;
+    hoverLastX = event.clientX;
+    hoverLastDirection = 0;
+    hoverReversals = 0;
+  }
+  hoverOpenTimer = window.setTimeout(() => showTraceHoverCard(target), 850);
 }
 
 function scheduleTraceHoverClose(): void {
@@ -1624,13 +1696,45 @@ export function installTraceVirtualList(): () => void {
     const target = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-trace-tooltip]',
     );
-    if (target) scheduleTraceHoverOpen(target);
+    if (target) scheduleTraceHoverOpen(target, event);
+  };
+  const handlePointerMove = (event: PointerEvent) => {
+    if (hoverSuppressedTarget) {
+      const beneathPointer = document.elementFromPoint(event.clientX, event.clientY);
+      if (!beneathPointer || !hoverSuppressedTarget.contains(beneathPointer)) {
+        // Re-arm only after genuinely leaving the dismissed target.
+        hoverSuppressedTarget = null;
+        hoverCooldownUntil = 0;
+        hoverIntentTarget = null;
+      }
+      return;
+    }
+    const target = hoverIntentTarget;
+    if (!target) return;
+    if (!(event.target instanceof Element) || !target.contains(event.target)) return;
+    const delta = event.clientX - hoverLastX;
+    const direction = Math.abs(delta) >= 5 ? Math.sign(delta) : 0;
+    if (direction && hoverLastDirection && direction !== hoverLastDirection) hoverReversals++;
+    if (direction) hoverLastDirection = direction;
+    hoverLastX = event.clientX;
+    if (
+      Math.hypot(event.clientX - hoverPointerX, event.clientY - hoverPointerY) > 35 ||
+      hoverReversals >= 2
+    ) dismissTraceHoverCard(true);
+  };
+  const handleScrollOrWheel = () => {
+    if (hoverTarget || hoverIntentTarget) dismissTraceHoverCard(true);
   };
   const handlePointerOut = (event: PointerEvent) => {
     const card = (event.target as HTMLElement).closest('.trxHoverCard');
     if (card) {
       const related = event.relatedTarget;
       if (related instanceof Node && card.contains(related)) return;
+      // Leaving the card entirely counts as an intentional exit, so a future
+      // re-entry can show a new tooltip after a scroll dismissal.
+      hoverSuppressedTarget = null;
+      hoverCooldownUntil = 0;
+      hoverIntentTarget = null;
       scheduleTraceHoverClose();
       return;
     }
@@ -1641,10 +1745,42 @@ export function installTraceVirtualList(): () => void {
     const related = event.relatedTarget;
     if (related instanceof Node && target.contains(related)) return;
     if (related instanceof Element && related.closest('.trxHoverCard')) return;
+    if (target === hoverSuppressedTarget) {
+      hoverSuppressedTarget = null;
+      hoverCooldownUntil = 0;
+    }
+    if (target === hoverIntentTarget) hoverIntentTarget = null;
     scheduleTraceHoverClose();
   };
   document.addEventListener('pointerover', handlePointerOver);
   document.addEventListener('pointerout', handlePointerOut);
+  document.addEventListener('pointermove', handlePointerMove, { passive: true });
+  document.addEventListener('scroll', handleScrollOrWheel, true);
+  document.addEventListener('wheel', handleScrollOrWheel, { passive: true, capture: true });
+
+  const activateSessionFilter = (session: string) => {
+    if (!session) return;
+    if (filters.branches.size === 1 && filters.branches.has(session)) {
+      filters.branches.clear();
+    } else {
+      showOnlyFilterValue('branches', session);
+    }
+    dismissTraceHoverCard(true);
+    syncActiveSessionChip();
+    renderTraceFilterPanel();
+    controller?.syncFilters();
+  };
+  const handleSessionKeyboard = (event: KeyboardEvent) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const cell = target.closest<HTMLElement>('[data-trace-session-filter]');
+    if (!cell?.dataset.traceSessionFilter) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    activateSessionFilter(cell.dataset.traceSessionFilter);
+  };
+  document.addEventListener('keydown', handleSessionKeyboard, true);
 
   document.addEventListener('input', (event) => {
     const target = event.target;
@@ -1662,6 +1798,22 @@ export function installTraceVirtualList(): () => void {
     'click',
     (event) => {
       const target = event.target as HTMLElement;
+      if (target.closest('[data-trace-active-session]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        filters.branches.clear();
+        syncActiveSessionChip();
+        renderTraceFilterPanel();
+        controller?.syncFilters();
+        return;
+      }
+      const session = target.closest<HTMLElement>('[data-trace-session-filter]');
+      if (session?.dataset.traceSessionFilter) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        activateSessionFilter(session.dataset.traceSessionFilter);
+        return;
+      }
       if (target.closest('[data-show-filters], [data-trace-filter-toggle]')) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -1816,6 +1968,11 @@ export function installTraceVirtualList(): () => void {
     observer.disconnect();
     document.removeEventListener('pointerover', handlePointerOver);
     document.removeEventListener('pointerout', handlePointerOut);
+    document.removeEventListener('pointermove', handlePointerMove);
+    document.removeEventListener('scroll', handleScrollOrWheel, true);
+    document.removeEventListener('wheel', handleScrollOrWheel, true);
+    document.removeEventListener('keydown', handleSessionKeyboard, true);
+    dismissTraceHoverCard();
     document.querySelector('.trxHoverCard')?.remove();
     controller?.destroy();
     delete traceWindow().__traceVirtualList;
