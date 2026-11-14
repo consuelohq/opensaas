@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "seed": 17,
+  "bun": "1.3.14",
+  "packSha256": "d0766935d31365972b78d6a0bf508576316851500915641e3d3736a9963357ed",
+  "engineSha256": "5d999d8b8cc355660d40005be52121306c24e7e01af571a2a875ea3922f59b70",
+  "matcherSha256": "3eca1b18aea99c72c78eb1ac6f53a664f28f18806effe9edea64d47b01ca5890",
+  "fixed": {
+    "hits": 31,
+    "wrongVisible": 0,
+    "lateVisible": 0,
+    "falseInterrupts": 0,
+    "correctAbstentions": 12
+  },
+  "independent": {
+    "hits": 10,
+    "wrongVisible": 0,
+    "lateVisible": 0,
+    "falseInterrupts": 0,
+    "correctAbstentions": 12
+  }
+}

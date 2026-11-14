@@ -17,6 +17,9 @@ export type TranscriptionContext = {
   enabled: boolean;
   language: string | null;
   retentionDays: number;
+  providerAccountId?: string | null;
+  // Only persisted participant authority may promote a transport track to a role.
+  trackRoles?: Partial<Record<TranscriptTrack, 'customer' | 'representative'>>;
 };
 
 export type CallOperationsRepositoryService = {
@@ -108,16 +111,22 @@ export type CallOperationsRepositoryService = {
   }) => Effect.Effect<void, DialerApplicationError>;
   resolveRecordingCallOwnership: (input: {
     providerCallId: string;
-  }) => Effect.Effect<{
-    workspaceId: string;
-    providerAccountId: string | null;
-  } | null, DialerApplicationError>;
+  }) => Effect.Effect<
+    {
+      workspaceId: string;
+      providerAccountId: string | null;
+    } | null,
+    DialerApplicationError
+  >;
   resolveStatusCallOwnership: (input: {
     providerCallId: string;
-  }) => Effect.Effect<{
-    workspaceId: string;
-    providerAccountId: string | null;
-  } | null, DialerApplicationError>;
+  }) => Effect.Effect<
+    {
+      workspaceId: string;
+      providerAccountId: string | null;
+    } | null,
+    DialerApplicationError
+  >;
   recordCallRecordingStatus: (input: {
     workspaceId: string;
     providerCallId: string;
@@ -133,6 +142,14 @@ export type SpeechToTextRequest = {
   track: TranscriptTrack;
   model: string;
   language?: string;
+  signal?: AbortSignal;
+};
+
+export type SpeechTiming = { text: string; startMs: number; endMs: number };
+export type SpeechSegmentTiming = SpeechTiming & {
+  averageLogProbability?: number;
+  noSpeechProbability?: number;
+  compressionRatio?: number;
 };
 
 export type SpeechToTextResult = {
@@ -141,6 +158,9 @@ export type SpeechToTextResult = {
   confidence?: number | null;
   startMs?: number | null;
   endMs?: number | null;
+  audioDurationMs?: number;
+  words?: SpeechTiming[];
+  segments?: SpeechSegmentTiming[];
 };
 
 export type SpeechToTextProviderService = {
