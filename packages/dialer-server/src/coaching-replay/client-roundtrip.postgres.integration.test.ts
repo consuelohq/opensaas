@@ -175,40 +175,49 @@ suite('actual Mercury client and Hono routes with fixture authority', () => {
         content: SYNTHETIC_LIFE_INSURANCE.content,
         expectedRevision: 0,
       });
-      // Keep exercising the feed if preview is broken, then fail with the original error.
-      let previewFailure: unknown;
-      try {
-        const preview = await author.preview(scriptId, 1);
-        expect(preview.cards).toHaveLength(6);
-        expect(
-          preview.cards.find((card) => card.id === 'existing-coverage')
-            ?.listenFor,
-        ).toContain('existing coverage');
-      } catch (error: unknown) {
-        previewFailure = error;
-      }
+      // Deliberately arbitrary authored aliases prove this is not the canned life pack.
+      const rules = [
+        {
+          cardId: 'existing-coverage',
+          aliases: ['emerald umbrella'],
+          required: [],
+          forbidden: [],
+          priority: 50,
+          speaker: 'customer' as const,
+          nextCardIds: [],
+        },
+      ];
+      const preview = await author.preview(scriptId, 1, rules);
+      expect(preview.cards).toHaveLength(6);
+      expect(
+        preview.cards.find((card) => card.id === 'existing-coverage')
+          ?.listenFor,
+      ).toContain('emerald umbrella');
       expect(await author.versions(scriptId)).toEqual([]);
-      expect(
-        await author.publish(scriptId, {
-          expectedRevision: 1,
-          expectedPublishedVersion: 0,
-          approved: true,
+      const command = {
+        expectedRevision: 1,
+        expectedPublishedVersion: preview.expectedPublishedVersion,
+        approved: true as const,
+        rules: preview.rules,
+        reviewToken: preview.reviewToken,
+      };
+      await expect(
+        author.publish(scriptId, {
+          ...command,
+          rules: [{ ...rules[0]!, aliases: ['violet lantern'] }],
         }),
-      ).toEqual({ version: 1 });
+      ).rejects.toThrow();
+      await expect(
+        author.publish(scriptId, { ...command, reviewToken: '0'.repeat(64) }),
+      ).rejects.toThrow();
+      expect(await author.versions(scriptId)).toEqual([]);
+      expect(await author.publish(scriptId, command)).toEqual({ version: 1 });
       expect(await author.versions(scriptId)).toEqual([1]);
-      try {
-        expect((await author.preview(scriptId, 1)).cards).toHaveLength(6);
-      } catch (error: unknown) {
-        previewFailure ??= error;
-      }
+      const loaded = await author.preview(scriptId, 1);
+      expect(loaded.rules).toEqual(preview.rules);
       expect(
-        await author.publish(scriptId, {
-          expectedRevision: 1,
-          expectedPublishedVersion: 1,
-          approved: true,
-        }),
-      ).toEqual({ version: 2 });
-      expect(await author.versions(scriptId)).toEqual([2, 1]);
+        loaded.cards.find((card) => card.id === 'existing-coverage')?.listenFor,
+      ).toContain('emerald umbrella');
       await Effect.runPromise(
         repository.createOrUpdateCallSession({
           id: 'call',
@@ -231,16 +240,73 @@ suite('actual Mercury client and Hono routes with fixture authority', () => {
         }),
       );
       const scopeKey = 'outbound:group';
+      const manual = await feed.start({ scopeKey, scriptId });
+      expect(manual.view?.status).toBe('manual');
+      expect(manual.publishedVersion).toBe(`${scriptId}:1`);
+      expect(
+        (await feed.control(scopeKey, 'off', manual.projectionToken)).view
+          ?.status,
+      ).toBe('manual');
+      live = true;
       const opened = await feed.start({ scopeKey, scriptId });
+      expect(opened.projectionToken).not.toBe(manual.projectionToken);
+      await expect(
+        feed.control(scopeKey, 'off', manual.projectionToken),
+      ).rejects.toThrow();
       expect(opened.view?.status).toBe('manual');
-      expect(opened.publishedVersion).toBe(`${scriptId}:2`);
+      expect(opened.publishedVersion).toBe(`${scriptId}:1`);
       expect(
         (await feed.read(scopeKey, opened.view!.revision)).view,
       ).toBeNull();
+      const nextRules = [{ ...rules[0]!, aliases: ['violet lantern'] }];
+      const nextPreview = await author.preview(scriptId, 1, nextRules);
       expect(
-        (await feed.control(scopeKey, 'off', opened.projectionToken)).view
-          ?.status,
-      ).toBe('manual');
+        await author.publish(scriptId, {
+          expectedRevision: 1,
+          expectedPublishedVersion: nextPreview.expectedPublishedVersion,
+          approved: true,
+          rules: nextPreview.rules,
+          reviewToken: nextPreview.reviewToken,
+        }),
+      ).toEqual({ version: 2 });
+      expect(await author.versions(scriptId)).toEqual([2, 1]);
+      expect(
+        (await feed.read(scopeKey, opened.view!.revision)).publishedVersion,
+      ).toBe(`${scriptId}:1`);
+      const stale = await author.preview(scriptId, 1, nextRules);
+      await runtime.save(identity, {
+        id: scriptId,
+        title: 'Synthetic examples',
+        content: SYNTHETIC_LIFE_INSURANCE.content.replace(
+          'Confirm who it protects',
+          'Confirm the protection they need',
+        ),
+        expectedRevision: 1,
+      });
+      await expect(
+        author.publish(scriptId, {
+          expectedRevision: 1,
+          expectedPublishedVersion: stale.expectedPublishedVersion,
+          approved: true,
+          rules: stale.rules,
+          reviewToken: stale.reviewToken,
+        }),
+      ).rejects.toThrow();
+      // Updating the revision in the command cannot salvage a token for old source.
+      await expect(
+        author.publish(scriptId, {
+          expectedRevision: 2,
+          expectedPublishedVersion: stale.expectedPublishedVersion,
+          approved: true,
+          rules: stale.rules,
+          reviewToken: stale.reviewToken,
+        }),
+      ).rejects.toThrow();
+      const editedPreview = await author.preview(scriptId, 2);
+      expect(
+        editedPreview.cards.find((card) => card.id === 'existing-coverage')
+          ?.listenFor,
+      ).not.toContain('violet lantern');
       await Effect.runPromise(
         repository.appendTranscriptSegment({
           id: 'segment-1',
@@ -251,7 +317,7 @@ suite('actual Mercury client and Hono routes with fixture authority', () => {
           idempotencyKey: 'segment-1',
           track: 'inbound',
           speaker: 'customer',
-          text: 'I have existing coverage',
+          text: 'emerald umbrella',
           startMs: 0,
           endMs: 900,
           language: 'en',
@@ -271,17 +337,24 @@ suite('actual Mercury client and Hono routes with fixture authority', () => {
           },
         }),
       );
-      live = true;
-      const reopened = await feed.start({ scopeKey, scriptId });
-      expect(reopened.projectionToken).not.toBe(opened.projectionToken);
-      expect(reopened.view).toMatchObject({
+      const delivered = await feed.read(scopeKey, opened.view!.revision);
+      expect(delivered.publishedVersion).toBe(`${scriptId}:1`);
+      expect(delivered.view).toMatchObject({
         kind: 'approved',
         status: 'live',
         heading: 'Existing coverage',
       });
-      expect(reopened.view?.points[0]?.text).toBe(
+      expect(delivered.view?.points[0]?.text).toBe(
         'Ask about existing coverage',
       );
+      expect(
+        (await feed.control(scopeKey, 'off', opened.projectionToken)).view
+          ?.status,
+      ).toBe('manual');
+      const reopened = await feed.start({ scopeKey, scriptId });
+      // A restarted projection in the same call retains its durable V1 pin.
+      expect(reopened.publishedVersion).toBe(`${scriptId}:1`);
+      expect(reopened.projectionToken).not.toBe(opened.projectionToken);
       expect(
         (await pool.query('SELECT delivered_at FROM dialer_transcript_outbox'))
           .rows[0].delivered_at,
@@ -298,7 +371,115 @@ suite('actual Mercury client and Hono routes with fixture authority', () => {
         (await feed.control(scopeKey, 'off', reopened.projectionToken)).view
           ?.status,
       ).toBe('manual');
-      if (previewFailure) throw previewFailure;
+      // Compile the reviewed source while an editor holds an uncommitted update.
+      // The INSERT must wait on that row and recheck the revision after commit.
+      const raceId = randomUUID();
+      await runtime.save(identity, {
+        id: raceId,
+        title: 'Race fixture',
+        content: SYNTHETIC_LIFE_INSURANCE.content,
+        expectedRevision: 0,
+      });
+      const publicationClient = await pool.connect();
+      const editor = await pool.connect();
+      let editorOpen = false;
+      let insertStarted!: () => void;
+      const startedInsert = new Promise<void>((resolve) => {
+        insertStarted = resolve;
+      });
+      let insertion: Promise<unknown> | undefined;
+      const database = new Proxy(pool, {
+        get(target, property) {
+          if (property === 'query')
+            return (sql: string, values?: unknown[]) => {
+              if (
+                sql.includes('INSERT INTO dialer_coaching_script_publications')
+              ) {
+                insertion = publicationClient.query(sql, values);
+                insertStarted();
+                return insertion;
+              }
+              return target.query(sql, values);
+            };
+          const value = Reflect.get(target, property, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      });
+      const raceRuntime = createCoachingRuntime(database);
+      try {
+        const raceApp = new Hono<{ Variables: DialerVariables }>();
+        raceApp.use('*', async (c, next) => {
+          c.set('identity', identity);
+          await next();
+        });
+        raceApp.route('/', createCoachingRoutes(raceRuntime));
+        const raceAuthor = createMercuryAuthoringApi({
+          ...options,
+          fetch: async (input, init) => raceApp.fetch(new Request(input, init)),
+        });
+        const reviewed = await raceAuthor.preview(raceId, 1, rules);
+        await editor.query('BEGIN');
+        editorOpen = true;
+        await editor.query(
+          'UPDATE dialer_coaching_scripts SET content=$1, revision=revision+1 WHERE workspace_id=$2 AND id=$3::uuid',
+          [
+            SYNTHETIC_LIFE_INSURANCE.content.replace(
+              'Confirm who it protects',
+              'Confirm changed protection',
+            ),
+            'fixture',
+            raceId,
+          ],
+        );
+        const pid = (
+          await publicationClient.query('SELECT pg_backend_pid() AS pid')
+        ).rows[0]!.pid;
+        let settled = false;
+        const publishing = raceAuthor
+          .publish(raceId, {
+            expectedRevision: 1,
+            expectedPublishedVersion: reviewed.expectedPublishedVersion,
+            rules: reviewed.rules,
+            reviewToken: reviewed.reviewToken,
+            approved: true,
+          })
+          .then(
+            () => 'published',
+            () => 'rejected',
+          );
+        await startedInsert;
+        insertion!.then(
+          () => {
+            settled = true;
+          },
+          () => {
+            settled = true;
+          },
+        );
+        const deadline = Date.now() + 5000;
+        let blocked = false;
+        while (!settled && Date.now() < deadline) {
+          const activity = await pool.query(
+            'SELECT wait_event_type FROM pg_stat_activity WHERE pid=$1',
+            [pid],
+          );
+          if (activity.rows[0]?.wait_event_type === 'Lock') {
+            blocked = true;
+            break;
+          }
+        }
+        await editor.query('COMMIT');
+        editorOpen = false;
+        expect(await publishing).toBe('rejected');
+        expect(blocked).toBe(true);
+        expect(await raceAuthor.versions(raceId)).toEqual([]);
+      } finally {
+        if (editorOpen) await editor.query('ROLLBACK');
+        await insertion?.catch(() => undefined);
+        raceRuntime.mercury.cues.dispose();
+        editor.release();
+        publicationClient.release();
+      }
     } finally {
       runtime?.mercury.cues.dispose();
       await pool?.end();

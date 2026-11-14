@@ -32,6 +32,7 @@ import { installTraceVirtualList } from './virtual-list-browser';
 import { formatTraceTableRow } from './table-formatters';
 import {
   nextTraceInteractionIndex,
+  traceArrowAnchor,
   traceIdentityCopyText,
 } from './interactions';
 
@@ -44,8 +45,8 @@ type TraceWindow = Window & {
   };
   __traceVirtualList?: {
     select: (key: string) => void;
-    moveFocus: (direction: -1 | 1) => string;
-    openFocused: () => string;
+    moveFocus: (direction: -1 | 1, hoverKey?: string) => string;
+    openFocused: (hoverKey?: string) => string;
     clearSelection: () => void;
     scrollToTop: () => void;
     openFilters: () => void;
@@ -158,7 +159,9 @@ function traceSearchIsOpen(): boolean {
 function openTraceSearch(): void {
   const virtualList = (window as TraceWindow).__traceVirtualList;
   const actions = document.querySelector<HTMLElement>('.trxChromeActions');
-  const clock = document.querySelector<HTMLElement>('[data-trace-clock]');
+  const clock = document.querySelector<HTMLElement>(
+    '[data-workspace-clock], [data-trace-clock]',
+  );
   if (!actions || !clock) return;
   ensureTraceSearchStyle();
   let shell = actions.querySelector<HTMLElement>('[data-trace-search-shell]');
@@ -187,7 +190,9 @@ function closeTraceSearch(clearQuery = true): void {
   const shell = document.querySelector<HTMLElement>(
     '[data-trace-search-shell]',
   );
-  const clock = document.querySelector<HTMLElement>('[data-trace-clock]');
+  const clock = document.querySelector<HTMLElement>(
+    '[data-workspace-clock], [data-trace-clock]',
+  );
   if (clearQuery) virtualList?.setQuery('');
   if (clock) delete clock.dataset.traceSearchHidden;
   if (!shell) return;
@@ -767,11 +772,14 @@ function moveInspectorPeer(direction: -1 | 1): string {
     ...document.querySelectorAll<HTMLButtonElement>('.tiPeer[data-trace-key]'),
   ].filter((peer) => !peer.hidden && peer.offsetParent !== null);
   if (!peers.length) return '';
-  const preferredKey =
-    lastTraceInteraction?.scope === 'child' &&
-    lastTraceInteraction.source === 'keyboard'
-      ? lastTraceInteraction.key
-      : inspectorStore.getSnapshot().selectedKey;
+  const peerInteraction =
+    lastTraceInteraction?.scope === 'child' ? lastTraceInteraction : null;
+  const preferredKey = traceArrowAnchor(
+    peerInteraction?.source === 'hover' ? peerInteraction.key : '',
+    inspectorStore.getSnapshot().selectedKey,
+    peerInteraction?.source === 'keyboard' ? peerInteraction.key : '',
+    peerInteraction?.source ?? null,
+  );
   const currentIndex = peers.findIndex(
     (peer) => peer.dataset.traceKey === preferredKey,
   );
@@ -985,11 +993,13 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
     ) {
       event.preventDefault();
       const direction: -1 | 1 = moveUp ? -1 : 1;
-      if (inspectorIsOpen()) {
+      if (inspectorIsOpen() && lastTraceInteraction?.scope !== 'main') {
         moveInspectorPeer(direction);
         return;
       }
-      const key = virtualList?.moveFocus(direction) ?? '';
+      const hoverKey = lastTraceInteraction?.scope === 'main' &&
+        lastTraceInteraction.source === 'hover' ? lastTraceInteraction.key : '';
+      const key = virtualList?.moveFocus(direction, hoverKey) ?? '';
       if (key) rememberTraceInteraction(key, 'main', 'keyboard');
       return;
     }
@@ -1011,7 +1021,9 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
         }
         return;
       }
-      const key = virtualList?.openFocused() ?? '';
+      const hoverKey = lastTraceInteraction?.scope === 'main' &&
+        lastTraceInteraction.source === 'hover' ? lastTraceInteraction.key : '';
+      const key = virtualList?.openFocused(hoverKey) ?? '';
       if (key) {
         event.preventDefault();
         rememberTraceInteraction(key, 'main', 'keyboard');

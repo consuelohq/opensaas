@@ -2,10 +2,14 @@ import { describe, expect, it } from 'bun:test';
 import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runComparison } from './compare';
+import {
+  runComparison,
+  runIndependentHeadingComparison,
+  runReviewedComparison,
+} from './compare';
 
 describe('bounded production replay comparison', () => {
-  it('runs both lanes at each concurrency and writes six private closed reports', async () => {
+  it('preserves the original lanes and writes separate private reviewed and independent reports', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'coaching-comparison-'));
     try {
       const reports = await runComparison(directory, 17);
@@ -31,7 +35,31 @@ describe('bounded production replay comparison', () => {
             report.results.some((result) => result.selectorRequests! > 0),
           ),
       ).toBe(true);
+      const reviewed = await runReviewedComparison(directory, 17);
+      expect(reviewed).toHaveLength(3);
+      for (const { path, report } of reviewed) {
+        expect(report.lane).toBe('reviewed-rules');
+        expect(report.results).toHaveLength(108);
+        expect(statSync(path).mode & 0o777).toBe(0o600);
+        const json = readFileSync(path, 'utf8');
+        expect(JSON.parse(json)).toEqual(report);
+        expect(json).not.toContain('premium is beyond');
+      }
+      const independentHeading = await runIndependentHeadingComparison(
+        directory,
+        17,
+      );
+      expect(independentHeading).toHaveLength(3);
+      for (const { path, report } of independentHeading) {
+        expect(report.lane).toBe('rules');
+        expect(report.results).toHaveLength(36);
+        expect(statSync(path).mode & 0o777).toBe(0o600);
+      }
+      await expect(
+        runIndependentHeadingComparison(directory, 17),
+      ).rejects.toThrow();
       await expect(runComparison(directory, 17)).rejects.toThrow();
+      await expect(runReviewedComparison(directory, 17)).rejects.toThrow();
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

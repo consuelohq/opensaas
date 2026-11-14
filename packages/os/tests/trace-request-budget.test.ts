@@ -153,7 +153,14 @@ test('filtering a sparse result and rendering it does not fetch history without 
         }
       ).__traceVirtualList.setQuery('tool:fs.read');
     });
-    await page.waitForTimeout(600);
+    // This is a 240 ms debounced request and Chromium may not schedule its
+    // timers immediately under a concurrent full-suite run. Assert the request
+    // budget once the request occurs, not at an arbitrary wall-clock deadline.
+    await page.waitForFunction(
+      () => (window as unknown as { historyRequests: number }).historyRequests === 1,
+      null,
+      { timeout: 5_000 },
+    );
     expect(
       await page.evaluate(
         () =>

@@ -10,17 +10,21 @@ import {
 
 const audioPayload = (value: string): string =>
   Buffer.from(value, 'utf8').toString('base64');
+const parentAccountSid = 'AC' + '1'.repeat(32);
+const childAccountSid = 'AC' + '2'.repeat(32);
+const foreignAccountSid = 'AC' + '3'.repeat(32);
 
 const createHarness = (
   input: {
     provider?: SpeechToTextProviderService;
     enabled?: boolean;
-    providerAccountId?: string;
+    providerAccountId?: string | null;
     trackRoles?: {
       inbound?: 'customer' | 'representative';
       outbound?: 'customer' | 'representative';
     };
     config?: {
+      parentAccountSid?: string;
       maxConcurrentTranscriptions?: number;
       chunkBytes?: number;
       overlapBytes?: number;
@@ -99,6 +103,7 @@ const createHarness = (
     repository,
     speechToTextProvider: provider,
     config: {
+      parentAccountSid,
       model: 'whisper-large-v3-turbo',
       chunkBytes: 4,
       maxBufferBytesPerTrack: 8,
@@ -117,6 +122,7 @@ const startFrame = (streamSid = 'MZ-1') => ({
   sequenceNumber: '1',
   streamSid,
   start: {
+    accountSid: parentAccountSid,
     streamSid,
     callSid: 'CA-1',
     customParameters: { callId: 'CA-1', sessionId: 'session-1' },
@@ -140,6 +146,173 @@ const mediaFrame = (
 });
 
 describe('Effect call-operations transcription application', () => {
+  it.each([null, undefined])(
+    'binds a persisted parent account %s to the configured parent for start and stop',
+    async (providerAccountId) => {
+      const harness = createHarness({ providerAccountId });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const send = (
+        frame: Parameters<
+          typeof harness.application.processTranscriptionFrame
+        >[0]['frame'],
+      ) =>
+        Effect.runPromise(
+          harness.application.processTranscriptionFrame({
+            connectionId: 'connection-1',
+            frame,
+          }),
+        );
+      expect(
+        (
+          await send({
+            ...startFrame(),
+            start: { ...startFrame().start, accountSid: foreignAccountSid },
+          })
+        ).accepted,
+      ).toBe(false);
+      expect((await send(startFrame())).accepted).toBe(true);
+      for (const accountSid of [foreignAccountSid, undefined]) {
+        expect(
+          (
+            await send({
+              event: 'stop',
+              sequenceNumber: '2',
+              streamSid: 'MZ-1',
+              stop: {
+                callSid: 'CA-1',
+                ...(accountSid === undefined ? {} : { accountSid }),
+              },
+            })
+          ).accepted,
+        ).toBe(false);
+      }
+      expect(
+        (
+          await send({
+            event: 'stop',
+            sequenceNumber: '3',
+            streamSid: 'MZ-1',
+            stop: { callSid: 'CA-1', accountSid: parentAccountSid },
+          })
+        ).accepted,
+      ).toBe(true);
+      expect(harness.statuses).toEqual(['processing', 'ready']);
+      expect(harness.providerCalls).toHaveLength(0);
+    },
+  );
+  it.each([undefined, '', '  '])(
+    'denies a parent account when the configured parent is missing: %s',
+    async (configuredParent) => {
+      const harness = createHarness({
+        providerAccountId: null,
+        config: { parentAccountSid: configuredParent },
+      });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const result = await Effect.runPromise(
+        harness.application.processTranscriptionFrame({
+          connectionId: 'connection-1',
+          frame: startFrame(),
+        }),
+      );
+      expect(result.accepted).toBe(false);
+      expect(harness.statuses).toHaveLength(0);
+      expect(harness.providerCalls).toHaveLength(0);
+    },
+  );
+  it.each([null, childAccountSid])(
+    'requires an explicit frame account for parent or child account ownership: %s',
+    async (providerAccountId) => {
+      const harness = createHarness({ providerAccountId });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const { accountSid: _accountSid, ...missingAccount } = startFrame().start;
+      const result = await Effect.runPromise(
+        harness.application.processTranscriptionFrame({
+          connectionId: 'connection-1',
+          frame: { ...startFrame(), start: missingAccount },
+        }),
+      );
+      expect(result.accepted).toBe(false);
+      expect(harness.statuses).toHaveLength(0);
+    },
+  );
+  it.each([parentAccountSid, undefined])(
+    'keeps a child account exact independently of configured parent %s',
+    async (configuredParent) => {
+      const harness = createHarness({
+        providerAccountId: childAccountSid,
+        config: { parentAccountSid: configuredParent },
+      });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const send = (
+        frame: Parameters<
+          typeof harness.application.processTranscriptionFrame
+        >[0]['frame'],
+      ) =>
+        Effect.runPromise(
+          harness.application.processTranscriptionFrame({
+            connectionId: 'connection-1',
+            frame,
+          }),
+        );
+      for (const accountSid of [parentAccountSid, foreignAccountSid]) {
+        expect(
+          (
+            await send({
+              ...startFrame(),
+              start: { ...startFrame().start, accountSid },
+            })
+          ).accepted,
+        ).toBe(false);
+      }
+      expect(
+        (
+          await send({
+            ...startFrame(),
+            start: { ...startFrame().start, accountSid: childAccountSid },
+          })
+        ).accepted,
+      ).toBe(true);
+      for (const accountSid of [
+        parentAccountSid,
+        foreignAccountSid,
+        undefined,
+      ]) {
+        expect(
+          (
+            await send({
+              event: 'stop',
+              sequenceNumber: '2',
+              streamSid: 'MZ-1',
+              stop: {
+                callSid: 'CA-1',
+                ...(accountSid === undefined ? {} : { accountSid }),
+              },
+            })
+          ).accepted,
+        ).toBe(false);
+      }
+      expect(
+        (
+          await send({
+            event: 'stop',
+            sequenceNumber: '3',
+            streamSid: 'MZ-1',
+            stop: { callSid: 'CA-1', accountSid: childAccountSid },
+          })
+        ).accepted,
+      ).toBe(true);
+      expect(harness.statuses).toEqual(['processing', 'ready']);
+      expect(harness.providerCalls).toHaveLength(0);
+    },
+  );
   it('aborts provider work and independently releases a failed media session', async () => {
     let providerSignal: AbortSignal | undefined;
     const harness = createHarness({

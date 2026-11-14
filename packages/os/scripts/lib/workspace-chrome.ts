@@ -241,7 +241,7 @@ export function renderWorkspaceChromeBar(
         ${renderRouteGroup('Guides', active)}
       </div>
     </div>
-    <div class="trxChromeActions"><span class="trxClock" data-workspace-clock>--:--</span></div>
+    <div class="trxChromeActions"><span class="trxClock" data-workspace-clock>--:--</span><button type="button" class="workspace-shortcuts-trigger" data-workspace-shortcuts aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">?</button></div>
   </div>`;
 }
 
@@ -327,6 +327,22 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-option:hover, .workspace-route-option:focus-visible { background: var(--workspace-menu-hover); color: var(--workspace-menu-ink); outline: none; }
     .workspace-route-option[aria-current="page"] { color: var(--workspace-menu-accent); background: var(--workspace-menu-current); }
     .workspace-route-option span { min-width: 0; overflow-wrap: anywhere; font: 13px/1.25 Georgia, "Times New Roman", serif; }
+    .workspace-route-option:has([data-route-key]) { grid-template-columns: minmax(0,1fr) auto; align-items: center; }
+    .workspace-route-option [data-route-key] { display: inline-flex; justify-content: center; min-width: 20px; color: var(--workspace-menu-muted); font: 11px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; opacity: .8; }
+    .trxChromeActions { display: inline-flex; align-items: center; justify-content: end; gap: 10px; }
+    .workspace-shortcuts-trigger { border: 0; border-radius: 5px; padding: 2px 5px; color: var(--workspace-chrome-muted); background: transparent; font: 600 12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; cursor: pointer; }
+    .workspace-shortcuts-trigger:hover, .workspace-shortcuts-trigger:focus-visible { color: var(--workspace-chrome-ink); background: var(--workspace-menu-hover); outline: none; }
+    .workspace-shortcuts-dialog { width: min(560px, calc(100vw - 32px)); max-height: min(80dvh, 760px); overflow: auto; padding: 22px; border: 1px solid var(--workspace-menu-border); border-radius: 14px; color: var(--workspace-menu-ink); background: var(--workspace-menu-bg); box-shadow: var(--workspace-menu-shadow); color-scheme: normal; }
+    .workspace-shortcuts-dialog::backdrop { background: rgba(0,0,0,.6); backdrop-filter: blur(4px); }
+    .workspace-shortcuts-dialog h2 { margin: 0; font: 600 22px/1.2 Georgia, serif; }
+    .workspace-shortcuts-dialog h3 { margin: 18px 0 8px; color: var(--workspace-menu-muted); font: 600 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: .09em; }
+    .workspace-shortcuts-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .workspace-shortcuts-close { border: 0; background: transparent; color: var(--workspace-menu-muted); font: 20px/1 system-ui; cursor: pointer; padding: 2px 6px; }
+    .workspace-shortcuts-close:hover { color: var(--workspace-menu-ink); }
+    .workspace-shortcuts-list { display: grid; grid-template-columns: 1fr; gap: 4px; }
+    .workspace-shortcuts-entry { display: grid; grid-template-columns: 84px minmax(0,1fr); align-items: baseline; gap: 12px; min-height: 29px; padding: 4px 0; font: 13px/1.4 system-ui, sans-serif; }
+    .workspace-shortcuts-entry kbd { width: max-content; max-width: 84px; padding: 3px 6px; border-radius: 5px; background: var(--workspace-menu-hover); color: var(--workspace-menu-ink); font: 600 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .workspace-shortcuts-hint { margin: 12px 0 0; color: var(--workspace-menu-muted); font: 11px/1.5 system-ui, sans-serif; }
     .workspace-route-group[data-route-group="Connect"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
     .workspace-route-group[data-route-group="Connect"] > p { grid-column: 1 / -1; }
     .workspace-route-card { grid-template-columns: 1fr; gap: 0; align-content: start; min-height: 0; border: 0; padding: 7px; }
@@ -364,6 +380,7 @@ export function workspaceChromeClientScript(): string {
       const trigger = document.querySelector('[data-workspace-route-trigger]');
       const shortcut = document.querySelector('[data-workspace-menu-shortcut]');
       const menu = document.querySelector('[data-workspace-route-menu]');
+      const shortcutsTrigger = document.querySelector('[data-workspace-shortcuts]');
       const close = document.querySelector('button[data-close-traces]');
       const fullscreen = document.querySelector('[data-workspace-fullscreen]');
       const clock = document.querySelector('[data-workspace-clock]');
@@ -412,6 +429,111 @@ export function workspaceChromeClientScript(): string {
         menu.insertBefore(section, configureGroup instanceof Element ? configureGroup : null);
       };
       ensureInternalRoute();
+      const shortcutRoutes = () => {
+        if (!(menu instanceof HTMLElement)) return [];
+        return Array.from(menu.querySelectorAll('a[href]')).filter((link) =>
+          link instanceof HTMLAnchorElement &&
+          link.getAttribute('href') !== '#' &&
+          !link.hidden &&
+          link.getAttribute('aria-disabled') !== 'true'
+        ).slice(0, 10);
+      };
+      const shortcutDigit = (index) => index === 9 ? '0' : String(index + 1);
+      const annotateRouteShortcuts = () => {
+        if (!(menu instanceof HTMLElement)) return;
+        menu.querySelectorAll('[data-route-key]').forEach((key) => key.remove());
+        menu.querySelectorAll('a[aria-keyshortcuts]').forEach((link) => link.removeAttribute('aria-keyshortcuts'));
+        shortcutRoutes().forEach((link, index) => {
+          const key = shortcutDigit(index);
+          const badge = document.createElement('kbd');
+          badge.dataset.routeKey = '';
+          badge.textContent = key;
+          link.append(badge);
+          link.setAttribute('aria-keyshortcuts', key);
+        });
+      };
+      annotateRouteShortcuts();
+      const isEditing = (target) => target instanceof Element &&
+        Boolean(target.closest('input, textarea, select, [contenteditable], [role="textbox"]'));
+      let shortcutsDialog = null;
+      const closeShortcutsDialog = () => {
+        if (shortcutsDialog?.open) shortcutsDialog.close();
+      };
+      const openShortcutsDialog = () => {
+        if (shortcutsDialog?.open) return;
+        annotateRouteShortcuts();
+        const previousFocus = document.activeElement;
+        const dialog = document.createElement('dialog');
+        dialog.className = 'workspace-shortcuts-dialog';
+        dialog.dataset.workspaceShortcutsDialog = '';
+        dialog.setAttribute('aria-labelledby', 'workspace-shortcuts-title');
+        const heading = document.createElement('div');
+        heading.className = 'workspace-shortcuts-heading';
+        const title = document.createElement('h2');
+        title.id = 'workspace-shortcuts-title';
+        title.textContent = 'Keyboard shortcuts';
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'workspace-shortcuts-close';
+        closeButton.setAttribute('aria-label', 'Close shortcuts');
+        closeButton.textContent = '×';
+        closeButton.addEventListener('click', closeShortcutsDialog);
+        heading.append(title, closeButton);
+        dialog.append(heading);
+        const addSection = (name, entries) => {
+          if (!Array.isArray(entries) || !entries.length) return;
+          const subtitle = document.createElement('h3');
+          subtitle.textContent = name;
+          const list = document.createElement('div');
+          list.className = 'workspace-shortcuts-list';
+          entries.slice(0, 30).forEach((entry) => {
+            if (!entry || typeof entry.key !== 'string' || typeof entry.label !== 'string') return;
+            const row = document.createElement('div');
+            row.className = 'workspace-shortcuts-entry';
+            const key = document.createElement('kbd');
+            key.textContent = entry.key.slice(0, 32);
+            const label = document.createElement('span');
+            label.textContent = entry.label.slice(0, 120);
+            row.append(key, label);
+            list.append(row);
+          });
+          dialog.append(subtitle, list);
+        };
+        addSection('Navigation', shortcutRoutes().map((link, index) => ({
+          key: shortcutDigit(index),
+          label: link.querySelector('span')?.textContent?.trim() || link.textContent?.trim() || 'Route',
+        })));
+        addSection('Universal', [
+          { key: '?', label: 'Show keyboard shortcuts' },
+          { key: 'Esc', label: 'Close shortcuts or the current panel' },
+        ]);
+        const pageMetadata = document.querySelector('script[type="application/json"][data-workspace-shortcuts-page]');
+        if (pageMetadata) {
+          try {
+            const groups = JSON.parse(pageMetadata.textContent || '[]');
+            if (Array.isArray(groups)) groups.slice(0, 8).forEach((group) =>
+              addSection(String(group.title || 'This page').slice(0, 70), group.entries)
+            );
+          } catch { /* Optional page documentation must never block navigation. */ }
+        }
+        const hint = document.createElement('p');
+        hint.className = 'workspace-shortcuts-hint';
+        hint.textContent = 'Shortcuts are disabled while typing in an input.';
+        dialog.append(hint);
+        dialog.addEventListener('close', () => {
+          dialog.remove();
+          shortcutsDialog = null;
+          if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
+        });
+        dialog.addEventListener('click', (event) => {
+          if (event.target === dialog) closeShortcutsDialog();
+        });
+        document.body.append(dialog);
+        shortcutsDialog = dialog;
+        dialog.showModal();
+        closeButton.focus();
+      };
+      shortcutsTrigger?.addEventListener('click', openShortcutsDialog);
       const warmRoute = (href) => {
         const route = sameOriginRoute(href);
         if (!route || warmedRoutes.has(route) || route === window.location.pathname + window.location.search + window.location.hash) return;
@@ -474,6 +596,7 @@ export function workspaceChromeClientScript(): string {
         trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
         menu.hidden = !open;
         if (open) {
+          annotateRouteShortcuts();
           warmMenuRoutes();
           const current = menu.querySelector('[aria-current="page"]');
           const first = current || menu.querySelector('[role="menuitem"]');
@@ -528,13 +651,44 @@ export function workspaceChromeClientScript(): string {
         if (target instanceof Node && !menu.contains(target) && trigger instanceof Node && !trigger.contains(target)) setMenuOpen(false);
       });
       document.addEventListener('keydown', (event) => {
+        if (shortcutsDialog?.open) {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            closeShortcutsDialog();
+          } else if (event.key !== 'Tab') {
+            // A modal owns its keyboard input; do not move rows behind it.
+            event.stopImmediatePropagation();
+          }
+          return;
+        }
+        if (!event.defaultPrevented && !event.isComposing && !event.metaKey && !event.ctrlKey && !event.altKey && !isEditing(event.target)) {
+          if (event.key === '?' || (event.key === '/' && event.shiftKey)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            setMenuOpen(false);
+            openShortcutsDialog();
+            return;
+          }
+          if (!event.shiftKey && /^[0-9]$/.test(event.key)) {
+            const index = event.key === '0' ? 9 : Number(event.key) - 1;
+            const link = shortcutRoutes()[index];
+            if (link) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              setMenuOpen(false);
+              link.click();
+              return;
+            }
+          }
+        }
         if (event.key === 'Escape' && trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') === 'true') {
           event.preventDefault();
           event.stopPropagation();
           setMenuOpen(false);
           trigger.focus();
         }
-      });
+      }, true);
       const updateClock = () => {
         if (!(clock instanceof HTMLElement)) return;
         clock.textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());

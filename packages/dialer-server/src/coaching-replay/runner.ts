@@ -12,7 +12,13 @@ export interface ReplaySession {
   ingest(event: TranscriptEvent): Promise<unknown>;
   flush(): Promise<void>;
   dispose(): void;
-  diagnostics?(): { requests: number };
+  diagnostics?(): {
+    requests: number;
+    selectorDiscards?: number;
+    selectorFailures?: number;
+    selectorCheckpoints?: number;
+    selectorQueueRejected?: number;
+  };
 }
 export interface ReplayResult {
   readonly scenarioId: string;
@@ -21,12 +27,20 @@ export interface ReplayResult {
   readonly settleWallMs: number;
   readonly firstCueWallMs: number | null;
   readonly selectorRequests: number | null;
+  readonly wallOutcome?: Outcome;
+  readonly selectorMetrics?: {
+    discards: number | null;
+    failures: number | null;
+    checkpoints: number | null;
+    queueRejected: number | null;
+  };
 }
 
 export async function runTextReplay(input: {
   readonly cases: readonly Scenario[];
   readonly concurrency: number;
   readonly seed: number;
+  readonly captureWallOutcomes?: boolean;
   readonly create: (
     scope: ConversationScope,
     emit: (cardId: CardId | null) => void,
@@ -63,6 +77,7 @@ export async function runTextReplay(input: {
       const scope = fixtureScope(index + 1);
       const clock = new VirtualClock(1000);
       const observations: Observation[] = [];
+      const wallObservations: Observation[] = [];
       let session: ReplaySession | undefined;
       let start: number | undefined;
       let firstCueWallMs: number | null = null;
@@ -71,9 +86,11 @@ export async function runTextReplay(input: {
           scope,
           (cardId) => {
             if (start === undefined) throw new Error('cue before replay start');
+            const elapsed = performance.now() - start;
             observations.push({ atMs: clock.nowMs() - 1000, cardId });
+            wallObservations.push({ atMs: elapsed, cardId });
             if (cardId !== null && firstCueWallMs === null)
-              firstCueWallMs = performance.now() - start;
+              firstCueWallMs = elapsed;
           },
           clock,
         );
@@ -82,13 +99,25 @@ export async function runTextReplay(input: {
         const afterIngest = performance.now();
         await session.flush();
         const afterFlush = performance.now();
+        const diagnostics = session.diagnostics?.();
         results[index] = {
           scenarioId: scenario.id,
           outcome: observeScenario(scenario, observations),
           ingestWallMs: afterIngest - start,
           settleWallMs: afterFlush - start,
           firstCueWallMs,
-          selectorRequests: session.diagnostics?.().requests ?? null,
+          selectorRequests: diagnostics?.requests ?? null,
+          ...(input.captureWallOutcomes
+            ? {
+                wallOutcome: observeScenario(scenario, wallObservations),
+                selectorMetrics: {
+                  discards: diagnostics?.selectorDiscards ?? null,
+                  failures: diagnostics?.selectorFailures ?? null,
+                  checkpoints: diagnostics?.selectorCheckpoints ?? null,
+                  queueRejected: diagnostics?.selectorQueueRejected ?? null,
+                },
+              }
+            : {}),
         };
       } catch (error: unknown) {
         if (!failed) failure = error;

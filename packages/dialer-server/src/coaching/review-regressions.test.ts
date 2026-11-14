@@ -96,7 +96,7 @@ const event = (n: number, text = 'unrelated speech') => ({
   finality: 'final' as const,
 });
 const fakeStore = (mutations: { pins: number }): PlaybookStore => ({
-  preview: async () => compiled(),
+  preview: async () => ({ compiled: compiled(), reviewToken: 'a'.repeat(64) }),
   publish: async () => ({
     version: 1,
     sourceRevision: 1,
@@ -234,7 +234,7 @@ test('selector cannot choose valid but server-ineligible approved card', async (
   expect(session.view('outbound:call').kind).toBe('manual');
   session.dispose();
 });
-test('continuous fresh finals do not blanket-cancel context job; exact cursor still rejects stale result', async () => {
+test('novel fresh finals do not blanket-cancel context job; checkpoint rejects unseen meaning', async () => {
   let resolve: (value: unknown) => void = () => {},
     signal: AbortSignal | undefined;
   let calls = 0;
@@ -263,7 +263,7 @@ test('continuous fresh finals do not blanket-cancel context job; exact cursor st
   });
   await session.ingest(event(1));
   now = 3000;
-  await session.ingest(event(2));
+  await session.ingest(event(2, 'A different concern supersedes the earlier statement'));
   expect(signal?.aborted).toBe(false);
   resolve({
     cardId: 'affordability',
@@ -432,7 +432,11 @@ test('compiled playbook text, identifier, and card boundaries survive the UI wir
   for (const length of [200, 201, 256]) {
     const plan = compile(`# Card\n- ${'a'.repeat(length)}\n- second\n- third`);
     expect(
-      parseMercuryPreview({ preview: plan }).cards[0]!.points[0]!.text,
+      parseMercuryPreview({
+        preview: plan,
+        reviewToken: 'a'.repeat(64),
+        expectedPublishedVersion: 0,
+      }).cards[0]!.points[0]!.text,
     ).toHaveLength(length);
     expect(
       parseMercuryResponse(cue(plan), 'outbound:call').view?.points[0]!.text,
@@ -444,7 +448,13 @@ test('compiled playbook text, identifier, and card boundaries survive the UI wir
   const invalid = compile('# Card\n- first\n- second\n- third');
   const malformed = JSON.parse(JSON.stringify(invalid));
   malformed.playbook.cards[0].slots[0].text = 'a'.repeat(257);
-  expect(() => parseMercuryPreview({ preview: malformed })).toThrow();
+  expect(() =>
+    parseMercuryPreview({
+      preview: malformed,
+      reviewToken: 'a'.repeat(64),
+      expectedPublishedVersion: 0,
+    }),
+  ).toThrow();
   const malformedCue = cue(invalid);
   malformedCue.view.points[0]!.text = 'a'.repeat(257);
   expect(() => parseMercuryResponse(malformedCue, 'outbound:call')).toThrow();
@@ -463,9 +473,17 @@ test('compiled playbook text, identifier, and card boundaries survive the UI wir
         (_, i) => `# Card ${i}\n- first\n- second\n- third`,
       ).join('\n'),
     );
-    expect(parseMercuryPreview({ preview: plan }).cards).toHaveLength(cards);
+    expect(
+      parseMercuryPreview({
+        preview: plan,
+        reviewToken: 'a'.repeat(64),
+        expectedPublishedVersion: 0,
+      }).cards,
+    ).toHaveLength(cards);
   }
   const tooMany = {
+    reviewToken: 'a'.repeat(64),
+    expectedPublishedVersion: 0,
     preview: {
       playbook: {
         cards: Array.from({ length: 513 }, (_, i) => ({
@@ -496,7 +514,11 @@ test('valid compiled previews larger than 256 KiB survive authenticated authorin
     industryPackVersion: 'example',
     companyPolicyVersion: 'example',
   });
-  const body = JSON.stringify({ preview: plan, expectedPublishedVersion: 0 });
+  const body = JSON.stringify({
+    preview: plan,
+    expectedPublishedVersion: 0,
+    reviewToken: 'a'.repeat(64),
+  });
   expect(new TextEncoder().encode(content).length).toBeLessThanOrEqual(100000);
   expect(new TextEncoder().encode(body).length).toBeGreaterThan(262144);
   const api = createMercuryAuthoringApi({
