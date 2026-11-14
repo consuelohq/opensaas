@@ -1,5 +1,8 @@
 import type { CoachingLibrary, ScriptDraft } from './coaching-scripts.js';
 import type { LeadConnectorEmbedState } from './state-machine.js';
+import type { MercuryCueView } from './mercury-cues.js';
+import type { MercuryFeedStatus } from './mercury-feed.js';
+import type { MercuryPublication } from './mercury-authoring.js';
 
 export type CallingWorkspace = {
   screen:
@@ -30,6 +33,16 @@ export type CallingWorkspace = {
   coachingMode?: 'off' | 'script';
   activeScriptId?: string;
   scriptStep?: number;
+  mercuryCard?: MercuryCueView;
+  mercuryPinned?: boolean;
+  mercuryScope?: string;
+  mercuryCaller?: { scopeKey: string; label: string; context: string };
+  mercuryHistory?: MercuryCueView[];
+  mercuryManualIndex?: number;
+  mercuryRemote?: boolean;
+  mercuryFeedStatus?: MercuryFeedStatus;
+  mercuryPublication?: MercuryPublication;
+  confirmedConnection?: { scopeKey: string; at: string };
   theme?: 'system' | 'light' | 'dark';
   answeringEndpointIds?: string[];
   coachingLibrary?: CoachingLibrary;
@@ -57,6 +70,7 @@ export type SessionPresentation = {
     | 'offering'
     | 'connecting'
     | 'connected'
+    | 'ending'
     | 'reconnecting'
     | 'wrap-up'
     | 'paused'
@@ -138,6 +152,13 @@ export const inboundPresentation = (
 export const outboundPresentation = (
   state: LeadConnectorEmbedState,
 ): SessionPresentation => {
+  if (state.callEnding)
+    return {
+      active: true,
+      status: 'ending',
+      label: 'Ending call',
+      detail: 'Waiting for the call to finish. Your place is protected.',
+    };
   if (
     state.phase === 'failed' &&
     state.activeSessionId &&
