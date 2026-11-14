@@ -43,7 +43,7 @@ it('validates every untrusted presentation field before delivery', () => {
     { heading: 'x'.repeat(201) },
     {
       points: [
-        { slotId: 'one', text: 'x'.repeat(201), exact: 'x', source: 'v1' },
+        { slotId: 'one', text: 'x'.repeat(257), exact: 'x', source: 'v1' },
       ],
     },
   ]) {
@@ -544,6 +544,14 @@ it('bounds an unknown admission to that caller and never controls it when a new 
   });
   await flush();
   feed.configure({
+    scopeKey: 'outbound:a',
+    scriptId: 'script',
+    enabled: true,
+    authEpoch: 'two',
+  });
+  await flush();
+  expect(api.start).toHaveBeenCalledTimes(1);
+  feed.configure({
     scopeKey: 'outbound:b',
     scriptId: 'script',
     enabled: true,
@@ -555,3 +563,66 @@ it('bounds an unknown admission to that caller and never controls it when a new 
   expect(api.read).not.toHaveBeenCalled();
   feed.dispose();
 });
+
+for (const status of [403, 409]) {
+  it(`releases local cleanup for an independent caller after old Off ${status} without borrowing a token`, async () => {
+    const starts: string[] = [];
+    const controls: string[] = [];
+    const api: MercuryFeedApi = {
+      start: mock(async ({ scopeKey }) => {
+        starts.push(scopeKey);
+        return response(scopeKey);
+      }),
+      read: mock(async (scope) => response(scope)),
+      control: mock(async (scope, action, token) => {
+        controls.push(`${scope}:${action}:${token}`);
+        if (scope === 'outbound:a') throw { status };
+        return response(scope);
+      }),
+    };
+    const feed = createMercuryFeed({
+      api,
+      onView: () => {},
+      onStatus: () => {},
+      schedule: () => () => {},
+    });
+    feed.configure({
+      scopeKey: 'outbound:a',
+      scriptId: 'script',
+      enabled: true,
+      authEpoch: 'one',
+    });
+    await flush();
+    feed.configure({
+      scopeKey: '',
+      scriptId: 'script',
+      enabled: false,
+      authEpoch: 'one',
+    });
+    await flush();
+    feed.configure({
+      scopeKey: 'outbound:a',
+      scriptId: 'script',
+      enabled: true,
+      authEpoch: 'two',
+    });
+    await flush();
+    expect(starts).toEqual(['outbound:a']);
+    feed.configure({
+      scopeKey: 'outbound:b',
+      scriptId: 'script',
+      enabled: true,
+      authEpoch: 'two',
+    });
+    await flush();
+    expect(starts).toEqual(['outbound:a', 'outbound:b']);
+    expect(
+      controls.every((value) => value === 'outbound:a:off:opaque:outbound:a'),
+    ).toBe(true);
+    expect(api.read).not.toHaveBeenCalled();
+    expect(await feed.control('next')).toBe(true);
+    expect(controls.at(-1)).toBe('outbound:b:next:opaque:outbound:b');
+    feed.dispose();
+    await flush();
+  });
+}

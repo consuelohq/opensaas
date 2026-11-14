@@ -73,9 +73,9 @@ export const parseMercuryResponse = (
   for (const point of view.points) {
     if (
       !record(point) ||
-      !boundedText(point.slotId, 120) ||
+      !boundedText(point.slotId, 128) ||
       slots.has(point.slotId) ||
-      !boundedText(point.text, 200) ||
+      !boundedText(point.text, 256) ||
       !boundedText(point.exact, 20_000) ||
       !boundedText(point.source, 1000)
     )
@@ -102,7 +102,10 @@ export const parseMercuryResponse = (
   };
 };
 
-const boundedJson = async (response: Response): Promise<unknown> => {
+const boundedJson = async (
+  response: Response,
+  maxBytes: number,
+): Promise<unknown> => {
   const reader = response.body?.getReader();
   if (!reader) return invalid();
   const decoder = new TextDecoder();
@@ -113,7 +116,7 @@ const boundedJson = async (response: Response): Promise<unknown> => {
       const next = await reader.read();
       if (next.done) break;
       bytes += next.value.byteLength;
-      if (bytes > 262_144) {
+      if (bytes > maxBytes) {
         await reader.cancel();
         return invalid();
       }
@@ -131,7 +134,10 @@ export type MercuryRequestOptions = {
   getToken: () => string | null;
   fetch?: EmbedFetch;
 };
-export const createMercuryJsonRequest = (input: MercuryRequestOptions) => {
+export const createMercuryJsonRequest = (
+  input: MercuryRequestOptions,
+  maxResponseBytes = 262_144,
+) => {
   const fetcher = input.fetch ?? globalThis.fetch.bind(globalThis);
   return async (path: string, init: RequestInit = {}): Promise<unknown> => {
     const token = input.getToken();
@@ -154,7 +160,7 @@ export const createMercuryJsonRequest = (input: MercuryRequestOptions) => {
       if (response.status === 401) throw new EmbedSessionExpiredError();
       let body: unknown;
       try {
-        body = await boundedJson(response);
+        body = await boundedJson(response, maxResponseBytes);
       } catch (error: unknown) {
         if (response.ok) throw error;
         throw new EmbedApiError(

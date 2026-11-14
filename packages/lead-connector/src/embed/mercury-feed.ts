@@ -110,11 +110,12 @@ export const createMercuryFeed = (input: {
   };
   const close = async (epoch: number): Promise<boolean> => {
     const scope = createdScope;
+    const token = createdToken;
     if (!scope) return true;
-    if (!createdToken) {
+    if (!token) {
       // The latest server projection may belong to another device. Only our own
       // admission response proves which token we may use to mutate it.
-      if (active && active.scopeKey !== scope) {
+      if (active?.enabled && active.scopeKey && active.scopeKey !== scope) {
         createdScope = null;
         return true;
       }
@@ -125,10 +126,10 @@ export const createMercuryFeed = (input: {
       await input.api.control(
         scope,
         'off',
-        createdToken,
+        token,
         new AbortController().signal,
       );
-      if (createdScope === scope) {
+      if (createdScope === scope && createdToken === token) {
         createdScope = null;
         createdToken = null;
       }
@@ -138,9 +139,16 @@ export const createMercuryFeed = (input: {
         typeof error === 'object' &&
         error !== null &&
         'status' in error &&
-        error.status === 404
+        (error.status === 404 ||
+          // Failure to clean up one caller must not lock assistance for an
+          // independent call. Keep same-call failures fenced to our own token.
+          ([403, 409].includes(Number(error.status)) &&
+            current(epoch) &&
+            active?.enabled &&
+            !!active.scopeKey &&
+            active.scopeKey !== scope))
       ) {
-        if (createdScope === scope) {
+        if (createdScope === scope && createdToken === token) {
           createdScope = null;
           createdToken = null;
         }

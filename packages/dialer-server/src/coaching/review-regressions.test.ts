@@ -321,3 +321,194 @@ test('concurrent admission serializes claims and stale control cannot disable re
   );
   service.dispose();
 });
+
+for (const loss of ['revoked', 'lease'] as const) {
+  test(`authority loss after an in-flight source read rejects cached cue delivery: ${loss}`, async () => {
+    let reading = false,
+      lost = false;
+    let finish!: () => void;
+    let sourceSignal: AbortSignal | undefined;
+    const released: string[] = [];
+    const store = fakeStore({ pins: 0 });
+    store.claim = async () => (lost && loss === 'lease' ? null : 1);
+    const service = createCueService({
+      store,
+      nowMs: () => 1000,
+      resolve: async () => ({
+        ...admission,
+        policy: { ...admission.policy, revoked: lost && loss === 'revoked' },
+      }),
+      source: {
+        read: async ({ signal }) => {
+          sourceSignal = signal;
+          if (reading)
+            await new Promise<void>((resolve) => {
+              finish = resolve;
+            });
+          return [];
+        },
+        release: (id) => {
+          released.push(id);
+        },
+      },
+    });
+    const identity = { workspaceId: 'w', userId: 'u' };
+    await service.open(identity, {
+      scopeKey: 'outbound:call',
+      scriptId: 'script',
+    });
+    reading = true;
+    const pending = service.read(identity, 'outbound:call');
+    for (let i = 0; i < 10 && !finish; i++) await Promise.resolve();
+    expect(finish).toBeDefined();
+    lost = true;
+    finish();
+    await expect(pending).rejects.toThrow();
+    expect(sourceSignal?.aborted).toBe(true);
+    expect(released).toHaveLength(1);
+    await expect(service.read(identity, 'outbound:call')).rejects.toThrow();
+    service.dispose();
+  });
+}
+
+test('a transient transcript source failure retains an authorized delayed projection', async () => {
+  let fail = false;
+  const service = createCueService({
+    store: fakeStore({ pins: 0 }),
+    nowMs: () => 1000,
+    resolve: async () => admission,
+    source: {
+      read: async () => {
+        if (fail) throw new Error('Source offline');
+        return [];
+      },
+    },
+  });
+  const identity = { workspaceId: 'w', userId: 'u' };
+  const opened = await service.open(identity, {
+    scopeKey: 'outbound:call',
+    scriptId: 'script',
+  });
+  fail = true;
+  const result = await service.read(identity, 'outbound:call');
+  expect(result.projectionToken).toBe(opened.projectionToken);
+  expect(result.view?.status).toBe('delayed');
+  service.dispose();
+});
+
+test('compiled playbook text, identifier, and card boundaries survive the UI wire parsers', async () => {
+  const { parseMercuryPreview } =
+    await import('../../../lead-connector/src/embed/mercury-authoring');
+  const { parseMercuryResponse } =
+    await import('../../../lead-connector/src/embed/mercury-feed-api');
+  const compile = (content: string) =>
+    compilePlaybook({
+      workspaceId: 'w',
+      scriptId: 'script',
+      sourceRevision: 1,
+      version: 1,
+      title: 'Example',
+      content,
+      industryPackVersion: 'example',
+      companyPolicyVersion: 'example',
+    });
+  const cue = (plan: ReturnType<typeof compile>) => ({
+    publishedVersion: 'script:1',
+    projectionToken: 'own-token',
+    view: {
+      scopeKey: 'outbound:call',
+      revision: 1,
+      kind: 'approved',
+      status: 'manual',
+      heading: plan.playbook.cards[0]!.title,
+      points: plan.playbook.cards[0]!.slots.map((slot) => ({
+        slotId: slot.id,
+        text: slot.text,
+        exact: slot.source.excerpt,
+        source: slot.source.documentId,
+      })),
+    },
+  });
+  for (const length of [200, 201, 256]) {
+    const plan = compile(`# Card\n- ${'a'.repeat(length)}\n- second\n- third`);
+    expect(
+      parseMercuryPreview({ preview: plan }).cards[0]!.points[0]!.text,
+    ).toHaveLength(length);
+    expect(
+      parseMercuryResponse(cue(plan), 'outbound:call').view?.points[0]!.text,
+    ).toHaveLength(length);
+  }
+  expect(() =>
+    compile(`# Card\n- ${'a'.repeat(257)}\n- second\n- third`),
+  ).toThrow();
+  const invalid = compile('# Card\n- first\n- second\n- third');
+  const malformed = JSON.parse(JSON.stringify(invalid));
+  malformed.playbook.cards[0].slots[0].text = 'a'.repeat(257);
+  expect(() => parseMercuryPreview({ preview: malformed })).toThrow();
+  const malformedCue = cue(invalid);
+  malformedCue.view.points[0]!.text = 'a'.repeat(257);
+  expect(() => parseMercuryResponse(malformedCue, 'outbound:call')).toThrow();
+  for (const headingLength of [118, 119, 126]) {
+    const plan = compile(
+      `# ${'a'.repeat(headingLength)}\n- first\n- second\n- third`,
+    );
+    expect(
+      parseMercuryResponse(cue(plan), 'outbound:call').view?.points[0]!.slotId,
+    ).toHaveLength(headingLength + 2);
+  }
+  for (const cards of [256, 257, 512]) {
+    const plan = compile(
+      Array.from(
+        { length: cards },
+        (_, i) => `# Card ${i}\n- first\n- second\n- third`,
+      ).join('\n'),
+    );
+    expect(parseMercuryPreview({ preview: plan }).cards).toHaveLength(cards);
+  }
+  const tooMany = {
+    preview: {
+      playbook: {
+        cards: Array.from({ length: 513 }, (_, i) => ({
+          ...invalid.playbook.cards[0],
+          id: 'card-' + i,
+        })),
+      },
+    },
+  };
+  expect(() => parseMercuryPreview(tooMany)).toThrow();
+});
+
+test('valid compiled previews larger than 256 KiB survive authenticated authoring transport', async () => {
+  const { createMercuryAuthoringApi } =
+    await import('../../../lead-connector/src/embed/mercury-authoring');
+  const content = Array.from(
+    { length: 100 },
+    (_, i) =>
+      `# Card ${i}\n${Array.from({ length: 4 }, () => '- ' + 'a'.repeat(150)).join('\n')}`,
+  ).join('\n');
+  const plan = compilePlaybook({
+    workspaceId: 'w',
+    scriptId: 'script',
+    sourceRevision: 1,
+    version: 1,
+    title: 'Example',
+    content,
+    industryPackVersion: 'example',
+    companyPolicyVersion: 'example',
+  });
+  const body = JSON.stringify({ preview: plan, expectedPublishedVersion: 0 });
+  expect(new TextEncoder().encode(content).length).toBeLessThanOrEqual(100000);
+  expect(new TextEncoder().encode(body).length).toBeGreaterThan(262144);
+  const api = createMercuryAuthoringApi({
+    baseUrl: 'https://example.test',
+    getToken: () => 'fixture',
+    fetch: async () => new Response(body),
+  });
+  expect((await api.preview('script', 1)).cards).toHaveLength(100);
+  const oversized = createMercuryAuthoringApi({
+    baseUrl: 'https://example.test',
+    getToken: () => 'fixture',
+    fetch: async () => new Response(' '.repeat(4 * 1024 * 1024 + 1)),
+  });
+  await expect(oversized.preview('script', 1)).rejects.toThrow();
+});

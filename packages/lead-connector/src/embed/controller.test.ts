@@ -1696,7 +1696,7 @@ describe('authoritative on-call termination', () => {
       },
     });
     await controller.hangUp();
-    expect(controller.getState().phase).toBe('failed');
+    expect(controller.getState().phase).toBe('connected');
     expect(controller.getState().activeSessionId).toBe('group-1');
     expect(controller.getState().callEnding).toBe(false);
   });
@@ -1807,4 +1807,87 @@ it('cancels during media preparation back to setup without a phantom wrap-up', a
   expect(controller.getState().activeSessionId).toBeNull();
   expect(controller.getState().callEnding).toBe(false);
   expect(controller.getState().selectedTargets).toHaveLength(1);
+});
+
+describe('startup failure reconciliation', () => {
+  for (const failure of ['connect', 'ready'] as const) {
+    it(`projects confirmed termination after ${failure} fails`, async () => {
+      const api = createApi();
+      const voice = createVoice();
+      if (failure === 'connect')
+        voice.connect = mock(async () => {
+          throw new Error('Startup failed');
+        });
+      else
+        api.markAgentReady = mock(async () => {
+          throw new Error('Startup failed');
+        });
+      const controller = createLeadConnectorEmbedController({ api, voice });
+      await controller.authenticate('opaque-parent-ciphertext');
+      controller.selectTarget(
+        normalizeClickToCallTarget({
+          phone: '+15550100123',
+          contactId: 'contact-1',
+        })!,
+      );
+      await controller.startCall('single');
+      expect(api.terminateCallSession).toHaveBeenCalledTimes(1);
+      expect(controller.getState().callSession?.status).toBe('completed');
+      await controller.hangUp();
+      expect(api.terminateCallSession).toHaveBeenCalledTimes(1);
+      await controller.refreshSession();
+      expect(controller.getState().callSession?.status).toBe('completed');
+    });
+    it(`keeps unknown cleanup after ${failure} failure on call until terminal reconciliation`, async () => {
+      const api: LeadConnectorEmbedApi = createApi();
+      const voice = createVoice();
+      if (failure === 'connect')
+        voice.connect = mock(async () => {
+          throw new Error('Startup failed');
+        });
+      else
+        api.markAgentReady = mock(async () => {
+          throw new Error('Startup failed');
+        });
+      api.terminateCallSession = mock(async () => {
+        throw new Error('Provider outcome unknown');
+      });
+      const controller = createLeadConnectorEmbedController({ api, voice });
+      await controller.authenticate('opaque-parent-ciphertext');
+      controller.selectTarget(
+        normalizeClickToCallTarget({
+          phone: '+15550100123',
+          contactId: 'contact-1',
+        })!,
+      );
+      await controller.startCall('single');
+      expect(controller.getState()).toMatchObject({
+        activeSessionId: 'group-1',
+        phase: 'dialing',
+        callSession: { status: 'dialing' },
+      });
+      controller.retry();
+      await controller.startCall('single');
+      expect(api.startCallSession).toHaveBeenCalledTimes(1);
+      await controller.refreshSession();
+      expect(controller.getState().phase).toBe('connected');
+      await controller.hangUp();
+      expect(controller.getState().phase).toBe('connected');
+      api.getCallSession = mock(async () => ({
+        groupId: 'group-1',
+        status: 'completed',
+        winnerSid: null,
+        winner: null,
+        calls: [],
+      }));
+      await controller.refreshSession();
+      expect(controller.getState().phase).toBe('wrapping-up');
+      expect(controller.getState().callSession?.status).toBe('completed');
+      await controller.hangUp();
+      expect(api.terminateCallSession).toHaveBeenCalledTimes(2);
+      api.getCallSession = mock(async () => ({ groupId: 'group-1', status: 'connected', winnerSid: 'call-1', winner: null, calls: [] }));
+      await controller.refreshSession();
+      expect(controller.getState().callSession?.status).toBe('completed');
+    });
+  }
 });

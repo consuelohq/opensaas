@@ -351,7 +351,10 @@ export const createLeadConnectorEmbedController = (input: {
       !isTerminalEmbedSession(session)
     )
       return;
-    if (isTerminalEmbedSession(session)) disconnectVoice();
+    if (isTerminalEmbedSession(session)) {
+      confirmedEndedSessionId = session.groupId;
+      disconnectVoice();
+    }
     dispatch({ type: 'SESSION_UPDATED', session });
   };
 
@@ -487,7 +490,13 @@ export const createLeadConnectorEmbedController = (input: {
   const startCall = async (
     strategy: 'single' | 'predictive',
   ): Promise<void> => {
-    if (startRequestPending) return;
+    if (
+      startRequestPending ||
+      (state.activeSessionId &&
+        state.activeSessionId !== confirmedEndedSessionId &&
+        (!state.callSession || !isTerminalEmbedSession(state.callSession)))
+    )
+      return;
     startRequestPending = true;
     cancelPendingStart = false;
     try {
@@ -615,16 +624,14 @@ export const createLeadConnectorEmbedController = (input: {
           return;
         }
         if (!ready) {
-          disconnectVoice();
-          await input.api.terminateCallSession(statusId).catch(() => undefined);
+          await endCall();
           return;
         }
         if (ready.remainingCleanup > 0) {
           throw new Error('Agent conference did not become ready');
         }
       } catch (error: unknown) {
-        disconnectVoice();
-        await input.api.terminateCallSession(statusId).catch(() => undefined);
+        await endCall();
         throw error;
       }
       const session = await run(() => input.api.getCallSession(statusId));
@@ -660,8 +667,11 @@ export const createLeadConnectorEmbedController = (input: {
         );
         if (result?.status === 'completed') {
           confirmedEndedSessionId = sessionId;
-          if (state.activeSessionId === sessionId)
+          if (state.activeSessionId === sessionId) {
+            if (state.callSession)
+              projectSession({ ...state.callSession, status: 'completed' });
             dispatch({ type: 'STOP_REQUESTED' });
+          }
         }
       } catch (error: unknown) {
         reportUnexpectedFailure(error);

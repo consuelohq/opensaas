@@ -16,21 +16,15 @@ started: 2026-11-13
 ## files changed
 
 - `packages/dialer-server/src/coaching/cue-service.ts`
-- `packages/dialer-server/src/coaching/playbook-store.ts`
-- `packages/dialer-server/src/coaching/playbooks-engine.test.ts`
-- `packages/dialer-server/src/coaching/playbooks.postgres.integration.test.ts`
-- `packages/dialer-server/src/coaching/playbooks.ts`
-- `packages/dialer-server/src/coaching/README.md`
 - `packages/dialer-server/src/coaching/review-regressions.test.ts`
-- `packages/dialer-server/src/coaching/script-engine.ts`
-- `packages/dialer-server/src/coaching/scripts.ts`
-- `packages/dialer-server/src/database/migrations.postgres.integration.test.ts`
-- `packages/dialer-server/src/database/migrations.test.ts`
-- `packages/dialer-server/src/database/migrations.ts`
-- `packages/dialer-server/src/routes/coaching.ts`
-- `packages/dialer-server/src/routes/mercury.ts`
-- `packages/dialer-server/src/runtime/coaching.ts`
-- `packages/dialer-server/src/runtime/railway.ts`
+- `packages/lead-connector/src/embed/controller.test.ts`
+- `packages/lead-connector/src/embed/controller.ts`
+- `packages/lead-connector/src/embed/mercury-authoring.ts`
+- `packages/lead-connector/src/embed/mercury-feed-api.ts`
+- `packages/lead-connector/src/embed/mercury-feed.test.ts`
+- `packages/lead-connector/src/embed/mercury-feed.ts`
+- `packages/lead-connector/src/embed/state-machine.ts`
+
 
 ## key decisions
 
@@ -132,6 +126,10 @@ Default runtime live policy must fail closed/manual-reference until signed Mercu
 - 2026-11-13 21:26:48 `verify`: passed — OK
 - 2026-11-13 21:32:27 `review.run`: passed — OK
 - 2026-11-13 21:33:18 `verify`: passed — OK
+- 2026-11-14 02:50:34 `review.run`: passed — OK
+- 2026-11-14 02:52:09 `review.run`: passed — OK
+- 2026-11-14 02:53:22 `review.run`: passed — OK
+- 2026-11-14 02:54:03 `verify`: passed — OK
 
 ## Final checkpoint evidence and scope limits
 
@@ -160,3 +158,19 @@ FINAL strict review: zero findings after typed exception boundaries. Latest actu
 Root held archive after Terra independently reproduced real UIpreview→Hono400 (trc_a95dab30b748, owned coaching-replay/client-roundtrip.postgres.integration.test.ts). Our prior Hono fixture supplied a publication ordinal onpreview and therefore did NOT establish that cross-boundary contract. Corrected canonicalbackendpreview to accept savedexpectedRevision ONLY, authorize source, derivecurrentpublishedMAXordinal fromstorage, andreturn {preview,expectedPublishedVersion}; publish stillrequires exactordinal+approved and CASchecks savedrevision. No default0forhistory. OwningPGregression red trc_445ae458b214→green trc_aca7b4536e89: initialbarepreviewordinal0; missingpublishordinal400; existingV1 +savedrev2 barepreviewordinal1/version2→exactpublishV2; samecallpinV1 persists.29focusedtests148assertions+servertscgreen, strictreviewzero; freshformalverifybeforefollowupsameleafpush. No task.prre-invocation; rootalreadyretargetedleafintegration. Prior31d938is superseded oncefollowup published; Terra ownsindependentactualclientroundtrip verdict.
 
 - 2026-11-13 21:33:12 append: `.task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/workpad.md`
+
+## workspace-owned: files read
+
+- `packages/os/manifests/generated/core.manifest.json`
+
+
+## Confirmed lifecycle and authority review repairs (2026-11-14)
+
+- Merged approved UI dependency 083969cbc07d7c96093a4a36c7a0189520a11545 into the existing engine task (merge a4faf17a1092569d3ce84e2e77520b17b37e97f5); preserved existing task metadata and integration ancestry.
+- Startup connect/agent-ready failures now share idempotent End cleanup. Confirmed termination projects a terminal session; unknown provider outcomes preserve the active call, polling, End, and the no-overlap start fence. Retry cannot expose a new call while a nonterminal session remains.
+- Cue-service only degrades transcript-source availability errors to delayed after renewing authority. Authorization/binding/lease loss propagates, aborts/disposes/releases the worker, and never returns the cached cue/token.
+- Failed Off for an old known projection does not block an enabled independent call on 403/409. Same-call denial stays blocked; no token is borrowed from a read. Unknown admission remains fenced through empty disabled scopes and can be abandoned only for an enabled different caller.
+- Wire parsers accept canonical 256-character points, 128-character slot IDs, and 512 cards. Bounded authoring responses allow 4 MiB for compiled source/excerpt expansion; live cue responses remain capped at 256 KiB.
+- Red evidence: trc_75c7997cf12b (9 failures across first three defects); trc_7082524760fa (canonical/parser and large-preview failures); trc_6a4c76a6c51f (unknown A re-admitted after empty-scope disable).
+- Green evidence before final unknown guard: trc_2d77717bdaa0 (281 pass, 2 optional PostgreSQL tests skipped); lead/server typechecks trc_4f0d59ad7be7 and trc_218bac6beb81. Strict review trc_e95d0c105563 had zero issues. Final gates are rerun after the unknown-admission guard.
+- No live calls, paid inference, provider credentials, production deployment, or main mutation. DEV-1702/1703/1707 stay open pending full acceptance. Root owns final PR integration, CI and cleanup.

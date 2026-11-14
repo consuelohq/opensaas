@@ -185,13 +185,23 @@ export function createCueService(options: {
       if (entry.poll) return entry.poll;
       entry.poll = (async () => {
         try {
-          const rows = await options.source!.read({
-            admission,
-            afterCursor: entry.sourceCursor,
-            cursor: entry.session.diagnostics().cursor,
-            projectionId: entry.projectionId,
-            signal: entry.abort.signal,
-          });
+          let rows: Awaited<ReturnType<TranscriptSource['read']>>;
+          try {
+            rows = await options.source!.read({
+              admission,
+              afterCursor: entry.sourceCursor,
+              cursor: entry.session.diagnostics().cursor,
+              projectionId: entry.projectionId,
+              signal: entry.abort.signal,
+            });
+          } catch (error: unknown) {
+            // Only source availability failures may degrade to delayed. Renew
+            // authority before returning any cached private presentation.
+            await renew(identity, scopeKey, entry);
+            if (entry.abort.signal.aborted) throw error;
+            entry.session.unavailable('delayed');
+            return;
+          }
           const renewed = await renew(identity, scopeKey, entry);
           if (
             !renewed.active ||
@@ -221,13 +231,9 @@ export function createCueService(options: {
             ? cause
             : new Error('Coaching operation failed', { cause });
         }
-      })()
-        .catch(() => {
-          if (!entry.abort.signal.aborted) entry.session.unavailable('delayed');
-        })
-        .finally(() => {
-          entry.poll = null;
-        });
+      })().finally(() => {
+        entry.poll = null;
+      });
       return entry.poll;
     } catch (cause: unknown) {
       throw cause instanceof Error
@@ -378,6 +384,11 @@ export function createCueService(options: {
           );
         const admission = await renew(identity, scopeKey, entry);
         await poll(identity, scopeKey, entry, admission);
+        if (
+          entry.abort.signal.aborted ||
+          entries.get(key(identity, scopeKey)) !== entry
+        )
+          throw new PlaybookAccessError('Coaching projection is unavailable');
         const view = entry.session.view(scopeKey);
         return {
           view: afterRevision === view.revision ? null : view,

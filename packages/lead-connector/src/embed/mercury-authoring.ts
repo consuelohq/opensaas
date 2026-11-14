@@ -39,7 +39,7 @@ export const parseMercuryPreview = (input: unknown): MercuryPreview => {
   )
     return invalid();
   const cards = input.preview.playbook.cards;
-  if (cards.length < 1 || cards.length > 256) return invalid();
+  if (cards.length < 1 || cards.length > 512) return invalid();
   const listening = new Map<string, string[]>();
   const rules = input.preview.rules;
   if (rules !== undefined && (!Array.isArray(rules) || rules.length > 1000))
@@ -88,7 +88,7 @@ export const parseMercuryPreview = (input: unknown): MercuryPreview => {
             !record(slot) ||
             !text(slot.id, 200) ||
             slots.has(slot.id) ||
-            !text(slot.text, 200) ||
+            !text(slot.text, 256) ||
             !record(slot.source) ||
             !text(slot.source.documentId, 200) ||
             !text(slot.source.excerpt, 20_000) ||
@@ -114,7 +114,10 @@ export const parseMercuryPreview = (input: unknown): MercuryPreview => {
 };
 
 export const createMercuryAuthoringApi = (options: MercuryRequestOptions) => {
-  const request = createMercuryJsonRequest(options);
+  // A saved source is at most 100 KB. Compilation repeats each section for up
+  // to four excerpts, plus points, headings and bounded metadata. Reserve room
+  // for JSON escaping while retaining the smaller live-cue transport budget.
+  const request = createMercuryJsonRequest(options, 4 * 1024 * 1024);
   const path = (id: string) => '/v1/coaching/scripts/' + encodeURIComponent(id);
   return {
     versions: (id: string): Promise<number[]> =>

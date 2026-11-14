@@ -135,12 +135,7 @@ export type EmbedTranscriptSegment = {
 
 export type EmbedTransferState = {
   status:
-    | 'idle'
-    | 'initiating'
-    | 'consulting'
-    | 'completed'
-    | 'cancelled'
-    | 'failed';
+    'idle' | 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
   type: 'cold' | 'warm' | null;
   target: string | null;
   transferId: string | null;
@@ -748,7 +743,12 @@ export const reduceEmbedState = (
     case 'FAILED':
       return {
         ...state,
-        phase: 'failed',
+        // A request failure does not prove that the caller has ended. Keep
+        // reconciliation polling and End available until a terminal result.
+        phase:
+          state.callSession && !isTerminalEmbedSession(state.callSession)
+            ? phaseFromSession(state.callSession)
+            : 'failed',
         error: {
           code: event.code,
           message: event.message,
@@ -759,11 +759,13 @@ export const reduceEmbedState = (
       return {
         ...state,
         phase:
-          state.error?.code === 'SESSION_EXPIRED'
-            ? 'authenticating'
-            : state.selectedTargets.length > 0
-              ? 'target-selected'
-              : 'ready',
+          state.callSession && !isTerminalEmbedSession(state.callSession)
+            ? phaseFromSession(state.callSession)
+            : state.error?.code === 'SESSION_EXPIRED'
+              ? 'authenticating'
+              : state.selectedTargets.length > 0
+                ? 'target-selected'
+                : 'ready',
         error: null,
       };
     case 'SESSION_EXPIRED':
