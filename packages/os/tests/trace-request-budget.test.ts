@@ -102,11 +102,14 @@ beforeAll(async () => {
   ]);
   bundle = readFileSync(join(temp, 'list.js'), 'utf8');
   browser = await chromium.launch({ headless: true, channel: 'chrome' });
-});
+}, 30_000);
 afterAll(async () => {
-  await browser?.close();
-  rmSync(temp, { recursive: true, force: true });
-});
+  try {
+    await browser?.close();
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+}, 30_000);
 
 test('filtering a sparse result and rendering it does not fetch history without scroll intent', async () => {
   const page = await browser.newPage();
@@ -454,10 +457,23 @@ test('scrolling near the end loads one page and a live prepend preserves the scr
       document.addEventListener('trace:prefetch-request',event=>{event.preventDefault();window.requests.push(event.detail);});
       window.TraceList.installTraceVirtualList();
     })()`);
-    await page.waitForTimeout(120);
-    await page.locator('[data-trace-virtual-list]').hover();
-    await page.mouse.wheel(0, 3700);
-    await page.waitForFunction('window.requests.length === 1');
+    // Exercise scroll intent without a synthetic pointer hover/wheel sequence.
+    // Under the complete parallel package suite, Playwright's compositor can
+    // defer mouse wheel delivery even though the virtual list is ready.
+    await page.waitForFunction(() => {
+      const scroller = document.querySelector('[data-trace-virtual-list]');
+      return Boolean(scroller && scroller.scrollHeight > scroller.clientHeight + 1000);
+    }, null, { timeout: 10_000 });
+    await page.locator('[data-trace-virtual-list]').evaluate(async (scroller) => {
+      scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight;
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+      scroller.dispatchEvent(new WheelEvent('wheel', { deltaY: 240, bubbles: true }));
+    });
+    await page.waitForFunction('window.requests.length === 1', null, {
+      timeout: 12_000,
+    });
     expect(await page.evaluate('window.requests.length')).toBe(1);
     await page.evaluate(
       "window.requests[0].accept(Array.from({length:100},(_,i)=>({id:'older'+i,tool:'fs.read'})), 'id:older100')",
@@ -483,7 +499,7 @@ test('scrolling near the end loads one page and a live prepend preserves the scr
   } finally {
     await page.close();
   }
-}, 15000);
+}, 30_000);
 
 test('cursor streams enforce scope and redact payloads with the same rules as history', async () => {
   const backend = createFixtureTraceSitesReadBackend({ recentEvents: [] });

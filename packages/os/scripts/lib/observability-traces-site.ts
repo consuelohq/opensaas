@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { TRACE_INSPECTOR_READING_STYLE } from './trace-site-inspector/reading-styles';
+import { TRACE_POLISH_STYLE } from './trace-site-inspector/polish-styles';
 
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
 import { resolveTraceSessionIdentity } from './trace-session-identity';
@@ -164,7 +165,7 @@ body{background:var(--trace-bg)!important;color:var(--trace-cream)!important}
 }
 </style>`;
 
-const traceThemeMetadata = `<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#080706" media="(prefers-color-scheme: dark)">`;
+const traceThemeMetadata = `<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#212121" media="(prefers-color-scheme: dark)">`;
 
 const traceWorkspaceIntegrationStyle = `<style id="consuelo-trace-workspace-integration">
 #tbmLiveTraceModal[aria-hidden="false"]{display:flex!important;align-items:center!important;justify-content:center!important;padding:14px!important;overflow:hidden!important}
@@ -557,7 +558,7 @@ export function buildObservabilityTracesSite(
   html = replaceExactlyOnce(
     html,
     /<\/head>/i,
-    `${nodeObservabilityStyle}${traceWorkspaceIntegrationStyle}${traceSystemThemeStyle}${TRACE_INSPECTOR_READING_STYLE}${workspaceRouteStyle}${privateWorkspaceSessionRecovery}</head>`,
+    `${nodeObservabilityStyle}${traceWorkspaceIntegrationStyle}${traceSystemThemeStyle}${TRACE_INSPECTOR_READING_STYLE}${workspaceRouteStyle}${TRACE_POLISH_STYLE}${privateWorkspaceSessionRecovery}</head>`,
     'document head close',
   );
 

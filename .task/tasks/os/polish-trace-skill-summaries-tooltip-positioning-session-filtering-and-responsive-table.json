@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-trace-skill-summaries-tooltip-positioning-session-filtering-and-responsive-table",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2803,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2803",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-polish-trace-skill-summaries-tooltip-positioning-session-filtering-and-responsive-table",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_927a2661924b",
+  "tmuxSession": "opensaas-os-polish-trace-skill-summaries-tooltip-positioning-927a2661",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-polish-trace-skill-summaries-tooltip-positioning-session-filtering-and-responsive-table/.task/session.json",
+  "createdAt": "2026-11-14T03:44:05.113Z"
+}

@@ -173,7 +173,7 @@ for (const colorScheme of ['dark', 'light'] as const)
           mkdirSync(shots, { recursive: true });
           await page.screenshot({ path: shots + '/borderless-table-' + colorScheme + '.png' });
         }
-        await row.click();
+        await row.locator('.trxToolCell').click();
         await page.locator('.tiInspector').waitFor({ state: 'visible' });
         expect(
           await row.evaluate((node) => getComputedStyle(node).outlineStyle),
@@ -213,7 +213,7 @@ browserTest(
         colorScheme: 'dark',
       });
       await fixture(page);
-      await page.locator('.trxRow[data-trace-key="success"]').click();
+      await page.locator('.trxRow[data-trace-key="success"] .trxToolCell').click();
       const before = await page.evaluate(() => {
         const table = document
             .querySelector('.trxTablePane')!
@@ -246,15 +246,20 @@ browserTest(
           '.tiReading > header,.tiDiagnostics,.tiResultCard,.tiToolbar,.tiPeer,.tiSidebar',
         )
         .evaluateAll((nodes) =>
-          nodes.map((node) => ({
-            className: node.className,
-            top: getComputedStyle(node).borderTopWidth,
-            bottom: getComputedStyle(node).borderBottomWidth,
-            left: getComputedStyle(node).borderLeftWidth,
-            right: getComputedStyle(node).borderRightWidth,
-          })),
+          nodes.filter(node => node.isConnected).map((node) => {
+            const style = getComputedStyle(node);
+            return {
+              className: node.className,
+              top: style.borderTopWidth,
+              bottom: style.borderBottomWidth,
+              left: style.borderLeftWidth,
+              right: style.borderRightWidth,
+            };
+          }),
         );
-      expect(sectionStyles.filter(style => Object.entries(style).some(([key, width]) => key !== "className" && width !== "0px"))).toEqual([]);
+      expect(sectionStyles.filter(style => Object.entries(style).some(
+        ([key, width]) => key !== 'className' && Number.parseFloat(width) > 0,
+      ))).toEqual([]);
       expect(
         await page
           .locator('.tiReading h3')
