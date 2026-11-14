@@ -175,7 +175,8 @@ browserTest(
           .locator('.trxRow[data-trace-key="read-1"] .trxTokens')
           .textContent(),
       ).toBe('1,684');
-      await page.locator('.trxRow[data-trace-key="read-1"]').click();
+      // Open via Tool rather than row center, which can be the Session filter.
+      await page.locator('.trxRow[data-trace-key="read-1"] .trxToolCell').click();
       await page.waitForSelector('[data-ti-section="input"]');
       expect(await page.locator('[role="tab"]').count()).toBe(0);
       expect(

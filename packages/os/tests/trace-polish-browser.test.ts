@@ -5,7 +5,7 @@ import { buildObservabilityTracesSite } from '../scripts/lib/observability-trace
 
 const browserTest = existsSync(chromium.executablePath()) ? it : it.skip;
 const fixtures = [
-  {id:'skill-one',traceId:'skill-one',name:'fs.read',branch:'task/os/session-one',ok:true,status:'success',startTime:'2026-11-14T03:45:09Z',input:'read SKILL.md'},
+  {id:'skill-one',traceId:'skill-one',name:'fs.read',branch:'task/os/session-one',ok:true,status:'success',startTime:'2026-11-14T03:45:09Z',input:'read SKILL.md',rawResolvedInputJson:{path:'packages/os/skills/task/SKILL.md',full:true}},
   {id:'skill-two',traceId:'skill-two',name:'python.read',branch:'task/dialer/session-two',ok:true,status:'success',startTime:'2026-11-14T03:45:08Z',input:'inspect source'},
   {id:'skill-three',traceId:'skill-three',name:'python.verify',branch:'task/os/session-one',ok:true,status:'success',startTime:'2026-11-14T03:45:07Z',input:'run tests'},
 ];
@@ -77,7 +77,7 @@ describe('Trace Burn polish interactions', () => {
     } finally {await browser.close();}
   },30000);
 
-  browserTest('the status and cost columns stay visible from desktop through narrow mobile widths', async () => {
+  browserTest('preserves horizontal access to Status and Cost on desktop and removes them on mobile', async () => {
     const browser = await chromium.launch({headless:true});
     try {
       const page = await browser.newPage({viewport:{width:1600,height:760}});
@@ -98,12 +98,25 @@ describe('Trace Burn polish interactions', () => {
           const status = row.children[row.children.length - 2] as HTMLElement;
           const right = document.documentElement.clientWidth;
           const display = (el: HTMLElement) => el.getBoundingClientRect();
-          return {right, costLeft:display(cost).left,costRight:display(cost).right,statusRight:display(status).right,headerRight:display(header).right,costWidth:display(cost).width};
+          const scroller = document.querySelector<HTMLElement>('.trxTableScroll')!;
+          const horizontal = scroller.scrollWidth > scroller.clientWidth;
+          if (horizontal) scroller.scrollLeft = scroller.scrollWidth;
+          return {right, costLeft:display(cost).left,costRight:display(cost).right,
+            statusRight:display(status).right,headerRight:display(header).right,
+            costWidth:display(cost).width,costDisplay:getComputedStyle(cost).display,
+            horizontal,scrollWidth:scroller.scrollWidth,clientWidth:scroller.clientWidth};
         });
-        expect(geometry.costWidth, String(width)).toBeGreaterThan(0);
-        expect(geometry.costRight, String(width)).toBeLessThanOrEqual(geometry.right + 1);
-        expect(geometry.statusRight, String(width)).toBeLessThanOrEqual(geometry.right + 1);
-        expect(geometry.costLeft, String(width)).toBeGreaterThanOrEqual(0);
+        if (width >= 1021) {
+          expect(geometry.horizontal, String(width)).toBe(true);
+          expect(geometry.costWidth, String(width)).toBeGreaterThan(0);
+          // Full-precision values remain reachable after scrolling right.
+          await page.waitForTimeout(40);
+          const box = await page.locator('.trxRow .trxCost').first().boundingBox();
+          expect(box!.x + box!.width).toBeLessThanOrEqual(width + 1);
+        } else {
+          expect(geometry.horizontal, String(width)).toBe(false);
+          expect(geometry.costDisplay, String(width)).toBe('none');
+        }
       }
     } finally {await browser.close();}
   },30000);
@@ -130,7 +143,7 @@ describe('Trace Burn polish interactions', () => {
       expect(hovered.bg).toBe(normal);
       expect(hovered.filter).toMatch(/brightness/);
 
-      await first.click();
+      await first.locator('.trxToolCell').click();
       await page.locator('.tiInspector .tiPeerList').waitFor({state:'visible'});
       const styles = await page.evaluate(() => {
         const peer = document.querySelector('.tiPeer + .tiPeer')!;

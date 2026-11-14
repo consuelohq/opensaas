@@ -35,6 +35,7 @@ import {
   type TracePageDirection,
 } from './trace-list';
 import {
+  formatTraceHoverPreview,
   formatTraceTableRow,
   isDefaultTraceTableRowVisible,
   matchesTraceTableFilters,
@@ -958,10 +959,10 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     },
   );
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
-    setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
+    setTraceTooltip(cell, formatTraceHoverPreview(row, 'input', formatted.inputLabel));
   });
   appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
-    setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
+    setTraceTooltip(cell, formatTraceHoverPreview(row, 'output', formatted.outputLabel)),
   );
   appendNodeCell(
     button,
@@ -1022,10 +1023,10 @@ function appendChildCells(
     },
   );
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
-    setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
+    setTraceTooltip(cell, formatTraceHoverPreview(child, 'input', formatted.inputLabel));
   });
   appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
-    setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
+    setTraceTooltip(cell, formatTraceHoverPreview(child, 'output', formatted.outputLabel)),
   );
   appendNodeCell(
     button,

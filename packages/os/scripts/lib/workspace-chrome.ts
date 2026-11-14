@@ -241,7 +241,7 @@ export function renderWorkspaceChromeBar(
         ${renderRouteGroup('Guides', active)}
       </div>
     </div>
-    <div class="trxChromeActions"><span class="trxClock" data-workspace-clock>--:--</span><button type="button" class="workspace-shortcuts-trigger" data-workspace-shortcuts aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">?</button></div>
+    <div class="trxChromeActions"><span class="trxClock" data-workspace-clock>--:--</span></div>
   </div>`;
 }
 
