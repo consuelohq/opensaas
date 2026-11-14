@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-native-ci-immutable-comparison-base-for-mercury-candidate",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2808,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2808",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-native-ci-immutable-comparison-base-for-mercury-candidate",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9de0bfd0b5bf",
+  "tmuxSession": "opensaas-dialer-repair-native-ci-immutable-comparison-base-for-m-9de0bfd0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-native-ci-immutable-comparison-base-for-mercury-candidate/.task/session.json",
+  "createdAt": "2026-11-14T06:14:24.724Z"
+}
