@@ -398,3 +398,70 @@ browserTest(
   },
   20000,
 );
+
+browserTest('anchors arrows and Enter to hovered traces, and searches after a bounded debounce', async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1620, height: 850 } });
+    const fixtures = [
+      { id: 'hover-a', traceId: 'hover-a', name: 'python.read', status: 'success', ok: true, startTime: '2026-11-14T03:29:03Z', branch: 'task/os/search' },
+      { id: 'hover-b', traceId: 'hover-b', name: 'fs.read', status: 'success', ok: true, startTime: '2026-11-14T03:29:02Z', branch: 'task/os/search' },
+      { id: 'hover-c', traceId: 'hover-c', name: 'python.verify', status: 'error', ok: false, startTime: '2026-11-14T03:29:01Z', branch: 'task/os/search' },
+    ];
+    const searchRequests: string[] = [];
+    const initial = buildObservabilityTracesSite();
+    await page.route('**/*', (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/traces') return route.fulfill({ contentType: 'text/html', body: initial });
+      if (url.pathname === '/gateway/traces/recent') {
+        const query = url.searchParams.get('query');
+        if (query) searchRequests.push(url.toString());
+        const rows = query
+          ? fixtures.filter((row) => row.name.includes(query.toLowerCase()))
+          : fixtures;
+        return route.fulfill({ json: { ok: true, data: { direction: 'older', rows, nextCursor: null } } });
+      }
+      if (url.pathname === '/gateway/traces/events') {
+        return route.fulfill({ contentType: 'text/event-stream', body: 'event: heartbeat\ndata: {}\n\n' });
+      }
+      return route.fulfill({ status: 404, body: '' });
+    });
+    await page.goto('https://trace.test/traces', { waitUntil: 'domcontentloaded' });
+    const rows = page.locator('.trxRow:not(.trxNestedRow)[data-trace-key]');
+    await rows.first().waitFor({ state: 'visible' });
+    const keys = await rows.evaluateAll((items) => items.map((row) => (row as HTMLElement).dataset.traceKey));
+    expect(keys).toHaveLength(3);
+    await rows.nth(1).hover();
+    await page.keyboard.press('ArrowDown');
+    expect(await page.locator('.trxRow.selected').first().getAttribute('data-trace-key')).toBe(keys[2]);
+    await page.keyboard.press('ArrowUp');
+    expect(await page.locator('.trxRow.selected').first().getAttribute('data-trace-key')).toBe(keys[1]);
+    await rows.nth(0).hover();
+    await page.keyboard.press('Enter');
+    expect(await page.locator('.trxRow.selected').first().getAttribute('data-trace-key')).toBe(keys[0]);
+    await page.keyboard.press('Escape');
+
+    await page.keyboard.press('Shift+/');
+    const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    await help.waitFor({ state: 'visible' });
+    expect(await help.textContent()).toContain('Move from the hovered or selected trace');
+    await page.keyboard.press('Escape');
+    expect(await help.count()).toBe(0);
+
+    await page.keyboard.press('/');
+    const search = page.locator('input[data-trace-search]');
+    await search.waitFor({ state: 'visible' });
+    await search.fill('f');
+    await page.waitForTimeout(360);
+    expect(searchRequests).toHaveLength(0);
+    await search.fill('fs.read');
+    await page.waitForTimeout(380);
+    expect(searchRequests).toHaveLength(1);
+    const remote = new URL(searchRequests[0]);
+    expect(remote.searchParams.get('query')).toBe('fs.read');
+    expect(remote.searchParams.get('limit')).toBe('50');
+    expect(await rows.count()).toBe(1);
+  } finally {
+    await browser.close();
+  }
+}, 25000);

@@ -138,7 +138,7 @@ export function installTracePaginationTransport(): () => void {
     }
     void transport
       .fetchJson(
-        traceHistoryUrl(detail.cursor, 100, detail.query ?? ''),
+        traceHistoryUrl(detail.cursor, 50, detail.query ?? ''),
         detail.signal,
       )
       .then(parseTraceHistoryResponse)

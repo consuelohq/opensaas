@@ -11,6 +11,20 @@ export function nextTraceInteractionIndex(
   return Math.min(length - 1, Math.max(0, currentIndex + direction));
 }
 
+/**
+ * A pointer hover establishes the first navigation anchor, but keyboard
+ * movement takes ownership after that first arrow so repeated arrows advance.
+ */
+export function traceArrowAnchor(
+  hoveredKey: string,
+  selectedKey: string,
+  keyboardKey: string,
+  source: 'hover' | 'keyboard' | 'child' | null,
+): string {
+  if (source === 'hover' && hoveredKey) return hoveredKey;
+  return keyboardKey || selectedKey || hoveredKey;
+}
+
 export function traceIdentityCopyText(row: TraceRecord): string {
   const tool = semanticToolLabel(row);
   const traceId = clean(
