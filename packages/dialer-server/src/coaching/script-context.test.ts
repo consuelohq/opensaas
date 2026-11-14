@@ -8,6 +8,7 @@ import {
 import { createContextScheduler } from './context-scheduler';
 import type {
   AssistancePolicy,
+  TranscriptEvent,
   TranscriptSegmentEvent,
 } from '@consuelo/conversation';
 
@@ -100,6 +101,164 @@ const selection = (segmentId = 's1', segmentRevision = 1) => ({
   evidence: [{ segmentId, segmentRevision }],
 });
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+const interruption = (kind: 'gap' | 'reconnected'): TranscriptEvent => {
+  const common = {
+    schemaVersion: 1 as const,
+    eventId: 'interruption',
+    scope,
+    cursor: { sequence: 2, epoch: kind === 'reconnected' ? 1 : 0 },
+    observedAtMs: 2000,
+    source: { adapter: 'mock' },
+  };
+  return kind === 'gap'
+    ? {
+        ...common,
+        kind,
+        audioStartMs: 1000,
+        audioEndMs: 2000,
+        reason: 'missing-audio',
+      }
+    : { ...common, kind };
+};
+
+describe('transcript interruption recovery', () => {
+  test.each(['gap', 'reconnected'] as const)(
+    'a trusted final clears %s without changing an existing approved cue',
+    async (kind) => {
+      for (const text of [
+        'opening trigger',
+        'The conversation continues without a rule match',
+      ]) {
+        let decisions = 0;
+        const statuses: string[] = [];
+        const s = session({
+          minimumDwellMs: 1500,
+          onDecision: () => decisions++,
+          onChange: (view) => statuses.push(view.status),
+        });
+        try {
+          await s.ingest(event('opening trigger'));
+          const first = s.decision();
+          expect(s.view('call')).toMatchObject({
+            kind: 'approved',
+            status: 'live',
+          });
+          expect((await s.ingest(interruption(kind))).status).toBe('applied');
+          expect(s.view('call').status).toBe(
+            kind === 'gap' ? 'delayed' : 'reconnecting',
+          );
+          expect(
+            (
+              await s.ingest(
+                event(text, 3, {
+                  cursor: {
+                    sequence: 3,
+                    epoch: kind === 'reconnected' ? 1 : 0,
+                  },
+                }),
+              )
+            ).status,
+          ).toBe('applied');
+          expect(statuses.at(-1)).toBe('live');
+          expect(s.view('call')).toMatchObject({
+            heading: 'Opening',
+            kind: 'approved',
+            status: 'live',
+          });
+          expect(s.decision()).toEqual(first);
+          expect(decisions).toBe(1);
+        } finally {
+          s.dispose();
+        }
+      }
+    },
+  );
+  test.each(['gap', 'reconnected'] as const)(
+    'a trusted unmatched final restores manual reference after %s',
+    async (kind) => {
+      const s = session();
+      try {
+        await s.ingest(event('A conversation without matching phrases'));
+        await s.ingest(interruption(kind));
+        await s.ingest(
+          event('The conversation continues without matching phrases', 3, {
+            cursor: { sequence: 3, epoch: kind === 'reconnected' ? 1 : 0 },
+          }),
+        );
+        expect(s.view('call')).toMatchObject({
+          kind: 'manual',
+          status: 'manual',
+        });
+        expect(s.decision()).toBeNull();
+      } finally {
+        s.dispose();
+      }
+    },
+  );
+  test.each(['gap', 'reconnected'] as const)(
+    'interim and unknown speech cannot clear %s before a trusted final',
+    async (kind) => {
+      const unknown = {
+        participantId: 'unknown',
+        legId: 'unknown-leg',
+        role: 'unknown',
+        provenance: 'unknown',
+        bindingRevision: 1,
+      } as const;
+      const s = session({ participants: [participant, unknown] });
+      const epoch = kind === 'reconnected' ? 1 : 0;
+      const interrupted = kind === 'gap' ? 'delayed' : 'reconnecting';
+      try {
+        await s.ingest(event('opening trigger'));
+        await s.ingest(interruption(kind));
+        expect(
+          (
+            await s.ingest(
+              event('An unfinished segment', 3, {
+                finality: 'interim',
+                cursor: { sequence: 3, epoch },
+              }),
+            )
+          ).status,
+        ).toBe('applied');
+        expect(s.view('call').status).toBe(interrupted);
+        expect(
+          (
+            await s.ingest(
+              event('Unknown final speech', 4, {
+                cursor: { sequence: 4, epoch },
+                participantId: unknown.participantId,
+                legId: unknown.legId,
+                speaker: {
+                  role: unknown.role,
+                  provenance: unknown.provenance,
+                  bindingRevision: unknown.bindingRevision,
+                },
+              }),
+            )
+          ).status,
+        ).toBe('applied');
+        expect(s.view('call').status).toBe(interrupted);
+        expect(
+          (
+            await s.ingest(
+              event('A trusted continuation without a matching rule', 5, {
+                cursor: { sequence: 5, epoch },
+              }),
+            )
+          ).status,
+        ).toBe('applied');
+        expect(s.view('call')).toMatchObject({
+          heading: 'Opening',
+          kind: 'approved',
+          status: 'live',
+        });
+      } finally {
+        s.dispose();
+      }
+    },
+  );
+});
 
 describe('bounded context input and scheduling', () => {
   test('unknown latest finals cannot replay old known text and trusted speech recovers after the boundary', async () => {

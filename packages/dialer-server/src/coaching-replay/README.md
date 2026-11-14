@@ -53,6 +53,27 @@ source integrity are rechecked. The dated draft must be refreshed and reviewed
 when prices, provider details, code, or date change; an incomplete run is not
 an acceptance result.
 
+## Tomorrow's reviewed benchmark
+
+Both draft configs are dated 2026-11-14. Before any benchmark, refresh the
+public endpoint metadata and prepare a reviewed, private config dated for that
+day. Do not merely change the date: verify the pinned model, provider, current
+prices, context limit, strict structured-output support, and reasoning setting.
+Stop for review if prices or capabilities changed. The DeepSeek draft pins
+`deepseek/deepseek-v4.1-flash-1017` to `deepinfra/fp8` / `DeepInfra` and
+explicitly disables reasoning for the first latency comparison. The currently
+advertised official DeepSeek endpoint lacks `structured_outputs`; do not
+silently fall back to it or weaken the schema.
+
+The user can fund the existing local OpenRouter key and then explicitly request
+the bounded benchmark. Adding credit never starts a run. Preflight each reviewed
+config and obtain a new fingerprint; use the same frozen cases and five-second
+windows, with a separate owner-only output directory and one-shot ledger for
+each model. The $2 limit is aggregate for the explicitly approved scope, not
+$2 per model; allocate that total across models before approval. Price and cost
+comparisons are estimates until validated actual `usage.cost` is available.
+A capped or incomplete run is not an acceptance result.
+
 Current checks:
 
 ```sh

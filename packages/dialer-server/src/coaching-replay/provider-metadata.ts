@@ -27,7 +27,9 @@ export async function verifyPublicModelMetadata(
       config.pricingSource !== url ||
       config.pricingAsOf !== new Date(nowMs).toISOString().slice(0, 10) ||
       config.allowedRequestProviderTags.length !== 1 ||
-      config.allowedResponseProviderNames.length !== 1
+      config.allowedResponseProviderNames.length !== 1 ||
+      (config.reasoningMode !== undefined &&
+        config.reasoningMode !== 'disabled')
     )
       throw new BudgetError('CONFIG');
     const response = await fetcher(url, {
@@ -88,13 +90,19 @@ export async function verifyPublicModelMetadata(
       !['structured_outputs', 'response_format', 'max_tokens'].every((x) =>
         parameters.includes(x),
       ) ||
+      (config.reasoningMode === 'disabled' &&
+        !parameters.includes('reasoning')) ||
       !record(endpoint.pricing)
     )
       throw new BudgetError('CONFIG');
     const prompt = rateNanoUsdPerMillion(endpoint.pricing.prompt),
       completion = rateNanoUsdPerMillion(endpoint.pricing.completion),
-      cache5 = rateNanoUsdPerMillion(endpoint.pricing.input_cache_write),
-      cache1h = rateNanoUsdPerMillion(endpoint.pricing.input_cache_write_1h);
+      cache5 = Object.hasOwn(endpoint.pricing, 'input_cache_write')
+        ? rateNanoUsdPerMillion(endpoint.pricing.input_cache_write)
+        : prompt,
+      cache1h = Object.hasOwn(endpoint.pricing, 'input_cache_write_1h')
+        ? rateNanoUsdPerMillion(endpoint.pricing.input_cache_write_1h)
+        : prompt;
     if (
       prompt !== config.maxPromptNanoUsdPerMillion ||
       completion !== config.maxCompletionNanoUsdPerMillion ||

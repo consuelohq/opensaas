@@ -21,6 +21,7 @@ export type TranscriptionConfig = {
   providerTimeoutMs: number;
   maxConcurrentTranscriptions: number;
   streamUrl?: string;
+  parentAccountSid?: string;
   maxSessions?: number;
   overlapBytes?: number;
   vadEnabled?: boolean;
@@ -37,6 +38,7 @@ type SessionState = {
   connectionId: string;
   streamSid: string | null;
   providerCallId: string | null;
+  providerAccountId: string | null;
   context: TranscriptionContext | null;
   declaredTracks: TranscriptTrack[];
   disabled: boolean;
@@ -61,6 +63,7 @@ export const createTranscriptionOperations = (input: {
   speechToTextProvider: SpeechToTextProviderService;
   config: TranscriptionConfig;
 }) => {
+  const parentAccountSid = input.config.parentAccountSid?.trim() || null;
   const sessions = new Map<string, SessionState>();
   const completed = new Map<string, TerminalStatus>();
   const limiter = new FairTranscriptionLimiter(
@@ -82,6 +85,7 @@ export const createTranscriptionOperations = (input: {
     connectionId,
     streamSid: null,
     providerCallId: null,
+    providerAccountId: null,
     context: null,
     declaredTracks: ['inbound', 'outbound'],
     disabled: false,
@@ -374,16 +378,19 @@ export const createTranscriptionOperations = (input: {
       const context =
         yield* input.repository.resolveTranscriptionContext(providerCallId);
       if (session.terminal || session.failed) return { accepted: false };
+      // Legacy null ownership resolves only to this runtime's configured parent.
+      const providerAccountId = context?.providerAccountId ?? parentAccountSid;
       if (
         !context ||
         (frame.start.customParameters.sessionId &&
           frame.start.customParameters.sessionId !== context.sessionId) ||
-        (frame.start.accountSid &&
-          frame.start.accountSid !== context.providerAccountId)
+        !providerAccountId ||
+        frame.start.accountSid !== providerAccountId
       )
         return { accepted: false };
       session.streamSid = frame.streamSid;
       session.providerCallId = providerCallId;
+      session.providerAccountId = providerAccountId;
       session.context = context;
       session.declaredTracks = frame.start.tracks ?? ['inbound', 'outbound'];
       session.disabled = !context.enabled;
@@ -541,8 +548,8 @@ export const createTranscriptionOperations = (input: {
         if (
           frame.streamSid !== session.streamSid ||
           frame.stop.callSid !== session.providerCallId ||
-          (frame.stop.accountSid &&
-            frame.stop.accountSid !== session.context?.providerAccountId)
+          !session.providerAccountId ||
+          frame.stop.accountSid !== session.providerAccountId
         )
           return Effect.succeed({ accepted: false });
         return complete(connectionId).pipe(

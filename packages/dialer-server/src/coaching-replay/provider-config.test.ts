@@ -92,3 +92,31 @@ describe('provider benchmark preflight', () => {
     ).toThrow();
   });
 });
+
+it('binds only the explicit disabled reasoning mode into the reviewed fingerprint', () => {
+  const disabled = parseProviderConfig({ ...value, reasoningMode: 'disabled' });
+  expect((disabled as { reasoningMode?: string }).reasoningMode).toBe(
+    'disabled',
+  );
+  expect(
+    configurationFingerprint(disabled, snapshot, '/fixture/private'),
+  ).not.toBe(
+    configurationFingerprint(
+      parseProviderConfig(value),
+      snapshot,
+      '/fixture/private',
+    ),
+  );
+  for (const mode of ['enabled', 'auto', null, { enabled: false }]) {
+    expect(() =>
+      parseProviderConfig({ ...value, reasoningMode: mode }),
+    ).toThrow();
+  }
+  expect(() =>
+    parseProviderConfig({
+      ...value,
+      reasoningMode: 'disabled',
+      reasoning: { enabled: false },
+    }),
+  ).toThrow();
+});

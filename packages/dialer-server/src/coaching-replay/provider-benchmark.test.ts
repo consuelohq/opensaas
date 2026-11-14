@@ -277,3 +277,50 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
     }
   });
 });
+
+it('passes the fingerprinted disabled-reasoning mode to every synthetic request', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'provider-reasoning-'));
+  const disabled = {
+    ...config,
+    scenarioCount: 1,
+    maxRequests: 1,
+    reasoningMode: 'disabled',
+  } as typeof config;
+  const bodies: Record<string, unknown>[] = [];
+  try {
+    await runProviderBenchmark({
+      config: disabled,
+      fingerprint: 'e'.repeat(64),
+      directory: dir,
+      integrity: () => true,
+      getApiKey: () => 'fixture-only',
+      fetcher: async (_url, init) => {
+        bodies.push(JSON.parse(String(init?.body)));
+        return new Response(
+          JSON.stringify({
+            model: 'fixture/model',
+            provider: 'Fixture',
+            choices: [
+              {
+                finish_reason: 'stop',
+                message: {
+                  role: 'assistant',
+                  content: JSON.stringify({
+                    cardId: null,
+                    slotIds: [],
+                    evidence: [],
+                  }),
+                },
+              },
+            ],
+            usage: { cost: 0 },
+          }),
+        );
+      },
+    });
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]?.reasoning).toEqual({ enabled: false });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

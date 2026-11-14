@@ -15,6 +15,7 @@ export type ProviderBenchmarkConfig = BudgetConfig & {
   allowedResponseModels: readonly string[];
   allowedResponseProviderNames: readonly string[];
   transportRevision: string;
+  reasoningMode?: 'disabled';
   pricingSource: string;
   pricingAsOf: string;
 };
@@ -49,8 +50,10 @@ export function parseProviderConfig(value: unknown): ProviderBenchmarkConfig {
     'pricingSource',
     'pricingAsOf',
   ];
+  const hasReasoningMode = Object.hasOwn(c, 'reasoningMode');
   if (
-    Object.keys(c).length !== keys.length ||
+    Object.keys(c).length !== keys.length + (hasReasoningMode ? 1 : 0) ||
+    (hasReasoningMode && c.reasoningMode !== 'disabled') ||
     keys.some((k) => !Object.hasOwn(c, k)) ||
     c.schemaVersion !== 1 ||
     !name(c.model) ||
@@ -98,6 +101,9 @@ export function parseProviderConfig(value: unknown): ProviderBenchmarkConfig {
       ...result.allowedResponseProviderNames,
     ]),
     transportRevision: result.transportRevision,
+    ...(result.reasoningMode === 'disabled'
+      ? { reasoningMode: 'disabled' as const }
+      : {}),
     scenarioCount: result.scenarioCount,
     maxRequests: result.maxRequests,
     maxReservedNanoUsd: result.maxReservedNanoUsd,

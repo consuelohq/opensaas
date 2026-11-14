@@ -33,6 +33,9 @@ function transportOptions(config: ProviderBenchmarkConfig) {
   return {
     model: config.model,
     providerRevision: config.providerRevision,
+    ...(config.reasoningMode === 'disabled'
+      ? { reasoningMode: 'disabled' as const }
+      : {}),
     allowedRequestProviderTags: config.allowedRequestProviderTags,
     allowedResponseProviderNames: config.allowedResponseProviderNames,
     allowedResponseModels: config.allowedResponseModels,
@@ -66,6 +69,9 @@ export async function measureSyntheticRequestBytes(
       hasCache(body) ||
       body.model !== config.model ||
       body.max_tokens !== 512 ||
+      (config.reasoningMode === 'disabled'
+        ? JSON.stringify(body.reasoning) !== JSON.stringify({ enabled: false })
+        : Object.hasOwn(body, 'reasoning')) ||
       JSON.stringify(body.provider?.only) !==
         JSON.stringify(config.allowedRequestProviderTags) ||
       body.provider?.max_price?.prompt !==

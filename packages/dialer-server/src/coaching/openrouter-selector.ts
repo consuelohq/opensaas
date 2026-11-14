@@ -17,6 +17,7 @@ export class OpenRouterSelectorError extends Error {
 export type OpenRouterSelectorConfig = {
   model: string;
   providerRevision: string;
+  reasoningMode?: 'disabled';
   allowedRequestProviderTags: readonly string[];
   allowedResponseProviderNames: readonly string[];
   allowedResponseModels: readonly string[];
@@ -66,6 +67,7 @@ export function createOpenRouterSelector(
   const {
     model,
     providerRevision,
+    reasoningMode,
     getApiKey,
     fetch: fetcher,
     onProviderMetadata,
@@ -98,6 +100,7 @@ export function createOpenRouterSelector(
   if (
     !validName(model) ||
     !validName(providerRevision) ||
+    (reasoningMode !== undefined && reasoningMode !== 'disabled') ||
     !requestProviderTags.length ||
     !responseProviderNames.length ||
     !responseModels.length ||
@@ -122,6 +125,7 @@ export function createOpenRouterSelector(
         responseProviderNames,
         responseModels,
         maxPrice,
+        ...(reasoningMode === 'disabled' ? { reasoningMode } : {}),
         revision: OPENROUTER_SELECTOR_REVISION,
       }),
     )
@@ -293,6 +297,9 @@ export function createOpenRouterSelector(
         ...(maxPrice ? { max_price: maxPrice } : {}),
       },
       max_tokens: 512,
+      ...(reasoningMode === 'disabled'
+        ? { reasoning: { enabled: false } }
+        : {}),
       response_format: {
         type: 'json_schema',
         json_schema: {

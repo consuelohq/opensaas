@@ -28,29 +28,17 @@ Source implementation is prepared for draft review; semantic matching quality is
 ## files changed
 
 - `packages/dialer-server/README.md`
-- `packages/dialer-server/src/coaching-replay/README.md`
 - `packages/dialer-server/src/coaching-replay/artifact.ts`
+- `packages/dialer-server/src/coaching-replay/browser-fixture-entry.ts`
+- `packages/dialer-server/src/coaching-replay/browser-fixture.ts`
 - `packages/dialer-server/src/coaching-replay/client-roundtrip.postgres.integration.test.ts`
 - `packages/dialer-server/src/coaching-replay/compare.test.ts`
 - `packages/dialer-server/src/coaching-replay/compare.ts`
+- `packages/dialer-server/src/coaching-replay/independent-cases.json`
+- `packages/dialer-server/src/coaching-replay/independent.ts`
 - `packages/dialer-server/src/coaching-replay/observer.test.ts`
 - `packages/dialer-server/src/coaching-replay/observer.ts`
 - `packages/dialer-server/src/coaching-replay/production.ts`
-- `packages/dialer-server/src/coaching-replay/runner.test.ts`
-- `packages/dialer-server/src/coaching-replay/runner.ts`
-- `packages/dialer-server/src/coaching/playbook-store.ts`
-- `packages/dialer-server/src/coaching/playbooks.postgres.integration.test.ts`
-- `packages/dialer-server/src/coaching/playbooks.ts`
-- `packages/dialer-server/src/coaching/review-regressions.test.ts`
-- `packages/dialer-server/src/coaching/script-engine.ts`
-- `packages/dialer-server/src/routes/mercury.ts`
-- `packages/lead-connector/src/embed/internal-main.ts`
-- `packages/lead-connector/src/embed/mercury-authoring.test.ts`
-- `packages/lead-connector/src/embed/mercury-authoring.ts`
-- `packages/dialer-server/src/coaching-replay/browser-fixture-entry.ts`
-- `packages/dialer-server/src/coaching-replay/browser-fixture.ts`
-- `packages/dialer-server/src/coaching-replay/independent-cases.json`
-- `packages/dialer-server/src/coaching-replay/independent.ts`
 - `packages/dialer-server/src/coaching-replay/provider-artifact.test.ts`
 - `packages/dialer-server/src/coaching-replay/provider-artifact.ts`
 - `packages/dialer-server/src/coaching-replay/provider-benchmark.test.ts`
@@ -68,23 +56,82 @@ Source implementation is prepared for draft review; semantic matching quality is
 - `packages/dialer-server/src/coaching-replay/provider-metadata.ts`
 - `packages/dialer-server/src/coaching-replay/provider-replay.test.ts`
 - `packages/dialer-server/src/coaching-replay/quality.ts`
+- `packages/dialer-server/src/coaching-replay/README.md`
 - `packages/dialer-server/src/coaching-replay/rejected-phrase-baseline.json`
 - `packages/dialer-server/src/coaching-replay/reviewed.test.ts`
+- `packages/dialer-server/src/coaching-replay/runner.test.ts`
+- `packages/dialer-server/src/coaching-replay/runner.ts`
 - `packages/dialer-server/src/coaching/context-scheduler.ts`
 - `packages/dialer-server/src/coaching/context-selector.ts`
 - `packages/dialer-server/src/coaching/openrouter-selector.test.ts`
 - `packages/dialer-server/src/coaching/openrouter-selector.ts`
 - `packages/dialer-server/src/coaching/playbook-authoring.test.ts`
+- `packages/dialer-server/src/coaching/playbook-store.ts`
+- `packages/dialer-server/src/coaching/playbooks.postgres.integration.test.ts`
+- `packages/dialer-server/src/coaching/playbooks.ts`
+- `packages/dialer-server/src/coaching/review-regressions.test.ts`
 - `packages/dialer-server/src/coaching/script-context.test.ts`
+- `packages/dialer-server/src/coaching/script-engine.ts`
 - `packages/dialer-server/src/coaching/script-matching.test.ts`
 - `packages/dialer-server/src/coaching/script-matching.ts`
+- `packages/dialer-server/src/routes/mercury.ts`
+- `packages/lead-connector/src/embed/internal-main.ts`
 - `packages/lead-connector/src/embed/mercury-authoring-controller.test.ts`
 - `packages/lead-connector/src/embed/mercury-authoring-controller.ts`
-
+- `packages/lead-connector/src/embed/mercury-authoring.test.ts`
+- `packages/lead-connector/src/embed/mercury-authoring.ts`
 
 ## workspace-owned: files changed
 
+- `packages/dialer-server/README.md`
+- `packages/dialer-server/src/coaching-replay/artifact.ts`
+- `packages/dialer-server/src/coaching-replay/browser-fixture-entry.ts`
+- `packages/dialer-server/src/coaching-replay/browser-fixture.ts`
+- `packages/dialer-server/src/coaching-replay/client-roundtrip.postgres.integration.test.ts`
+- `packages/dialer-server/src/coaching-replay/compare.test.ts`
+- `packages/dialer-server/src/coaching-replay/compare.ts`
+- `packages/dialer-server/src/coaching-replay/independent-cases.json`
+- `packages/dialer-server/src/coaching-replay/independent.ts`
+- `packages/dialer-server/src/coaching-replay/observer.test.ts`
+- `packages/dialer-server/src/coaching-replay/observer.ts`
+- `packages/dialer-server/src/coaching-replay/production.ts`
+- `packages/dialer-server/src/coaching-replay/provider-artifact.test.ts`
+- `packages/dialer-server/src/coaching-replay/provider-artifact.ts`
+- `packages/dialer-server/src/coaching-replay/provider-benchmark.test.ts`
+- `packages/dialer-server/src/coaching-replay/provider-benchmark.ts`
+- `packages/dialer-server/src/coaching-replay/provider-budget.test.ts`
+- `packages/dialer-server/src/coaching-replay/provider-budget.ts`
+- `packages/dialer-server/src/coaching-replay/provider-cli.test.ts`
+- `packages/dialer-server/src/coaching-replay/provider-cli.ts`
+- `packages/dialer-server/src/coaching-replay/provider-config.test.ts`
+- `packages/dialer-server/src/coaching-replay/provider-config.ts`
+- `packages/dialer-server/src/coaching-replay/provider-haiku.draft.json`
+- `packages/dialer-server/src/coaching-replay/provider-ledger.test.ts`
+- `packages/dialer-server/src/coaching-replay/provider-ledger.ts`
+- `packages/dialer-server/src/coaching-replay/provider-metadata.test.ts`
+- `packages/dialer-server/src/coaching-replay/provider-metadata.ts`
+- `packages/dialer-server/src/coaching-replay/provider-replay.test.ts`
+- `packages/dialer-server/src/coaching-replay/quality.ts`
+- `packages/dialer-server/src/coaching-replay/README.md`
+- `packages/dialer-server/src/coaching-replay/rejected-phrase-baseline.json`
+- `packages/dialer-server/src/coaching-replay/reviewed.test.ts`
+- `packages/dialer-server/src/coaching-replay/runner.test.ts`
+- `packages/dialer-server/src/coaching-replay/runner.ts`
+- `packages/dialer-server/src/coaching/context-scheduler.ts`
+- `packages/dialer-server/src/coaching/context-selector.ts`
+- `packages/dialer-server/src/coaching/openrouter-selector.test.ts`
+- `packages/dialer-server/src/coaching/openrouter-selector.ts`
 - `packages/dialer-server/src/coaching/playbook-authoring.test.ts`
+- `packages/dialer-server/src/coaching/playbook-store.ts`
+- `packages/dialer-server/src/coaching/playbooks.postgres.integration.test.ts`
+- `packages/dialer-server/src/coaching/playbooks.ts`
+- `packages/dialer-server/src/coaching/review-regressions.test.ts`
+- `packages/dialer-server/src/coaching/script-context.test.ts`
+- `packages/dialer-server/src/coaching/script-engine.ts`
+- `packages/dialer-server/src/coaching/script-matching.test.ts`
+- `packages/dialer-server/src/coaching/script-matching.ts`
+- `packages/dialer-server/src/routes/mercury.ts`
+- `packages/lead-connector/src/embed/internal-main.ts`
 - `packages/lead-connector/src/embed/mercury-authoring-controller.test.ts`
 - `packages/lead-connector/src/embed/mercury-authoring-controller.ts`
 - `packages/lead-connector/src/embed/mercury-authoring.test.ts`
@@ -108,11 +155,17 @@ Source implementation is prepared for draft review; semantic matching quality is
 - 2026-11-14 04:46:30 fs.write: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
 - 2026-11-14 05:04:59 fs.write: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
 - 2026-11-14 05:31:48 fs.write: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+- 2026-11-14 05:45:37 fs.write: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+- 2026-11-14 05:57:27 fs.write: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+- 2026-11-14 05:59:55 fs.write: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+- 2026-11-14 06:00:48 fs.write: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-11-14 05:24:09 `review.run`: passed — OK
 - 2026-11-14 05:30:28 `verify`: passed — OK
+- 2026-11-14 05:59:32 `review.run`: passed — OK
+- 2026-11-14 06:00:33 `verify`: passed — OK
 
 ## key decisions
 
@@ -232,6 +285,16 @@ Authoring contract: preview optional complete rules; canonical compiledcandidate
 ### Independent review repair — latest explicit phrase state
 
 ### OpenRouter transport review repair — physical settlement and provider identity
+
+Media parent-account ownership repair (DEV-1700/1707, root-approved narrow extension): persisted null/undefined providerAccountId denotes the explicitly configured parent, not any AccountSid. Current start and stop compare real frame SID directly with null; config lacks parent SID. Test-first contract: accept parent-owned start/stop only with matching configured TWILIO_ACCOUNT_SID; deny absent configured parent, missing frame account, wrong/foreign account; keep persisted child account exact even when parent differs or is absent. Snapshot resolved account at accepted start for stop continuity. Wire optional parentAccountSid from runtime/railway.ts without reading/changing credentials or activating capture. Own transcription.ts, application.test.ts, minimal railway.ts and focused railway.test.ts composition regression only. Focused red/green: bun test packages/dialer-server/src/call-operations/application.test.ts packages/dialer-server/src/runtime/railway.test.ts -t 'parent account|child account|configured parent'. No actual database/provider/media network, calls, grants, deployment or publication.
+
+Independent DeepSeek delta review completed before this repair: inspected optional write pricing, strict malformed-present rejection, maximum prompt/write reservation without cache-read savings, immutable disabled-reasoning config/fingerprint/selector hash/body and metadata capability binding, exact pinned DeepInfra route and strict-schema rejection. No actionable findings; independently ran28tests171assertions green trc_f5d3f71ac44a with injected local fixtures. No provider prep files edited.
+
+Media red/green: frozen red trc_552e559a13d2=4pass/7expectedfailures (parent-null/undefined and runtime composition rejected valid parent; missing start/stop frame account was accepted). Green trc_daf64e1639cb=11pass47assertions. Added optional explicit parentAccountSid config, captured its trimmed value, resolved and snapshotted owner at accepted start, and made both start/stop require exact account SID. Persisted child always wins over parent fallback. Existing test harness now supplies explicit synthetic parent SID/frame SID rather than relying on missing-account acceptance. Railway composition change is one explicit environment-to-config line; focused fake-DB composition tests prove configured parent accepted, absent parent denied, no media/provider work. Full application+persistence+Railway+workspace-Twilio suites trc_1d57a7575d36=43pass191assertions; full server tsc trc_85783c701805 clean. Self-reviewed exact production diff and used scoped formatting for the new Railway test block, preserving unrelated work. Production frozen05:58:01. Root owns whole-source gates/publication and DEV1700/1707 tracking; no live or carrier acceptance implied, paid/live work remains paused.
+
+Post-publication recovery follow-up on c46f5dc548794107439e6439bcecf86fff644d68: root assigned only script-engine.ts and recovery regressions, no publication. Contract: an accepted meaningful trusted final segment after a gap/reconnect restores the existing cue's live/manual status even if no card patch is applied (same-card dwell block or unmatched language). Recovery must preserve card, patch/evidence history, manual pin/mode, and all authority/scope/speaker/cursor guards; interim and unknown-role speech cannot clear the interruption. New table-driven script-context tests cover gap/reconnect, approved/manual existing references, unchanged/no-rule finals and interim/unknown fences before a later trusted final. Focused red/green command: bun test packages/dialer-server/src/coaching/script-context.test.ts -t 'transcript interruption recovery'. Expected red: status remains delayed/reconnecting despite a valid trusted final. No provider calls or publication.
+
+Recovery repair evidence: focused six regressions red trc_9b28fc3d327b (status stuck delayed/reconnecting), then green6tests48assertions trc_be1cc430b8d5. Engine changes only restore interrupted status from the existing automatic/manual reference after an accepted meaningful known-speaker final; no new card patch/evidence is manufactured, and onChange receives recovery. Interim/unknown speech stays interrupted until a trusted final. After formatting, context+existing engine+review regressions trc_90a377fda4a3=78pass/276assertions and full server tsc trc_631ebfea03df clean. Self-reviewed exact diff; engine production9lines plus tests only, scheduler/matcher/provider/evaluator unchanged. Frozen05:43:00. Root retains review/publication. User has now paused paid/live work until tomorrow; no provider activity occurred in this repair, and provider/transport prep ownership is with Terra.
 
 Omitted-latest-input follow-up contract: before a queued/admitted selector captures timeline, its latest included trusted final must exactly equal current epoch/sequence; unknown latest finals and interim speech cannot advance a proposal cursor while only older trusted text is sent. Valid unknown final speech is a same-scope/epoch context boundary: later trusted finals cannot borrow earlier pre-unknown requirements or transcript context. Root approved minimal shared-helper +engine repairs, no fixture-label changes. Frozen red trc_49ae401e2af7=3expectedfailures (old required context admitted, unknown final replayed old text, queued interim launched on old input). Tests also require trusted-final recovery and fresh post-boundary context.
 
@@ -481,3 +544,71 @@ Credential lookup completed as requested: valid local consuelo_web key, account 
 Publication mechanics: managed file-push requires remote ancestry equal localHEAD; scoped OS git push will first transmit only the previously verified dependency merge87577ee17875c171392a9dc0b74c786cccf963ba (candidate291df61 + current-main85cb7521 + taskbootstrap) non-forced, preserving all parents. All new source files then publish via task.push with this full verification stamp. Consolidate this task PR into existing draft2798, never main/shared divergentstream.
 
 - 2026-11-14 05:31:48 append: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+
+- 2026-11-14 05:41:27 apply-patch: `packages/dialer-server/src/coaching/script-context.test.ts`
+
+- 2026-11-14 05:41:52 apply-patch: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+### Replay owner — CLI newline verification
+
+Inspected both JSON output literals: source bytes 39,92,110,39 encode the JavaScript string literal for LF, not a runtime backslash and n. Process-level equivalent evaluation of each exact extracted literal produced stdout ending byte 10, and JSON.parse accepted the complete output in both cases (`trc_f5c62cb5831b`). No defect found; no source or test changes. No provider, network or credential access.
+
+- 2026-11-14 05:42:32 apply-patch: `packages/dialer-server/src/coaching/script-context.test.ts`
+- 2026-11-14 05:42:32 apply-patch: `packages/dialer-server/src/coaching/script-engine.ts`
+
+- 2026-11-14 05:44:13 apply-patch: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+## Coordinator update — 2026-11-14 05:46 UTC
+
+Managed publication succeeded after a transient GitHub 502 (failed trace trc_949d1e18676e; recovered by inspecting unchanged remote/local authority before retry). Exact published component c46f5dc548794107439e6439bcecf86fff644d68, tree 963ebd70682ed6405b467c6c5524b7a0a0d9822c, managed trace trc_6b880c47a06a. PR #2804 is now stacked into the existing draft candidate #2798, not shared stream/dialer. Do not call task.pr again and reset its base. Candidate remains draft; no main merge/deployment.
+
+Fresh main is 0780f96e3e157132f553eb5458414f5106ba0695. All 34 changed paths since the validated 85cb752 baseline were inspected: OS tracing/runtime publication only; no coaching overlap. A Git merge-tree probe combines current published source with that main without conflicts (trc_aa46483cf451). This is a compatibility probe, not a source merge or runtime proof. Recheck current main before eventual release.
+
+New automated recovery-status finding is confirmed and repaired by the independent reviewer: six meaningful red failures trc_9b28fc3d327b, six green regressions trc_be1cc430b8d5; focused78pass/276assertions trc_90a377fda4a3, server typecheck trc_631ebfea03df. A trusted meaningful final restores live/manual status without card/evidence churn; unknown/interim events do not clear interruption. Root must run fresh final gates and publish this delta.
+
+Ko explicitly paused all paid evaluation and live testing until tomorrow. No standing permission to infer from a newly funded account; do not run tonight. A valid existing local OpenRouter inference key was found, but its account balance is zero/nonpositive. The older coaching/Railway keys are invalid. Secret values were never printed or committed, no credentials/billing/settings were changed, and only read-only credential metadata/credits checks occurred. Key locations belong only in private coordinator notes, not public PRs.
+
+Ko prefers the newest DeepSeek for the first actual comparison. Current official release notes and public OpenRouter metadata identify pinned deepseek/deepseek-v4.1-flash-1017. The native DeepSeek endpoint lacks structured_outputs, so it must fail our strict capability preflight; do not silently weaken schema. Terra owns a separate draft via exact deepinfra/fp8 with explicit disabled reasoning and safe optional cache-write handling. All original labels, windows, frozen fixtures and quality thresholds remain fixed. No provider inference is allowed during prep. Refresh prices/capabilities and private dated config/fingerprint tomorrow; private ledger/output directories are one-shot. A $2 scope must not silently become $2 per compared model.
+
+- 2026-11-14 05:45:37 append: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+
+### Replay owner — tomorrow's DeepSeek draft
+
+Paid/live work is paused until tomorrow; this is preparation only. Added explicit, dated draft `provider-deepseek.draft.json` for `deepseek/deepseek-v4.1-flash-1017`, request provider `deepinfra/fp8`, response provider `DeepInfra`, same response model, strict structured output and explicitly disabled reasoning. The setting is optional, restricted to disabled, captured in benchmark and transport hashes, and serialized as `reasoning:{enabled:false}`; omitted existing Haiku configuration is unchanged. Preflight requires advertised reasoning and strict-schema capabilities when selected. Optional absent cache-write prices no longer prevent verification; invalid present prices fail and conservative input rate remains the maximum of prompt and supplied write prices, never cache-read savings.
+
+Public metadata-only GET `trc_37e5801dcef5` on 2026-11-14 UTC confirmed DeepInfra's pinned provider, 1,048,576 context, 393,216 max completion, advertised reasoning and strict schema, prompt $0.098/M and output $0.294/M. The official DeepSeek endpoint lacks advertised structured_outputs; no fallback or weakened schema. Discount and endpoint data may change: tomorrow's runbook requires fresh metadata and reviewed private dated config/fingerprint, separate model directories and ledgers, one explicitly approved aggregate $2 scope, and no automatic inference on credit detection. Prices remain estimates until validated actual usage.cost.
+
+Tests red `trc_53797ad7e18e` → green `trc_57734780e00c` (28 pass, 171 assertions); server TypeScript `trc_282c031a1f40` green; strict review zero `trc_579dd405dfd2`. Local synthetic fake-only serialization `trc_d6fe1a131312` covered all 108 cases: 7,686–8,945 bytes/request, full-context reservation $0.102910976/request, $11.114385408 worst-case for all 108 versus proposed aggregate $2 cap; a run may stop early. Same cases/labels/windows/thresholds remain unchanged. Production/draft SHA-256 evidence `trc_e5e74fc3defd`; draft SHA-256 `5d88491544b2095bb4f4d490bd3c239b964220d4f6a78b02eee871307a127783`. No credential, inference, paid call, deployment or publication.
+
+- 2026-11-14 05:55:12 apply-patch: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+- 2026-11-14 05:56:12 apply-patch: `packages/dialer-server/src/call-operations/application.test.ts`
+- 2026-11-14 05:56:12 apply-patch: `packages/dialer-server/src/runtime/railway.test.ts`
+- 2026-11-14 05:57:02 apply-patch: `packages/dialer-server/src/call-operations/transcription.ts`
+- 2026-11-14 05:57:02 apply-patch: `packages/dialer-server/src/runtime/railway.ts`
+## DeepSeek preparation accepted locally (paid/live paused)
+
+Independent Sol review found no actionable issues in the frozen provider delta; rerun 28 tests / 171 assertions passed (trc_f5d3f71ac44a). The existing Haiku request body/hash remains unchanged when reasoningMode is omitted. Disabled reasoning is copied and bound into benchmark/selector identity and exact provider JSON, and endpoint preflight requires support. Optional missing cache-write rates use prompt cost; malformed present rates reject; reservation uses the maximum supplied input/write rate and never assumes cache-read savings.
+
+Root public-only actual CLI preflight passed (trc_10085ccd33dc): model deepseek/deepseek-v4.1-flash-1017; exact route deepinfra/fp8; reasoning disabled; current USD/M input0.098/output0.294; context1048576; 108 serialized requests, 7686–8945 bytes each / 948796 total. Per-request full-context reservation is102910976 nanoUSD ($0.102910976); 108 worst-case reservations total$11.114385408, so the proposed single $2 aggregate scope may stop early. It is not a promise to complete108 at that cap. Four initial physical slots fit. Preflight fingerprint7543a7e3dcd11d68896e7a3300db7f423d41e895b16cef0bb5409c6a3344d484 binds this source/config/private directory; refresh dated metadata/config/fingerprint tomorrow. Actual cost, semantic quality and model latency remain unmeasured.
+
+Post-prep full server tests:541pass /123opt-in skips /0fail,2974assertions (trc_1c64b996a72b). Server typecheck and compiled build passed (trc_b325cda9a2ad). Together with unchanged conversation47, Dialer270 and LeadConnector317 suites this is1175passing package tests before the remaining media-review repair. That subsequent repair requires fresh evidence, not reuse of this count.
+
+A new automated source review flags null parent ownership in transcription media start/stop. Reviewer confirmed the defect and owns a narrow explicit-parent configuration/comparison repair, with foreign/child/missing-config negatives; no live authority/credentials/capture activation. Final gates/publication remain pending that freeze. Record this as DEV-1700 review repair, not successful STT/live acceptance.
+
+- 2026-11-14 05:57:27 append: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+
+- 2026-11-14 05:58:01 apply-patch: `packages/dialer-server/src/call-operations/transcription.ts`
+
+- 2026-11-14 05:59:06 apply-patch: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+
+## Final local gates — frozen source 2026-11-14 05:59 UTC
+
+Independent parent-account repair: focused red4pass/7fail trc_552e559a13d2 →green11pass/47assertions trc_daf64e1639cb; composition/application/persistence/workspace-Twilio suites43pass/191assertions trc_1d57a7575d36. Null/undefined persisted owner maps only to explicit configured parent SID; accepted start snapshots it; stop requires the same SID. Missing parent/frame account and foreign accounts deny; child-account ownership remains exact. No live acceptance or grants are implied.
+
+Root final full server:552pass /123opt-in skips /0fail,3021assertions (trc_ada88c8beb3f). With conversation47, Dialer270 and LeadConnector317 unchanged suites, final combined package count is1186passing tests,0failures. The separately enabled real PostgreSQL authoring/source-edit race round trip remains37assertions (trc_2f060a8469a6); latest repairs do not alter its SQL/source publication path. Server typecheck+compiled build passed (trc_38d66cddd6bc); previous four-package checks/build/import smoke remain relevant to unchanged consumers. Strict root review iszero findings (trc_d65524f412ed). Full managed verify and exact-head draft-candidate CI are the remaining publication checks.
+
+Paid inference, credits/billing mutations, capture/permissions, main merge/deployment and carrier calls remain paused/unchanged. Freeze all source; final coordinator handoff goes into DEV-1707 after publication.
+
+- 2026-11-14 05:59:55 append: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`
+
+Final managed full verify passed and is publish-valid: trc_bd8832ffddc4, all nine selected registry suites green, strict review0, DB guard3 risks/0 findings. This certifies the frozen local source under origin/main0780f96; actual matching model quality is still unmeasured. Proceed with managed task.push, preserve the existing #2804→draft#2798 stack, then exact-head candidate CI; do not rerun task.pr and reset its target.
+
+- 2026-11-14 06:00:48 append: `.task/dialer/improve-approved-script-matching-and-authoring/workpad.md`

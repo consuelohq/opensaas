@@ -574,6 +574,15 @@ export function createScriptSession(options: ScriptSessionOptions) {
             rule.priority >= lastPriority)
         )
           cancel();
+        if (
+          (status === 'delayed' || status === 'reconnecting') &&
+          e.speaker.role !== 'unknown' &&
+          e.speaker.provenance !== 'unknown' &&
+          normalizePhrase(e.text)
+        ) {
+          status = automatic ? 'live' : 'manual';
+          emit();
+        }
         if (normalizePhrase(e.text)) {
           if (!lastMeaningfulFinal || !repeatedFinal(lastMeaningfulFinal, e))
             dirty = true;

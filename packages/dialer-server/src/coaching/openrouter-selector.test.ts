@@ -624,3 +624,32 @@ describe('OpenRouter closed-set selector', () => {
     }
   });
 });
+
+test('pins disabled reasoning in the request and source version without enabling arbitrary modes', async () => {
+  const captured: Record<string, unknown>[] = [];
+  const cfg = {
+    ...config(),
+    reasoningMode: 'disabled',
+    fetch: (async (_url: unknown, init?: RequestInit) => {
+      captured.push(JSON.parse(String(init?.body)));
+      return result(selection);
+    }) as unknown as typeof globalThis.fetch,
+  };
+  const selector = createOpenRouterSelector(cfg as never);
+  cfg.reasoningMode = 'enabled';
+  expect(await selector.select(input())).toEqual(selection);
+  expect(captured[0]?.reasoning).toEqual({ enabled: false });
+  expect(selector.sourceVersion).not.toBe(
+    createOpenRouterSelector({ ...config(), fetch: globalThis.fetch })
+      .sourceVersion,
+  );
+  for (const mode of ['enabled', 'auto', null, { enabled: false }]) {
+    expect(() =>
+      createOpenRouterSelector({
+        ...config(),
+        reasoningMode: mode,
+        fetch: globalThis.fetch,
+      } as never),
+    ).toThrow('CONFIG');
+  }
+});

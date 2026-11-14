@@ -407,6 +407,7 @@ export const createRailwayCallOperationsApplication = async (
         baseUrl: environment.GROQ_API_BASE_URL?.trim(),
       }),
       config: {
+        parentAccountSid: environment.TWILIO_ACCOUNT_SID?.trim(),
         model:
           environment.GROQ_TRANSCRIPTION_MODEL?.trim() ??
           'whisper-large-v3-turbo',
