@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { scenarios } from './fixtures';
+import { independentScenarios } from './independent';
 import {
   observeScenario,
   serializeReport,
@@ -102,6 +103,22 @@ describe('synthetic replay observer', () => {
       } as typeof report),
     ).toThrow();
     expect(serializeReport(report)).not.toContain(scenarios[0]!.text);
+    const independent = {
+      ...report,
+      outcomes: [observeScenario(independentScenarios[0]!, [])],
+    };
+    expect(
+      JSON.parse(serializeReport(independent)).outcomes[0].scenarioId,
+    ).toBe('H001');
+    expect(serializeReport(independent)).not.toContain(
+      independentScenarios[0]!.text,
+    );
+    expect(() =>
+      serializeReport({
+        ...independent,
+        outcomes: [{ ...independent.outcomes[0]!, scenarioId: 'H037' }],
+      }),
+    ).toThrow();
   });
 
   it('reports scenario denominators and never substitutes zero for an absent measurement', () => {

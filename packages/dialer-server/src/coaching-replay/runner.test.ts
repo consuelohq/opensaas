@@ -94,6 +94,29 @@ describe('replay scheduler (stub port only)', () => {
     expect(disposed).toBe(1);
   });
 
+  it('scores a delayed cue against wall time without changing the virtual observation', async () => {
+    // Narrow test-only window makes the timing distinction observable quickly.
+    const item = { ...scenarios[0]!, windowMs: [0, 1] as const };
+    const [result] = await runTextReplay({
+      cases: [item],
+      concurrency: 1,
+      seed: 0,
+      captureWallOutcomes: true,
+      create: (_scope, emit) => ({
+        ingest: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          emit(item.acceptableCardIds[0]!);
+        },
+        flush: async () => {},
+        dispose: () => {},
+      }),
+    });
+    expect(result?.outcome.verdict).toBe('hit');
+    expect(result?.wallOutcome?.verdict).toBe('miss');
+    expect(result?.wallOutcome?.lateVisible).toBe(1);
+    expect(result?.selectorMetrics?.discards).toBeNull();
+  });
+
   it('measures cue callback wall time separately from virtual offsets', async () => {
     const item = scenarios[0]!;
     const [result] = await runTextReplay({

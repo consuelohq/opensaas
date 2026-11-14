@@ -18,6 +18,7 @@ import {
 import { createMercuryFeedApi } from './mercury-feed-api.js';
 import { createMercuryFeed } from './mercury-feed.js';
 import { createMercuryAuthoringApi } from './mercury-authoring.js';
+import { createMercuryAuthoringController } from './mercury-authoring-controller.js';
 import { createNativeWorkspaceLauncher } from './native-workspace.js';
 import { createLeadConnectorEmbedApi } from './api-client.js';
 import { createLeadConnectorInboundOperatorApi } from './inbound-operator.js';
@@ -77,6 +78,19 @@ const mercuryAuthoring = createMercuryAuthoringApi({
   getToken: () => controller.getState().sessionToken,
 });
 let publicationRequest = 0;
+const mercuryAuthoringController = createMercuryAuthoringController({
+  api: mercuryAuthoring,
+  getScript: (id) =>
+    workspace.coachingLibrary?.scripts.find((script) => script.id === id),
+  selectedScriptId: () => workspace.scriptId,
+  getPublication: () => workspace.mercuryPublication,
+  setPublication: (publication) => {
+    workspace.mercuryPublication = publication;
+  },
+  nextRequestKey: () => ++publicationRequest,
+  render: () => render(),
+  onPublished: () => loadScripts(),
+});
 const mercuryFeed = createMercuryFeed({
   api: createMercuryFeedApi({
     baseUrl: window.location.origin,
@@ -843,55 +857,18 @@ root.addEventListener('click', (event) => {
     return;
   }
   if (action === 'script-preview') {
-    const script = workspace.coachingLibrary?.scripts.find(
-      (item) => item.id === actionElement.dataset.scriptId,
+    if (!workspace.scriptSaving)
+      void mercuryAuthoringController.preview(
+        actionElement.dataset.scriptId ?? '',
+      );
+    return;
+  }
+  if (action === 'script-example-triggers') {
+    const form = actionElement.closest<HTMLFormElement>(
+      '[data-trigger-review]',
     );
-    if (
-      script?.canPublish !== true ||
-      workspace.mercuryPublication?.pending ||
-      workspace.scriptSaving
-    )
-      return;
-    const operation = {
-      scriptId: script.id,
-      savedRevision: script.revision,
-      expectedPublishedVersion: 0,
-      requestKey: ++publicationRequest,
-      pending: true,
-    };
-    workspace.mercuryPublication = operation;
-    render();
-    void Promise.all([
-      mercuryAuthoring.versions(script.id),
-      mercuryAuthoring.preview(script.id, script.revision),
-    ])
-      .then(([versions, preview]) => {
-        if (
-          workspace.mercuryPublication !== operation ||
-          workspace.scriptId !== script.id ||
-          workspace.coachingLibrary?.scripts.find(
-            (item) => item.id === script.id,
-          )?.revision !== script.revision
-        )
-          return;
-        Object.assign(operation, {
-          expectedPublishedVersion: Math.max(0, ...versions),
-          preview,
-        });
-      })
-      .catch(() => {
-        if (workspace.mercuryPublication === operation)
-          Object.assign(operation, {
-            error:
-              'Preview could not be built. Use headings with 3–4 short approved bullet points, save, and try again.',
-          });
-      })
-      .finally(() => {
-        if (workspace.mercuryPublication === operation) {
-          operation.pending = false;
-          render();
-        }
-      });
+    if (form && !workspace.scriptSaving)
+      void mercuryAuthoringController.example(form);
     return;
   }
   if (action === 'script-new') {
@@ -1164,6 +1141,8 @@ root.addEventListener('click', (event) => {
 });
 
 root.addEventListener('change', (event) => {
+  if (event.target instanceof Element)
+    mercuryAuthoringController.input(event.target);
   const teamField = event.target as HTMLInputElement | HTMLSelectElement;
   if (teamField.dataset.field === 'team-member') {
     workspace.teamUserId = teamField.value;
@@ -1194,9 +1173,9 @@ root.addEventListener('change', (event) => {
   }
 
   const target = event.target;
-  if (
-    !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)
-  )
+  if (!(
+    target instanceof HTMLInputElement || target instanceof HTMLSelectElement
+  ))
     return;
   if (
     target instanceof HTMLInputElement &&
@@ -1299,6 +1278,7 @@ root.addEventListener('change', (event) => {
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 root.addEventListener('input', (event) => {
   const target = event.target;
+  if (target instanceof Element) mercuryAuthoringController.input(target);
   if (
     workspace.scriptDraft &&
     target instanceof HTMLInputElement &&
@@ -1439,53 +1419,12 @@ root.addEventListener('submit', (event) => {
   if (!(form instanceof HTMLFormElement)) return;
   event.preventDefault();
   const data = new FormData(form);
+  if (form.hasAttribute('data-trigger-review')) {
+    if (!workspace.scriptSaving) void mercuryAuthoringController.review(form);
+    return;
+  }
   if (form.hasAttribute('data-publication')) {
-    const publication = workspace.mercuryPublication;
-    const script = workspace.coachingLibrary?.scripts.find(
-      (item) => item.id === workspace.scriptId,
-    );
-    if (
-      !publication?.preview ||
-      publication.pending ||
-      script?.canPublish !== true ||
-      publication.scriptId !== script.id ||
-      publication.savedRevision !== script.revision ||
-      form.dataset.previewKey !== String(publication.requestKey)
-    )
-      return;
-    if (data.get('approved') !== 'on') return;
-    publication.pending = true;
-    publication.error = undefined;
-    render();
-    void mercuryAuthoring
-      .publish(script.id, {
-        expectedRevision: publication.savedRevision,
-        expectedPublishedVersion: publication.expectedPublishedVersion,
-        approved: true,
-      })
-      .then((result) => {
-        if (workspace.mercuryPublication === publication)
-          Object.assign(publication, {
-            preview: undefined,
-            publishedVersion: result.version,
-            expectedPublishedVersion: result.version,
-          });
-        return loadScripts();
-      })
-      .catch(() => {
-        if (workspace.mercuryPublication === publication)
-          Object.assign(publication, {
-            preview: undefined,
-            error:
-              'Publishing could not be confirmed. Refresh the preview before trying again.',
-          });
-      })
-      .finally(() => {
-        if (workspace.mercuryPublication === publication) {
-          publication.pending = false;
-          render();
-        }
-      });
+    if (!workspace.scriptSaving) void mercuryAuthoringController.publish(form);
     return;
   }
   if (form.dataset.form === 'team-access') {
@@ -1542,9 +1481,7 @@ root.addEventListener('submit', (event) => {
     void controller.saveSeat({
       userId: String(data.get('userId') ?? '').trim(),
       planCode: String(data.get('planCode') ?? 'single') as
-        | 'single'
-        | 'standard'
-        | 'power',
+        'single' | 'standard' | 'power',
     });
     return;
   }

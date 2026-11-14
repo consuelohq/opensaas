@@ -1,4 +1,5 @@
 import { Hono, type Context } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import type { DialerVariables } from '../middleware/auth';
 import {
   PlaybookAccessError,
@@ -15,6 +16,23 @@ export function createMercuryRoutes(options: {
   cues: CueService;
 }) {
   const app = new Hono<{ Variables: DialerVariables }>();
+  app.use(
+    '/v1/coaching/scripts/*',
+    bodyLimit({
+      maxSize: 1024 * 1024,
+      onError: (c) =>
+        c.json(
+          {
+            error: {
+              code: 'INVALID_PLAYBOOK',
+              message: 'Use a playbook request up to 1 MB.',
+              retryable: false,
+            },
+          },
+          413,
+        ),
+    }),
+  );
   const failure = (
     c: Context<{ Variables: DialerVariables }>,
     error: unknown,
@@ -82,14 +100,31 @@ export function createMercuryRoutes(options: {
         try {
           if (!uuid.test(c.req.param('id')!)) throw new Error();
           input = await c.req.json();
+          const allowed =
+            action === 'preview'
+              ? ['expectedRevision', 'rules']
+              : [
+                  'expectedRevision',
+                  'expectedPublishedVersion',
+                  'approved',
+                  'rules',
+                  'reviewToken',
+                ];
           if (
             !input ||
+            typeof input !== 'object' ||
+            Array.isArray(input) ||
+            Object.keys(input).some((key) => !allowed.includes(key)) ||
             !Number.isSafeInteger(input.expectedRevision) ||
             input.expectedRevision < 1 ||
             (action === 'publish' &&
               (!Number.isSafeInteger(input.expectedPublishedVersion) ||
                 input.expectedPublishedVersion < 0)) ||
-            (action === 'publish' && input.approved !== true)
+            (action === 'publish' &&
+              (input.approved !== true ||
+                !Array.isArray(input.rules) ||
+                typeof input.reviewToken !== 'string' ||
+                !/^[a-f0-9]{64}$/.test(input.reviewToken)))
           )
             throw new Error();
         } catch {
@@ -98,7 +133,7 @@ export function createMercuryRoutes(options: {
               error: {
                 code: 'INVALID_PLAYBOOK',
                 message:
-                  'Use a saved revision for preview. Publication also needs its current published revision and explicit approval.',
+                  'Use a saved revision for preview. Publish the complete reviewed rules with their review token, current published revision and explicit approval.',
                 retryable: false,
               },
             },
@@ -107,14 +142,15 @@ export function createMercuryRoutes(options: {
         }
         try {
           if (action === 'preview') {
-            const preview = await options.playbooks.preview(
+            const reviewed = await options.playbooks.preview(
               c.get('identity'),
               c.req.param('id')!,
               input,
             );
             return c.json({
-              preview,
-              expectedPublishedVersion: preview.version - 1,
+              preview: reviewed.compiled,
+              reviewToken: reviewed.reviewToken,
+              expectedPublishedVersion: reviewed.compiled.version - 1,
             });
           }
           return c.json(

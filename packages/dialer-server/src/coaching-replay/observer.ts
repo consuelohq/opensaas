@@ -1,3 +1,4 @@
+import { independentScenarios } from './independent';
 import { scenarios, type CardId, type Scenario } from './fixtures';
 
 export interface Observation {
@@ -161,7 +162,9 @@ export function serializeReport(report: Report): string {
       'churn',
       'firstCueMs',
     ]);
-    const scenario = scenarios.find((item) => item.id === outcome.scenarioId);
+    const scenario = [...scenarios, ...independentScenarios].find(
+      (item) => item.id === outcome.scenarioId,
+    );
     if (
       !scenario ||
       seen.has(outcome.scenarioId) ||

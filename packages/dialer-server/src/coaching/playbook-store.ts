@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto';
 import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 import type { DialerIdentity } from '../contracts';
 import { compilePlaybook, type CompiledPlaybook } from './playbooks';
-import { ScriptConflictError, type CoachingScript } from './scripts';
+import { ScriptConflictError } from './scripts';
 export const PLAYBOOK_PUBLICATIONS_MIGRATION_ID =
   '20261113_021_coaching_playbook_publications';
 export const CREATE_PLAYBOOK_PUBLICATIONS_SQL = `
@@ -26,14 +27,20 @@ export type PublishInput = {
   expectedRevision: number;
   expectedPublishedVersion: number;
   approved: boolean;
-  industryPackVersion?: string;
-  companyPolicyVersion?: string;
+  rules: unknown;
+  reviewToken: string;
+};
+export type PreviewInput = {
+  expectedRevision: number;
   rules?: unknown;
 };
-export type PreviewInput = Omit<
-  PublishInput,
-  'expectedPublishedVersion' | 'approved'
->;
+export type ReviewedPlaybook = {
+  compiled: CompiledPlaybook;
+  reviewToken: string;
+};
+// This is an equality fence for an explicitly reviewed candidate, not an auth token.
+const reviewTokenFor = (compiled: CompiledPlaybook) =>
+  createHash('sha256').update(JSON.stringify(compiled)).digest('hex');
 export type Publication = {
   version: number;
   sourceRevision: number;
@@ -45,7 +52,7 @@ export type PlaybookStore = {
     identity: DialerIdentity,
     id: string,
     input: PreviewInput,
-  ): Promise<CompiledPlaybook>;
+  ): Promise<ReviewedPlaybook>;
   publish(
     identity: DialerIdentity,
     id: string,
@@ -123,7 +130,10 @@ export function createPlaybookStore(
   const compile = async (
     identity: DialerIdentity,
     id: string,
-    input: PublishInput,
+    input: Pick<
+      PublishInput,
+      'expectedRevision' | 'expectedPublishedVersion'
+    > & { rules?: unknown },
   ) => {
     try {
       if (
@@ -132,7 +142,9 @@ export function createPlaybookStore(
         !Number.isSafeInteger(input.expectedPublishedVersion) ||
         input.expectedPublishedVersion < 0
       )
-        throw new Error('Use current saved and published revisions');
+        throw new PlaybookValidationError(
+          'Use current saved and published revisions',
+        );
       const source = await load(identity, id, true);
       if (source.revision !== input.expectedRevision)
         throw new ScriptConflictError(
@@ -174,11 +186,25 @@ export function createPlaybookStore(
         const ordinal = Number(row?.version ?? 0);
         if (!Number.isSafeInteger(ordinal) || ordinal < 0)
           throw new Error('Stored publication ordinal is invalid');
-        return await compile(identity, id, {
-          ...input,
+        let rules = input.rules;
+        if (rules === undefined) {
+          const latest = (
+            await database.query<PubRow>(
+              'SELECT version,source_revision,compiled,created_at FROM dialer_coaching_script_publications WHERE workspace_id=$1 AND script_id=$2::uuid ORDER BY version DESC LIMIT 1',
+              [identity.workspaceId, id],
+            )
+          ).rows[0];
+          // A changed saved source needs a new review. Never apply stale triggers
+          // to renamed/removed cards, and preserve explicit manual-only [] rules.
+          if (latest?.source_revision === input.expectedRevision)
+            rules = latest.compiled.rules;
+        }
+        const compiled = await compile(identity, id, {
+          expectedRevision: input.expectedRevision,
           expectedPublishedVersion: ordinal,
-          approved: false,
+          rules,
         });
+        return { compiled, reviewToken: reviewTokenFor(compiled) };
       } catch (cause: unknown) {
         throw cause instanceof Error
           ? cause
@@ -188,14 +214,34 @@ export function createPlaybookStore(
     async publish(identity, id, input) {
       try {
         if (input.approved !== true)
-          throw new Error('Explicit author approval is required');
+          throw new PlaybookValidationError(
+            'Explicit author approval is required',
+          );
+        if (
+          !Array.isArray(input.rules) ||
+          typeof input.reviewToken !== 'string' ||
+          !/^[a-f0-9]{64}$/.test(input.reviewToken)
+        )
+          throw new PlaybookValidationError(
+            'Review the complete trigger rules and exact points before publishing.',
+          );
         const compiled = await compile(identity, id, input);
+        if (reviewTokenFor(compiled) !== input.reviewToken)
+          throw new ScriptConflictError(
+            'The reviewed points or triggers changed. Preview and approve them again.',
+          );
+        // Serialize the source CAS with edits/archive. A snapshot-only EXISTS
+        // could publish stale source while another transaction changed its row.
         const row = (
           await database.query<PubRow>(
-            `INSERT INTO dialer_coaching_script_publications(workspace_id,script_id,version,source_revision,compiled,published_by)
- SELECT $1,$2::uuid,$3,$4,$5::jsonb,$6
- WHERE EXISTS(SELECT 1 FROM dialer_coaching_scripts WHERE workspace_id=$1 AND id=$2::uuid AND revision=$4 AND archived_at IS NULL AND(created_by=$6 OR $7::boolean))
- AND (SELECT COALESCE(MAX(version),0) FROM dialer_coaching_script_publications WHERE workspace_id=$1 AND script_id=$2::uuid)=$8
+            `WITH eligible_source AS MATERIALIZED (
+ SELECT id FROM dialer_coaching_scripts
+ WHERE workspace_id=$1 AND id=$2::uuid AND revision=$4 AND archived_at IS NULL AND(created_by=$6 OR $7::boolean)
+ FOR UPDATE
+ )
+ INSERT INTO dialer_coaching_script_publications(workspace_id,script_id,version,source_revision,compiled,published_by)
+ SELECT $1,$2::uuid,$3,$4,$5::jsonb,$6 FROM eligible_source
+ WHERE (SELECT COALESCE(MAX(version),0) FROM dialer_coaching_script_publications WHERE workspace_id=$1 AND script_id=$2::uuid)=$8
  ON CONFLICT DO NOTHING RETURNING version,source_revision,compiled,created_at`,
             [
               identity.workspaceId,

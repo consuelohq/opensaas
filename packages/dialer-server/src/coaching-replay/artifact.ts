@@ -6,7 +6,7 @@ import type { ReplayResult } from './runner';
 export interface BenchmarkReport {
   readonly schemaVersion: 1;
   readonly seed: number;
-  readonly lane: 'rules' | 'mock-selector';
+  readonly lane: 'rules' | 'reviewed-rules' | 'mock-selector';
   readonly concurrency: 1 | 5 | 20;
   readonly results: readonly ReplayResult[];
 }
@@ -32,7 +32,7 @@ export function serializeBenchmark(report: BenchmarkReport): string {
     !Number.isSafeInteger(report.seed) ||
     report.seed < 0 ||
     report.seed > 0xffffffff ||
-    !['rules', 'mock-selector'].includes(report.lane) ||
+    !['rules', 'reviewed-rules', 'mock-selector'].includes(report.lane) ||
     ![1, 5, 20].includes(report.concurrency) ||
     !Array.isArray(report.results)
   ) {

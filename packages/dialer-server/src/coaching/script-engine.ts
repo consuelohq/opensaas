@@ -14,12 +14,34 @@ import {
   type CardState,
   type TimelineState,
 } from '@consuelo/conversation';
+import { RULES_VERSION, type CompiledPlaybook } from './playbooks';
 import {
-  normalizePhrase,
-  RULES_VERSION,
-  type CompiledPlaybook,
-  type CardRule,
-} from './playbooks';
+  ruleContextEligible,
+  selectScriptRule,
+  scriptContextTurns,
+} from './script-matching';
+import { normalizePhrase } from './playbooks';
+import {
+  contextCatalog,
+  checkpointDeltas,
+  repeatedFinal,
+  freezeCheckpoint,
+  CONTEXT_LIMITS,
+  type ClosedSetSelector,
+  type SelectorCheckpoint,
+} from './context-selector';
+import {
+  sharedContextScheduler,
+  type ContextScheduler,
+} from './context-scheduler';
+export { createClosedSetSelector } from './context-selector';
+export type {
+  ClosedSetSelector,
+  ClosedSetSelectorInput,
+  ClosedSetSelection,
+  SelectorCheckpoint,
+} from './context-selector';
+export { ruleContextEligible, selectScriptRule } from './script-matching';
 export type MercuryCueView = {
   scopeKey: string;
   revision: number;
@@ -33,38 +55,6 @@ export type MercuryCueView = {
     source: string;
   }[];
 };
-export type ClosedSetSelector = {
-  sourceVersion: string;
-  select(input: {
-    cards: readonly { cardId: string; slotIds: readonly string[] }[];
-    turns: readonly {
-      id: string;
-      revision: number;
-      role: string;
-      text: string;
-    }[];
-    signal: AbortSignal;
-  }): Promise<unknown>;
-};
-export const createClosedSetSelector = (options: {
-  providerRevision: string;
-  modelRevision: string;
-  structuredOutput: boolean;
-  run: ClosedSetSelector['select'];
-}): ClosedSetSelector => {
-  if (
-    !options.structuredOutput ||
-    !options.providerRevision ||
-    !options.modelRevision
-  )
-    throw new Error(
-      'Selector requires evaluated structured output configuration',
-    );
-  return Object.freeze({
-    sourceVersion: options.providerRevision + ':' + options.modelRevision,
-    select: options.run,
-  });
-};
 export type ScriptSessionOptions = {
   scope: ConversationScope;
   participants: readonly ParticipantBinding[];
@@ -77,85 +67,19 @@ export type ScriptSessionOptions = {
   selectorDeadlineMs?: number;
   maxSelectorRequests?: number;
   minimumDwellMs?: number;
+  scheduler?: ContextScheduler;
+  onSelectorCheckpoint?: (checkpoint: SelectorCheckpoint) => void;
   onChange?: (view: MercuryCueView) => void;
   onDecision?: (patch: CardPatch) => void;
 };
-let globalSelectors = 0;
-function phrasePresent(text: string, phrase: string) {
-  return (' ' + text + ' ').includes(' ' + phrase + ' ');
-}
-function eligibleAlias(text: string, alias: string) {
-  const normalized = normalizePhrase(text);
-  if (!phrasePresent(normalized, alias)) return false;
-  const withoutQuotes = text
-    .replace(/["“][^"”]*["”]/g, ' ')
-    .replace(/(?:^|\s)'[^']+'(?=\s|$)/g, ' ');
-  const clean = normalizePhrase(withoutQuotes);
-  const index = (' ' + clean + ' ').indexOf(' ' + alias + ' ');
-  if (index < 0) return false;
-  const prefix = clean.slice(0, index).split(' ').slice(-5).join(' ');
-  return !/(?:\b(?:no|not|never|dont|doesnt|isnt|without)\b|used to|previously|last year|in the past|had)/.test(
-    prefix,
-  );
-}
-export function ruleContextEligible(
-  rule: CardRule,
-  event: TranscriptSegmentEvent,
-  recent: readonly TranscriptSegmentEvent[],
-): boolean {
-  if (
-    event.finality !== 'final' ||
-    event.speaker.role === 'unknown' ||
-    (rule.speaker !== 'either' && rule.speaker !== event.speaker.role)
-  )
-    return false;
-  const context = normalizePhrase(
-    recent
-      .slice(-6)
-      .filter((s) => s.finality === 'final' && s.speaker.role !== 'unknown')
-      .map((s) => s.text)
-      .join(' '),
-  );
-  if (
-    !rule.required.every((p) => phrasePresent(context, p)) ||
-    rule.forbidden.some((p) => phrasePresent(context, p))
-  )
-    return false;
-  return !rule.aliases.some(
-    (a) =>
-      phrasePresent(normalizePhrase(event.text), a) &&
-      !eligibleAlias(event.text, a),
-  );
-}
-export function selectScriptRule(
-  compiled: CompiledPlaybook,
-  event: TranscriptSegmentEvent,
-  recent: readonly TranscriptSegmentEvent[],
-): CardRule | null {
-  if (event.finality !== 'final' || event.speaker.role === 'unknown')
-    return null;
-  const context = normalizePhrase(
-    recent
-      .slice(-6)
-      .filter((s) => s.finality === 'final' && s.speaker.role !== 'unknown')
-      .map((s) => s.text)
-      .join(' '),
-  );
-  return (
-    [...compiled.rules]
-      .filter(
-        (r) =>
-          (r.speaker === 'either' || r.speaker === event.speaker.role) &&
-          r.aliases.some((a) => eligibleAlias(event.text, a)) &&
-          r.required.every((p) => phrasePresent(context, p)) &&
-          !r.forbidden.some((p) => phrasePresent(context, p)),
-      )
-      .sort(
-        (a, b) => b.priority - a.priority || a.cardId.localeCompare(b.cardId),
-      )[0] ?? null
-  );
-}
 export function createScriptSession(options: ScriptSessionOptions) {
+  const configuredRequestLimit = options.maxSelectorRequests ?? 20;
+  if (
+    !Number.isSafeInteger(configuredRequestLimit) ||
+    configuredRequestLimit < 0
+  )
+    throw new Error('Invalid selector request limit');
+  const requestLimit = Math.min(20, configuredRequestLimit);
   const { scope, compiled, nowMs } = options;
   let policy = options.policy;
   let timeline = createTimeline(scope, options.participants);
@@ -176,7 +100,18 @@ export function createScriptSession(options: ScriptSessionOptions) {
   let lastContextAt = -Infinity;
   let lastChangeAt = -Infinity;
   let lastPriority = -1;
-  let lastSelectedCursor = 0;
+  const scheduler = options.scheduler ?? sharedContextScheduler;
+  const schedulerOwner = {};
+  const catalog = contextCatalog(compiled);
+  let queued = false;
+  let dirty = false;
+  let intervalTimer: ReturnType<typeof setTimeout> | undefined;
+  let lastMeaningfulFinal: TranscriptSegmentEvent | undefined;
+  let lastSelectorCheckpoint: SelectorCheckpoint | null = null;
+  let selectorCheckpoints = 0;
+  let selectorFailures = 0;
+  let selectorQueueRejected = 0;
+  let transportUnsettled = false;
   let viewRevision = 0;
   let lastSignature = '';
   let currentScopeKey = '';
@@ -222,7 +157,10 @@ export function createScriptSession(options: ScriptSessionOptions) {
   const cancel = () => {
     fence++;
     controller?.abort();
-    controller = null;
+    dirty = false;
+    clearTimeout(intervalTimer);
+    intervalTimer = undefined;
+    scheduler.cancel(schedulerOwner);
   };
   const commit = (
     cardId: string,
@@ -232,6 +170,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
     cursor = timeline.cursor,
     slots?: readonly string[],
     pin?: boolean,
+    capturedTimeline: TimelineState = timeline,
   ) => {
     const target = compiled.playbook.cards.find((c) => c.id === cardId);
     if (!target) return false;
@@ -245,7 +184,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
     );
     const candidate = {
       schemaVersion: 1,
-      patchId: source + ':' + timeline.cursor.sequence + ':' + card.revision,
+      patchId: source + ':' + cursor.sequence + ':' + card.revision,
       scope,
       baseCardRevision: base,
       transcriptCursor: cursor,
@@ -264,7 +203,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
     const checked = validateCardPatch(candidate);
     if (!checked.ok) return false;
     const result = reduceCard(card, checked.value, {
-      timeline,
+      timeline: capturedTimeline,
       policy,
       sourceVersions,
       nowMs: nowMs(),
@@ -279,149 +218,293 @@ export function createScriptSession(options: ScriptSessionOptions) {
       emit();
       return true;
     }
+    if (result.status === 'unchanged' && source !== 'manual') {
+      automatic = true;
+      status = 'live';
+      emit();
+    }
     return result.status === 'unchanged';
   };
-  const launchSelector = () => {
-    const selector = options.selector;
-    if (
-      !selector ||
-      mode !== 'script' ||
-      card.pinned ||
-      !admitCapability(policy, scope, 'live-coaching', nowMs()).allowed ||
-      timeline.status !== 'active' ||
-      controller ||
-      globalSelectors >= 4 ||
-      requests >= (options.maxSelectorRequests ?? 20) ||
-      timeline.cursor.sequence === lastSelectedCursor ||
-      nowMs() - lastContextAt < (options.contextIntervalMs ?? 15000)
-    )
-      return;
-    const turns = Object.values(timeline.segments)
+  const finalTurns = () => {
+    const finals = Object.values(timeline.segments)
       .filter((s) => s.finality === 'final')
-      .slice(-8);
-    if (!turns.length) return;
-    const bytes = turns.reduce((n, s) => n + s.text.length, 0);
-    if (bytes > 8000) return;
-    const latest = turns[turns.length - 1]!;
-    const eligibleIds = new Set(
-      compiled.rules
-        .filter((r) => ruleContextEligible(r, latest, turns))
-        .map((r) => r.cardId),
-    );
-    if (!eligibleIds.size) return;
-    controller = new AbortController();
-    const jobController = controller,
-      jobFence = fence,
-      base = card.revision,
-      cursor = timeline.cursor;
-    requests++;
-    globalSelectors++;
-    lastContextAt = nowMs();
-    lastSelectedCursor = cursor.sequence;
-    let timer: ReturnType<typeof setTimeout>;
-    const cancelled = new Promise<never>((_, reject) => {
-      jobController.signal.addEventListener(
-        'abort',
-        () => reject(new Error('cancelled')),
-        { once: true },
-      );
-      timer = setTimeout(
-        () => {
-          jobController.abort();
-        },
-        Math.min(5000, options.selectorDeadlineMs ?? 5000),
-      );
+      .sort((a, b) => a.cursor.sequence - b.cursor.sequence);
+    const latest = finals[finals.length - 1];
+    return latest
+      ? scriptContextTurns(latest, finals).slice(-CONTEXT_LIMITS.turns)
+      : [];
+  };
+  const canSelect = () =>
+    !!options.selector &&
+    !!catalog &&
+    mode === 'script' &&
+    !card.pinned &&
+    !capacityRejected &&
+    timeline.status === 'active' &&
+    admitCapability(policy, scope, 'live-coaching', nowMs()).allowed &&
+    requests < requestLimit;
+  const scheduleSelector = () => {
+    if (!dirty || !canSelect() || queued || controller) return;
+    const remaining =
+      Math.max(0, Math.min(30000, options.contextIntervalMs ?? 15000)) -
+      (nowMs() - lastContextAt);
+    if (remaining > 0) {
+      if (!intervalTimer) {
+        intervalTimer = setTimeout(() => {
+          intervalTimer = undefined;
+          scheduleSelector();
+        }, remaining);
+        intervalTimer.unref?.();
+      }
+      return;
+    }
+    let finish!: () => void;
+    pending = new Promise<void>((r) => {
+      finish = r;
     });
-    pending = Promise.race([
-      Promise.resolve().then(() =>
+    queued = true;
+    const admissionFence = fence;
+    const admission = scheduler.enqueue(schedulerOwner, async () => {
+      queued = false;
+      if (!dirty || !canSelect()) {
+        finish();
+        return;
+      }
+      const selector = options.selector!;
+      const turns = finalTurns();
+      const latest = turns[turns.length - 1];
+      if (
+        !latest ||
+        latest.cursor.epoch !== timeline.cursor.epoch ||
+        latest.cursor.sequence !== timeline.cursor.sequence ||
+        !normalizePhrase(latest.text) ||
+        turns.reduce((n, s) => n + s.text.length, 0) >
+          CONTEXT_LIMITS.transcriptCharacters
+      ) {
+        dirty = false;
+        finish();
+        return;
+      }
+      const eligibleIds = new Set(
+        compiled.rules
+          .filter((r) => ruleContextEligible(r, latest, turns))
+          .map((r) => r.cardId),
+      );
+      const cards = catalog!.cards.filter((c) => eligibleIds.has(c.cardId));
+      if (!cards.length) {
+        dirty = false;
+        finish();
+        return;
+      }
+      controller = new AbortController();
+      const jobController = controller,
+        jobFence = fence,
+        base = card.revision,
+        capturedTimeline = timeline,
+        capturedPolicyRevision = policy.revision,
+        capturedWorker = card.workerGeneration,
+        capturedVersion = compiled.playbook.publishedVersion,
+        capturedSourceRevision = compiled.sourceRevision;
+      dirty = false;
+      requests++;
+      lastContextAt = nowMs();
+      transportUnsettled = true;
+      let settled = false,
+        timer: ReturnType<typeof setTimeout> | undefined;
+      const provider = (async () =>
         selector.select({
-          cards: compiled.playbook.cards
-            .filter((c) => eligibleIds.has(c.id))
-            .map((c) => ({
-              cardId: c.id,
-              slotIds: c.slots.map((s) => s.id),
-            })),
+          catalog: catalog!.catalog,
+          cards,
           turns: turns.map((s) => ({
             id: s.segmentId,
             revision: s.segmentRevision,
-            role: s.speaker.role,
+            role: s.speaker.role as 'customer' | 'rep',
             text: s.text,
           })),
           signal: jobController.signal,
-        }),
-      ),
-      cancelled,
-    ])
-      .then((raw) => {
+        }))();
+      const physical = provider.then(
+        () => {
+          settled = true;
+        },
+        () => {
+          settled = true;
+        },
+      );
+      let abortListener!: () => void;
+      const cancelled = new Promise<never>((_, reject) => {
+        abortListener = () => reject(new Error('selector cancelled'));
+        jobController.signal.addEventListener('abort', abortListener, {
+          once: true,
+        });
+        timer = setTimeout(
+          () => jobController.abort(),
+          Math.max(1, Math.min(5000, options.selectorDeadlineMs ?? 5000)),
+        );
+      });
+      try {
+        const raw = await Promise.race([provider, cancelled]);
+        if (!raw || typeof raw !== 'object') return;
+        const output = raw as Record<string, unknown>;
+        if (output.cardId === null) return;
+        const freshness = checkpointDeltas(capturedTimeline, timeline);
         if (
-          !raw ||
-          typeof raw !== 'object' ||
           fence !== jobFence ||
           jobController.signal.aborted ||
-          mode !== 'script' ||
-          card.pinned ||
-          !admitCapability(policy, scope, 'live-coaching', nowMs()).allowed
-        )
+          !canSelectForCommit() ||
+          card.revision !== base ||
+          card.workerGeneration !== capturedWorker ||
+          policy.revision !== capturedPolicyRevision ||
+          compiled.playbook.publishedVersion !== capturedVersion ||
+          compiled.sourceRevision !== capturedSourceRevision ||
+          selector.sourceVersion !== sourceVersions.selector ||
+          !freshness
+        ) {
+          selectorDiscards++;
           return;
-        const output = raw as Record<string, unknown>;
+        }
         if (
           typeof output.cardId !== 'string' ||
           !eligibleIds.has(output.cardId) ||
           !Array.isArray(output.slotIds) ||
+          !output.slotIds.length ||
           output.slotIds.length > 4 ||
           output.slotIds.some((s) => typeof s !== 'string') ||
           !Array.isArray(output.evidence) ||
-          output.evidence.length > 32 ||
-          !output.evidence.length
-        )
+          !output.evidence.length ||
+          output.evidence.length > 32
+        ) {
+          selectorDiscards++;
           return;
+        }
         const rule = compiled.rules.find((r) => r.cardId === output.cardId);
-        const currentTurns = Object.values(timeline.segments).filter(
-          (s) => s.finality === 'final',
-        );
-        const currentLast = currentTurns[currentTurns.length - 1];
+        const currentTurns = finalTurns(),
+          currentLast = [...currentTurns]
+            .reverse()
+            .find(
+              (s) =>
+                rule &&
+                (rule.speaker === 'either' ||
+                  s.speaker.role === rule.speaker) &&
+                normalizePhrase(s.text),
+            );
         if (
           !rule ||
           !currentLast ||
           !ruleContextEligible(rule, currentLast, currentTurns)
-        )
+        ) {
+          selectorDiscards++;
           return;
+        }
+        const capturedEvidence = new Map(turns.map((s) => [s.segmentId, s]));
         if (
           !output.evidence.every((e) => {
             if (!e || typeof e !== 'object') return false;
-            const segment =
-              timeline.segments[(e as { segmentId: string }).segmentId];
+            const ref = e as { segmentId: unknown; segmentRevision: unknown };
+            if (
+              typeof ref.segmentId !== 'string' ||
+              !Number.isSafeInteger(ref.segmentRevision)
+            )
+              return false;
+            const before = capturedEvidence.get(ref.segmentId),
+              current = timeline.segments[ref.segmentId];
             return (
-              !!segment &&
+              !!before &&
+              !!current &&
+              before.segmentRevision === ref.segmentRevision &&
+              current.segmentRevision === ref.segmentRevision &&
+              current.finality === 'final' &&
+              before.speaker.role === current.speaker.role &&
               (rule.speaker === 'either' ||
-                rule.speaker === segment.speaker.role)
+                rule.speaker === before.speaker.role)
             );
           })
-        )
+        ) {
+          selectorDiscards++;
           return;
-        // Model-supplied source, scope, generation, pin and free text never enter the trusted patch.
+        }
         if (
           output.cardId !== card.cardId &&
           nowMs() - lastChangeAt < (options.minimumDwellMs ?? 1500)
-        )
+        ) {
+          selectorDiscards++;
           return;
+        }
+        const beforeRevision = card.revision;
         const committed = commit(
           output.cardId,
           'selector',
           output.evidence as CardPatch['evidence'],
           base,
-          cursor,
+          capturedTimeline.cursor,
           output.slotIds as string[],
+          undefined,
+          capturedTimeline,
         );
-        if (!committed) selectorDiscards++;
-      })
-      .catch(() => {})
-      .finally(() => {
-        clearTimeout(timer!);
-        globalSelectors--;
+        if (!committed) {
+          selectorDiscards++;
+          return;
+        }
+        lastSelectorCheckpoint = freezeCheckpoint({
+          patchId: 'selector:' + capturedTimeline.cursor.sequence + ':' + base,
+          capturedCursor: { ...capturedTimeline.cursor },
+          commitCursor: { ...timeline.cursor },
+          deltaCursors: freshness.deltaCursors,
+          admissionReason: freshness.admissionReason,
+          outcome: card.revision !== beforeRevision ? 'applied' : 'unchanged',
+        });
+        selectorCheckpoints++;
+        options.onSelectorCheckpoint?.(lastSelectorCheckpoint);
+      } catch (_error: unknown) {
+        selectorFailures++;
+        if (fence === jobFence && mode === 'script') {
+          status = 'unavailable';
+          emit();
+        }
+      } finally {
+        clearTimeout(timer);
+        jobController.signal.removeEventListener('abort', abortListener);
+        finish();
+        // A deadline settles the UI wait, never the physical provider admission.
+        // Non-cooperative adapters hold this bounded slot until their promise settles.
+        if (!settled && fence === jobFence && mode === 'script') {
+          status = 'unavailable';
+          emit();
+        }
+        await physical;
+        transportUnsettled = false;
         if (controller === jobController) controller = null;
-      });
+      }
+    });
+    if (!admission) {
+      queued = false;
+      selectorQueueRejected++;
+      status = 'unavailable';
+      emit();
+      finish();
+      return;
+    }
+    void admission.then((outcome) => {
+      queued = false;
+      finish();
+      if (outcome === 'finished' || admissionFence !== fence) {
+        scheduleSelector();
+      } else {
+        dirty = false;
+        selectorQueueRejected++;
+        if (mode === 'script') {
+          status = 'unavailable';
+          emit();
+        }
+      }
+    });
   };
+  const canSelectForCommit = () =>
+    mode === 'script' &&
+    !card.pinned &&
+    !capacityRejected &&
+    timeline.status === 'active' &&
+    admitCapability(policy, scope, 'live-coaching', nowMs()).allowed;
   return {
     async ingest(event: unknown) {
       if (
@@ -455,6 +538,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
         return result;
       }
       if (e.kind === 'gap') {
+        cancel();
         status = 'delayed';
         emit();
         return result;
@@ -465,6 +549,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
           compiled,
           e,
           Object.values(timeline.segments),
+          card.cardId,
         );
         if (
           rule &&
@@ -480,24 +565,40 @@ export function createScriptSession(options: ScriptSessionOptions) {
           )
             lastPriority = rule.priority;
         }
-        if (card.revision !== beforeRevision) cancel();
-        launchSelector();
+        if (
+          card.revision !== beforeRevision ||
+          (controller &&
+            rule &&
+            mode === 'script' &&
+            !card.pinned &&
+            rule.priority >= lastPriority)
+        )
+          cancel();
+        if (normalizePhrase(e.text)) {
+          if (!lastMeaningfulFinal || !repeatedFinal(lastMeaningfulFinal, e))
+            dirty = true;
+          lastMeaningfulFinal = e;
+        }
+        scheduleSelector();
       }
       return result;
     },
     control(action: 'pin' | 'auto' | 'next' | 'previous' | 'off') {
       cancel();
+      if (action === 'off') {
+        mode = 'off';
+        automatic = false;
+        status = admitCapability(policy, scope, 'manual-reference', nowMs())
+          .allowed
+          ? 'manual'
+          : 'unavailable';
+        emit();
+        return;
+      }
       if (
         !admitCapability(policy, scope, 'manual-reference', nowMs()).allowed
       ) {
         status = 'unavailable';
-        emit();
-        return;
-      }
-      if (action === 'off') {
-        mode = 'off';
-        automatic = false;
-        status = 'manual';
         emit();
         return;
       }
@@ -521,6 +622,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
       );
     },
     renew(next: AssistancePolicy) {
+      if (next.revision !== policy.revision) cancel();
       policy = next;
       if (!admitCapability(policy, scope, 'live-coaching', nowMs()).allowed) {
         cancel();
@@ -554,6 +656,13 @@ export function createScriptSession(options: ScriptSessionOptions) {
       capacityRejected,
       requests,
       selectorDiscards,
+      selectorFailures,
+      selectorCheckpoints,
+      selectorQueueRejected,
+      selectorQueued: queued,
+      transportUnsettled,
+      scheduler: scheduler.diagnostics(),
+      lastSelectorCheckpoint,
       workerGeneration: card.workerGeneration,
       mode,
     }),

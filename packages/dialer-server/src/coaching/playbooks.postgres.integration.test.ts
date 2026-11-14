@@ -186,6 +186,10 @@ suite('published playbooks and actual durable cue composition', () => {
       const previewBody = await preview.json();
       expect(previewBody.preview.playbook.cards).toHaveLength(6);
       expect(previewBody.expectedPublishedVersion).toBe(0);
+      Object.assign(publication, {
+        rules: previewBody.preview.rules,
+        reviewToken: previewBody.reviewToken,
+      });
       expect(
         (
           await request('/v1/coaching/scripts/' + scriptId + '/publish', {
@@ -350,6 +354,8 @@ suite('published playbooks and actual durable cue composition', () => {
             expectedRevision: 2,
             expectedPublishedVersion: reviewed.expectedPublishedVersion,
             approved: true,
+            rules: reviewed.preview.rules,
+            reviewToken: reviewed.reviewToken,
           })
         ).status,
       ).toBe(200);
