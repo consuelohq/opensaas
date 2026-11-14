@@ -5,6 +5,7 @@ export type CoachingScript = {
   revision: number;
   updatedAt: string;
   canEdit: boolean;
+  canPublish?: boolean;
 };
 export type CoachingLibrary = { scripts: CoachingScript[] };
 export type ScriptDraft = {

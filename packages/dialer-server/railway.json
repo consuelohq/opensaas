@@ -9,6 +9,7 @@
       "packages/lead-connector/**",
       "packages/logger/**",
       "packages/contacts/**",
+      "packages/conversation/**",
       "package.json",
       "bun.lock",
       "bunfig.toml",

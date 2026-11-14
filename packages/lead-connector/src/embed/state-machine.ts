@@ -135,12 +135,7 @@ export type EmbedTranscriptSegment = {
 
 export type EmbedTransferState = {
   status:
-    | 'idle'
-    | 'initiating'
-    | 'consulting'
-    | 'completed'
-    | 'cancelled'
-    | 'failed';
+    'idle' | 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
   type: 'cold' | 'warm' | null;
   target: string | null;
   transferId: string | null;
@@ -264,6 +259,7 @@ export type LeadConnectorEmbedState = {
   selectionStrategy: 'single' | 'predictive';
   activeSessionId: string | null;
   callSession: EmbedCallSession | null;
+  callEnding: boolean;
   callLegs: EmbedCallLeg[];
   activeCalls: EmbedAdminCall[];
   callHistory: EmbedAdminCall[];
@@ -320,10 +316,13 @@ export type EmbedStateEvent =
       targets: LeadConnectorClickToCallTarget[];
     }
   | { type: 'START_REQUESTED'; strategy: 'single' | 'predictive' }
+  | { type: 'START_CANCELED' }
   | { type: 'SESSION_UPDATED'; session: EmbedCallSession }
   | { type: 'PAUSED' }
   | { type: 'RESUMED' }
   | { type: 'STOP_REQUESTED' }
+  | { type: 'END_REQUESTED' }
+  | { type: 'END_SETTLED' }
   | {
       type: 'TRANSFER_STARTED';
       transferType: 'cold' | 'warm';
@@ -398,6 +397,7 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   selectionStrategy: 'single',
   activeSessionId: null,
   callSession: null,
+  callEnding: false,
   callLegs: [],
   activeCalls: [],
   callHistory: [],
@@ -599,6 +599,13 @@ export const reduceEmbedState = (
         selectionStrategy: event.strategy,
         error: null,
       };
+    case 'START_CANCELED':
+      return {
+        ...state,
+        phase: state.selectedTargets.length ? 'target-selected' : 'ready',
+        callEnding: false,
+        error: null,
+      };
     case 'SESSION_UPDATED':
       return {
         ...state,
@@ -630,7 +637,11 @@ export const reduceEmbedState = (
         resumePhase: null,
       };
     case 'STOP_REQUESTED':
-      return { ...state, phase: 'wrapping-up' };
+      return { ...state, phase: 'wrapping-up', callEnding: false };
+    case 'END_REQUESTED':
+      return { ...state, callEnding: true };
+    case 'END_SETTLED':
+      return { ...state, callEnding: false };
     case 'TRANSFER_STARTED':
       return {
         ...state,
@@ -732,7 +743,12 @@ export const reduceEmbedState = (
     case 'FAILED':
       return {
         ...state,
-        phase: 'failed',
+        // A request failure does not prove that the caller has ended. Keep
+        // reconciliation polling and End available until a terminal result.
+        phase:
+          state.callSession && !isTerminalEmbedSession(state.callSession)
+            ? phaseFromSession(state.callSession)
+            : 'failed',
         error: {
           code: event.code,
           message: event.message,
@@ -743,11 +759,13 @@ export const reduceEmbedState = (
       return {
         ...state,
         phase:
-          state.error?.code === 'SESSION_EXPIRED'
-            ? 'authenticating'
-            : state.selectedTargets.length > 0
-              ? 'target-selected'
-              : 'ready',
+          state.callSession && !isTerminalEmbedSession(state.callSession)
+            ? phaseFromSession(state.callSession)
+            : state.error?.code === 'SESSION_EXPIRED'
+              ? 'authenticating'
+              : state.selectedTargets.length > 0
+                ? 'target-selected'
+                : 'ready',
         error: null,
       };
     case 'SESSION_EXPIRED':

@@ -1718,3 +1718,266 @@ body[data-surface='admin']:has([data-workspace]) {
   ) {
   border: 0;
 }
+
+/* Mercury keeps a fixed four-slot rhythm while call authority owns the controls. */
+.mercury-call-identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+.mercury-call-identity strong,
+.mercury-call-identity small {
+  display: block;
+}
+.mercury-contact {
+  font-size: 18px;
+  line-height: 1.3;
+}
+.mercury-call-identity small,
+.mercury-call-clock {
+  color: var(--muted);
+  font-size: 11px;
+}
+.mercury-call-clock {
+  text-align: right;
+  flex-shrink: 0;
+}
+.mercury-call-clock time {
+  display: block;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mercury-on-call {
+  gap: 18px;
+}
+.mercury-cue {
+  width: 100%;
+  color: var(--ink);
+  text-align: left;
+}
+.mercury-cue-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mercury-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.mercury-mode {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 8px;
+  background: var(--soft);
+}
+.mercury-mode button {
+  border: 0;
+  border-radius: 5px;
+  color: var(--muted);
+  background: transparent;
+  padding: 4px 10px;
+  font-size: 11px;
+}
+.mercury-mode button[aria-pressed='true'] {
+  color: var(--ink);
+  background: var(--paper);
+  font-weight: 650;
+}
+.mercury-cue-status {
+  color: var(--muted);
+  font-size: 11px;
+  min-height: 32px;
+  margin: 10px 0 4px;
+}
+.mercury-cue-heading {
+  font-size: 20px;
+  line-height: 1.25;
+  margin: 0 0 14px;
+  height: 50px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.mercury-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-rows: repeat(4, 48px);
+  gap: 8px;
+}
+.mercury-points li {
+  font-size: 19px;
+  font-weight: 520;
+  line-height: 1.25;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.mercury-points li[data-cue-changed] {
+  animation: mercury-point-in 160ms ease-out;
+}
+.mercury-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.mercury-return {
+  width: 100%;
+  margin-top: 5px;
+  text-align: center;
+}
+.mercury-source {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.mercury-source summary {
+  cursor: pointer;
+  padding: 5px 0;
+}
+.mercury-source p {
+  margin: 12px 0;
+}
+.mercury-source strong,
+.mercury-source span {
+  display: block;
+}
+.mercury-source span {
+  color: var(--ink);
+  white-space: pre-wrap;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.mercury-call-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+}
+.mercury-call-actions .workspace-details {
+  flex: 1;
+}
+.mercury-call-actions .button {
+  flex-shrink: 0;
+}
+.mercury-compact .mercury-call-identity {
+  flex: 1;
+  gap: 8px;
+}
+.mercury-compact .mercury-contact {
+  font-size: 13px;
+}
+.mercury-compact .mercury-call-clock {
+  font-size: 10px;
+}
+.mercury-compact .mercury-call-clock time {
+  font-size: 13px;
+}
+.mercury-cue button:focus-visible,
+.mercury-source summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+@keyframes mercury-point-in {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mercury-points li[data-cue-changed] {
+    animation: none;
+  }
+}
+@media (max-width: 360px) {
+  .mercury-points li {
+    font-size: 17px;
+  }
+  .mercury-mode button {
+    padding-inline: 8px;
+  }
+  .mercury-call-actions {
+    gap: 8px;
+  }
+}
+
+.calling-workspace[data-on-call='true'] .direction-tabs,
+.calling-workspace[data-on-call='true'] .workspace-footer {
+  display: none;
+}
+.calling-workspace[data-on-call='true'] .workspace-header {
+  border: 0;
+  padding-block: 14px;
+}
+.calling-workspace[data-on-call='true'] .workspace-content {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-block: 14px;
+}
+.calling-workspace[data-on-call='true'] .mercury-on-call,
+.calling-workspace[data-on-call='true'] .inbound-operator-panel {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 16px;
+}
+.calling-workspace[data-on-call='true'] .mercury-cue {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.calling-workspace[data-on-call='true'] .mercury-call-identity,
+.calling-workspace[data-on-call='true'] .mercury-call-actions,
+.calling-workspace[data-on-call='true'] .inbound-operator-panel > .button,
+.calling-workspace[data-on-call='true']
+  .inbound-operator-panel
+  > .form-footnote {
+  flex-shrink: 0;
+}
+.calling-workspace[data-on-call='true']
+  .inbound-operator-panel
+  > .setup-action-group {
+  display: none;
+}
+.mercury-compact.compact-session > .mercury-call-identity {
+  display: flex;
+}
+@media (max-height: 600px) {
+  .calling-workspace[data-on-call='true'] .workspace-header {
+    padding-block: 8px;
+  }
+  .mercury-points {
+    grid-template-rows: repeat(4, 42px);
+    gap: 6px;
+  }
+  .mercury-cue-heading {
+    margin-bottom: 8px;
+    font-size: 18px;
+    height: 44px;
+  }
+  .mercury-points li {
+    font-size: 17px;
+  }
+}
+
+.calling-workspace .mercury-source {
+  border: 0;
+  padding-top: 0;
+}

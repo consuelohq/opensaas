@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/release-workflow-repair-and-coaching-replay-foundation",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2801,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2801",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-workflow-repair-and-coaching-replay-foundation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7f68042b099d",
+  "tmuxSession": "opensaas-dialer-release-workflow-repair-and-coaching-replay-foun-7f68042b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-release-workflow-repair-and-coaching-replay-foundation/.task/session.json",
+  "createdAt": "2026-11-13T21:01:39.047Z"
+}

@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@consuelo/contacts": "workspace:*",
+    "@consuelo/conversation": "workspace:*",
     "@consuelo/dialer": "workspace:*",
     "@consuelo/lead-connector": "workspace:*",
     "effect": "^3.21.3",

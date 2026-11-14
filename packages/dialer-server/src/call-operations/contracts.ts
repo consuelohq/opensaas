@@ -3,11 +3,7 @@ export type TranscriptStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type TranscriptTrack = 'inbound' | 'outbound';
 
 export type TranscriptSpeaker =
-  | 'inbound'
-  | 'outbound'
-  | 'unknown'
-  | 'customer'
-  | 'representative';
+  'inbound' | 'outbound' | 'unknown' | 'customer' | 'representative';
 
 export type TwilioMediaStartFrame = {
   event: 'start';
@@ -16,6 +12,9 @@ export type TwilioMediaStartFrame = {
   start: {
     streamSid: string;
     callSid: string;
+    accountSid?: string;
+    tracks?: TranscriptTrack[];
+    mediaFormat?: { encoding: 'audio/x-mulaw'; sampleRate: 8000; channels: 1 };
     customParameters: Record<string, string>;
   };
 };
@@ -40,6 +39,7 @@ export type TwilioMediaStopFrame = {
 };
 
 export type TwilioMediaFrame =
+  | { event: 'connected'; protocol: 'Call'; version: '1.0.0' }
   | TwilioMediaStartFrame
   | TwilioMediaAudioFrame
   | TwilioMediaStopFrame;
@@ -61,6 +61,26 @@ export type TranscriptSegment = {
   provider: 'groq';
   model: string;
   createdAt: string;
+  metadata?: {
+    schemaVersion: 1;
+    sourceAudioStartMs: number;
+    sourceAudioEndMs: number;
+    streamSid: string;
+    timingBasis:
+      'provider-words' | 'provider-segments' | 'provider' | 'unavailable';
+    speakerProvenance: 'authenticated-leg' | 'unknown';
+    words: Array<{ text: string; startMs: number; endMs: number }>;
+    speechSegments: Array<{
+      text: string;
+      startMs: number;
+      endMs: number;
+      averageLogProbability?: number;
+      noSpeechProbability?: number;
+      compressionRatio?: number;
+    }>;
+    gapBefore?: { startMs: number; endMs: number };
+    latency?: { bufferedAudioMs: number; queueMs: number; providerMs: number };
+  };
 };
 
 export type CallLegSummary = {
@@ -107,13 +127,23 @@ export type CallSessionSummary = {
   tags?: string[];
   crmSyncStatus?: 'pending' | 'synced' | 'failed' | null;
   transcriptStatus?: TranscriptStatus | null;
+  transcriptCoverage?:
+    'pending' | 'complete' | 'partial' | 'unavailable' | 'disabled' | null;
+  transcriptFailureCode?: string | null;
   transcriptProvider?: string | null;
   transcriptModel?: string | null;
   transcriptLanguage?: string | null;
   transcriptRetentionDays?: number | null;
   transcriptionEnabled?: boolean;
   recordingEnabled?: boolean;
-  recordingStatus?: 'pending' | 'starting' | 'in-progress' | 'completed' | 'absent' | 'failed' | null;
+  recordingStatus?:
+    | 'pending'
+    | 'starting'
+    | 'in-progress'
+    | 'completed'
+    | 'absent'
+    | 'failed'
+    | null;
   recordingSid?: string | null;
   recordingDurationSeconds?: number | null;
   opportunity?: OpportunitySnapshot | null;
