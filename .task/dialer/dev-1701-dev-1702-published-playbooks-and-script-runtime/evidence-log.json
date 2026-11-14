@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime",
+  "events": [
+    {
+      "id": "9b12e927-c09a-41a2-8779-a0e1b616809a",
+      "occurred_at": "2026-11-14T02:44:40.574Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/generated/core.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-14T02:44:40.652Z"
+}

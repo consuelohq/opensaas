@@ -1,0 +1,158 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/dev-1703-stable-script-first-on-call-workspace",
+  "base": "origin/main",
+  "headSha": "116925e0329a0581c4a2749c898826071fb47d17",
+  "changeHash": "cce0198f3b6e94bd1ea0f9bbfa4a378fcd046e78177448196f59ffecf90a96a5",
+  "changedFiles": [
+    "packages/lead-connector/src/embed/calling-workspace.ts",
+    "packages/lead-connector/src/embed/coaching-scripts.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/inbound-operator-view.ts",
+    "packages/lead-connector/src/embed/internal-main.ts",
+    "packages/lead-connector/src/embed/mercury-authoring.test.ts",
+    "packages/lead-connector/src/embed/mercury-authoring.ts",
+    "packages/lead-connector/src/embed/mercury-call.test.ts",
+    "packages/lead-connector/src/embed/mercury-call.ts",
+    "packages/lead-connector/src/embed/mercury-cues.test.ts",
+    "packages/lead-connector/src/embed/mercury-cues.ts",
+    "packages/lead-connector/src/embed/mercury-dom.ts",
+    "packages/lead-connector/src/embed/mercury-feed-api.ts",
+    "packages/lead-connector/src/embed/mercury-feed.test.ts",
+    "packages/lead-connector/src/embed/mercury-feed.ts",
+    "packages/lead-connector/src/embed/mercury-workspace.test.ts",
+    "packages/lead-connector/src/embed/mercury-workspace.ts",
+    "packages/lead-connector/src/embed/state-machine.ts",
+    "packages/lead-connector/src/embed/view.test.ts",
+    "packages/lead-connector/src/embed/view.ts",
+    "packages/lead-connector/src/embed/workspace-dom.ts",
+    "packages/lead-connector/src/embed/workspace-pages.ts",
+    "packages/lead-connector/src/embed/workspace-theme.css"
+  ],
+  "verifiedAt": "2026-11-13T21:27:00.604Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/dev-1703-stable-script-first-on-call-workspace/current.json",
+        ".task/dialer/dev-1703-stable-script-first-on-call-workspace/verify.json",
+        ".task/dialer/dev-1703-stable-script-first-on-call-workspace/workpad.md",
+        ".task/tasks/dialer/dev-1703-stable-script-first-on-call-workspace.json",
+        "packages/lead-connector/src/embed/calling-workspace.ts",
+        "packages/lead-connector/src/embed/coaching-scripts.ts",
+        "packages/lead-connector/src/embed/controller.test.ts",
+        "packages/lead-connector/src/embed/controller.ts",
+        "packages/lead-connector/src/embed/inbound-operator-view.ts",
+        "packages/lead-connector/src/embed/internal-main.ts",
+        "packages/lead-connector/src/embed/mercury-authoring.test.ts",
+        "packages/lead-connector/src/embed/mercury-authoring.ts",
+        "packages/lead-connector/src/embed/mercury-call.test.ts",
+        "packages/lead-connector/src/embed/mercury-call.ts",
+        "packages/lead-connector/src/embed/mercury-cues.test.ts",
+        "packages/lead-connector/src/embed/mercury-cues.ts",
+        "packages/lead-connector/src/embed/mercury-dom.ts",
+        "packages/lead-connector/src/embed/mercury-feed-api.ts",
+        "packages/lead-connector/src/embed/mercury-feed.test.ts",
+        "packages/lead-connector/src/embed/mercury-feed.ts",
+        "packages/lead-connector/src/embed/mercury-workspace.test.ts",
+        "packages/lead-connector/src/embed/mercury-workspace.ts",
+        "packages/lead-connector/src/embed/state-machine.ts",
+        "packages/lead-connector/src/embed/view.test.ts",
+        "packages/lead-connector/src/embed/view.ts",
+        "packages/lead-connector/src/embed/workspace-dom.ts",
+        "packages/lead-connector/src/embed/workspace-pages.ts",
+        "packages/lead-connector/src/embed/workspace-theme.css"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/calling-workspace.ts",
+            "packages/lead-connector/src/embed/coaching-scripts.ts",
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/controller.ts",
+            "packages/lead-connector/src/embed/inbound-operator-view.ts",
+            "packages/lead-connector/src/embed/internal-main.ts",
+            "packages/lead-connector/src/embed/mercury-authoring.test.ts",
+            "packages/lead-connector/src/embed/mercury-authoring.ts",
+            "packages/lead-connector/src/embed/mercury-call.test.ts",
+            "packages/lead-connector/src/embed/mercury-call.ts",
+            "packages/lead-connector/src/embed/mercury-cues.test.ts",
+            "packages/lead-connector/src/embed/mercury-cues.ts",
+            "packages/lead-connector/src/embed/mercury-dom.ts",
+            "packages/lead-connector/src/embed/mercury-feed-api.ts",
+            "packages/lead-connector/src/embed/mercury-feed.test.ts",
+            "packages/lead-connector/src/embed/mercury-feed.ts",
+            "packages/lead-connector/src/embed/mercury-workspace.test.ts",
+            "packages/lead-connector/src/embed/mercury-workspace.ts",
+            "packages/lead-connector/src/embed/state-machine.ts",
+            "packages/lead-connector/src/embed/view.test.ts",
+            "packages/lead-connector/src/embed/view.ts",
+            "packages/lead-connector/src/embed/workspace-dom.ts",
+            "packages/lead-connector/src/embed/workspace-pages.ts",
+            "packages/lead-connector/src/embed/workspace-theme.css"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2039,
+          "outputTail": "t show the redundant slot-pricing caption [2.76ms]\n(pass) compact Dialer workspace UX > outbound tabs have one underline, plain queue placeholder and no empty-state filler [3.05ms]\n(pass) compact Dialer workspace UX > calling options and queue details share a footer action group immediately above the primary action [5.13ms]\n(pass) compact Dialer workspace UX > settings and inner pages place the heading on the same row as a quiet back breadcrumb [27.00ms]\n(pass) compact Dialer workspace UX > phone-number purpose tabs use the same quiet inactive and bright active tab classes [4.28ms]\n(pass) CRM team access page > uses real staff names, CRM roles and inbound memberships without per-user pricing controls [2.83ms]\n(pass) CRM team access page > does not invent members while directory loading or allow saving a stale view [3.90ms]\n(pass) CRM team access page > protects eligible Starter owner but lets an admin revoke a stale owner [6.12ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.08ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.31ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.10ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.32ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.09ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.04ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [2.66ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [6.14ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [4.93ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [1.77ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [141.66ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.40ms]\n(pass) dialer GitHub release workflow contract > releases only the approved UI files to the Worker while fencing Railway and other changes [548.32ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.45ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.10ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.04ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.07ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.09ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.95ms]\n\n 303 pass\n 0 fail\n 2283 expect() calls\nRan 303 tests across 46 files. [2.03s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

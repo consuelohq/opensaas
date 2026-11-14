@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1700-timely-speaker-aware-groq-transcript-ingestion",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2797,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2797",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1700-timely-speaker-aware-groq-transcript-ingestion",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_72ac79981360",
+  "tmuxSession": "opensaas-dialer-dev-1700-timely-speaker-aware-groq-transcript-in-72ac7998",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1700-timely-speaker-aware-groq-transcript-ingestion/.task/session.json",
+  "createdAt": "2026-11-13T20:17:12.420Z"
+}

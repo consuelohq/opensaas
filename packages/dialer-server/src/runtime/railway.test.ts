@@ -17,6 +17,7 @@ import {
 import { createEffectDialerApplication } from '../application';
 import { recordLeadConnectorAttemptTelemetry } from './lead-connector-learning';
 import {
+  createRailwayCallOperationsApplication,
   createRailwayDialerApplicationLayers,
   createRailwayLeadConnectorApplicationLayer,
   selectSuccessfullyCreatedTargets,
@@ -205,6 +206,68 @@ const environment = {
   LEADCONNECTOR_TOKEN_ENCRYPTION_KEY: 'lead-connector-token-encryption-fixture',
   LEADCONNECTOR_SHARED_SECRET: 'lead-connector-shared-secret-fixture',
 };
+
+describe('configured parent transcription media ownership', () => {
+  it.each([true, false])(
+    'propagates only the explicitly configured parent: %s',
+    async (configured) => {
+      const parentAccountSid = 'AC' + '1'.repeat(32);
+      const database: LeadConnectorDatabase = {
+        query: async <T>(sql: string) => ({
+          rows: sql.includes('WHERE legs.provider_call_id = $1')
+            ? ([
+                {
+                  workspace_id: 'workspace-1',
+                  session_id: 'session-1',
+                  transcription_enabled: true,
+                  transcription_language: null,
+                  transcript_retention_days: 30,
+                  provider_account_id: null,
+                  contact_id: null,
+                },
+              ] as T[])
+            : ([] as T[]),
+        }),
+      };
+      const application = await createRailwayCallOperationsApplication(
+        {
+          ...environment,
+          TWILIO_ACCOUNT_SID: configured
+            ? '  ' + parentAccountSid + '  '
+            : undefined,
+        },
+        { database },
+      );
+      await Effect.runPromise(
+        application.beginTranscriptionSession({
+          connectionId: 'parent-composition',
+        }),
+      );
+      const started = await Effect.runPromise(
+        application.processTranscriptionFrame({
+          connectionId: 'parent-composition',
+          frame: {
+            event: 'start',
+            sequenceNumber: '1',
+            streamSid: 'MZ-parent',
+            start: {
+              accountSid: parentAccountSid,
+              streamSid: 'MZ-parent',
+              callSid: 'CA-parent',
+              customParameters: { callId: 'CA-parent', sessionId: 'session-1' },
+            },
+          },
+        }),
+      );
+      expect(started.accepted).toBe(configured);
+      await Effect.runPromise(
+        application.completeTranscriptionSession({
+          connectionId: 'parent-composition',
+        }),
+      );
+    },
+  );
+});
 
 const completedTelemetryRecord: ParallelTelemetryRecord = {
   group: {

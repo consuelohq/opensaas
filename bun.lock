@@ -327,6 +327,10 @@
         "groq-sdk",
       ],
     },
+    "packages/conversation": {
+      "name": "@consuelo/conversation",
+      "version": "0.0.1",
+    },
     "packages/dialer": {
       "name": "@consuelo/dialer",
       "version": "0.0.1",
@@ -354,6 +358,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@consuelo/contacts": "workspace:*",
+        "@consuelo/conversation": "workspace:*",
         "@consuelo/dialer": "workspace:*",
         "@consuelo/lead-connector": "workspace:*",
         "effect": "^3.21.3",
@@ -773,6 +778,8 @@
     "@consuelo/coaching": ["@consuelo/coaching@workspace:packages/coaching"],
 
     "@consuelo/contacts": ["@consuelo/contacts@workspace:packages/contacts"],
+
+    "@consuelo/conversation": ["@consuelo/conversation@workspace:packages/conversation"],
 
     "@consuelo/dialer": ["@consuelo/dialer@workspace:packages/dialer"],
 

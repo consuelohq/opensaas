@@ -88,6 +88,40 @@ const run = (command, args, options = {}) => {
   return result;
 };
 
+// CI may check out a merge commit shallowly while the immutable event SHA is older.
+// Fetch only that exact object; symbolic refs retain their existing behavior.
+const ensureImmutableCommitAvailable = (ref) => {
+  if (typeof ref !== 'string' || !/^(?:[a-f\d]{40}|[a-f\d]{64})$/i.test(ref)) {
+    return;
+  }
+
+  const object = `${ref}^{commit}`;
+  if (run('git', ['cat-file', '-e', object], { capture: true }).status === 0) {
+    return;
+  }
+
+  const shallow = run('git', ['rev-parse', '--is-shallow-repository'], { capture: true });
+  if (shallow.status !== 0) {
+    process.stderr.write(shallow.stderr ?? '');
+    throw new Error(`git rev-parse failed with exit code ${shallow.status}`);
+  }
+  if (shallow.stdout.trim() !== 'true') {
+    return;
+  }
+
+  const fetched = run('git', ['fetch', '--no-tags', '--depth=1', 'origin', ref], { capture: true });
+  if (fetched.status !== 0) {
+    process.stderr.write(fetched.stderr ?? '');
+    throw new Error(`git fetch failed with exit code ${fetched.status}`);
+  }
+
+  const verified = run('git', ['cat-file', '-e', object], { capture: true });
+  if (verified.status !== 0) {
+    process.stderr.write(verified.stderr ?? '');
+    throw new Error(`Fetched comparison commit is unavailable: ${ref}`);
+  }
+};
+
 export const filterRelevantNativeFiles = (files) =>
   [
     ...new Set(
@@ -108,6 +142,9 @@ export const getChangedNativeFiles = ({ base, head }) => {
       'Unable to resolve the native OS test base. Run nrwl/nx-set-shas first or pass --base.',
     );
   }
+
+  ensureImmutableCommitAvailable(base);
+  ensureImmutableCommitAvailable(head);
 
   const result = run(
     'git',

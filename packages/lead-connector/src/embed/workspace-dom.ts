@@ -1,3 +1,4 @@
+import { reconcileMercuryCue } from './mercury-dom.js';
 type DraftField = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 const originalValue = (field: DraftField): string =>
   field.tagName === 'SELECT'
@@ -8,6 +9,19 @@ const originalValue = (field: DraftField): string =>
 
 /** Retain in-memory edits across snapshot redraws; never persist form values. */
 export const replaceWorkspace = (root: HTMLElement, html: string): void => {
+  const previousCue = root.querySelector<HTMLElement>('[data-mercury-scope]');
+  const selection = root.ownerDocument.defaultView?.getSelection();
+  const ranges = selection
+    ? Array.from({ length: selection.rangeCount }, (_, i) => {
+        const range = selection.getRangeAt(i);
+        return {
+          start: range.startContainer,
+          startOffset: range.startOffset,
+          end: range.endContainer,
+          endOffset: range.endOffset,
+        };
+      })
+    : [];
   const key = (element: Element) => {
     const form = element.closest('form')?.getAttribute('data-form') ?? '';
     return (
@@ -79,6 +93,26 @@ export const replaceWorkspace = (root: HTMLElement, html: string): void => {
   const oldContent = root.querySelector<HTMLElement>('.workspace-content');
   const oldScroll = oldContent?.scrollTop ?? 0;
   root.innerHTML = html;
+  const nextCue = root.querySelector<HTMLElement>('[data-mercury-scope]');
+  if (
+    previousCue &&
+    nextCue &&
+    previousCue.dataset.mercuryScope === nextCue.dataset.mercuryScope
+  ) {
+    reconcileMercuryCue(previousCue, nextCue);
+    const retained = ranges.filter(
+      (range) => range.start.isConnected && range.end.isConnected,
+    );
+    if (selection && retained.length) {
+      selection.removeAllRanges();
+      for (const saved of retained) {
+        const range = root.ownerDocument.createRange();
+        range.setStart(saved.start, saved.startOffset);
+        range.setEnd(saved.end, saved.endOffset);
+        selection.addRange(range);
+      }
+    }
+  }
   if (
     oldScreen &&
     root.querySelector<HTMLElement>('[data-workspace]')?.dataset
