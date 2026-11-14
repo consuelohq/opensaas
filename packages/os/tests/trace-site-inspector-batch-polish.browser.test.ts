@@ -108,7 +108,8 @@ browserTest(
       await page.goto('https://trace.test/traces', {
         waitUntil: 'domcontentloaded',
       });
-      await page.locator('.trxRow[data-trace-key="batch-row"]').click();
+      // Session text filters the table; Tool text opens the trace inspector.
+      await page.locator('.trxRow[data-trace-key="batch-row"] .trxToolCell').click();
       await page.locator('.tiPeerChild').first().click();
       await page.waitForFunction(() =>
         document

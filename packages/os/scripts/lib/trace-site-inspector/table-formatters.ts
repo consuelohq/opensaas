@@ -106,6 +106,68 @@ export function formatTraceTableRow(row: TraceRecord): TraceTableRowFormat {
   };
 }
 
+// A tooltip is an orientation aid, not a second raw JSON viewer (or a place
+// to expose recorded credentials). Only allowlisted fields are summarized.
+export function formatTraceHoverPreview(
+  row: Partial<TraceRecord>,
+  field: 'input' | 'output',
+  displayedLabel = '',
+): string {
+  const raw = field === 'input'
+    ? row.rawResolvedInputJson ?? row.rawInputJson ?? row.inputObj
+    : row.rawResultJson ?? row.outputObj ?? row.resultObj;
+  const envelope = record(parseMaybeJson(raw));
+  if (!envelope) return '';
+  const data = record(envelope.data) ?? envelope;
+  const safe = (value: unknown, limit = 130): string => {
+    if (typeof value !== 'string') return '';
+    const text = value.replace(/\s+/g, ' ').trim();
+    if (
+      !text ||
+      /(?:bearer\s|sk-[a-z0-9]{12,}|(?:api[_ -]?key|secret|password|authorization|access[_ -]?token)\s*[:=])/i.test(text)
+    ) return '';
+    return text.length > limit ? text.slice(0, limit - 1) + '…' : text;
+  };
+  if (field === 'input') {
+    const file = safe(envelope.path ?? envelope.file ?? envelope.filepath ?? envelope.codeFile);
+    if (file) return 'File: ' + file;
+    const paths = Array.isArray(envelope.paths)
+      ? envelope.paths.map((item) => safe(item, 80)).filter(Boolean).slice(0, 2)
+      : [];
+    if (paths.length) return 'Files: ' + paths.join(' · ');
+    const language = safe(envelope.language, 24);
+    const mode = safe(envelope.mode, 32);
+    const codeSource = typeof envelope.code === 'string' ? envelope.code : '';
+    if (codeSource && (language || mode))
+      return [language, mode, codeSource.length.toLocaleString('en-US') + ' chars of code']
+        .filter(Boolean).join(' · ').slice(0, 155);
+    const request = safe(envelope.query ?? envelope.search ?? envelope.pattern, 110);
+    if (request && request !== displayedLabel) return 'Query: ' + request;
+    const uri = safe(envelope.url ?? envelope.uri, 125);
+    if (uri) return 'Target: ' + uri.split('?')[0];
+    if (language || mode) return [language, mode].filter(Boolean).join(' · ');
+    return '';
+  }
+  const files = Array.isArray(data.filesChanged)
+    ? data.filesChanged.map((item) => safe(item, 76)).filter(Boolean)
+    : [];
+  if (files.length) return 'Files: ' + files.slice(0, 2).join(' · ');
+  const content = typeof data.content === 'string' ? data.content : '';
+  if (content) return 'Returned ' + content.length.toLocaleString('en-US') + ' characters';
+  const bytes = data.bytes;
+  if (typeof bytes === 'number' && bytes > 0)
+    return 'Returned ' + (bytes / 1024).toFixed(1) + ' KB';
+  if (envelope.ok === false) {
+    const error = safe(envelope.message ?? data.message, 120);
+    if (error && error !== displayedLabel) return 'Error: ' + error;
+  }
+  // Command stdout is untrusted and may contain captured credentials. Its
+  // text belongs in the inspected payload, never in an ambient hover.
+  if (typeof data.exitCode === 'number')
+    return 'Exit code: ' + data.exitCode;
+  return '';
+}
+
 export function semanticToolLabel(
   row: TraceRecord,
   input = resolvedInput(row),

@@ -21,6 +21,16 @@ export const SESSION_COLOR_TONES: readonly SessionColorTone[] = [
   { dark: '#6f9ca4', light: '#406d75' },
   { dark: '#b58368', light: '#835540' },
   { dark: '#87926b', light: '#59633d' },
+  { dark: '#aa9bcb', light: '#685a92' },
+  { dark: '#7ea6a0', light: '#44776f' },
+  { dark: '#cc927d', light: '#9a5948' },
+  { dark: '#9eaeb9', light: '#5e737f' },
+  { dark: '#c5a4a0', light: '#8a605d' },
+  { dark: '#9eae88', light: '#67784e' },
+  { dark: '#b99bb6', light: '#835b81' },
+  { dark: '#82a8b8', light: '#4b7288' },
+  { dark: '#c1a474', light: '#846838' },
+  { dark: '#9ca6c9', light: '#58638c' },
 ] as const;
 
 export function sessionColorTone(value: string): SessionColorTone | null {

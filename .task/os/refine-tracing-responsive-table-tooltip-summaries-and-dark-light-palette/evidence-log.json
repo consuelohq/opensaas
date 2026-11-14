@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/refine-tracing-responsive-table-tooltip-summaries-and-dark-light-palette",
+  "events": [
+    {
+      "id": "ff860b38-6a8c-428d-858d-6fa761f6ff2c",
+      "occurred_at": "2026-11-14T05:26:42.106Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/release-promotion-dispatch-lock.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-responsive-table-tooltip-summaries-and-dark-light-palette",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-responsive-table-tooltip-summaries-and-dark-light-palette"
+      }
+    },
+    {
+      "id": "7b0c5f63-a1fa-4eba-b1dd-7621ab920b70",
+      "occurred_at": "2026-11-14T05:27:09.081Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-responsive-table-tooltip-summaries-and-dark-light-palette",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-responsive-table-tooltip-summaries-and-dark-light-palette"
+      }
+    },
+    {
+      "id": "ab7f319a-3507-40fe-a6da-1b15c9f6968a",
+      "occurred_at": "2026-11-14T05:29:11.475Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-tracing-responsive-table-tooltip-summaries-and-dark-light-palette",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-tracing-responsive-table-tooltip-summaries-and-dark-light-palette"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-14T05:29:11.724Z"
+}

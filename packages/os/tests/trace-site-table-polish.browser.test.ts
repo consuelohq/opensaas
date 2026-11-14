@@ -173,7 +173,7 @@ for (const colorScheme of ['dark', 'light'] as const)
           mkdirSync(shots, { recursive: true });
           await page.screenshot({ path: shots + '/borderless-table-' + colorScheme + '.png' });
         }
-        await row.click();
+        await row.locator('.trxToolCell').click();
         await page.locator('.tiInspector').waitFor({ state: 'visible' });
         expect(
           await row.evaluate((node) => getComputedStyle(node).outlineStyle),
@@ -213,7 +213,7 @@ browserTest(
         colorScheme: 'dark',
       });
       await fixture(page);
-      await page.locator('.trxRow[data-trace-key="success"]').click();
+      await page.locator('.trxRow[data-trace-key="success"] .trxToolCell').click();
       const before = await page.evaluate(() => {
         const table = document
             .querySelector('.trxTablePane')!

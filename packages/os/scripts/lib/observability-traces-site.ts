@@ -165,7 +165,7 @@ body{background:var(--trace-bg)!important;color:var(--trace-cream)!important}
 }
 </style>`;
 
-const traceThemeMetadata = `<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#080706" media="(prefers-color-scheme: dark)">`;
+const traceThemeMetadata = `<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#212121" media="(prefers-color-scheme: dark)">`;
 
 const traceWorkspaceIntegrationStyle = `<style id="consuelo-trace-workspace-integration">
 #tbmLiveTraceModal[aria-hidden="false"]{display:flex!important;align-items:center!important;justify-content:center!important;padding:14px!important;overflow:hidden!important}
