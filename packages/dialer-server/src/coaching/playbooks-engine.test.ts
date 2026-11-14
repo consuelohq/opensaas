@@ -241,13 +241,15 @@ describe('Script decisions and safety', () => {
     await s.flush();
     expect(s.view('outbound:call')).toEqual(before);
   });
+  // Exercise all 2,049 immutable reductions. This is a bounded capacity stress
+  // check, not a wall-clock latency assertion; allow shared CI runners time.
   test('honest long-call cap rejects data and records unavailable without resetting cursor', async () => {
     const s = session();
     for (let n = 1; n <= 2049; n++) await s.ingest(event('unrelated', n));
     expect(s.diagnostics().cursor.sequence).toBe(2048);
     expect(s.view('outbound:call').status).toBe('unavailable');
     expect(s.diagnostics().capacityRejected).toBe(true);
-  });
+  }, 20_000);
 });
 
 test('fixture baseline vs bounded selector uses approved IDs and forces trusted source', async () => {

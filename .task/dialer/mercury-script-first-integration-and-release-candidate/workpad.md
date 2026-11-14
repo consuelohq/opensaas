@@ -71,6 +71,7 @@ Cleanup: task.cleanup skips open PRs. Supported workspace eviction helper throug
 - 2026-11-13 21:12:27 fs.write: `.task/dialer/mercury-script-first-integration-and-release-candidate/workpad.md`
 - 2026-11-14 02:57:03 fs.write: `.task/dialer/mercury-script-first-integration-and-release-candidate/workpad.md`
 - 2026-11-14 03:08:25 fs.write: `.task/dialer/mercury-script-first-integration-and-release-candidate/workpad.md`
+- 2026-11-14 03:19:17 fs.write: `.task/dialer/mercury-script-first-integration-and-release-candidate/workpad.md`
 
 ## Checkpoint 2026-11-13 20:45 UTC
 Core DEV-1699 PR2796 passed exact44722b64 CI43502838029 (six jobs). Merged only into owned temporaryintegration at aee54abf2f477ae09f5181c9b504a8a61ea48e9d preserving ancestry. GitHub automatically deleted merged leafbranch; immutablecore is ancestorofpublishedintegration. Core worktree evicted with recovery /Users/kokayi/.consuelo/node/tasks/archives/tsk_a12690406bb4/2026-11-13T20-42-42-395Z-f1315181/recovery.bundle (metadata preserved). No main or productionmutation.
@@ -82,7 +83,10 @@ Rootconfirmedpreexisting productionrelease literal '+' shellseparator defect lin
 ## workspace-owned: files read
 
 - `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
+- `packages/os/skills/sites/SKILL.md`
+- `packages/os/skills/task/SKILL.md`
 - `packages/os/tests/production-release-plan.test.ts`
+- `packages/workspace/senior-engineer.md`
 
 ## Integration checkpoint 2026-11-13 21:14 UTC
 STT PR2797 exact3eb76fdf0c6a3ef596255eb6f324dbf6f3dc8cdc passed6CIjobs(run43506279539), mergedONLYintegration withancestrypreserved. IntegrationHEAD99bcb4db9d6a4b115f6d8326c6ee07678577d307. STTworktreeevictedverifiedrecoverybundle /Users/kokayi/.consuelo/node/tasks/archives/tsk_72ac79981360/2026-11-13T21-01-40-556Z-d3b90428/recovery.bundle checksum84d677fd5c001b22b92343dfd56fb23592356a409f177c75a19da89bb3a078e5. Do notrestoreoldSTTsession. NewTerra6.1xhigh replay_release_validation ownsNEWservercoaching-replay/* andnarrow1707releaseworkflow+contract+railwaywatchrepair. Activeworkersremain3(coreengine,UI,Terra). UIinitialf22eeall6CIgreen;finalfeed+authoringfollowsamePR2799. EnginePR2800sessiontsk_39a6ade72e32 includesSTTdependency;actualPG/Honoruntime proof1scenario24assertsgreen. UIpublishbodyrevision/ordinal/approvedonly; serverderivestruthfultenant-authoredprovenance(noexternalindustrypackclaim).
@@ -120,3 +124,16 @@ The exact combined working tree passed:
 No production merge/deployment/calls/provider inference occurred. The source main candidate remains a Draft because automatic matching/authority and broader release acceptance are unfinished. Next: commit the clean two-parent merge with coordinator metadata; strict review/full verify against main; normal fast-forward push only this owned integration branch with current valid stamp; exact-head CI; final readable DEV1707 handoff and cleanup.
 
 - 2026-11-14 03:08:25 append: `.task/dialer/mercury-script-first-integration-and-release-candidate/workpad.md`
+
+## workspace-owned: validation evidence
+
+- 2026-11-14 03:09:02 `review.run`: passed — OK
+- 2026-11-14 03:09:44 `verify`: passed — OK
+- 2026-11-14 03:19:34 `review.run`: passed — OK
+- 2026-11-14 03:20:21 `verify`: passed — OK
+
+## Final CI timing-budget correction
+
+Run43550338993 on67d90f8b passed five jobs but failed Dialer: the intentionally bounded 2,049-event capacity check took5,177.84ms on the shared runner, exceeding Bun's default5,000ms. All2,323 server assertions ran. This is not the latency acceptance benchmark. Preserved the original CI failure (trc_9aabb59caea0); gave only that full-reduction stress test an explicit20-second budget with all capacity/cursor/unavailable assertions unchanged. Focused test passed1/3assertions at1,438ms locally (trc_054199b5b465). No production code changed. Fresh strict review/full verification and exact new-head CI are required before recording a green candidate.
+
+- 2026-11-14 03:19:17 append: `.task/dialer/mercury-script-first-integration-and-release-candidate/workpad.md`
