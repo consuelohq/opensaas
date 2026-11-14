@@ -342,9 +342,15 @@ export const createLeadConnectorEmbedController = (input: {
     input.voice.disconnect();
   };
 
+  let confirmedEndedSessionId: string | null = null;
   const projectSession = (
     session: Parameters<typeof isTerminalEmbedSession>[0],
   ): void => {
+    if (
+      session.groupId === confirmedEndedSessionId &&
+      !isTerminalEmbedSession(session)
+    )
+      return;
     if (isTerminalEmbedSession(session)) disconnectVoice();
     dispatch({ type: 'SESSION_UPDATED', session });
   };
@@ -476,9 +482,14 @@ export const createLeadConnectorEmbedController = (input: {
     return commercialRefresh;
   };
 
+  let startRequestPending = false;
+  let cancelPendingStart = false;
   const startCall = async (
     strategy: 'single' | 'predictive',
   ): Promise<void> => {
+    if (startRequestPending) return;
+    startRequestPending = true;
+    cancelPendingStart = false;
     try {
       if (state.selectedTargets.length === 0) {
         dispatch({
@@ -498,6 +509,10 @@ export const createLeadConnectorEmbedController = (input: {
       const effectiveStrategy = queueMode ? strategy : 'single';
       dispatch({ type: 'START_REQUESTED', strategy: effectiveStrategy });
       await input.voice.prepare();
+      if (cancelPendingStart) {
+        dispatch({ type: 'START_CANCELED' });
+        return;
+      }
       const targets = queueMode
         ? state.selectedTargets
         : state.selectedTargets.slice(0, 1);
@@ -574,9 +589,31 @@ export const createLeadConnectorEmbedController = (input: {
       const statusId = result.providerGroupId ?? result.sessionId;
       activeVoiceSessionId = statusId;
       activeRecordSessionId = result.sessionId;
+      dispatch({
+        type: 'SESSION_UPDATED',
+        session: {
+          groupId: statusId,
+          status: result.status,
+          winnerSid: null,
+          winner: null,
+          calls: result.calls,
+        },
+      });
+      if (cancelPendingStart) {
+        await endCall();
+        return;
+      }
       try {
         await input.voice.connect(statusId);
+        if (cancelPendingStart) {
+          await endCall();
+          return;
+        }
         const ready = await run(() => input.api.markAgentReady(statusId));
+        if (cancelPendingStart) {
+          await endCall();
+          return;
+        }
         if (!ready) {
           disconnectVoice();
           await input.api.terminateCallSession(statusId).catch(() => undefined);
@@ -594,7 +631,48 @@ export const createLeadConnectorEmbedController = (input: {
       if (session) projectSession(session);
     } catch (error: unknown) {
       reportUnexpectedFailure(error);
+    } finally {
+      startRequestPending = false;
+      if (cancelPendingStart) dispatch({ type: 'END_SETTLED' });
     }
+  };
+
+  let endingCall: Promise<void> | null = null;
+  const endCall = (): Promise<void> => {
+    if (endingCall) return endingCall;
+    if (
+      state.activeSessionId &&
+      state.activeSessionId === confirmedEndedSessionId
+    )
+      return Promise.resolve();
+    endingCall = (async () => {
+      try {
+        const sessionId = state.activeSessionId;
+        if (startRequestPending) cancelPendingStart = true;
+        dispatch({ type: 'END_REQUESTED' });
+        disconnectVoice();
+        if (!sessionId) {
+          if (startRequestPending) cancelPendingStart = true;
+          return;
+        }
+        const result = await run(() =>
+          input.api.terminateCallSession(sessionId),
+        );
+        if (result?.status === 'completed') {
+          confirmedEndedSessionId = sessionId;
+          if (state.activeSessionId === sessionId)
+            dispatch({ type: 'STOP_REQUESTED' });
+        }
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      } finally {
+        if (!cancelPendingStart || state.activeSessionId)
+          dispatch({ type: 'END_SETTLED' });
+      }
+    })().finally(() => {
+      endingCall = null;
+    });
+    return endingCall;
   };
 
   return {
@@ -1371,7 +1449,8 @@ export const createLeadConnectorEmbedController = (input: {
         const sessionId = state.activeSessionId;
         if (!sessionId) return;
         const session = await run(() => input.api.getCallSession(sessionId));
-        if (session) projectSession(session);
+        if (session && state.activeSessionId === sessionId)
+          projectSession(session);
         const transferId = state.transfer.transferId;
         if (state.transfer.status === 'initiating' && transferId) {
           const transfer = await run(() =>
@@ -1385,28 +1464,8 @@ export const createLeadConnectorEmbedController = (input: {
     },
     pause: () => dispatch({ type: 'PAUSED' }),
     resume: () => dispatch({ type: 'RESUMED' }),
-    stop: async (): Promise<void> => {
-      try {
-        const sessionId = state.activeSessionId;
-        dispatch({ type: 'STOP_REQUESTED' });
-        disconnectVoice();
-        if (!sessionId) return;
-        await run(() => input.api.terminateCallSession(sessionId));
-      } catch (error: unknown) {
-        reportUnexpectedFailure(error);
-      }
-    },
-    hangUp: async (): Promise<void> => {
-      try {
-        const sessionId = state.activeSessionId;
-        dispatch({ type: 'STOP_REQUESTED' });
-        disconnectVoice();
-        if (!sessionId) return;
-        await run(() => input.api.terminateCallSession(sessionId));
-      } catch (error: unknown) {
-        reportUnexpectedFailure(error);
-      }
-    },
+    stop: endCall,
+    hangUp: endCall,
     submitDisposition: async (inputValue: {
       disposition: string;
       note?: string;
