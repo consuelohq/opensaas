@@ -16,6 +16,10 @@ import {
   traceObject,
   type TraceToolProfile,
 } from './tool-presentation';
+import {
+  summarizeSkillDocument,
+  type SkillDocumentSummary,
+} from './skill-reading';
 
 export function escapeTraceHtml(value: unknown): string {
   return String(value ?? '')
@@ -460,6 +464,7 @@ export function renderInspectorReading(
   _section?: InspectorReadingSection,
 ): string {
   const prepared = prepareTraceReading(row);
+  const skill = summarizeSkillDocument(row, prepared.output);
   const options = { profile: prepared.profile };
   const insight = isFailure(row) ? extractTraceError(row) : null;
   const alerts = [
@@ -474,6 +479,23 @@ export function renderInspectorReading(
         .join('') +
       '</div>'
     : '';
+  const skillMarkup = (document: SkillDocumentSummary) =>
+    '<article class="tiSkillOverview" data-ti-skill-overview>' +
+    '<p class="tiSkillEyebrow">Skill guide</p>' +
+    '<h4>' + escapeTraceHtml(document.name) + '</h4>' +
+    '<p class="tiSkillPurpose">' + escapeTraceHtml(document.description) + '</p>' +
+    (document.highlights.length
+      ? '<h5>What matters</h5><ul>' +
+        document.highlights.map((point) => '<li>' + escapeTraceHtml(point) + '</li>').join('') +
+        '</ul>'
+      : '') +
+    '<details class="tiSkillFull" data-ti-disclosure="full-skill-instructions">' +
+    '<summary>Full SKILL.md</summary>' +
+    renderTraceMarkdown(document.fullText.slice(0, 40_000)) +
+    (document.fullText.length > 40_000
+      ? '<p>Showing the first 40,000 characters. Switch to JSON for the complete recorded document.</p>'
+      : '') +
+    '</details></article>';
   const section = (id: 'input' | 'output', value: unknown) =>
     '<section class="tiSection tiReading" data-ti-section="' +
     id +
@@ -482,11 +504,13 @@ export function renderInspectorReading(
     '</h3><button type="button" data-ti-copy aria-label="Copy ' +
     id +
     '">Copy</button></header><div class="tiSectionBody">' +
-    renderInspectorPayload(value, 0, {
-      ...options,
-      input: id === 'input',
-      expand: id === 'input',
-    }) +
+    (id === 'output' && skill
+      ? skillMarkup(skill)
+      : renderInspectorPayload(value, 0, {
+        ...options,
+        input: id === 'input',
+        expand: id === 'input',
+      })) +
     '</div></section>';
   const details = inspectorReadingValue(row, 'details');
   return (

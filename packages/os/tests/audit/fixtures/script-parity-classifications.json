@@ -1074,6 +1074,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned effective runtime tool registry that merges optional provider tools without mutating the generated manifest; it has no workspace-script counterpart."
     },
+    "scripts/lib/search/explore-failure.js": {
+      "status": "os-only-intentional",
+      "reason": "OS-only structured explorer failure diagnostics and recovery output; the workspace script inventory has no equivalent helper."
+    },
     "scripts/lib/search/explore-output.js": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/search/explore-output.js exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -1379,6 +1383,10 @@
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-site-inspector/pagination-browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
+    "scripts/lib/trace-site-inspector/polish-styles.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned responsive Tracing presentation overrides layered after immutable v38 browser assets; no workspace counterpart is required."
+    },
     "scripts/lib/trace-site-inspector/reading-styles.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned compact trace inspector reading styles layer over the preserved vendor shell; no workspace counterpart is required."
@@ -1390,6 +1398,10 @@
     "scripts/lib/trace-site-inspector/session-colors.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned trace inspector presentation helper assigns deterministic session colors for the observability UI; no workspace-script counterpart is intended."
+    },
+    "scripts/lib/trace-site-inspector/skill-reading.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned read-only SKILL.md humanization for the trace inspector, never used to execute skills; no workspace counterpart is required."
     },
     "scripts/lib/trace-site-inspector/table-formatters.ts": {
       "status": "os-only-needs-review",
