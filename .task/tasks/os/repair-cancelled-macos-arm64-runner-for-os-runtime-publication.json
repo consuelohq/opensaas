@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-cancelled-macos-arm64-runner-for-os-runtime-publication",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2805,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2805",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-cancelled-macos-arm64-runner-for-os-runtime-publication",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b2c4b1047846",
+  "tmuxSession": "opensaas-os-repair-cancelled-macos-arm64-runner-for-os-runti-b2c4b104",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-cancelled-macos-arm64-runner-for-os-runtime-publication/.task/session.json",
+  "createdAt": "2026-11-14T04:12:43.263Z"
+}

@@ -25,6 +25,16 @@ type WorkflowJob = {
   needs?: string | string[];
   permissions?: Record<string, string>;
   steps?: WorkflowStep[];
+  strategy?: {
+    matrix?: {
+      include?: Array<{
+        name?: string;
+        runner?: string;
+        platform?: string;
+        architecture?: string;
+      }>;
+    };
+  };
   uses?: string;
 };
 
@@ -45,6 +55,27 @@ function dependencyInstallSteps(workflow: string): WorkflowStep[] {
 }
 
 describe('Consuelo OS release-channel workflows', () => {
+  it('uses the validated macOS ARM64 runner for every release build and optional app packaging job', () => {
+    const release = parseWorkflow(
+      '.github/workflows/consuelo-os-runtime-publish.yaml',
+    );
+    const validation = parseWorkflow(
+      '.github/workflows/consuelo-os-distribution-environments.yaml',
+    );
+    const validatedRunner = validation.jobs?.['native-runtime']?.strategy?.matrix?.include
+      ?.find((row) => row.name === 'macos')?.runner;
+    expect(validatedRunner).toBe('macos-26');
+    for (const jobName of ['build', 'macos-service-host', 'macos-menu-app']) {
+      const rows = release.jobs?.[jobName]?.strategy?.matrix?.include ?? [];
+      const arm64 = rows.find((row) =>
+        row.architecture === 'arm64' &&
+        (row.platform === 'darwin' || jobName !== 'build'),
+      );
+      expect(arm64, `${jobName} has an arm64 matrix leg`).toBeDefined();
+      expect(arm64?.runner, `${jobName} supported arm64 runner`).toBe(validatedRunner);
+    }
+  });
+
   it('keeps pull requests validation-only and publishes dev from main or explicit operator dispatch', () => {
     const workflow = read('.github/workflows/consuelo-os-runtime-publish.yaml');
     const parsed = parseWorkflow(
