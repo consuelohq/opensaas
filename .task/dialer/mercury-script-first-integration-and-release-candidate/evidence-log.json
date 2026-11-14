@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/mercury-script-first-integration-and-release-candidate",
+  "events": [
+    {
+      "id": "010ed5ef-a10b-4746-b7f6-7096023db3ed",
+      "occurred_at": "2026-11-13T20:49:22.646Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/mercury-script-first-integration-and-release-candidate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/mercury-script-first-integration-and-release-candidate"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-13T20:49:22.756Z"
+}
