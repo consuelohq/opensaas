@@ -14,6 +14,7 @@ import {
   totalTokens,
 } from '../scripts/lib/trace-site-inspector/model';
 import {
+  traceArrowAnchor,
   nextTraceInteractionIndex,
   traceIdentityCopyText,
 } from '../scripts/lib/trace-site-inspector/interactions';
@@ -175,6 +176,13 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
     expect(nextTraceInteractionIndex(5, 4, 1)).toBe(4);
     expect(nextTraceInteractionIndex(5, 2, -1)).toBe(1);
     expect(traceIdentityCopyText({ name: 'code.call', traceId: 'trc_abc' })).toBe('code.call · trc_abc');
+  });
+
+  it('starts the first arrow after hovering a row, then keeps keyboard focus for subsequent arrows', () => {
+    expect(traceArrowAnchor('row-hovered', 'row-selected', 'row-keyboard', 'hover')).toBe('row-hovered');
+    expect(traceArrowAnchor('row-hovered', 'row-selected', 'row-keyboard', 'keyboard')).toBe('row-keyboard');
+    expect(traceArrowAnchor('', 'row-selected', '', null)).toBe('row-selected');
+    expect(traceArrowAnchor('row-hovered', 'row-selected', 'row-keyboard', 'child')).toBe('row-keyboard');
   });
 
   it('matches trace search by free text, structured fields, and date', () => {

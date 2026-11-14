@@ -45,7 +45,7 @@ const productionHistoryTransport = `<script id="consuelo-trace-history-transport
   const historyRoute = '/gateway/traces/recent';
   const eventsRoute = '/gateway/traces/events';
   const snapshotRoute = '/trace-burn-intelligence/live-traces.json';
-  const snapshotUrl = historyRoute + '?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';
+  const snapshotUrl = historyRoute + '?direction=older&cursor=latest&limit=50&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';
   const allowed = (url, route) => url === route || url.startsWith(route + '?');
   window.__consueloTraceHistoryTransport = {
     openEvents(url) {
@@ -89,6 +89,23 @@ ${workspaceChromeClientScript().replaceAll('</script', '<\/script')}
 const workspaceRouteStyle = `<style id="consuelo-workspace-route-switcher">
 ${workspaceRouteSwitcherStyles().replaceAll('</style', '<\/style')}
 </style>`;
+
+// Contextual shortcut entries are supplied by each page to the shared chrome.
+const tracePageShortcuts = '<script type="application/json" data-workspace-shortcuts-page>' + JSON.stringify([
+  {
+    title: 'Tracing',
+    entries: [
+      { key: '/', label: 'Search tools, sessions, trace IDs, statuses, dates and nodes' },
+      { key: '↑ / ↓', label: 'Move from the hovered or selected trace' },
+      { key: 'j / k', label: 'Next / previous trace' },
+      { key: 'Enter', label: 'Open the highlighted trace or call' },
+      { key: 'f', label: 'Toggle trace filters' },
+      { key: '⌘ / Ctrl + C', label: 'Copy hovered or selected trace identity' },
+      { key: '⌘ + ↑', label: 'Scroll trace history to top' },
+      { key: 'Esc', label: 'Close search, filters or trace detail' },
+    ],
+  },
+]) + '</script>';
 
 const nodeObservabilityStyle = `<style id="consuelo-trace-node-observability">
 #tbmLiveTraceModal .trxNode{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:hidden}
@@ -595,7 +612,7 @@ export function buildObservabilityTracesSite(
   html = replaceExactlyOnce(
     html,
     /<\/body>/i,
-    `${workspaceNavigation}</body>`,
+    `${tracePageShortcuts}${workspaceNavigation}</body>`,
     'document body close',
   );
 

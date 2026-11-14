@@ -24,7 +24,7 @@ import {
   type TraceRecord,
 } from './model';
 import { inspectorStore } from './inspector-state';
-import { nextTraceInteractionIndex } from './interactions';
+import { nextTraceInteractionIndex, traceArrowAnchor } from './interactions';
 import {
   deriveTraceHistoryCursor,
   type TracePrefetchRequestDetail,
@@ -98,8 +98,8 @@ export type TraceVirtualListApi = {
   scrollToKey: (key: string) => void;
   scrollToTop: () => void;
   select: (key: string) => void;
-  moveFocus: (direction: -1 | 1) => string;
-  openFocused: () => string;
+  moveFocus: (direction: -1 | 1, hoverKey?: string) => string;
+  openFocused: (hoverKey?: string) => string;
   clearSelection: () => void;
   openFilters: () => void;
   closeFilters: () => void;
@@ -303,6 +303,16 @@ class TraceVirtualListController {
     this.commitItems(true);
   }
 
+  previewSearchQuery(): void {
+    // Immediately display local matches and cancel stale server pages; waiting
+    // for the debounce must not temporarily filter an old server result set.
+    this.invalidateRequests();
+    this.searchRows = null;
+    this.searchNextCursor = null;
+    this.refreshItems();
+    this.commitItems(true);
+  }
+
   setSearchQuery(query: string): void {
     const normalized = query.trim().toLowerCase();
     if (
@@ -393,10 +403,15 @@ class TraceVirtualListController {
     this.target.scroller.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  moveFocus(direction: -1 | 1): string {
+  moveFocus(direction: -1 | 1, hoverKey = ''): string {
     if (!this.items.length) return '';
     const target = traceWindow();
-    const current = target.__traceKeyboardKey || currentSelectedKey();
+    const current = traceArrowAnchor(
+      hoverKey,
+      currentSelectedKey(),
+      target.__traceKeyboardKey || '',
+      hoverKey ? 'hover' : 'keyboard',
+    );
     const currentIndex = this.items.findIndex(
       (item) => item.traceKey === current,
     );
@@ -413,8 +428,8 @@ class TraceVirtualListController {
     return key;
   }
 
-  openFocused(): string {
-    const key = traceWindow().__traceKeyboardKey || currentSelectedKey();
+  openFocused(hoverKey = ''): string {
+    const key = hoverKey || traceWindow().__traceKeyboardKey || currentSelectedKey();
     if (key) this.select(key);
     return key;
   }
@@ -1545,15 +1560,17 @@ export function installTraceVirtualList(): () => void {
   const applyQuery = (query: string) => {
     const normalized = query.trim().toLowerCase();
     filters.query = normalized;
-    controller?.syncFilters();
+    controller?.previewSearchQuery();
     window.clearTimeout(searchTimer);
-    if (!normalized) {
+    // One character is too broad to search the entire history; filter the
+    // current memory window immediately and defer SQLite until two characters.
+    if (normalized.length < 2) {
       controller?.setSearchQuery('');
       return;
     }
     searchTimer = window.setTimeout(() => {
       controller?.setSearchQuery(normalized);
-    }, 140);
+    }, 240);
   };
 
   const sync = () => {
@@ -1761,8 +1778,8 @@ export function installTraceVirtualList(): () => void {
     scrollToKey: (key) => controller?.scrollToKey(key),
     scrollToTop: () => controller?.scrollToTop(),
     select: (key) => controller?.select(key),
-    moveFocus: (direction) => controller?.moveFocus(direction) ?? '',
-    openFocused: () => controller?.openFocused() ?? '',
+    moveFocus: (direction, hoverKey) => controller?.moveFocus(direction, hoverKey) ?? '',
+    openFocused: (hoverKey) => controller?.openFocused(hoverKey) ?? '',
     clearSelection: () => controller?.clearSelection(),
     openFilters: () => {
       filterPanelOpen = true;
