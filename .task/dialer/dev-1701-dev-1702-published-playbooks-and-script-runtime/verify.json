@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime",
   "base": "origin/main",
-  "headSha": "761dbe8fa9677bc745e145b33bcf94d0a8cbd4f7",
-  "changeHash": "3eacc56b1e1be24c31a6c4db86a0b690d7d3a2ab5571bdb226dc34ad42deb584",
+  "headSha": "31d93840304140cb817e2a0913d211a2f0b6560c",
+  "changeHash": "6e5fa185e0e52c5adab86d9e3db263f85a9ad3a5e1df2443fb8b227b7ec02be7",
   "changedFiles": [
     ".github/workflows/consuelo-ci.yaml",
     "bun.lock",
@@ -65,7 +65,7 @@
     "packages/os/scripts/ci-plan.ts",
     "packages/os/tests/ci-plan.test.ts"
   ],
-  "verifiedAt": "2026-11-13T21:26:34.818Z",
+  "verifiedAt": "2026-11-13T21:32:59.780Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -85,6 +85,7 @@
         ".task/dialer/dev-1700-timely-speaker-aware-groq-transcript-ingestion/benchmark.json",
         ".task/dialer/dev-1700-timely-speaker-aware-groq-transcript-ingestion/verify.json",
         ".task/dialer/dev-1700-timely-speaker-aware-groq-transcript-ingestion/workpad.md",
+        ".task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/current.json",
         ".task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/verify.json",
         ".task/dialer/dev-1701-dev-1702-published-playbooks-and-script-runtime/workpad.md",
         ".task/tasks/dialer/dev-1699-provider-neutral-conversation-core.json",
@@ -319,8 +320,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 548,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1701-dev-1702-published-playbooks-and-script-runtime/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 35\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:26:24\n\u001b[2m   Duration \u001b[22m 280ms\u001b[2m (transform 110ms, setup 33ms, import 141ms, tests 35ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n(node:76364) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+          "durationMs": 504,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1701-dev-1702-published-playbooks-and-script-runtime/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:32:49\n\u001b[2m   Duration \u001b[22m 220ms\u001b[2m (transform 57ms, setup 17ms, import 104ms, tests 30ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n(node:80742) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
         },
         {
           "name": "dialer-server logger prerequisite",
@@ -338,7 +339,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 926,
+          "durationMs": 728,
           "outputTail": "$ bun x tsc\n"
         },
         {
@@ -357,7 +358,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 751,
+          "durationMs": 727,
           "outputTail": "$ bun x tsc\n"
         },
         {
@@ -374,8 +375,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 4483,
-          "outputTail": "llback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) published playbooks and actual durable cue composition > author race, immutable call pin, actual outbox normalization and authorized delivery\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 341 pass\n 122 skip\n 0 fail\n 2167 expect() calls\nRan 463 tests across 86 files. [4.47s]\n"
+          "durationMs": 3770,
+          "outputTail": "llback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) published playbooks and actual durable cue composition > author race, immutable call pin, actual outbox normalization and authorized delivery\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 341 pass\n 122 skip\n 0 fail\n 2167 expect() calls\nRan 463 tests across 86 files. [3.76s]\n"
         },
         {
           "name": "Stripe native billing with disposable PostgreSQL",
@@ -390,8 +391,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 3673,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-server/src/native-billing.postgres.integration.test.ts:\n(pass) native billing with durable PostgreSQL and simulated carrier-independent Stripe > isolates native subscriptions, survives partial payment/retry and projects only paid owned edits [1066.27ms]\n\npackages/dialer-server/src/native-billing.acceptance.test.ts:\n(pass) Stripe-native billing packages > keeps one recurring base item, a separate number invoice and the approved combined price [0.15ms]\n(pass) Stripe-native billing packages > requires an explicit all-seat coaching bundle and preserves base prices [0.06ms]\n(pass) Stripe-native billing packages > normalizes only one owned recurring item of the expected role and bounded quantity [0.12ms]\n\npackages/dialer-server/src/public-checkout.postgres.integration.test.ts:\n(pass) public checkout with disposable PostgreSQL and simulated Stripe > survives unknown outcomes, binds once, fences stale facts and retains legacy billing [1049.11ms]\n\npackages/dialer-server/src/database/migrations.postgres.integration.test.ts:\n(pass) LeadConnector company credential upgrades with isolated PostgreSQL > preserves existing installations, old ledger timestamps and recovered credentials, and bootstraps signed context [1180.72ms]\n\n 6 pass\n 0 fail\n 145 expect() calls\nRan 6 tests across 4 files. [3.65s]\n"
+          "durationMs": 2818,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-server/src/native-billing.postgres.integration.test.ts:\n(pass) native billing with durable PostgreSQL and simulated carrier-independent Stripe > isolates native subscriptions, survives partial payment/retry and projects only paid owned edits [832.00ms]\n\npackages/dialer-server/src/native-billing.acceptance.test.ts:\n(pass) Stripe-native billing packages > keeps one recurring base item, a separate number invoice and the approved combined price [0.14ms]\n(pass) Stripe-native billing packages > requires an explicit all-seat coaching bundle and preserves base prices [0.05ms]\n(pass) Stripe-native billing packages > normalizes only one owned recurring item of the expected role and bounded quantity [0.10ms]\n\npackages/dialer-server/src/public-checkout.postgres.integration.test.ts:\n(pass) public checkout with disposable PostgreSQL and simulated Stripe > survives unknown outcomes, binds once, fences stale facts and retains legacy billing [812.11ms]\n\npackages/dialer-server/src/database/migrations.postgres.integration.test.ts:\n(pass) LeadConnector company credential upgrades with isolated PostgreSQL > preserves existing installations, old ledger timestamps and recovered credentials, and bootstraps signed context [900.54ms]\n\n 6 pass\n 0 fail\n 145 expect() calls\nRan 6 tests across 4 files. [2.80s]\n"
         },
         {
           "name": "Consuelo CI planner contracts",
@@ -409,8 +410,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 600,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1701-dev-1702-published-playbooks-and-script-runtime\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/ci-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 218\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:26:34\n\u001b[2m   Duration \u001b[22m 378ms\u001b[2m (transform 79ms, setup 0ms, import 86ms, tests 218ms, environment 0ms)\u001b[22m\n\nSwitched to a new branch 'pr'\nSwitched to branch 'main'\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-ci-deletions-v4c68W/checkout'...\n"
+          "durationMs": 1525,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1701-dev-1702-published-playbooks-and-script-runtime\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/ci-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 282\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:32:58\n\u001b[2m   Duration \u001b[22m 777ms\u001b[2m (transform 397ms, setup 0ms, import 406ms, tests 282ms, environment 0ms)\u001b[22m\n\nSwitched to a new branch 'pr'\nSwitched to branch 'main'\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-ci-deletions-Sxi90t/checkout'...\n"
         }
       ],
       "failedSuites": []

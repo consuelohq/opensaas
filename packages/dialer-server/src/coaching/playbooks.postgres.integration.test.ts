@@ -180,10 +180,20 @@ suite('published playbooks and actual durable cue composition', () => {
       };
       const preview = await request(
         '/v1/coaching/scripts/' + scriptId + '/preview',
-        publication,
+        { expectedRevision: 1 },
       );
       expect(preview.status).toBe(200);
-      expect((await preview.json()).preview.playbook.cards).toHaveLength(6);
+      const previewBody = await preview.json();
+      expect(previewBody.preview.playbook.cards).toHaveLength(6);
+      expect(previewBody.expectedPublishedVersion).toBe(0);
+      expect(
+        (
+          await request('/v1/coaching/scripts/' + scriptId + '/publish', {
+            expectedRevision: 1,
+            approved: true,
+          })
+        ).status,
+      ).toBe(400);
       const race = await Promise.all([
         request('/v1/coaching/scripts/' + scriptId + '/publish', publication),
         request('/v1/coaching/scripts/' + scriptId + '/publish', publication),
@@ -326,11 +336,23 @@ suite('published playbooks and actual durable cue composition', () => {
         ),
         expectedRevision: 1,
       });
-      await runtime.mercury.playbooks.publish(identity, scriptId, {
-        ...publication,
-        expectedRevision: 2,
-        expectedPublishedVersion: 1,
-      });
+      const historyPreview = await request(
+        '/v1/coaching/scripts/' + scriptId + '/preview',
+        { expectedRevision: 2 },
+      );
+      expect(historyPreview.status).toBe(200);
+      const reviewed = await historyPreview.json();
+      expect(reviewed.expectedPublishedVersion).toBe(1);
+      expect(reviewed.preview.version).toBe(2);
+      expect(
+        (
+          await request('/v1/coaching/scripts/' + scriptId + '/publish', {
+            expectedRevision: 2,
+            expectedPublishedVersion: reviewed.expectedPublishedVersion,
+            approved: true,
+          })
+        ).status,
+      ).toBe(200);
       expect(
         (
           await (

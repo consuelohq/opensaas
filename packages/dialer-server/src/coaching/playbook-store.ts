@@ -30,6 +30,10 @@ export type PublishInput = {
   companyPolicyVersion?: string;
   rules?: unknown;
 };
+export type PreviewInput = Omit<
+  PublishInput,
+  'expectedPublishedVersion' | 'approved'
+>;
 export type Publication = {
   version: number;
   sourceRevision: number;
@@ -40,7 +44,7 @@ export type PlaybookStore = {
   preview(
     identity: DialerIdentity,
     id: string,
-    input: PublishInput,
+    input: PreviewInput,
   ): Promise<CompiledPlaybook>;
   publish(
     identity: DialerIdentity,
@@ -158,7 +162,29 @@ export function createPlaybookStore(
     }
   };
   return {
-    preview: compile,
+    async preview(identity, id, input) {
+      try {
+        await load(identity, id, true);
+        const row = (
+          await database.query<{ version: number }>(
+            'SELECT COALESCE(MAX(version),0) AS version FROM dialer_coaching_script_publications WHERE workspace_id=$1 AND script_id=$2::uuid',
+            [identity.workspaceId, id],
+          )
+        ).rows[0];
+        const ordinal = Number(row?.version ?? 0);
+        if (!Number.isSafeInteger(ordinal) || ordinal < 0)
+          throw new Error('Stored publication ordinal is invalid');
+        return await compile(identity, id, {
+          ...input,
+          expectedPublishedVersion: ordinal,
+          approved: false,
+        });
+      } catch (cause: unknown) {
+        throw cause instanceof Error
+          ? cause
+          : new Error('Playbook preview failed', { cause });
+      }
+    },
     async publish(identity, id, input) {
       try {
         if (input.approved !== true)
