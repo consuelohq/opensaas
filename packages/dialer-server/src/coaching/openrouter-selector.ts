@@ -4,6 +4,45 @@ import type {
 } from './context-selector';
 import { createHash } from 'node:crypto';
 
+export type ProviderAttemptUsage = {
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  cost?: number;
+  cachedInputTokens?: number;
+  cacheWriteTokens?: number;
+  reasoningTokens?: number;
+};
+export type ProviderAttemptStage =
+  | 'accepted'
+  | 'transport'
+  | 'http'
+  | 'body'
+  | 'identity'
+  | 'choices'
+  | 'finish'
+  | 'content'
+  | 'schema'
+  | 'selection'
+  | 'card'
+  | 'slots'
+  | 'evidence'
+  | 'abstention'
+  | 'aborted';
+export type ProviderFinishReason =
+  | 'stop'
+  | 'length'
+  | 'content_filter'
+  | 'tool_calls'
+  | 'error'
+  | 'other';
+export type ProviderAttempt = {
+  stage: ProviderAttemptStage;
+  status?: number;
+  finishReason?: ProviderFinishReason;
+  usage?: ProviderAttemptUsage;
+};
+
 /** Provider failures contain only these stable codes, never response or request data. */
 export class OpenRouterSelectorError extends Error {
   constructor(
@@ -28,6 +67,7 @@ export type OpenRouterSelectorConfig = {
   }>;
   getApiKey: () => string;
   fetch: typeof globalThis.fetch;
+  onProviderAttempt?: (attempt: ProviderAttempt) => void;
   onProviderMetadata?: (metadata: {
     model: string;
     provider: string;
@@ -48,6 +88,10 @@ const encoder = new TextEncoder();
 const size = (s: string) => encoder.encode(s).length;
 const validName = (s: unknown): s is string =>
   typeof s === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,255}$/.test(s);
+export const validResponseProviderName = (s: unknown): s is string =>
+  typeof s === 'string' &&
+  s.trim() === s &&
+  /^[a-zA-Z0-9](?:[a-zA-Z0-9_.:/ -]{0,254}[a-zA-Z0-9_.:/-])?$/.test(s);
 const safeId = (s: unknown): s is string =>
   validName(s) && !/^(?:\+?\d[-.]?){7,}$/.test(s);
 const unique = (xs: readonly unknown[]) => new Set(xs).size === xs.length;
@@ -71,6 +115,7 @@ export function createOpenRouterSelector(
     getApiKey,
     fetch: fetcher,
     onProviderMetadata,
+    onProviderAttempt,
   } = options;
   if (
     !Array.isArray(options.allowedRequestProviderTags) ||
@@ -105,7 +150,7 @@ export function createOpenRouterSelector(
     !responseProviderNames.length ||
     !responseModels.length ||
     !requestProviderTags.every(validName) ||
-    !responseProviderNames.every(validName) ||
+    !responseProviderNames.every(validResponseProviderName) ||
     !responseModels.every(validName) ||
     !unique(requestProviderTags) ||
     !unique(responseProviderNames) ||
@@ -113,7 +158,8 @@ export function createOpenRouterSelector(
     typeof getApiKey !== 'function' ||
     typeof fetcher !== 'function' ||
     (onProviderMetadata !== undefined &&
-      typeof onProviderMetadata !== 'function')
+      typeof onProviderMetadata !== 'function') ||
+    (onProviderAttempt !== undefined && typeof onProviderAttempt !== 'function')
   )
     throw new OpenRouterSelectorError('CONFIG');
   const sourceVersion = `${OPENROUTER_SELECTOR_REVISION}:${createHash('sha256')
@@ -340,6 +386,11 @@ export function createOpenRouterSelector(
     };
     callerSignal.addEventListener('abort', abort, { once: true });
     const timer = setTimeout(abort, 5000);
+    let attempted = false;
+    let stage: ProviderAttemptStage = 'transport';
+    let status: number | undefined;
+    let finishReason: ProviderFinishReason | undefined;
+    let attemptUsage: ProviderAttemptUsage | undefined;
     try {
       const work = async () => {
         let apiKey: string;
@@ -352,6 +403,7 @@ export function createOpenRouterSelector(
           throw new OpenRouterSelectorError('CONFIG');
         let response: Response;
         try {
+          attempted = true;
           response = await fetcher(
             'https://openrouter.ai/api/v1/chat/completions',
             {
@@ -367,14 +419,22 @@ export function createOpenRouterSelector(
         } catch {
           throw new OpenRouterSelectorError('PROVIDER');
         }
+        status =
+          Number.isInteger(response.status) &&
+          response.status >= 100 &&
+          response.status <= 599
+            ? response.status
+            : undefined;
         if (controller.signal.aborted) {
           cancelBody(response.body);
           throw new OpenRouterSelectorError('ABORTED');
         }
         if (!response.ok) {
+          stage = 'http';
           cancelBody(response.body);
           throw new OpenRouterSelectorError('PROVIDER');
         }
+        stage = 'body';
         const length = response.headers.get('content-length');
         if (length && (!/^\d+$/.test(length) || Number(length) > LIMIT)) {
           cancelBody(response.body);
@@ -409,12 +469,13 @@ export function createOpenRouterSelector(
         } catch {
           throw new OpenRouterSelectorError('RESPONSE');
         }
+        stage = 'identity';
         if (
           !obj(envelope) ||
-          !responseModels.includes(String(envelope.model)) ||
-          !responseProviderNames.includes(String(envelope.provider)) ||
-          !Array.isArray(envelope.choices) ||
-          envelope.choices.length !== 1
+          typeof envelope.model !== 'string' ||
+          !responseModels.includes(envelope.model) ||
+          typeof envelope.provider !== 'string' ||
+          !responseProviderNames.includes(envelope.provider)
         )
           throw new OpenRouterSelectorError('RESPONSE');
         const usage: {
@@ -441,6 +502,25 @@ export function createOpenRouterSelector(
           if (typeof cost === 'number' && Number.isFinite(cost) && cost >= 0)
             usage.cost = cost;
         }
+        attemptUsage = { ...usage };
+        if (obj(envelope.usage)) {
+          const prompt = envelope.usage.prompt_tokens_details;
+          const completion = envelope.usage.completion_tokens_details;
+          for (const [source, target, details] of [
+            ['cached_tokens', 'cachedInputTokens', prompt],
+            ['cache_write_tokens', 'cacheWriteTokens', prompt],
+            ['reasoning_tokens', 'reasoningTokens', completion],
+          ] as const) {
+            const value = obj(details) ? details[source] : undefined;
+            if (
+              typeof value === 'number' &&
+              Number.isSafeInteger(value) &&
+              value >= 0
+            )
+              attemptUsage[target] = value;
+          }
+        }
+        if (!Object.keys(attemptUsage).length) attemptUsage = undefined;
         const metadata = {
           model: String(envelope.model),
           provider: String(envelope.provider),
@@ -448,7 +528,22 @@ export function createOpenRouterSelector(
           selectorRevision: OPENROUTER_SELECTOR_REVISION,
           ...(Object.keys(usage).length ? { usage } : {}),
         };
+        stage = 'choices';
+        if (!Array.isArray(envelope.choices) || envelope.choices.length !== 1)
+          throw new OpenRouterSelectorError('RESPONSE');
         const choice = envelope.choices[0];
+        if (obj(choice) && typeof choice.finish_reason === 'string') {
+          const reason = choice.finish_reason;
+          finishReason =
+            reason === 'stop' ||
+            reason === 'length' ||
+            reason === 'content_filter' ||
+            reason === 'tool_calls' ||
+            reason === 'error'
+              ? reason
+              : 'other';
+        }
+        stage = 'finish';
         if (
           !obj(choice) ||
           choice.finish_reason !== 'stop' ||
@@ -460,12 +555,14 @@ export function createOpenRouterSelector(
           choice.message.function_call != null
         )
           throw new OpenRouterSelectorError('RESPONSE');
+        stage = 'content';
         let output: unknown;
         try {
           output = JSON.parse(choice.message.content);
         } catch {
           throw new OpenRouterSelectorError('RESPONSE');
         }
+        stage = 'schema';
         if (
           !obj(output) ||
           !keys(output, ['cardId', 'slotIds', 'evidence']) ||
@@ -478,6 +575,7 @@ export function createOpenRouterSelector(
         )
           throw new OpenRouterSelectorError('RESPONSE');
         if (output.cardId === null) {
+          stage = 'abstention';
           if (output.slotIds.length || output.evidence.length)
             throw new OpenRouterSelectorError('RESPONSE');
           assertActive();
@@ -487,15 +585,20 @@ export function createOpenRouterSelector(
             /* Metadata observers cannot change selection. */
           }
           assertActive();
+          stage = 'accepted';
           return { cardId: null, slotIds: [], evidence: [] };
         }
+        stage = 'card';
         const card = cards.find((c) => c.cardId === output.cardId);
+        if (!card) throw new OpenRouterSelectorError('RESPONSE');
+        stage = 'slots';
         if (
-          !card ||
           !output.slotIds.length ||
-          !output.evidence.length ||
           !output.slotIds.every((s) => card.slotIds.includes(s))
         )
+          throw new OpenRouterSelectorError('RESPONSE');
+        stage = 'evidence';
+        if (!output.evidence.length)
           throw new OpenRouterSelectorError('RESPONSE');
         const evidenceKeys: string[] = [];
         for (const item of output.evidence) {
@@ -521,6 +624,7 @@ export function createOpenRouterSelector(
           /* Metadata observers cannot change selection. */
         }
         assertActive();
+        stage = 'accepted';
         return {
           cardId: card.cardId,
           slotIds: output.slotIds,
@@ -538,6 +642,19 @@ export function createOpenRouterSelector(
     } finally {
       clearTimeout(timer);
       callerSignal.removeEventListener('abort', abort);
+      if (attempted) {
+        const aborted = controller.signal.aborted || callerSignal.aborted;
+        try {
+          onProviderAttempt?.({
+            stage: aborted ? 'aborted' : stage,
+            ...(status === undefined ? {} : { status }),
+            ...(!aborted && finishReason ? { finishReason } : {}),
+            ...(!aborted && attemptUsage ? { usage: attemptUsage } : {}),
+          });
+        } catch {
+          /* Observers cannot change selection. */
+        }
+      }
       // A stream may close its reader before its underlying cancel work settles.
       await cancellation;
       try {

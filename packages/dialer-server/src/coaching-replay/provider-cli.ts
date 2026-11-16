@@ -200,6 +200,7 @@ async function main() {
         completionTokenReports: report.completionTokenReports,
         completionTokensReported: report.completionTokensReported,
         costReports: report.costReports,
+        diagnostics: report.diagnostics,
       }) + '\n',
     );
   } catch (error: unknown) {

@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { createOpenRouterSelector } from './openrouter-selector';
+import {
+  createOpenRouterSelector,
+  type ProviderAttempt,
+} from './openrouter-selector';
 import type { ClosedSetSelectorInput } from './context-selector';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -113,6 +116,214 @@ const result = (value: unknown, extra: Record<string, unknown> = {}) =>
   );
 
 describe('OpenRouter closed-set selector', () => {
+  test('matches spaced response provider display names exactly without relaxing routing names', async () => {
+    const cfg = {
+      ...config(),
+      allowedResponseProviderNames: ['Amazon Bedrock'],
+    };
+    const selector = createOpenRouterSelector({
+      ...cfg,
+      fetch: (async () =>
+        result(selection, {
+          provider: 'Amazon Bedrock',
+        })) as unknown as typeof globalThis.fetch,
+    });
+    expect(await selector.select(input())).toEqual(selection);
+    const mismatch = createOpenRouterSelector({
+      ...cfg,
+      fetch: (async () =>
+        result(selection, {
+          provider: 'Amazon Bedrock ',
+        })) as unknown as typeof globalThis.fetch,
+    });
+    await expect(mismatch.select(input())).rejects.toMatchObject({
+      code: 'RESPONSE',
+    });
+    for (const display of [
+      ' Amazon Bedrock',
+      'Amazon Bedrock ',
+      'Amazon\nBedrock',
+      'Amazon Bedrock\n',
+      'Amazon\tBedrock',
+      'A'.repeat(257),
+      '',
+      42,
+    ]) {
+      expect(() =>
+        createOpenRouterSelector({
+          ...cfg,
+          allowedResponseProviderNames: [display],
+          fetch: globalThis.fetch,
+        } as never),
+      ).toThrow('CONFIG');
+    }
+    for (const field of ['model', 'providerRevision'] as const) {
+      expect(() =>
+        createOpenRouterSelector({
+          ...cfg,
+          [field]: 'Amazon Bedrock',
+          fetch: globalThis.fetch,
+        }),
+      ).toThrow('CONFIG');
+    }
+    for (const field of [
+      'allowedRequestProviderTags',
+      'allowedResponseModels',
+    ] as const) {
+      expect(() =>
+        createOpenRouterSelector({
+          ...cfg,
+          [field]: ['Amazon Bedrock'],
+          fetch: globalThis.fetch,
+        }),
+      ).toThrow('CONFIG');
+    }
+  });
+  test('reports safe attempt usage independently of rejected output and isolates observers', async () => {
+    const attempts: unknown[] = [],
+      accepted: unknown[] = [];
+    const selector = createOpenRouterSelector({
+      ...config(),
+      onProviderMetadata: (v) => accepted.push(v),
+      onProviderAttempt: (v) => {
+        attempts.push(v);
+        throw Error(secret);
+      },
+      fetch: (async () =>
+        result(
+          { ...selection, cardId: 'invented' },
+          {
+            usage: {
+              cost: 0.0001,
+              prompt_tokens: 4,
+              prompt_tokens_details: {
+                cached_tokens: 0,
+                cache_write_tokens: 3,
+              },
+              completion_tokens_details: { reasoning_tokens: 2 },
+              secret,
+            },
+          },
+        )) as unknown as typeof globalThis.fetch,
+    });
+    await expect(selector.select(input())).rejects.toMatchObject({
+      code: 'RESPONSE',
+    });
+    expect(accepted).toEqual([]);
+    expect(attempts).toEqual([
+      {
+        stage: 'card',
+        status: 200,
+        finishReason: 'stop',
+        usage: {
+          cost: 0.0001,
+          promptTokens: 4,
+          cachedInputTokens: 0,
+          cacheWriteTokens: 3,
+          reasoningTokens: 2,
+        },
+      },
+    ]);
+    expect(JSON.stringify(attempts)).not.toContain(secret);
+    const success = createOpenRouterSelector({
+      ...config(),
+      onProviderAttempt: () => {
+        throw Error(secret);
+      },
+      fetch: (async () =>
+        result(selection)) as unknown as typeof globalThis.fetch,
+    });
+    expect(await success.select(input())).toEqual(selection);
+  });
+
+  test('never reports cost for non-success, identity mismatch or aborted body', async () => {
+    for (const response of [
+      new Response(secret, { status: 429 }),
+      result(selection, { provider: 'wrong', usage: { cost: 0 } }),
+    ]) {
+      const attempts: ProviderAttempt[] = [];
+      const selector = createOpenRouterSelector({
+        ...config(),
+        onProviderAttempt: (v) => attempts.push(v),
+        fetch: (async () => response) as unknown as typeof globalThis.fetch,
+      });
+      await expect(selector.select(input())).rejects.toThrow();
+      expect(attempts).toHaveLength(1);
+      expect(attempts[0].usage).toBeUndefined();
+    }
+    const controller = new AbortController(),
+      attempts: ProviderAttempt[] = [];
+    const selector = createOpenRouterSelector({
+      ...config(),
+      onProviderAttempt: (v) => attempts.push(v),
+      fetch: (async () =>
+        new Response(
+          new ReadableStream({
+            pull(c) {
+              c.enqueue(new TextEncoder().encode('{}'));
+              controller.abort();
+              c.close();
+            },
+          }),
+        )) as unknown as typeof globalThis.fetch,
+    });
+    const request = input();
+    request.signal = controller.signal;
+    await expect(selector.select(request)).rejects.toMatchObject({
+      code: 'ABORTED',
+    });
+    expect(attempts).toHaveLength(1);
+    expect(attempts[0].usage).toBeUndefined();
+  });
+  test('normalizes finish reasons without exposing arbitrary provider strings', async () => {
+    for (const [reason, expected] of [
+      ['length', 'length'],
+      [secret, 'other'],
+    ] as const) {
+      const attempts: ProviderAttempt[] = [];
+      const selector = createOpenRouterSelector({
+        ...config(),
+        onProviderAttempt: (v) => attempts.push(v),
+        fetch: (async () =>
+          result(selection, {
+            choices: [
+              {
+                finish_reason: reason,
+                message: { role: 'assistant', content: '{}' },
+              },
+            ],
+          })) as unknown as typeof globalThis.fetch,
+      });
+      await expect(selector.select(input())).rejects.toThrow();
+      expect(attempts[0].finishReason).toBe(expected);
+      expect(JSON.stringify(attempts)).not.toContain(secret);
+    }
+  });
+  test('identifies selection rejection boundaries without exposing identifiers', async () => {
+    const cases = [
+      [{ ...selection, cardId: secret }, 'card'],
+      [{ ...selection, slotIds: [secret] }, 'slots'],
+      [
+        { ...selection, evidence: [{ segmentId: secret, segmentRevision: 1 }] },
+        'evidence',
+      ],
+      [{ cardId: null, slotIds: [secret], evidence: [] }, 'abstention'],
+    ] as const;
+    for (const [value, stage] of cases) {
+      const attempts: unknown[] = [];
+      const selector = createOpenRouterSelector({
+        ...config(),
+        onProviderAttempt: (v) => attempts.push(v),
+        fetch: (async () =>
+          result(value)) as unknown as typeof globalThis.fetch,
+      });
+      await expect(selector.select(input())).rejects.toMatchObject({
+        code: 'RESPONSE',
+      });
+      expect(attempts).toMatchObject([{ stage }]);
+      expect(JSON.stringify(attempts)).not.toContain(secret);
+    }
+  });
   test('copies explicit price ceilings into routing and never enables remote caching', async () => {
     let sent: Record<string, unknown> = {};
     const cfg = {
@@ -196,7 +407,8 @@ describe('OpenRouter closed-set selector', () => {
   });
   test('sends scoped data and a strict enum schema through approved routing', async () => {
     let request:
-      { url: string; body: RequestBody; headers: Headers } | undefined;
+      | { url: string; body: RequestBody; headers: Headers }
+      | undefined;
     const fetch = async (url: string | URL | Request, init?: RequestInit) => {
       request = {
         url: String(url),

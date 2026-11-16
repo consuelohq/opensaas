@@ -69,6 +69,38 @@ describe('provider result artifact', () => {
       expect(() =>
         serializeProviderReport({ ...report, unreconciledCharges: 0 }),
       ).toThrow();
+      const diagnostics = {
+        stages: { finish: 1 },
+        statuses: { '200': 1 },
+        finishReasons: { length: 1 },
+        cachedInputTokens: { reports: 1, total: 0 },
+        cacheWriteTokens: { reports: 0, total: null },
+        reasoningTokens: { reports: 0, total: null },
+      };
+      expect(() =>
+        serializeProviderReport({ ...report, diagnostics }),
+      ).not.toThrow();
+      expect(() =>
+        serializeProviderReport({
+          ...report,
+          diagnostics: { ...diagnostics, stages: { 'private text': 1 } },
+        } as unknown as ProviderReport),
+      ).toThrow();
+      expect(() =>
+        serializeProviderReport({
+          ...report,
+          diagnostics: {
+            ...diagnostics,
+            cachedInputTokens: { reports: 0, total: 0 },
+          },
+        }),
+      ).toThrow();
+      expect(() =>
+        serializeProviderReport({
+          ...report,
+          diagnostics: { ...diagnostics, statuses: { '200': 2 } },
+        }),
+      ).toThrow();
       expect(() =>
         serializeProviderReport({
           ...report,

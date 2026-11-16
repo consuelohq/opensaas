@@ -33,6 +33,167 @@ const config = parseProviderConfig({
   pricingAsOf: '2026-11-14',
 });
 describe('provider benchmark end-to-end mechanics, injected local fake only', () => {
+  it('queues affordable requests at the capacity implied by the reservation cap', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'provider-capacity-'));
+    const bounded = {
+      ...config,
+      scenarioCount: 6,
+      maxRequests: 6,
+      maxReservedNanoUsd: 4024,
+    };
+    let active = 0,
+      peak = 0,
+      calls = 0;
+    try {
+      const report = await runProviderBenchmark({
+        config: bounded,
+        fingerprint: 'f'.repeat(64),
+        directory,
+        integrity: () => true,
+        getApiKey: () => 'fixture-only',
+        fetcher: async () => {
+          calls++;
+          active++;
+          peak = Math.max(peak, active);
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          active--;
+          return new Response(
+            JSON.stringify({
+              model: 'fixture/model',
+              provider: 'Fixture',
+              choices: [
+                {
+                  finish_reason: 'stop',
+                  message: {
+                    role: 'assistant',
+                    content: JSON.stringify({
+                      cardId: null,
+                      slotIds: [],
+                      evidence: [],
+                    }),
+                  },
+                },
+              ],
+              usage: { cost: 0.0000001 },
+            }),
+          );
+        },
+      });
+      expect(report.reservationPerRequestNanoUsd).toBe(1512);
+      expect(calls).toBe(6);
+      expect(report.attempts).toBe(6);
+      expect(report.settlements).toBe(6);
+      expect(report.refused).toBe(0);
+      expect(report.unreconciledCharges).toBe(0);
+      expect(peak).toBe(2);
+      expect(peak).toBeLessThanOrEqual(
+        Math.min(
+          4,
+          Math.floor(
+            bounded.maxReservedNanoUsd / report.reservationPerRequestNanoUsd,
+          ),
+        ),
+      );
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+  it('settles rejected responses with trusted costs and distinguishes missing cache counters from zero', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'provider-rejected-'));
+    let calls = 0;
+    try {
+      const report = await runProviderBenchmark({
+        config,
+        fingerprint: 'f'.repeat(64),
+        directory,
+        integrity: () => true,
+        getApiKey: () => 'fixture-only',
+        fetcher: async () => {
+          calls++;
+          return new Response(
+            JSON.stringify({
+              model: 'fixture/model',
+              provider: 'Fixture',
+              choices: [
+                {
+                  finish_reason: 'length',
+                  message: { role: 'assistant', content: 'private generation' },
+                },
+              ],
+              usage: {
+                cost: 0.0000001,
+                prompt_tokens: 7,
+                completion_tokens: 2,
+                ...(calls === 1
+                  ? { prompt_tokens_details: { cached_tokens: 0 } }
+                  : {}),
+              },
+            }),
+          );
+        },
+      });
+      expect(report.metadataResponses).toBe(0);
+      expect(report.costReports).toBe(3);
+      expect(report.promptTokenReports).toBe(3);
+      expect(report.promptTokensReported).toBe(21);
+      expect(report.completionTokenReports).toBe(3);
+      expect(report.completionTokensReported).toBe(6);
+      expect(report.settlements).toBe(3);
+      expect(report.reservedNanoUsd).toBe(0);
+      expect(report.diagnostics?.stages.finish).toBe(3);
+      expect(report.diagnostics?.finishReasons.length).toBe(3);
+      expect(report.diagnostics?.cachedInputTokens).toEqual({
+        reports: 1,
+        total: 0,
+      });
+      expect(report.diagnostics?.cacheWriteTokens).toEqual({
+        reports: 0,
+        total: null,
+      });
+      expect(
+        readFileSync(join(directory, 'provider-replay-v1.json'), 'utf8'),
+      ).not.toContain('private generation');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+  it('keeps reservations for non-success and identity failures, and counts physical transport failures', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'provider-unknown-'));
+    let calls = 0;
+    try {
+      const report = await runProviderBenchmark({
+        config,
+        fingerprint: 'f'.repeat(64),
+        directory,
+        integrity: () => true,
+        getApiKey: () => 'fixture-only',
+        fetcher: async () => {
+          calls++;
+          if (calls === 1) return new Response('private', { status: 429 });
+          if (calls === 2)
+            return new Response(
+              JSON.stringify({
+                model: 'wrong',
+                provider: 'Fixture',
+                usage: { cost: 0 },
+              }),
+            );
+          throw Error('private');
+        },
+      });
+      expect(report.settlements).toBe(0);
+      expect(report.unreconciledCharges).toBe(3);
+      expect(report.costReports).toBe(0);
+      expect(report.diagnostics?.stages).toEqual({
+        http: 1,
+        identity: 1,
+        transport: 1,
+      });
+      expect(report.diagnostics?.statuses).toEqual({ '429': 1, '200': 1 });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
   it('measures real serialized synthetic requests without network', async () => {
     const bounds = await measureSyntheticRequestBytes(config);
     expect(bounds.requests).toBe(3);
@@ -199,7 +360,8 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
       release = resolve;
     });
     let schedulerRef:
-      import('../coaching/context-scheduler').ContextScheduler | undefined;
+      | import('../coaching/context-scheduler').ContextScheduler
+      | undefined;
     try {
       const report = await runProviderBenchmark({
         config: { ...config, scenarioCount: 1, maxRequests: 1 },

@@ -147,9 +147,13 @@ export async function runProviderBenchmark(input: {
   const { config, fingerprint } = input,
     cases = benchmarkCases(config.scenarioCount);
   const ledger = createProviderLedger(input.directory, fingerprint);
+  const physicalSignals = new WeakSet<AbortSignal>();
   const gate = createBudgetedFetch(
     config,
-    input.fetcher,
+    (request, init) => {
+      if (init?.signal) physicalSignals.add(init.signal);
+      return input.fetcher(request, init);
+    },
     input.integrity,
     ledger.record,
   );
@@ -159,8 +163,24 @@ export async function runProviderBenchmark(input: {
     costReports = 0;
   let promptTokensReported: number | null = null,
     completionTokensReported: number | null = null;
+  const diagnostics: import('./provider-artifact').ProviderDiagnostics = {
+    stages: {},
+    statuses: {},
+    finishReasons: {},
+    cachedInputTokens: { reports: 0, total: null },
+    cacheWriteTokens: { reports: 0, total: null },
+    reasoningTokens: { reports: 0, total: null },
+  };
+  let reportClosed = false;
   try {
-    const scheduler = createContextScheduler();
+    const scheduler = createContextScheduler({
+      concurrency: Math.min(
+        4,
+        Math.floor(
+          config.maxReservedNanoUsd / gate.reservationPerRequestNanoUsd,
+        ),
+      ),
+    });
     const create: Parameters<typeof runTextReplay>[0]['create'] = (
       scope,
       emit,
@@ -169,25 +189,65 @@ export async function runProviderBenchmark(input: {
       if (input.testSessionFactory)
         return input.testSessionFactory(scope, emit, clock, scheduler);
       const ticket = scope.callSessionId;
+      let signal: AbortSignal | undefined;
+      const fetchForTicket = gate.fetchFor(ticket);
       const selector = createOpenRouterSelector({
         ...transportOptions(config),
         getApiKey: input.getApiKey,
-        fetch: gate.fetchFor(ticket) as typeof globalThis.fetch,
-        onProviderMetadata: (meta) => {
+        fetch: ((request, init) => {
+          signal = init?.signal ?? undefined;
+          return fetchForTicket(request, init);
+        }) as typeof globalThis.fetch,
+        onProviderMetadata: () => {
           metadataResponses++;
-          if (meta.usage?.promptTokens !== undefined) {
-            promptTokenReports++;
-            promptTokensReported =
-              (promptTokensReported ?? 0) + meta.usage.promptTokens;
+        },
+        onProviderAttempt: (attempt) => {
+          if (reportClosed || !signal || !physicalSignals.has(signal)) return;
+          diagnostics.stages[attempt.stage] =
+            (diagnostics.stages[attempt.stage] ?? 0) + 1;
+          if (attempt.status !== undefined) {
+            const status = String(attempt.status);
+            diagnostics.statuses[status] =
+              (diagnostics.statuses[status] ?? 0) + 1;
           }
-          if (meta.usage?.completionTokens !== undefined) {
+          if (attempt.finishReason)
+            diagnostics.finishReasons[attempt.finishReason] =
+              (diagnostics.finishReasons[attempt.finishReason] ?? 0) + 1;
+          const prompt = attempt.usage?.promptTokens;
+          if (
+            prompt !== undefined &&
+            Number.isSafeInteger((promptTokensReported ?? 0) + prompt)
+          ) {
+            promptTokenReports++;
+            promptTokensReported = (promptTokensReported ?? 0) + prompt;
+          }
+          const completion = attempt.usage?.completionTokens;
+          if (
+            completion !== undefined &&
+            Number.isSafeInteger((completionTokensReported ?? 0) + completion)
+          ) {
             completionTokenReports++;
             completionTokensReported =
-              (completionTokensReported ?? 0) + meta.usage.completionTokens;
+              (completionTokensReported ?? 0) + completion;
           }
-          if (meta.usage?.cost !== undefined) {
+          for (const key of [
+            'cachedInputTokens',
+            'cacheWriteTokens',
+            'reasoningTokens',
+          ] as const) {
+            const value = attempt.usage?.[key],
+              target = diagnostics[key];
+            if (
+              value !== undefined &&
+              Number.isSafeInteger((target.total ?? 0) + value)
+            ) {
+              target.reports++;
+              target.total = (target.total ?? 0) + value;
+            }
+          }
+          if (attempt.usage?.cost !== undefined) {
             costReports++;
-            gate.settle(ticket, meta.usage.cost);
+            gate.settle(ticket, attempt.usage.cost);
           }
         },
       });
@@ -207,6 +267,7 @@ export async function runProviderBenchmark(input: {
     // Give already-settled selector jobs one event-loop turn to release their
     // scheduler slots. Never wait for a potentially non-cooperative transport.
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    reportClosed = true;
     gate.finalize();
     const budget = gate.counters();
     const schedulerState = scheduler.diagnostics();
@@ -234,11 +295,13 @@ export async function runProviderBenchmark(input: {
       completionTokenReports,
       completionTokensReported,
       costReports,
+      diagnostics,
       results,
     };
     ledger.writeReport(report);
     return report;
   } finally {
+    reportClosed = true;
     gate.finalize();
     ledger.close();
   }

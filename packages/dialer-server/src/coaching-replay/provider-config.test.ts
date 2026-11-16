@@ -28,6 +28,48 @@ const snapshot = {
   files: [{ path: 'fixture.ts', sha256: 'a'.repeat(64) }],
 };
 describe('provider benchmark preflight', () => {
+  it('accepts spaced response display names only and rejects unsafe or drifting names', () => {
+    expect(
+      parseProviderConfig({
+        ...value,
+        allowedResponseProviderNames: ['Amazon Bedrock'],
+      }).allowedResponseProviderNames,
+    ).toEqual(['Amazon Bedrock']);
+    for (const display of [
+      ' Amazon Bedrock',
+      'Amazon Bedrock ',
+      'Amazon\nBedrock',
+      'Amazon Bedrock\n',
+      'Amazon\tBedrock',
+      'A'.repeat(257),
+      '',
+      42,
+    ]) {
+      expect(() =>
+        parseProviderConfig({
+          ...value,
+          allowedResponseProviderNames: [display],
+        }),
+      ).toThrow('CONFIG');
+    }
+    for (const field of [
+      'model',
+      'providerRevision',
+      'transportRevision',
+    ] as const) {
+      expect(() =>
+        parseProviderConfig({ ...value, [field]: 'Amazon Bedrock' }),
+      ).toThrow('CONFIG');
+    }
+    for (const field of [
+      'allowedRequestProviderTags',
+      'allowedResponseModels',
+    ] as const) {
+      expect(() =>
+        parseProviderConfig({ ...value, [field]: ['Amazon Bedrock'] }),
+      ).toThrow('CONFIG');
+    }
+  });
   it('refuses missing opt-in, incomplete config, source drift and unreviewed fingerprints', () => {
     const config = parseProviderConfig(value),
       fingerprint = configurationFingerprint(
