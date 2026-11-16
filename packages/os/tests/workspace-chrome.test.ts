@@ -6,7 +6,7 @@ import { renderWorkspaceChromeBar, workspaceChromeClientScript } from '../script
 
 const browserTest = existsSync(chromium.executablePath()) ? it : it.skip;
 
-browserTest('follows the live menu order for numeric shortcuts and shows contextual help without stealing typing', async () => {
+browserTest('reserves bare and Option+number for user hotkeys; navigates only with Ctrl+Shift+number', async () => {
   const browser = await chromium.launch({ headless: true });
   try {
     const page = await browser.newPage();
@@ -40,6 +40,10 @@ browserTest('follows the live menu order for numeric shortcuts and shows context
     await page.keyboard.press('Escape');
     expect(await dialog.count()).toBe(0);
     await page.keyboard.press('5');
+    expect(page.url()).toBe('https://internal.consuelohq.com/configuration');
+    await page.keyboard.press('Alt+0');
+    expect(page.url()).toBe('https://internal.consuelohq.com/configuration');
+    await page.keyboard.press('Control+Shift+Digit5');
     await page.waitForURL('**/journal');
   } finally {
     await browser.close();

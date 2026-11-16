@@ -11,7 +11,7 @@ const value = {
   allowedRequestProviderTags: ['fixture'],
   allowedResponseModels: ['fixture/model'],
   allowedResponseProviderNames: ['Fixture'],
-  transportRevision: 'fixture-prompt-v1',
+  transportRevision: 'closed-set-openrouter-v2',
   scenarioCount: 2,
   maxRequests: 2,
   maxReservedNanoUsd: 100000,
@@ -28,6 +28,80 @@ const snapshot = {
   files: [{ path: 'fixture.ts', sha256: 'a'.repeat(64) }],
 };
 describe('provider benchmark preflight', () => {
+  it('rejects stale wire revisions and binds the reviewed v2 contract into the fingerprint', () => {
+    const config = parseProviderConfig(value);
+    expect(config.transportRevision).toBe('closed-set-openrouter-v2');
+    for (const transportRevision of [
+      'closed-set-openrouter-v1',
+      'fixture-prompt-v1',
+    ])
+      expect(() =>
+        parseProviderConfig({ ...value, transportRevision }),
+      ).toThrow('CONFIG');
+    expect(
+      configurationFingerprint(config, snapshot, '/fixture/private'),
+    ).not.toBe(
+      configurationFingerprint(
+        { ...config, transportRevision: 'closed-set-openrouter-v1' },
+        snapshot,
+        '/fixture/private',
+      ),
+    );
+    expect(
+      configurationFingerprint(config, snapshot, '/fixture/private'),
+    ).not.toBe(
+      configurationFingerprint(
+        config,
+        {
+          ...snapshot,
+          files: [{ path: 'fixture.ts', sha256: 'b'.repeat(64) }],
+        },
+        '/fixture/private',
+      ),
+    );
+  });
+  it('accepts spaced response display names only and rejects unsafe or drifting names', () => {
+    expect(
+      parseProviderConfig({
+        ...value,
+        allowedResponseProviderNames: ['Amazon Bedrock'],
+      }).allowedResponseProviderNames,
+    ).toEqual(['Amazon Bedrock']);
+    for (const display of [
+      ' Amazon Bedrock',
+      'Amazon Bedrock ',
+      'Amazon\nBedrock',
+      'Amazon Bedrock\n',
+      'Amazon\tBedrock',
+      'A'.repeat(257),
+      '',
+      42,
+    ]) {
+      expect(() =>
+        parseProviderConfig({
+          ...value,
+          allowedResponseProviderNames: [display],
+        }),
+      ).toThrow('CONFIG');
+    }
+    for (const field of [
+      'model',
+      'providerRevision',
+      'transportRevision',
+    ] as const) {
+      expect(() =>
+        parseProviderConfig({ ...value, [field]: 'Amazon Bedrock' }),
+      ).toThrow('CONFIG');
+    }
+    for (const field of [
+      'allowedRequestProviderTags',
+      'allowedResponseModels',
+    ] as const) {
+      expect(() =>
+        parseProviderConfig({ ...value, [field]: ['Amazon Bedrock'] }),
+      ).toThrow('CONFIG');
+    }
+  });
   it('refuses missing opt-in, incomplete config, source drift and unreviewed fingerprints', () => {
     const config = parseProviderConfig(value),
       fingerprint = configurationFingerprint(

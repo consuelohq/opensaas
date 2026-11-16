@@ -129,6 +129,37 @@ export function formatTraceHoverPreview(
     return text.length > limit ? text.slice(0, limit - 1) + '…' : text;
   };
   if (field === 'input') {
+    const codeSource = typeof envelope.code === 'string' ? envelope.code : '';
+    if (codeSource) {
+      const mode = safe(envelope.mode, 20);
+      const commandMatch = codeSource.match(/\bcmd\s*:\s*\[([^\]\r\n]{0,280})\]/);
+      const args = commandMatch
+        ? [...commandMatch[1].matchAll(/(['"])([^'"\r\n]{1,100})\1/g)]
+          .map((match) => match[2]).slice(0, 4)
+        : [];
+      if (
+        args.length >= 2 &&
+        ['bun','npm','pnpm','yarn','node','git','gh','npx','python','pytest','cargo'].includes(args[0]) &&
+        args.every((value) =>
+          /^[\w./:@=-]+$/.test(value) &&
+          !/(?:token|secret|password|credential|auth|cookie|jwt|api[-_]?key|\.env)/i.test(value),
+        )
+      ) return 'Runs ' + args.join(' ').slice(0, 150);
+
+      const target = codeSource.match(/\b(Bun\.file|Bun\.write|readFileSync|writeFileSync)\s*\(\s*(['"])([^'"\r\n]{1,160})\2/);
+      const literal = target?.[3] ??
+        codeSource.match(/['"]((?:\.{0,2}\/)?(?:packages|src|tests|docs|scripts|app|pages|\.task)\/[\w./-]{2,145})['"]/)?.[1];
+      if (
+        literal &&
+        /^[\w./@-]+$/.test(literal) &&
+        !/(?:\.env|id_rsa|password|token|secret|credential|authorization|api[-_]?key)/i.test(literal)
+      ) {
+        const action = mode === 'edit' || /Bun\.write|writeFileSync/.test(target?.[1] ?? '')
+          ? 'Writes'
+          : mode === 'verify' ? 'Checks' : 'Reads';
+        return action + ' ' + literal.slice(0, 150);
+      }
+    }
     const file = safe(envelope.path ?? envelope.file ?? envelope.filepath ?? envelope.codeFile);
     if (file) return 'File: ' + file;
     const paths = Array.isArray(envelope.paths)
@@ -137,10 +168,8 @@ export function formatTraceHoverPreview(
     if (paths.length) return 'Files: ' + paths.join(' · ');
     const language = safe(envelope.language, 24);
     const mode = safe(envelope.mode, 32);
-    const codeSource = typeof envelope.code === 'string' ? envelope.code : '';
     if (codeSource && (language || mode))
-      return [language, mode, codeSource.length.toLocaleString('en-US') + ' chars of code']
-        .filter(Boolean).join(' · ').slice(0, 155);
+      return [language, mode, 'script details in inspector'].filter(Boolean).join(' · ');
     const request = safe(envelope.query ?? envelope.search ?? envelope.pattern, 110);
     if (request && request !== displayedLabel) return 'Query: ' + request;
     const uri = safe(envelope.url ?? envelope.uri, 125);
@@ -153,7 +182,12 @@ export function formatTraceHoverPreview(
     : [];
   if (files.length) return 'Files: ' + files.slice(0, 2).join(' · ');
   const content = typeof data.content === 'string' ? data.content : '';
-  if (content) return 'Returned ' + content.length.toLocaleString('en-US') + ' characters';
+  if (content) {
+    const heading = content.match(/^\s{0,2}#{1,4}\s+([^\r\n\\]{4,90})/m)?.[1];
+    const cleanHeading = safe(heading, 85);
+    if (cleanHeading) return 'Read: ' + cleanHeading;
+    return 'Returned ' + content.length.toLocaleString('en-US') + ' characters';
+  }
   const bytes = data.bytes;
   if (typeof bytes === 'number' && bytes > 0)
     return 'Returned ' + (bytes / 1024).toFixed(1) + ' KB';
@@ -163,6 +197,9 @@ export function formatTraceHoverPreview(
   }
   // Command stdout is untrusted and may contain captured credentials. Its
   // text belongs in the inspected payload, never in an ambient hover.
+  const stdout = typeof data.stdout === 'string' ? data.stdout : '';
+  const passedTests = stdout.match(/\b(\d{1,5})\s+tests?\s+passed\b/i);
+  if (passedTests) return passedTests[1] + ' tests passed';
   if (typeof data.exitCode === 'number')
     return 'Exit code: ' + data.exitCode;
   return '';

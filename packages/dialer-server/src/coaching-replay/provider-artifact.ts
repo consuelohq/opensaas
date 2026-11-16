@@ -1,7 +1,25 @@
+import {
+  SELECTOR_OUTCOMES,
+  type SelectorObservation,
+} from '../coaching/selector-observation';
+import { CONTEXT_LIMITS } from '../coaching/context-selector';
 import { lstatSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { serializeReport } from './observer';
 import type { ReplayResult } from './runner';
+import type {
+  ProviderAttemptStage,
+  ProviderFinishReason,
+} from '../coaching/openrouter-selector';
+
+export type ProviderDiagnostics = {
+  stages: Partial<Record<ProviderAttemptStage, number>>;
+  statuses: Record<string, number>;
+  finishReasons: Partial<Record<ProviderFinishReason, number>>;
+  cachedInputTokens: { reports: number; total: number | null };
+  cacheWriteTokens: { reports: number; total: number | null };
+  reasoningTokens: { reports: number; total: number | null };
+};
 
 export type ProviderReport = {
   schemaVersion: 1;
@@ -27,6 +45,7 @@ export type ProviderReport = {
   completionTokenReports: number;
   completionTokensReported: number | null;
   costReports: number;
+  diagnostics?: ProviderDiagnostics;
   results: readonly ReplayResult[];
 };
 const keys = (o: object, names: readonly string[]) => {
@@ -39,6 +58,39 @@ const keys = (o: object, names: readonly string[]) => {
 };
 const count = (n: unknown) => Number.isSafeInteger(n) && Number(n) >= 0;
 export function serializeProviderReport(report: ProviderReport): string {
+  const diagnostics = report.diagnostics;
+  const stages = [
+    'accepted',
+    'transport',
+    'http',
+    'body',
+    'identity',
+    'choices',
+    'finish',
+    'content',
+    'schema',
+    'selection',
+    'card',
+    'slots',
+    'evidence',
+    'abstention',
+    'aborted',
+  ];
+  const validCounts = (value: unknown, allowed: (key: string) => boolean) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+      return false;
+    const entries = Object.entries(value);
+    return (
+      entries.every(([key, n]) => allowed(key) && count(n) && Number(n) > 0) &&
+      entries.reduce((sum, [, n]) => sum + Number(n), 0) <= report.attempts
+    );
+  };
+  const validTokens = (value: ProviderDiagnostics['cachedInputTokens']) =>
+    !!value &&
+    keys(value, ['reports', 'total']) &&
+    count(value.reports) &&
+    value.reports <= report.attempts &&
+    (value.reports === 0 ? value.total === null : count(value.total));
   if (
     !keys(report, [
       'schemaVersion',
@@ -64,6 +116,7 @@ export function serializeProviderReport(report: ProviderReport): string {
       'completionTokenReports',
       'completionTokensReported',
       'costReports',
+      ...(diagnostics === undefined ? [] : ['diagnostics']),
       'results',
     ]) ||
     report.schemaVersion !== 1 ||
@@ -102,17 +155,41 @@ export function serializeProviderReport(report: ProviderReport): string {
     !count(report.metadataResponses) ||
     report.metadataResponses > report.attempts ||
     !count(report.promptTokenReports) ||
-    report.promptTokenReports > report.metadataResponses ||
+    report.promptTokenReports > report.attempts ||
     (report.promptTokenReports === 0
       ? report.promptTokensReported !== null
       : !count(report.promptTokensReported)) ||
     !count(report.completionTokenReports) ||
-    report.completionTokenReports > report.metadataResponses ||
+    report.completionTokenReports > report.attempts ||
     (report.completionTokenReports === 0
       ? report.completionTokensReported !== null
       : !count(report.completionTokensReported)) ||
     !count(report.costReports) ||
-    report.costReports > report.metadataResponses ||
+    report.costReports > report.attempts ||
+    (diagnostics !== undefined &&
+      (!keys(diagnostics, [
+        'stages',
+        'statuses',
+        'finishReasons',
+        'cachedInputTokens',
+        'cacheWriteTokens',
+        'reasoningTokens',
+      ]) ||
+        !validCounts(diagnostics.stages, (key) => stages.includes(key)) ||
+        !validCounts(diagnostics.statuses, (key) => /^[1-5]\d\d$/.test(key)) ||
+        !validCounts(diagnostics.finishReasons, (key) =>
+          [
+            'stop',
+            'length',
+            'content_filter',
+            'tool_calls',
+            'error',
+            'other',
+          ].includes(key),
+        ) ||
+        !validTokens(diagnostics.cachedInputTokens) ||
+        !validTokens(diagnostics.cacheWriteTokens) ||
+        !validTokens(diagnostics.reasoningTokens))) ||
     !Array.isArray(report.results) ||
     report.results.length !== report.maxRequests
   )
@@ -139,6 +216,7 @@ export function serializeProviderReport(report: ProviderReport): string {
         'firstCueWallMs',
         'selectorRequests',
         'selectorMetrics',
+        ...(result.selectorTrace === undefined ? [] : ['selectorTrace']),
       ]) ||
       !result.wallOutcome ||
       result.scenarioId !== result.outcome.scenarioId ||
@@ -163,6 +241,48 @@ export function serializeProviderReport(report: ProviderReport): string {
       Object.values(metrics).some((n) => n !== null && !count(n))
     )
       throw new Error('invalid provider result');
+    if (result.selectorTrace !== undefined) {
+      const time = (n: unknown) =>
+        typeof n === 'number' &&
+        Number.isFinite(n) &&
+        n >= 0 &&
+        n <= Number.MAX_SAFE_INTEGER;
+      if (
+        !Array.isArray(result.selectorTrace) ||
+        result.selectorTrace.length > 20 ||
+        result.selectorTrace.length !== result.selectorRequests ||
+        result.selectorTrace.some(
+          (o: SelectorObservation, i: number) =>
+            !o ||
+            !keys(o, [
+              'request',
+              'queueMs',
+              'requestMs',
+              'decisionMs',
+              'cueAgeMs',
+              'outcome',
+              'cardIndex',
+              'evidenceTurnIndices',
+            ]) ||
+            o.request !== i + 1 ||
+            !time(o.queueMs) ||
+            (o.requestMs !== null && !time(o.requestMs)) ||
+            (o.decisionMs !== null && !time(o.decisionMs)) ||
+            (o.cueAgeMs !== null && !time(o.cueAgeMs)) ||
+            !SELECTOR_OUTCOMES.includes(o.outcome) ||
+            (o.cardIndex !== null &&
+              (!count(o.cardIndex) || o.cardIndex >= CONTEXT_LIMITS.cards)) ||
+            !Array.isArray(o.evidenceTurnIndices) ||
+            o.evidenceTurnIndices.length > CONTEXT_LIMITS.turns ||
+            new Set(o.evidenceTurnIndices).size !==
+              o.evidenceTurnIndices.length ||
+            o.evidenceTurnIndices.some(
+              (n: number) => !count(n) || n >= CONTEXT_LIMITS.turns,
+            ),
+        )
+      )
+        throw new Error('invalid selector observation');
+    }
   }
   return JSON.stringify(report, null, 2) + '\n';
 }

@@ -27,11 +27,16 @@ describe('contextual replay mechanics with synthetic mock only', () => {
       create: createProductionReplaySession('context-provider', selector),
     });
     expect(results).toHaveLength(20);
-    expect(calls).toBe(20);
+    // Historical-only cases can abstain locally without inference.
+    expect(calls).toBeGreaterThan(0);
+    expect(calls).toBeLessThan(20);
     expect(peak).toBeLessThanOrEqual(4);
     expect(
       results.every(
-        (r) => r.selectorRequests === 1 && r.wallOutcome && r.selectorMetrics,
+        (r) =>
+          (r.selectorRequests === 0 || r.selectorRequests === 1) &&
+          r.wallOutcome &&
+          r.selectorMetrics,
       ),
     ).toBe(true);
   });

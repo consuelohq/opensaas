@@ -71,6 +71,18 @@ type TraceInteraction = {
   source: TraceInteractionSource;
 };
 let lastTraceInteraction: TraceInteraction | null = null;
+let pointerPosition: { x: number; y: number } | null = null;
+let keyboardPointerAnchor: { x: number; y: number } | null = null;
+
+function beginKeyboardNavigation(): void {
+  keyboardPointerAnchor = pointerPosition ?? { x: NaN, y: NaN };
+  document.documentElement.classList.add('trace-keyboard-navigation');
+}
+
+function endKeyboardNavigation(): void {
+  keyboardPointerAnchor = null;
+  document.documentElement.classList.remove('trace-keyboard-navigation');
+}
 const INSPECTOR_WIDTH_KEY = 'consuelo.trace-inspector.width';
 const RETURN_HOME_PREFERENCE_KEY = 'consuelo.trace-return-home.preference';
 const TRACE_CLOCK_FORMATTER = new Intl.DateTimeFormat('en-US', {
@@ -895,8 +907,8 @@ function showReturnHomeConfirm(): void {
 if (!(window as TraceWindow).__traceInspectorInstalled) {
   (window as TraceWindow).__traceInspectorInstalled = true;
 
-  document.addEventListener('pointerover', (event) => {
-    const target = event.target as HTMLElement;
+  const rememberPointerHover = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return;
     const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
     if (peer?.dataset.traceKey) {
       rememberTraceInteraction(peer.dataset.traceKey, 'child', 'hover');
@@ -905,13 +917,32 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
     const row = target.closest<HTMLElement>('.trxRow[data-trace-key]');
     if (row?.dataset.traceKey)
       rememberTraceInteraction(row.dataset.traceKey, 'main', 'hover');
+  };
+  document.addEventListener('pointerover', (event) => {
+    // Virtual rows can slide under a stationary cursor while arrows scroll.
+    if (keyboardPointerAnchor) return;
+    rememberPointerHover(event.target);
   });
+  document.addEventListener('pointermove', (event) => {
+    const next = { x: event.clientX, y: event.clientY };
+    pointerPosition = next;
+    if (!keyboardPointerAnchor) return;
+    if (
+      Number.isFinite(keyboardPointerAnchor.x) &&
+      Math.hypot(next.x - keyboardPointerAnchor.x, next.y - keyboardPointerAnchor.y) < 3
+    ) return;
+    // A deliberate mouse move hands navigation back to hover.
+    endKeyboardNavigation();
+    rememberPointerHover(event.target);
+  });
+  document.addEventListener('pointerdown', endKeyboardNavigation);
 
   document.addEventListener('keydown', (event) => {
     const virtualList = (window as TraceWindow).__traceVirtualList;
     const editing = isTextEditingTarget(event.target);
 
     if (event.key === 'Escape') {
+      endKeyboardNavigation();
       if (
         traceSearchIsOpen() ||
         document.querySelector('[data-trace-search-shell]')
@@ -992,6 +1023,7 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
       (moveUp || moveDown)
     ) {
       event.preventDefault();
+      beginKeyboardNavigation();
       const direction: -1 | 1 = moveUp ? -1 : 1;
       if (inspectorIsOpen() && lastTraceInteraction?.scope !== 'main') {
         moveInspectorPeer(direction);

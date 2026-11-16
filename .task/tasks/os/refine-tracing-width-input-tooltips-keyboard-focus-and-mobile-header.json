@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2807,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2807",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c68f393b8dec",
+  "tmuxSession": "opensaas-os-refine-tracing-width-input-tooltips-keyboard-foc-c68f393b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refine-tracing-width-input-tooltips-keyboard-focus-and-mobile-header/.task/session.json",
+  "createdAt": "2026-11-14T06:04:15.267Z"
+}

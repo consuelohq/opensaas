@@ -1,4 +1,8 @@
 import { SYNTHETIC_LIFE_INSURANCE } from '../coaching/playbooks';
+import {
+  validResponseProviderName,
+  OPENROUTER_SELECTOR_REVISION,
+} from '../coaching/openrouter-selector';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -21,11 +25,11 @@ export type ProviderBenchmarkConfig = BudgetConfig & {
 };
 const name = (x: unknown): x is string =>
   typeof x === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,255}$/.test(x);
-const uniqueNames = (x: unknown): x is string[] =>
+const uniqueNames = (x: unknown, validate = name): x is string[] =>
   Array.isArray(x) &&
   x.length > 0 &&
   x.length <= 8 &&
-  x.every(name) &&
+  x.every(validate) &&
   new Set(x).size === x.length;
 export function parseProviderConfig(value: unknown): ProviderBenchmarkConfig {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -63,8 +67,8 @@ export function parseProviderConfig(value: unknown): ProviderBenchmarkConfig {
     !name(c.providerRevision) ||
     !uniqueNames(c.allowedRequestProviderTags) ||
     !uniqueNames(c.allowedResponseModels) ||
-    !uniqueNames(c.allowedResponseProviderNames) ||
-    !name(c.transportRevision) ||
+    !uniqueNames(c.allowedResponseProviderNames, validResponseProviderName) ||
+    c.transportRevision !== OPENROUTER_SELECTOR_REVISION ||
     !Number.isSafeInteger(c.scenarioCount) ||
     Number(c.scenarioCount) < 1 ||
     Number(c.scenarioCount) > 108 ||

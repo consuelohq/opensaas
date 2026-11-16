@@ -1,3 +1,4 @@
+import type { SelectorObservation } from '../coaching/selector-observation';
 import {
   VirtualClock,
   type ConversationScope,
@@ -18,6 +19,7 @@ export interface ReplaySession {
     selectorFailures?: number;
     selectorCheckpoints?: number;
     selectorQueueRejected?: number;
+    selectorTrace?: readonly SelectorObservation[];
   };
 }
 export interface ReplayResult {
@@ -28,6 +30,7 @@ export interface ReplayResult {
   readonly firstCueWallMs: number | null;
   readonly selectorRequests: number | null;
   readonly wallOutcome?: Outcome;
+  readonly selectorTrace?: readonly SelectorObservation[];
   readonly selectorMetrics?: {
     discards: number | null;
     failures: number | null;
@@ -110,6 +113,9 @@ export async function runTextReplay(input: {
           ...(input.captureWallOutcomes
             ? {
                 wallOutcome: observeScenario(scenario, wallObservations),
+                ...(diagnostics?.selectorTrace
+                  ? { selectorTrace: diagnostics.selectorTrace }
+                  : {}),
                 selectorMetrics: {
                   discards: diagnostics?.selectorDiscards ?? null,
                   failures: diagnostics?.selectorFailures ?? null,

@@ -128,8 +128,10 @@ async function main() {
     const virtual = summarizeOutcomes(report.results.map((x) => x.outcome));
     const wall = summarizeOutcomes(report.results.map((x) => x.wallOutcome!));
     const complete =
-      report.attempts === config.scenarioCount &&
-      report.metadataResponses === config.scenarioCount &&
+      report.results.length === config.scenarioCount &&
+      report.attempts ===
+        report.results.reduce((n, r) => n + (r.selectorRequests ?? NaN), 0) &&
+      report.metadataResponses === report.attempts &&
       !report.halted &&
       report.unreconciledCharges === 0 &&
       report.refused === 0 &&
@@ -200,6 +202,7 @@ async function main() {
         completionTokenReports: report.completionTokenReports,
         completionTokensReported: report.completionTokensReported,
         costReports: report.costReports,
+        diagnostics: report.diagnostics,
       }) + '\n',
     );
   } catch (error: unknown) {

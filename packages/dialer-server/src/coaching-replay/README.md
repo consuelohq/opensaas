@@ -16,8 +16,9 @@ separately authored from calibration examples, but come from the same synthetic
 playbook and are not an independent sample from a real customer population.
 
 The contextual candidate combines the reviewed rules and selector in the real
-session. Its offline provider benchmark is opt-in, synthetic-only and has
-not been run against a provider. Preflight refreshes public endpoint metadata,
+session. Its offline provider benchmark is opt-in and synthetic-only. The first
+paid attempt on 2026-11-16 was incomplete; see [provider evaluation](./PROVIDER-EVALUATION.md)
+for the frozen protocol, costs, limitations and follow-up results. Preflight refreshes public endpoint metadata,
 uses a local fake to measure exact serialized request bytes, and binds the
 model, provider, prompt revision, pricing, output directory, source and runtime
 to a fingerprint. No model or price is implied by default. The Haiku JSON is a
@@ -27,9 +28,12 @@ A later authorized run requires the reviewed fingerprint, a private fresh
 output directory, explicit opt-in, and separately provisioned credentials.
 A one-shot 0600 ledger reserves worst-case cost before every send and retains
 unsettled reservations; valid same-request costs can release unused reserve.
-It enforces 108 maximum attempts, four physical slots, pinned provider and
-server price ceilings, no prompt caching or automatic retries. A cap may stop
+It enforces 108 maximum attempts, at most four physical slots, pinned provider and
+server price ceilings, no explicit cache directives or automatic retries. The
+provider can report automatic cache reads; their measured counts are distinct
+from a claim about future hit rates. A cap may stop
 the run early; all cases stay in the result and incomplete runs cannot pass.
+The v2 model wire selects an approved card plus evidence only; the SDK derives the complete approved point layout. Numeric per-request observations separate queue wait, request-plus-validation settlement, logical decision and typed rejection outcomes. Historical-only cases may abstain locally without inference; completeness reconciles actual sends against eligible requests while scoring every frozen case.
 Both virtual offsets and actual wall-time observations are reported; the
 original five-second visibility windows apply to wall time too. Local mocks
 prove mechanics only, and any later cached-decision replay at 1/5/20 scopes
@@ -49,11 +53,13 @@ specific configuration, fingerprint, budget and secure credential setup. Its
 execution command is `CONSUELO_RUN_COACHING_PROVIDER=1 bun
 packages/dialer-server/src/coaching-replay/provider-cli.ts --run <config>
 <same-private-directory> <reviewed-fingerprint>`. Provider metadata and
-source integrity are rechecked. The dated draft must be refreshed and reviewed
+source integrity are rechecked. Separate numeric attempt diagnostics retain
+known same-request billing even when an answer is rejected, without making that
+answer eligible for display. Unknown or aborted charges stay reserved. The dated draft must be refreshed and reviewed
 when prices, provider details, code, or date change; an incomplete run is not
 an acceptance result.
 
-## Tomorrow's reviewed benchmark
+## Refreshing the dated benchmark drafts
 
 Both draft configs are dated 2026-11-14. Before any benchmark, refresh the
 public endpoint metadata and prepare a reviewed, private config dated for that
@@ -108,8 +114,9 @@ controller, API, styles, Hono routes and a temporary local PostgreSQL instance.
 Its surrounding script selection/import host and identity are fixtures; it does
 not exercise the full CRM embed or real authentication.
 Virtual cue offsets are fixture clock offsets, not
-wall-clock latency. No audio has been transcribed, no provider model has been
-called, and these tests establish no ASR quality, carrier delivery or UI timing.
+wall-clock latency. These local mock lanes transcribe no audio and call no
+provider model; they establish no ASR quality, carrier delivery or UI timing.
+Paid provider runs are reported separately in the evaluation above.
 
 The benchmark schema permits only a version, integer seed, fixed lane and
 concurrency, controlled scenario IDs, verdicts, numeric counters, selector
@@ -118,8 +125,7 @@ transcript text, arbitrary customer identifiers or provider payloads to it.
 `writePrivateBenchmark` accepts an existing owner-only directory and uses
 exclusive creation with mode 0600 so a previous run is never overwritten.
 The scheduler records ingest, first cue callback and settle wall times; these
-are not UI or audio-to-cue timings. Source-fidelity, provider billing and
-full-path measurement remain unfinished. DEV-1698's
+are not UI or audio-to-cue timings. Provider billing is measured in the opt-in lane; source-fidelity and full audio-to-rendered-cue acceptance remain unfinished. DEV-1698's
 older evidence writer is separate and is not certified by this work.
 
 One seed-17 run of 72 provisional scenarios produced 1/60 positive hits and

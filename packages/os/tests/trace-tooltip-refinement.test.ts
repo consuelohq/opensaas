@@ -28,6 +28,59 @@ describe('Trace hover summaries', () => {
     expect(tip.length).toBeLessThan(180);
     expect(tip).not.toContain('const p = Bun.spawnSync');
     expect(tip).toContain('bun');
+    expect(tip).toContain('test');
+  });
+
+  it('peeks into the actual read target instead of stating the number of code characters', () => {
+    const row = {
+      name: 'code.call',
+      rawResolvedInputJson: {
+        language: 'bun', mode: 'read',
+        code: 'const source=await Bun.file("packages/dialer-server/src/provider-metadata.test.ts").text(); process.stdout.write(source.slice(0, 500));',
+      },
+    };
+    const tip = formatTraceHoverPreview(row, 'input', 'read provider-metadata.test.ts');
+    expect(tip).toContain('packages/dialer-server/src/provider-metadata.test.ts');
+    expect(tip).not.toMatch(/chars? of code/);
+    expect(tip.length).toBeLessThan(200);
+  });
+
+  it('previews a known verification command with target file without dumping source text', () => {
+    const row = {
+      name: 'code.call',
+      rawResolvedInputJson: {
+        language: 'bun', mode: 'verify',
+        code: "const p=Bun.spawnSync({cmd:['bun','test','tests/reviewed.test.ts']}); process.stdout.write(new TextDecoder().decode(p.stdout));",
+      },
+    };
+    const tip = formatTraceHoverPreview(row, 'input', 'run bun test');
+    expect(tip).toMatch(/bun test/);
+    expect(tip).toContain('reviewed.test.ts');
+    expect(tip).not.toContain('Bun.spawnSync');
+  });
+
+  it('redacts code secrets and refuses dangerous command content in ambient previews', () => {
+    const row = {
+      name: 'code.call',
+      rawResolvedInputJson: {
+        language: 'bun', mode: 'edit',
+        code: 'const password="dontshow"; const privateKey="alsohide"; await Bun.write("src/safe.ts", "const jwt = secret");',
+      },
+    };
+    const tip = formatTraceHoverPreview(row, 'input', 'edit files');
+    expect(tip).toContain('src/safe.ts');
+    for (const secret of ['dontshow','alsohide','secret','jwt','password'])
+      expect(tip).not.toContain(secret);
+  });
+
+  it('uses a meaningful read-result heading when safe instead of mere character count', () => {
+    const row = {
+      name: 'fs.read',
+      rawResultJson: {ok:true,data:{content:'# Provider metadata tests\n\nUnit tests for matching provider names.\n'}},
+    };
+    const tip = formatTraceHoverPreview(row, 'output', 'read complete');
+    expect(tip).toContain('Provider metadata tests');
+    expect(tip).not.toMatch(/^\s*Returned \d+ characters/);
   });
 
   it('omits hover for results without information beyond the table summary', () => {
@@ -54,5 +107,12 @@ describe('Session color palette', () => {
       expect(tone.light).toMatch(/^#[0-9a-f]{6}$/i);
     }
     expect(sessionColorTone('task/os/session-id')).toEqual(sessionColorTone('task/os/session-id'));
+  });
+
+  it('reaches the full palette across distinct sessions while keeping repeat calls the same shade', () => {
+    const sessions = Array.from({length:250},(_,i)=> 'task/dialer/approved-script-matching-session-' + i);
+    const assigned = sessions.map(s => sessionColorTone(s)?.dark);
+    expect(new Set(assigned).size).toBe(SESSION_COLOR_TONES.length);
+    expect(sessionColorTone(sessions[5])).toEqual(sessionColorTone(sessions[5]));
   });
 });

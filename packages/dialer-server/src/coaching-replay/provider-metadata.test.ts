@@ -13,7 +13,7 @@ const config = parseProviderConfig({
   allowedRequestProviderTags: ['fixture'],
   allowedResponseProviderNames: ['Fixture'],
   allowedResponseModels: ['fixture/model'],
-  transportRevision: 'fixture-v1',
+  transportRevision: 'closed-set-openrouter-v2',
   scenarioCount: 2,
   maxRequests: 2,
   maxReservedNanoUsd: 2000000000,
@@ -40,6 +40,67 @@ const endpoint = {
   supported_parameters: ['structured_outputs', 'response_format', 'max_tokens'],
 };
 const now = Date.parse('2026-11-14T12:00:00Z');
+it('reserves higher context pricing tiers without changing the reviewed base routing ceilings', async () => {
+  const tiered = {
+    ...endpoint,
+    pricing: {
+      ...endpoint.pricing,
+      overrides: [
+        {
+          min_prompt_tokens: 100000,
+          prompt: '0.000003',
+          completion: '0.000008',
+          input_cache_write: '0.000004',
+        },
+      ],
+    },
+  };
+  const reply = (value: unknown) => async () =>
+    new Response(
+      JSON.stringify({
+        data: { id: 'fixture/model', endpoints: [value] },
+      }),
+    );
+  await expect(
+    verifyPublicModelMetadata(config, reply(tiered), now),
+  ).rejects.toThrow();
+  const reviewed = parseProviderConfig({
+    ...config,
+    inputNanoUsdPerMillion: 4000000000,
+    outputNanoUsdPerMillion: 8000000000,
+  });
+  const checked = await verifyPublicModelMetadata(reviewed, reply(tiered), now);
+  expect(checked.conservativeInputNanoUsdPerMillion).toBe(4000000000);
+  expect(checked.completionNanoUsdPerMillion).toBe(5000000000);
+  expect(reservationPerRequest(reviewed)).toBe(804096000);
+  for (const overrides of [
+    null,
+    {},
+    [null],
+    [{ min_prompt_tokens: -1, prompt: '0.000003', completion: '0.000008' }],
+    [{ min_prompt_tokens: 100000, prompt: 'bad', completion: '0.000008' }],
+    [
+      {
+        min_prompt_tokens: 100000,
+        prompt: '0.000003',
+        completion: '0.000008',
+        input_cache_write: null,
+      },
+    ],
+  ]) {
+    await expect(
+      verifyPublicModelMetadata(
+        reviewed,
+        reply({
+          ...tiered,
+          pricing: { ...tiered.pricing, overrides },
+        }),
+        now,
+      ),
+    ).rejects.toThrow();
+  }
+});
+
 describe('public metadata preflight with injected local responses only', () => {
   it('checks exact provider, context, supported parameters and decimal rates', async () => {
     expect(rateNanoUsdPerMillion('0.00000125')).toBe(1250000000);

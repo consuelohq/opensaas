@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_3a92f3a7bbc7",
+  "tmuxSession": "opensaas-dialer-benchmark-us-hosted-mercury-script-selection-and-3a92f3a7",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost",
+  "branch": "task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2809,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2809",
+  "createdAt": "2026-11-16T18:32:36.738Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost/.task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost/session.json"
+}

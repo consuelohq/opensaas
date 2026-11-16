@@ -39,7 +39,7 @@ export function createContextScheduler(
   const drain = () => {
     clearTimeout(wake);
     wake = undefined;
-    const now = Date.now();
+    const now = performance.now();
     prune(now);
     for (let i = queue.length - 1; i >= 0; i--)
       if (queue[i]!.expiresAt <= now) {
@@ -79,8 +79,12 @@ export function createContextScheduler(
     enqueue(
       owner: object,
       run: () => Promise<void>,
+      admission: { maxWaitMs?: number } = {},
     ): Promise<ContextAdmissionOutcome> | null {
+      const lease = admission.maxWaitMs ?? maxWait;
       if (
+        !Number.isFinite(lease) ||
+        lease <= 0 ||
         active.has(owner) ||
         queue.some((j) => j.owner === owner) ||
         queue.length >= maxWaiting
@@ -90,7 +94,12 @@ export function createContextScheduler(
       const pending = new Promise<ContextAdmissionOutcome>((r) => {
         settle = r;
       });
-      queue.push({ owner, run, settle, expiresAt: Date.now() + maxWait });
+      queue.push({
+        owner,
+        run,
+        settle,
+        expiresAt: performance.now() + Math.min(maxWait, lease),
+      });
       drain();
       return pending;
     },
@@ -100,7 +109,7 @@ export function createContextScheduler(
       drain();
     },
     diagnostics() {
-      prune(Date.now());
+      prune(performance.now());
       return {
         active: active.size,
         waiting: queue.length,

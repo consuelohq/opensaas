@@ -1,3 +1,4 @@
+import type { SelectorObservation } from './selector-observation';
 import {
   createTimeline,
   reduceTimeline,
@@ -17,6 +18,7 @@ import {
 import { RULES_VERSION, type CompiledPlaybook } from './playbooks';
 import {
   ruleContextEligible,
+  ruleEvidenceCurrent,
   selectScriptRule,
   scriptContextTurns,
 } from './script-matching';
@@ -61,6 +63,10 @@ export type ScriptSessionOptions = {
   compiled: CompiledPlaybook;
   policy: AssistancePolicy;
   nowMs: () => number;
+  /** Process-monotonic receipt clock; provider/wall timestamps cannot renew cue age. */
+  monotonicNowMs?: () => number;
+  /** Test/runtime policy may tighten, never enlarge, the five-second cue-age bound. */
+  cueMaxAgeMs?: number;
   selector?: ClosedSetSelector;
   workerGeneration?: number;
   contextIntervalMs?: number;
@@ -73,6 +79,14 @@ export type ScriptSessionOptions = {
   onDecision?: (patch: CardPatch) => void;
 };
 export function createScriptSession(options: ScriptSessionOptions) {
+  const monotonicNowMs = options.monotonicNowMs ?? (() => performance.now());
+  const cueMaxAgeMs = options.cueMaxAgeMs ?? 5000;
+  if (
+    !Number.isSafeInteger(cueMaxAgeMs) ||
+    cueMaxAgeMs < 1 ||
+    cueMaxAgeMs > 5000
+  )
+    throw new Error('Invalid cue age budget');
   const configuredRequestLimit = options.maxSelectorRequests ?? 20;
   if (
     !Number.isSafeInteger(configuredRequestLimit) ||
@@ -97,6 +111,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
   let fence = 0;
   let requests = 0;
   let selectorDiscards = 0;
+  const selectorTrace: SelectorObservation[] = [];
   let lastContextAt = -Infinity;
   let lastChangeAt = -Infinity;
   let lastPriority = -1;
@@ -107,6 +122,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
   let dirty = false;
   let intervalTimer: ReturnType<typeof setTimeout> | undefined;
   let lastMeaningfulFinal: TranscriptSegmentEvent | undefined;
+  let lastMeaningfulReceivedAt: number | undefined;
   let lastSelectorCheckpoint: SelectorCheckpoint | null = null;
   let selectorCheckpoints = 0;
   let selectorFailures = 0;
@@ -171,7 +187,9 @@ export function createScriptSession(options: ScriptSessionOptions) {
     slots?: readonly string[],
     pin?: boolean,
     capturedTimeline: TimelineState = timeline,
+    remainingAgeMs = 5000,
   ) => {
+    if (!Number.isFinite(remainingAgeMs) || remainingAgeMs <= 0) return false;
     const target = compiled.playbook.cards.find((c) => c.id === cardId);
     if (!target) return false;
     const ids = slots ?? target.slots.map((s) => s.id);
@@ -182,6 +200,7 @@ export function createScriptSession(options: ScriptSessionOptions) {
       (c) =>
         card.cardId !== cardId || card.slots[c.position] !== c.approvedSlotId,
     );
+    const issuedAtMs = nowMs();
     const candidate = {
       schemaVersion: 1,
       patchId: source + ':' + cursor.sequence + ':' + card.revision,
@@ -196,8 +215,8 @@ export function createScriptSession(options: ScriptSessionOptions) {
       sourceVersion: sourceVersions[source],
       changedSlots: changes,
       evidence,
-      issuedAtMs: nowMs(),
-      expiresAtMs: nowMs() + 5000,
+      issuedAtMs,
+      expiresAtMs: issuedAtMs + Math.min(5000, remainingAgeMs),
       ...(pin !== undefined ? { pin } : {}),
     };
     const checked = validateCardPatch(candidate);
@@ -245,6 +264,15 @@ export function createScriptSession(options: ScriptSessionOptions) {
     requests < requestLimit;
   const scheduleSelector = () => {
     if (!dirty || !canSelect() || queued || controller) return;
+    const queuedReceipt = lastMeaningfulReceivedAt;
+    if (
+      queuedReceipt === undefined ||
+      monotonicNowMs() >= queuedReceipt + cueMaxAgeMs
+    ) {
+      dirty = false;
+      selectorDiscards++;
+      return;
+    }
     const remaining =
       Math.max(0, Math.min(30000, options.contextIntervalMs ?? 15000)) -
       (nowMs() - lastContextAt);
@@ -263,219 +291,331 @@ export function createScriptSession(options: ScriptSessionOptions) {
       finish = r;
     });
     queued = true;
+    const queuedAt = monotonicNowMs();
     const admissionFence = fence;
-    const admission = scheduler.enqueue(schedulerOwner, async () => {
-      queued = false;
-      if (!dirty || !canSelect()) {
-        finish();
-        return;
-      }
-      const selector = options.selector!;
-      const turns = finalTurns();
-      const latest = turns[turns.length - 1];
-      if (
-        !latest ||
-        latest.cursor.epoch !== timeline.cursor.epoch ||
-        latest.cursor.sequence !== timeline.cursor.sequence ||
-        !normalizePhrase(latest.text) ||
-        turns.reduce((n, s) => n + s.text.length, 0) >
-          CONTEXT_LIMITS.transcriptCharacters
-      ) {
-        dirty = false;
-        finish();
-        return;
-      }
-      const eligibleIds = new Set(
-        compiled.rules
-          .filter((r) => ruleContextEligible(r, latest, turns))
-          .map((r) => r.cardId),
-      );
-      const cards = catalog!.cards.filter((c) => eligibleIds.has(c.cardId));
-      if (!cards.length) {
-        dirty = false;
-        finish();
-        return;
-      }
-      controller = new AbortController();
-      const jobController = controller,
-        jobFence = fence,
-        base = card.revision,
-        capturedTimeline = timeline,
-        capturedPolicyRevision = policy.revision,
-        capturedWorker = card.workerGeneration,
-        capturedVersion = compiled.playbook.publishedVersion,
-        capturedSourceRevision = compiled.sourceRevision;
-      dirty = false;
-      requests++;
-      lastContextAt = nowMs();
-      transportUnsettled = true;
-      let settled = false,
-        timer: ReturnType<typeof setTimeout> | undefined;
-      const provider = (async () =>
-        selector.select({
-          catalog: catalog!.catalog,
-          cards,
-          turns: turns.map((s) => ({
-            id: s.segmentId,
-            revision: s.segmentRevision,
-            role: s.speaker.role as 'customer' | 'rep',
-            text: s.text,
-          })),
-          signal: jobController.signal,
-        }))();
-      const physical = provider.then(
-        () => {
-          settled = true;
-        },
-        () => {
-          settled = true;
-        },
-      );
-      let abortListener!: () => void;
-      const cancelled = new Promise<never>((_, reject) => {
-        abortListener = () => reject(new Error('selector cancelled'));
-        jobController.signal.addEventListener('abort', abortListener, {
-          once: true,
-        });
-        timer = setTimeout(
-          () => jobController.abort(),
-          Math.max(1, Math.min(5000, options.selectorDeadlineMs ?? 5000)),
+    const admission = scheduler.enqueue(
+      schedulerOwner,
+      async () => {
+        queued = false;
+        if (!dirty || !canSelect()) {
+          finish();
+          return;
+        }
+        const receivedAt = lastMeaningfulReceivedAt;
+        const cueDeadline = (receivedAt ?? -Infinity) + cueMaxAgeMs;
+        if (monotonicNowMs() >= cueDeadline) {
+          dirty = false;
+          selectorDiscards++;
+          finish();
+          return;
+        }
+        const selector = options.selector!;
+        const turns = finalTurns();
+        const latest = turns[turns.length - 1];
+        if (
+          !latest ||
+          latest.cursor.epoch !== timeline.cursor.epoch ||
+          latest.cursor.sequence !== timeline.cursor.sequence ||
+          !normalizePhrase(latest.text) ||
+          turns.reduce((n, s) => n + s.text.length, 0) >
+            CONTEXT_LIMITS.transcriptCharacters
+        ) {
+          dirty = false;
+          finish();
+          return;
+        }
+        const eligibleIds = new Set(
+          compiled.rules
+            .filter((r) => ruleContextEligible(r, latest, turns))
+            .map((r) => r.cardId),
         );
-      });
-      try {
-        const raw = await Promise.race([provider, cancelled]);
-        if (!raw || typeof raw !== 'object') return;
-        const output = raw as Record<string, unknown>;
-        if (output.cardId === null) return;
-        const freshness = checkpointDeltas(capturedTimeline, timeline);
-        if (
-          fence !== jobFence ||
-          jobController.signal.aborted ||
-          !canSelectForCommit() ||
-          card.revision !== base ||
-          card.workerGeneration !== capturedWorker ||
-          policy.revision !== capturedPolicyRevision ||
-          compiled.playbook.publishedVersion !== capturedVersion ||
-          compiled.sourceRevision !== capturedSourceRevision ||
-          selector.sourceVersion !== sourceVersions.selector ||
-          !freshness
-        ) {
-          selectorDiscards++;
+        const cards = catalog!.cards.filter((c) => eligibleIds.has(c.cardId));
+        if (!cards.length) {
+          dirty = false;
+          finish();
           return;
         }
-        if (
-          typeof output.cardId !== 'string' ||
-          !eligibleIds.has(output.cardId) ||
-          !Array.isArray(output.slotIds) ||
-          !output.slotIds.length ||
-          output.slotIds.length > 4 ||
-          output.slotIds.some((s) => typeof s !== 'string') ||
-          !Array.isArray(output.evidence) ||
-          !output.evidence.length ||
-          output.evidence.length > 32
-        ) {
-          selectorDiscards++;
-          return;
-        }
-        const rule = compiled.rules.find((r) => r.cardId === output.cardId);
-        const currentTurns = finalTurns(),
-          currentLast = [...currentTurns]
-            .reverse()
-            .find(
-              (s) =>
-                rule &&
+        controller = new AbortController();
+        const jobController = controller,
+          jobFence = fence,
+          base = card.revision,
+          capturedTimeline = timeline,
+          capturedPolicyRevision = policy.revision,
+          capturedWorker = card.workerGeneration,
+          capturedVersion = compiled.playbook.publishedVersion,
+          capturedSourceRevision = compiled.sourceRevision;
+        dirty = false;
+        requests++;
+        const dispatchedAt = monotonicNowMs();
+        const observation: SelectorObservation = {
+          request: requests,
+          queueMs: Math.max(0, dispatchedAt - queuedAt),
+          requestMs: null,
+          decisionMs: null,
+          cueAgeMs: null,
+          outcome: 'pending',
+          cardIndex: null,
+          evidenceTurnIndices: [],
+        };
+        selectorTrace.push(observation);
+        lastContextAt = nowMs();
+        transportUnsettled = true;
+        let deadlineExpired = false;
+        let settled = false,
+          timer: ReturnType<typeof setTimeout> | undefined;
+        const provider = (async () =>
+          selector.select({
+            catalog: catalog!.catalog,
+            cards,
+            turns: turns.map((s) => ({
+              id: s.segmentId,
+              revision: s.segmentRevision,
+              role: s.speaker.role as 'customer' | 'rep',
+              text: s.text,
+            })),
+            signal: jobController.signal,
+          }))();
+        const physical = provider.then(
+          () => {
+            settled = true;
+            observation.requestMs = Math.max(
+              0,
+              monotonicNowMs() - dispatchedAt,
+            );
+          },
+          () => {
+            settled = true;
+            observation.requestMs = Math.max(
+              0,
+              monotonicNowMs() - dispatchedAt,
+            );
+          },
+        );
+        let abortListener!: () => void;
+        const cancelled = new Promise<never>((_, reject) => {
+          abortListener = () => reject(new Error('selector cancelled'));
+          jobController.signal.addEventListener('abort', abortListener, {
+            once: true,
+          });
+          timer = setTimeout(
+            () => {
+              deadlineExpired = true;
+              jobController.abort();
+            },
+            Math.max(
+              1,
+              Math.ceil(
+                Math.min(
+                  5000,
+                  options.selectorDeadlineMs ?? 5000,
+                  cueDeadline - monotonicNowMs(),
+                ),
+              ),
+            ),
+          );
+        });
+        try {
+          const raw = await Promise.race([provider, cancelled]);
+          if (monotonicNowMs() >= cueDeadline) {
+            observation.outcome = 'expired';
+            selectorDiscards++;
+            return;
+          }
+          if (!raw || typeof raw !== 'object') {
+            observation.outcome = 'invalid-selection';
+            return;
+          }
+          const output = raw as Record<string, unknown>;
+          if (output.cardId === null) {
+            observation.outcome = 'abstained';
+            return;
+          }
+          const freshness = checkpointDeltas(capturedTimeline, timeline);
+          if (
+            fence !== jobFence ||
+            jobController.signal.aborted ||
+            !canSelectForCommit() ||
+            card.revision !== base ||
+            card.workerGeneration !== capturedWorker ||
+            policy.revision !== capturedPolicyRevision ||
+            compiled.playbook.publishedVersion !== capturedVersion ||
+            compiled.sourceRevision !== capturedSourceRevision ||
+            selector.sourceVersion !== sourceVersions.selector ||
+            !freshness
+          ) {
+            observation.outcome = 'superseded';
+            selectorDiscards++;
+            return;
+          }
+          if (
+            typeof output.cardId !== 'string' ||
+            !eligibleIds.has(output.cardId) ||
+            !Array.isArray(output.slotIds) ||
+            !output.slotIds.length ||
+            output.slotIds.length > 4 ||
+            output.slotIds.some((s) => typeof s !== 'string') ||
+            !Array.isArray(output.evidence) ||
+            !output.evidence.length ||
+            output.evidence.length > 32
+          ) {
+            observation.outcome = 'invalid-selection';
+            selectorDiscards++;
+            return;
+          }
+          observation.cardIndex = catalog!.cards.findIndex(
+            (c) => c.cardId === output.cardId,
+          );
+          observation.evidenceTurnIndices = [
+            ...new Set(
+              output.evidence
+                .map((e) =>
+                  turns.findIndex(
+                    (t) =>
+                      e &&
+                      typeof e === 'object' &&
+                      t.segmentId === e.segmentId &&
+                      t.segmentRevision === e.segmentRevision,
+                  ),
+                )
+                .filter((i) => i >= 0),
+            ),
+          ];
+          const rule = compiled.rules.find((r) => r.cardId === output.cardId);
+          const currentTurns = finalTurns(),
+            currentLast = [...currentTurns]
+              .reverse()
+              .find(
+                (s) =>
+                  rule &&
+                  (rule.speaker === 'either' ||
+                    s.speaker.role === rule.speaker) &&
+                  normalizePhrase(s.text),
+              );
+          if (
+            !rule ||
+            !currentLast ||
+            !ruleContextEligible(rule, currentLast, currentTurns)
+          ) {
+            observation.outcome = 'context-rejected';
+            selectorDiscards++;
+            return;
+          }
+          const authored = selectScriptRule(
+            compiled,
+            currentLast,
+            currentTurns,
+            card.cardId,
+          );
+          if (
+            authored &&
+            authored.cardId !== rule.cardId &&
+            authored.priority > rule.priority
+          ) {
+            observation.outcome = 'rule-priority';
+            selectorDiscards++;
+            return;
+          }
+          const capturedEvidence = new Map(turns.map((s) => [s.segmentId, s]));
+          if (
+            !output.evidence.every((e) => {
+              if (!e || typeof e !== 'object') return false;
+              const ref = e as { segmentId: unknown; segmentRevision: unknown };
+              if (
+                typeof ref.segmentId !== 'string' ||
+                !Number.isSafeInteger(ref.segmentRevision)
+              )
+                return false;
+              const before = capturedEvidence.get(ref.segmentId),
+                current = timeline.segments[ref.segmentId];
+              return (
+                !!before &&
+                !!current &&
+                before.segmentRevision === ref.segmentRevision &&
+                current.segmentRevision === ref.segmentRevision &&
+                current.finality === 'final' &&
+                before.speaker.role === current.speaker.role &&
                 (rule.speaker === 'either' ||
-                  s.speaker.role === rule.speaker) &&
-                normalizePhrase(s.text),
-            );
-        if (
-          !rule ||
-          !currentLast ||
-          !ruleContextEligible(rule, currentLast, currentTurns)
-        ) {
-          selectorDiscards++;
-          return;
+                  rule.speaker === before.speaker.role) &&
+                ruleEvidenceCurrent(rule, before)
+              );
+            })
+          ) {
+            observation.outcome = 'evidence-rejected';
+            selectorDiscards++;
+            return;
+          }
+          if (
+            output.cardId !== card.cardId &&
+            nowMs() - lastChangeAt < (options.minimumDwellMs ?? 1500)
+          ) {
+            observation.outcome = 'dwell';
+            selectorDiscards++;
+            return;
+          }
+          const beforeRevision = card.revision;
+          const committed = commit(
+            output.cardId,
+            'selector',
+            output.evidence as CardPatch['evidence'],
+            base,
+            capturedTimeline.cursor,
+            output.slotIds as string[],
+            undefined,
+            capturedTimeline,
+            cueDeadline - monotonicNowMs(),
+          );
+          if (!committed) {
+            observation.outcome = 'reducer-rejected';
+            selectorDiscards++;
+            return;
+          }
+          observation.outcome =
+            card.revision !== beforeRevision ? 'applied' : 'unchanged';
+          lastSelectorCheckpoint = freezeCheckpoint({
+            patchId:
+              'selector:' + capturedTimeline.cursor.sequence + ':' + base,
+            capturedCursor: { ...capturedTimeline.cursor },
+            commitCursor: { ...timeline.cursor },
+            deltaCursors: freshness.deltaCursors,
+            admissionReason: freshness.admissionReason,
+            outcome: card.revision !== beforeRevision ? 'applied' : 'unchanged',
+          });
+          selectorCheckpoints++;
+          options.onSelectorCheckpoint?.(lastSelectorCheckpoint);
+        } catch (_error: unknown) {
+          observation.outcome =
+            deadlineExpired || monotonicNowMs() >= cueDeadline
+              ? 'expired'
+              : jobController.signal.aborted
+                ? 'cancelled'
+                : 'provider-failure';
+          selectorFailures++;
+          if (fence === jobFence && mode === 'script') {
+            status = 'unavailable';
+            emit();
+          }
+        } finally {
+          observation.decisionMs = Math.max(0, monotonicNowMs() - dispatchedAt);
+          observation.cueAgeMs = Math.max(
+            0,
+            monotonicNowMs() - (receivedAt ?? dispatchedAt),
+          );
+          clearTimeout(timer);
+          jobController.signal.removeEventListener('abort', abortListener);
+          finish();
+          // A deadline settles the UI wait, never the physical provider admission.
+          // Non-cooperative adapters hold this bounded slot until their promise settles.
+          if (!settled && fence === jobFence && mode === 'script') {
+            status = 'unavailable';
+            emit();
+          }
+          await physical;
+          transportUnsettled = false;
+          if (controller === jobController) controller = null;
         }
-        const capturedEvidence = new Map(turns.map((s) => [s.segmentId, s]));
-        if (
-          !output.evidence.every((e) => {
-            if (!e || typeof e !== 'object') return false;
-            const ref = e as { segmentId: unknown; segmentRevision: unknown };
-            if (
-              typeof ref.segmentId !== 'string' ||
-              !Number.isSafeInteger(ref.segmentRevision)
-            )
-              return false;
-            const before = capturedEvidence.get(ref.segmentId),
-              current = timeline.segments[ref.segmentId];
-            return (
-              !!before &&
-              !!current &&
-              before.segmentRevision === ref.segmentRevision &&
-              current.segmentRevision === ref.segmentRevision &&
-              current.finality === 'final' &&
-              before.speaker.role === current.speaker.role &&
-              (rule.speaker === 'either' ||
-                rule.speaker === before.speaker.role)
-            );
-          })
-        ) {
-          selectorDiscards++;
-          return;
-        }
-        if (
-          output.cardId !== card.cardId &&
-          nowMs() - lastChangeAt < (options.minimumDwellMs ?? 1500)
-        ) {
-          selectorDiscards++;
-          return;
-        }
-        const beforeRevision = card.revision;
-        const committed = commit(
-          output.cardId,
-          'selector',
-          output.evidence as CardPatch['evidence'],
-          base,
-          capturedTimeline.cursor,
-          output.slotIds as string[],
-          undefined,
-          capturedTimeline,
-        );
-        if (!committed) {
-          selectorDiscards++;
-          return;
-        }
-        lastSelectorCheckpoint = freezeCheckpoint({
-          patchId: 'selector:' + capturedTimeline.cursor.sequence + ':' + base,
-          capturedCursor: { ...capturedTimeline.cursor },
-          commitCursor: { ...timeline.cursor },
-          deltaCursors: freshness.deltaCursors,
-          admissionReason: freshness.admissionReason,
-          outcome: card.revision !== beforeRevision ? 'applied' : 'unchanged',
-        });
-        selectorCheckpoints++;
-        options.onSelectorCheckpoint?.(lastSelectorCheckpoint);
-      } catch (_error: unknown) {
-        selectorFailures++;
-        if (fence === jobFence && mode === 'script') {
-          status = 'unavailable';
-          emit();
-        }
-      } finally {
-        clearTimeout(timer);
-        jobController.signal.removeEventListener('abort', abortListener);
-        finish();
-        // A deadline settles the UI wait, never the physical provider admission.
-        // Non-cooperative adapters hold this bounded slot until their promise settles.
-        if (!settled && fence === jobFence && mode === 'script') {
-          status = 'unavailable';
-          emit();
-        }
-        await physical;
-        transportUnsettled = false;
-        if (controller === jobController) controller = null;
-      }
-    });
+      },
+      { maxWaitMs: queuedReceipt + cueMaxAgeMs - monotonicNowMs() },
+    );
     if (!admission) {
       queued = false;
       selectorQueueRejected++;
@@ -490,12 +630,18 @@ export function createScriptSession(options: ScriptSessionOptions) {
       if (outcome === 'finished' || admissionFence !== fence) {
         scheduleSelector();
       } else {
-        dirty = false;
+        const fresh =
+          dirty &&
+          lastMeaningfulReceivedAt !== undefined &&
+          lastMeaningfulReceivedAt > queuedReceipt &&
+          monotonicNowMs() < lastMeaningfulReceivedAt + cueMaxAgeMs;
+        dirty = fresh;
         selectorQueueRejected++;
         if (mode === 'script') {
           status = 'unavailable';
           emit();
         }
+        if (fresh) scheduleSelector();
       }
     });
   };
@@ -584,8 +730,10 @@ export function createScriptSession(options: ScriptSessionOptions) {
           emit();
         }
         if (normalizePhrase(e.text)) {
-          if (!lastMeaningfulFinal || !repeatedFinal(lastMeaningfulFinal, e))
+          if (!lastMeaningfulFinal || !repeatedFinal(lastMeaningfulFinal, e)) {
             dirty = true;
+            lastMeaningfulReceivedAt = monotonicNowMs();
+          }
           lastMeaningfulFinal = e;
         }
         scheduleSelector();
@@ -665,6 +813,10 @@ export function createScriptSession(options: ScriptSessionOptions) {
       capacityRejected,
       requests,
       selectorDiscards,
+      selectorTrace: selectorTrace.map((o) => ({
+        ...o,
+        evidenceTurnIndices: [...o.evidenceTurnIndices],
+      })),
       selectorFailures,
       selectorCheckpoints,
       selectorQueueRejected,

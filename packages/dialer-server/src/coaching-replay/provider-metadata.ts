@@ -103,11 +103,42 @@ export async function verifyPublicModelMetadata(
       cache1h = Object.hasOwn(endpoint.pricing, 'input_cache_write_1h')
         ? rateNanoUsdPerMillion(endpoint.pricing.input_cache_write_1h)
         : prompt;
+    // Routing ceilings describe the base endpoint. Reservations cover the full
+    // context window, including every documented long-prompt pricing tier.
+    let conservativeInput = Math.max(prompt, cache5, cache1h),
+      conservativeOutput = completion;
+    if (Object.hasOwn(endpoint.pricing, 'overrides')) {
+      if (!Array.isArray(endpoint.pricing.overrides))
+        throw new BudgetError('CONFIG');
+      for (const tier of endpoint.pricing.overrides) {
+        if (
+          !record(tier) ||
+          !Number.isSafeInteger(tier.min_prompt_tokens) ||
+          Number(tier.min_prompt_tokens) < 0
+        )
+          throw new BudgetError('CONFIG');
+        const tierPrompt = rateNanoUsdPerMillion(tier.prompt),
+          tierCompletion = rateNanoUsdPerMillion(tier.completion),
+          tierCache5 = Object.hasOwn(tier, 'input_cache_write')
+            ? rateNanoUsdPerMillion(tier.input_cache_write)
+            : cache5,
+          tierCache1h = Object.hasOwn(tier, 'input_cache_write_1h')
+            ? rateNanoUsdPerMillion(tier.input_cache_write_1h)
+            : cache1h;
+        conservativeInput = Math.max(
+          conservativeInput,
+          tierPrompt,
+          tierCache5,
+          tierCache1h,
+        );
+        conservativeOutput = Math.max(conservativeOutput, tierCompletion);
+      }
+    }
     if (
       prompt !== config.maxPromptNanoUsdPerMillion ||
       completion !== config.maxCompletionNanoUsdPerMillion ||
-      Math.max(prompt, cache5, cache1h) !== config.inputNanoUsdPerMillion ||
-      completion !== config.outputNanoUsdPerMillion
+      conservativeInput !== config.inputNanoUsdPerMillion ||
+      conservativeOutput !== config.outputNanoUsdPerMillion
     )
       throw new BudgetError('CONFIG');
     return {
@@ -115,7 +146,7 @@ export async function verifyPublicModelMetadata(
       maxOutputTokens: 512,
       promptNanoUsdPerMillion: prompt,
       completionNanoUsdPerMillion: completion,
-      conservativeInputNanoUsdPerMillion: Math.max(prompt, cache5, cache1h),
+      conservativeInputNanoUsdPerMillion: conservativeInput,
     };
   } catch (error: unknown) {
     throw error;
