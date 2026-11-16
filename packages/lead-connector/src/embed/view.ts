@@ -1,5 +1,9 @@
 import { renderTargetPicker } from './target-picker.js';
-import { renderLiveScript } from './script-presentation.js';
+import {
+  mercuryCallScope,
+  renderCallIdentity,
+  renderMercuryCue,
+} from './mercury-call.js';
 import { renderWorkspacePage } from './workspace-pages.js';
 import { renderHistory, renderHistoryDetail } from './workspace-history.js';
 import { planName } from './workspace-format.js';
@@ -184,8 +188,7 @@ const renderCallSetup = (
 
 const renderCallOptions = (state: LeadConnectorEmbedState): string => {
   const caller = state.commercialCaller;
-  return (
-    `<div class="calling-options-page">
+  return `<div class="calling-options-page">
       ${renderCombobox({
         field: 'caller-id',
         label: 'Call from',
@@ -210,8 +213,7 @@ const renderCallOptions = (state: LeadConnectorEmbedState): string => {
           : ''
       }
       <div class="setup-actions"><button type="button" class="button button--primary primary-wide" data-action="workspace-calling">Done</button></div>
-    </div>`
-  );
+    </div>`;
 };
 
 const renderWrapUp = (state: LeadConnectorEmbedState): string => {
@@ -267,7 +269,10 @@ const renderOverlayStage = (
   state: LeadConnectorEmbedState,
   workspace?: CallingWorkspace,
 ): string => {
-  if (state.phase === 'failed') return renderError(state);
+  if (state.phase === 'failed')
+    return workspace && sessionPresentation(state, 'outbound').active
+      ? `<section class="overlay-stage mercury-on-call">${renderCallIdentity(state, workspace)}${renderError(state)}<p>Your current call is protected while we check its status.</p><button type="button" class="button button--danger" data-action="hang-up"${state.callEnding ? ' disabled' : ''}>${state.callEnding ? 'Ending…' : 'End call'}</button></section>`
+      : renderError(state);
   if (['booting', 'authenticating'].includes(state.phase)) {
     return `<section class="overlay-stage overlay-stage--loading"><span class="spinner" aria-hidden="true"></span><div><p class="eyebrow">Secure session</p><h1>Connecting…</h1><p>Loading the current location and operator context.</p></div></section>`;
   }
@@ -297,7 +302,8 @@ const renderOverlayStage = (
     const loserCount = state.callLegs.filter(
       (leg) => leg.role === 'loser',
     ).length;
-    return `<section class="overlay-stage overlay-stage--connected"><div class="connection-badge" data-session-status>${sessionPresentation(state, 'outbound').label}</div><div class="winner-card"><p class="eyebrow">Speaking with</p><h1>${targetLabel(target ?? state.selectedTargets[0])}</h1><p>${winner ? maskPhone(winner.customerNumber) : 'Private number'}</p></div>${workspace ? renderLiveScript(workspace) : ''}${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}<details class="workspace-details" data-disclosure="transfer"><summary>Transfer call</summary>${renderTransferControls(state)}</details><button type="button" class="button button--danger" data-action="hang-up">Hang up</button></section>`;
+    const scope = workspace && mercuryCallScope(state, 'outbound');
+    return `<section class="overlay-stage overlay-stage--connected mercury-on-call">${workspace ? renderCallIdentity(state, workspace) : `<h1>${targetLabel(target ?? state.selectedTargets[0])}</h1>`}${workspace && scope && sessionPresentation(state, 'outbound').status === 'connected' ? renderMercuryCue(workspace, scope) : `<p role="status">${state.callEnding ? 'Waiting for the call to finish.' : 'Waiting for the connection to be confirmed.'}</p>`}${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}<div class="mercury-call-actions"><details class="workspace-details" data-disclosure="transfer"><summary>Transfer call</summary>${renderTransferControls(state)}</details><button type="button" class="button button--danger" data-action="hang-up"${state.callEnding ? ' disabled' : ''}>${state.callEnding ? 'Ending…' : 'End call'}</button></div></section>`;
   }
   if (state.phase === 'paused') {
     return `<section class="overlay-stage"><div class="stage-heading"><p class="eyebrow">Queue paused</p><h1>Calling is paused</h1><p>The active queue is preserved.</p></div><div class="split-actions"><button type="button" class="button button--primary" data-action="resume">Resume</button><button type="button" class="button button--secondary" data-action="stop">Stop queue</button></div></section>`;
@@ -306,9 +312,7 @@ const renderOverlayStage = (
   return `<section class="overlay-stage overlay-stage--complete"><div class="success-mark" aria-hidden="true">✓</div><div><p class="eyebrow">Saved</p><h1>Updated in LeadConnector</h1><p>The call outcome is complete.</p></div></section>`;
 };
 
-const compactPageTitle = (
-  workspace: CallingWorkspace,
-): string | null => {
+const compactPageTitle = (workspace: CallingWorkspace): string | null => {
   switch (workspace.screen) {
     case 'settings':
       return 'Settings';
@@ -358,20 +362,28 @@ export const renderLeadConnectorEmbed = (
   const workspace = { ...requested, mode: callMode ?? requested.mode };
   const status = sessionPresentation(state, workspace.mode);
   if (workspace.compact)
-    return `<main class="calling-workspace compact-session" data-workspace data-workspace-compact="true" data-status="${status.status}" data-surface="${surface}"><img src="/consuelo-logo.svg" width="32" height="32" data-brand-logo alt="Consuelo" /><span class="session-dot" aria-hidden="true"></span><div><strong data-session-status role="status">${status.label}</strong><small>${workspace.mode === 'inbound' ? 'Inbound' : 'Outbound'} · Consuelo Dialer</small></div><button type="button" class="icon-button" data-action="workspace-expand" aria-label="Expand calling window">${icon('expand')}</button></main>`;
+    return `<main class="calling-workspace compact-session mercury-compact" data-workspace data-workspace-compact="true" data-status="${status.status}" data-surface="${surface}">${renderCallIdentity(state, workspace)}${workspace.mode === 'outbound' && status.status === 'connected' ? '<button type="button" class="button button--danger" data-action="hang-up">End</button>' : workspace.mode === 'inbound' && status.status === 'connected' && state.inboundOperator.rep.endpoints.find((endpoint) => endpoint.endpointId === state.inboundOperator.rep.assignment?.endpointId)?.kind === 'browser' ? '<button type="button" class="button button--danger" data-action="inbound-hang-up">End</button>' : ''}<button type="button" class="icon-button" data-action="workspace-expand" aria-label="Expand calling window">${icon('expand')}</button></main>`;
   const loading = ['booting', 'authenticating'].includes(state.phase);
   const body =
     workspace.screen === 'calling'
       ? loading
         ? renderOverlayStage(state, workspace)
-        : state.phase === 'failed'
+        : state.phase === 'failed' && !status.active
           ? renderError(state)
           : workspace.mode === 'inbound'
             ? renderInboundOperatorPanel(state.inboundOperator, {
                 selectedEndpointIds: workspace.answeringEndpointIds,
+                onCallHeader:
+                  status.status === 'connected'
+                    ? renderCallIdentity(state, workspace)
+                    : undefined,
                 scriptHtml:
-                  state.inboundOperator.rep.assignment?.phase === 'connected'
-                    ? renderLiveScript(workspace)
+                  status.status === 'connected' &&
+                  mercuryCallScope(state, 'inbound')
+                    ? renderMercuryCue(
+                        workspace,
+                        mercuryCallScope(state, 'inbound')!,
+                      )
                     : '',
               })
             : renderOverlayStage(state, workspace)
@@ -397,7 +409,7 @@ export const renderLeadConnectorEmbed = (
           : 'calling';
   const remaining = state.commercialCaller?.remainingMinutes;
   const compactTitle = compactPageTitle(workspace);
-  return `<main class="calling-workspace" data-workspace data-workspace-screen="${workspace.screen}" data-workspace-compact="false" data-surface="${surface}" data-phase="${state.phase}">
+  return `<main class="calling-workspace" data-workspace data-workspace-screen="${workspace.screen}" data-workspace-compact="false" data-surface="${surface}" data-phase="${state.phase}" data-on-call="${workspace.screen === 'calling' && ['connected', 'ending', 'reconnecting'].includes(status.status)}">
   <header class="workspace-header"><a class="workspace-brand" href="https://consuelohq.com/" target="_blank" rel="noopener noreferrer" aria-label="Consuelo Dialer"><img src="/consuelo-logo.svg" data-brand-logo width="36" height="36" alt="" /><span class="workspace-wordmark"><span>CONSUELO</span><span>DIALER</span></span></a><nav aria-label="Workspace"><button type="button" class="header-action" data-action="workspace-history" aria-label="Call history" aria-pressed="${workspace.screen === 'history' || workspace.screen === 'call-detail'}">${icon('history')}<span>History</span></button><button type="button" class="icon-button" data-action="workspace-settings" aria-label="Settings">${icon('settings')}</button>${surface === 'overlay' || status.active ? `<button type="button" class="icon-button" data-action="workspace-minimize" aria-label="Close calling window">${icon('close')}</button>` : ''}</nav></header>
   ${workspace.screen === 'calling' ? `<div class="direction-tabs" role="tablist" aria-label="Calling direction"><button type="button" role="tab" aria-selected="${workspace.mode === 'inbound'}" data-action="workspace-inbound"${callMode === 'outbound' ? ' disabled' : ''}>${icon('incoming')} Inbound</button><button type="button" role="tab" aria-selected="${workspace.mode === 'outbound'}" data-action="workspace-outbound"${callMode === 'inbound' ? ' disabled' : ''}>${icon('outgoing')} Outbound</button></div>` : `<div class="page-breadcrumb"><button type="button" class="text-button" data-action="workspace-${parentScreen}">${icon('back')} ${parentScreen === 'settings' ? 'Settings' : parentScreen === 'history' ? 'Call history' : 'Back to calling'}</button>${status.active ? `<button type="button" class="live-indicator" data-action="workspace-calling"><span class="session-dot"></span>${escapeHtml(status.label)}</button>` : ''}${compactTitle ? '<h1 id="workspace-page-title" tabindex="-1">' + escapeHtml(compactTitle) + '</h1>' : ''}</div>`}
   <div class="workspace-content">${workspace.screen !== 'calling' ? renderError(state) : ''}${body}</div>

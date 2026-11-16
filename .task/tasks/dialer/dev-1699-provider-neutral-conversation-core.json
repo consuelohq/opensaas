@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1699-provider-neutral-conversation-core",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2796,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2796",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1699-provider-neutral-conversation-core",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a12690406bb4",
+  "tmuxSession": "opensaas-dialer-dev-1699-provider-neutral-conversation-core-a1269040",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1699-provider-neutral-conversation-core/.task/session.json",
+  "createdAt": "2026-11-13T20:16:20.109Z"
+}

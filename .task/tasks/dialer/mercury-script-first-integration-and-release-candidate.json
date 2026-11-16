@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/mercury-script-first-integration-and-release-candidate",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2798,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2798",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-mercury-script-first-integration-and-release-candidate",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1793dd79e99f",
+  "tmuxSession": "opensaas-dialer-mercury-script-first-integration-and-release-can-1793dd79",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-mercury-script-first-integration-and-release-candidate/.task/session.json",
+  "createdAt": "2026-11-13T20:25:15.924Z"
+}

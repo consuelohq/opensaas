@@ -1,0 +1,374 @@
+[
+  {
+    "id": "H001",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "That premium is beyond what I can manage.",
+    "acceptableCardIds": [
+      "affordability"
+    ]
+  },
+  {
+    "id": "H002",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My budget will not cover another monthly charge.",
+    "acceptableCardIds": [
+      "affordability"
+    ]
+  },
+  {
+    "id": "H003",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I need a lower cost option.",
+    "acceptableCardIds": [
+      "affordability"
+    ]
+  },
+  {
+    "id": "H004",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Is the cost paid monthly or yearly?",
+    "acceptableCardIds": [
+      "affordability"
+    ]
+  },
+  {
+    "id": "H005",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "There is an active policy in my name.",
+    "acceptableCardIds": [
+      "existing-coverage"
+    ]
+  },
+  {
+    "id": "H006",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Another insurer already covers me.",
+    "acceptableCardIds": [
+      "existing-coverage"
+    ]
+  },
+  {
+    "id": "H007",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I have already got life insurance.",
+    "acceptableCardIds": [
+      "existing-coverage"
+    ]
+  },
+  {
+    "id": "H008",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I maintain my own term coverage.",
+    "acceptableCardIds": [
+      "existing-coverage"
+    ]
+  },
+  {
+    "id": "H009",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Life insurance is included in my work benefits.",
+    "acceptableCardIds": [
+      "employer-coverage"
+    ]
+  },
+  {
+    "id": "H010",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My employer pays the premium.",
+    "acceptableCardIds": [
+      "employer-coverage"
+    ]
+  },
+  {
+    "id": "H011",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I am covered by a workplace plan.",
+    "acceptableCardIds": [
+      "employer-coverage"
+    ]
+  },
+  {
+    "id": "H012",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "The coverage is part of my employee package.",
+    "acceptableCardIds": [
+      "employer-coverage"
+    ]
+  },
+  {
+    "id": "H013",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I will need to pass this by my wife.",
+    "acceptableCardIds": [
+      "spouse-and-family"
+    ]
+  },
+  {
+    "id": "H014",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My husband needs to join the decision.",
+    "acceptableCardIds": [
+      "spouse-and-family"
+    ]
+  },
+  {
+    "id": "H015",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I want to check with my partner first.",
+    "acceptableCardIds": [
+      "spouse-and-family"
+    ]
+  },
+  {
+    "id": "H016",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Let us discuss this with my family.",
+    "acceptableCardIds": [
+      "spouse-and-family"
+    ]
+  },
+  {
+    "id": "H017",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Can I list my son as beneficiary?",
+    "acceptableCardIds": [
+      "beneficiaries"
+    ]
+  },
+  {
+    "id": "H018",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I would like to update who gets the payout.",
+    "acceptableCardIds": [
+      "beneficiaries"
+    ]
+  },
+  {
+    "id": "H019",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Who is able to receive the benefit?",
+    "acceptableCardIds": [
+      "beneficiaries"
+    ]
+  },
+  {
+    "id": "H020",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I want to name my children.",
+    "acceptableCardIds": [
+      "beneficiaries"
+    ]
+  },
+  {
+    "id": "H021",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Does an applicant have to complete a health exam?",
+    "acceptableCardIds": [
+      "application-and-underwriting"
+    ]
+  },
+  {
+    "id": "H022",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Do I need to disclose the medicine I take?",
+    "acceptableCardIds": [
+      "application-and-underwriting"
+    ]
+  },
+  {
+    "id": "H023",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "Will my health history affect getting approved?",
+    "acceptableCardIds": [
+      "application-and-underwriting"
+    ]
+  },
+  {
+    "id": "H024",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "How does underwriting work?",
+    "acceptableCardIds": [
+      "application-and-underwriting"
+    ]
+  },
+  {
+    "id": "H025",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My budget is fine; the price is not an issue.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H026",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I am not concerned about the premium.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H027",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My old policy was cancelled last decade.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H028",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I do not have any other coverage.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H029",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My workplace stopped offering that benefit years ago.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H030",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My employer does not offer life insurance.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H031",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "My wife already approved this, so no discussion is needed.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H032",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I was quoting a form that says \"ask your spouse\".",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H033",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "We sorted out the beneficiary question years ago.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H034",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I am not asking to change who gets the payout.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H035",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "The old medical exam was completed years ago.",
+    "acceptableCardIds": []
+  },
+  {
+    "id": "H036",
+    "speaker": "customer",
+    "isFinal": true,
+    "startMs": 0,
+    "endMs": 5000,
+    "text": "I am not asking about underwriting.",
+    "acceptableCardIds": []
+  }
+]

@@ -1,6 +1,99 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
+
+const selectorPath = 'packages/workspace/scripts/ci/run-changed-os-native-tests.mjs';
+
+const git = (cwd, ...args) => {
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
+};
+
+const shallowMergeFixture = (t) => {
+  const dir = realpathSync(mkdtempSync(path.join(tmpdir(), 'native-selector-')));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const origin = path.join(dir, 'origin.git');
+  const source = path.join(dir, 'source');
+  const checkout = path.join(dir, 'checkout');
+  git(dir, 'init', '--bare', origin);
+  git(dir, 'init', '-b', 'main', source);
+  git(source, 'config', 'user.name', 'Native Test');
+  git(source, 'config', 'user.email', 'native-test@example.invalid');
+  mkdirSync(path.join(source, 'packages/os/scripts'), { recursive: true });
+  writeFileSync(path.join(source, 'packages/os/scripts/artifacts-design.ts'), 'before\n');
+  git(source, 'add', '.');
+  git(source, 'commit', '-m', 'event base');
+  const base = git(source, 'rev-parse', 'HEAD');
+  git(source, 'checkout', '-b', 'pull-request');
+  writeFileSync(path.join(source, 'packages/os/scripts/artifacts-design.ts'), 'after\n');
+  git(source, 'commit', '-am', 'native change');
+  git(source, 'checkout', 'main');
+  writeFileSync(path.join(source, 'unrelated.txt'), 'main moved\n');
+  git(source, 'add', '.');
+  git(source, 'commit', '-m', 'main moved');
+  git(source, 'merge', '--no-ff', '-m', 'merge pull request', 'pull-request');
+  git(source, 'remote', 'add', 'origin', origin);
+  git(source, 'push', 'origin', 'main');
+  git(origin, 'symbolic-ref', 'HEAD', 'refs/heads/main');
+  git(dir, 'clone', '--depth', '2', `file://${origin}`, checkout);
+  mkdirSync(path.dirname(path.join(checkout, selectorPath)), { recursive: true });
+  copyFileSync(new URL('../scripts/ci/run-changed-os-native-tests.mjs', import.meta.url), path.join(checkout, selectorPath));
+  assert.equal(git(checkout, 'rev-parse', '--is-shallow-repository'), 'true');
+  assert.notEqual(spawnSync('git', ['cat-file', '-e', `${base}^{commit}`], { cwd: checkout }).status, 0);
+  return { dir, checkout, base };
+};
+
+const runFixtureSelector = ({ dir, checkout, base }, head = 'HEAD') => {
+  const trace = path.join(dir, 'git-trace');
+  const result = spawnSync(process.execPath, [path.join(checkout, selectorPath), '--base', base, '--head', head, '--list'], {
+    cwd: checkout,
+    encoding: 'utf8',
+    env: { ...process.env, GIT_TRACE: trace },
+  });
+  return { ...result, trace: existsSync(trace) ? readFileSync(trace, 'utf8') : '' };
+};
+
+test('fetches the exact absent event base in a shallow merge checkout before selecting tests', (t) => {
+  const fixture = shallowMergeFixture(t);
+  const result = runFixtureSelector(fixture);
+  assert.equal(result.status, 0, result.stderr);
+  const selection = JSON.parse(result.stdout);
+  assert.deepEqual(selection.files, ['packages/os/scripts/artifacts-design.ts']);
+  assert.equal(selection.plan, 'focused-artifact');
+  assert.match(result.trace, new RegExp(`git fetch --no-tags --depth=1 origin ${fixture.base}`));
+  assert.equal(git(fixture.checkout, 'cat-file', '-e', `${fixture.base}^{commit}`), '');
+});
+
+test('also fetches an absent immutable head without changing the comparison base', (t) => {
+  const fixture = shallowMergeFixture(t);
+  const result = runFixtureSelector({ ...fixture, base: 'HEAD' }, fixture.base);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).plan, 'focused-artifact');
+  assert.match(result.trace, new RegExp(`git fetch --no-tags --depth=1 origin ${fixture.base}`));
+});
+
+test('fails closed when the exact missing base cannot be fetched', (t) => {
+  const fixture = shallowMergeFixture(t);
+  git(fixture.checkout, 'remote', 'set-url', 'origin', `file://${fixture.dir}/missing.git`);
+  const result = runFixtureSelector(fixture);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /git fetch failed/);
+  assert.equal(result.stdout, '');
+  assert.match(result.trace, new RegExp(`git fetch --no-tags --depth=1 origin ${fixture.base}`));
+});
+
+test('preserves a genuine diff failure for a symbolic head without fetching it', (t) => {
+  const fixture = shallowMergeFixture(t);
+  const result = runFixtureSelector({ ...fixture, base: 'HEAD^1' }, 'missing-head');
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /git diff failed/);
+  assert.equal(result.stdout, '');
+  assert.doesNotMatch(result.trace, /git fetch /);
+});
 
 import {
   buildNativeTestInvocation,

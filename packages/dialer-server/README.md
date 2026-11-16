@@ -88,6 +88,27 @@ The default concurrency limit is four provider requests across all sessions, wit
 
 Speaker labels remain `inbound` and `outbound`: the current customer conference leg does not prove that its outbound track contains only the representative. The schema can accept customer, representative, unknown, and future transfer participants once topology-specific attribution is proven.
 
+## Experimental closed-set selector transport
+
+`src/coaching/openrouter-selector.ts` provides an explicitly constructed,
+tool-free adapter for reviewed script selection. It does not enable itself or
+read credentials from the environment. Callers must explicitly supply a model,
+provider configuration revision, approved provider and canonical response-model
+allowlists, private key getter, and fetch implementation. The adapter does not
+retry or fall back to another provider or model. Only validated approved card,
+slot, and final evidence identifiers are returned; a null card is abstention.
+
+Each request is independently built from its pinned catalog and recent turns;
+the workspace ID is checked locally and omitted from the provider request.
+The transport limits requests to 32 cards, eight turns, 8,000 transcript
+characters, 64 KiB request and response bodies, 512 output tokens, and five
+seconds. Some formatted phone numbers in text are masked; this is not a
+general-purpose detector for spoken numbers, secrets, or other sensitive data.
+Provider use therefore requires an independently approved data-handling and
+evaluation boundary. No provider quality or live readiness is established by
+the mocked tests. Optional metadata contains only validated provider/model
+identity and valid numeric usage fields; missing cost is unknown, not free.
+
 ## Transfer follow-up seam
 
 Transfer controls are intentionally absent from both LeadConnector surfaces. A follow-up should add focused Effect operations such as `initiateTransfer`, `beginTransferConsultation`, `completeTransfer`, and `cancelTransfer` to the call-operations application, backed by the existing conference service in `packages/dialer/src/services/conference.ts`. Thin authenticated Hono adapters should live under `/v1/calls/:callId/transfers` and translate only validated requests and typed failures. The existing `dialer_call_events` table already supports `transfer_initiated`, `transfer_consulting`, `transfer_completed`, `transfer_cancelled`, and `transfer_failed`, so no historical call-record rewrite is required.

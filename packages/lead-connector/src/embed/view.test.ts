@@ -114,12 +114,13 @@ describe('LeadConnector embed view', () => {
     expect(html).not.toContain('data-action="transfer"');
   });
 
-  it('keeps transcript and coaching panels out of the compact operator overlay', () => {
+  it('keeps transcript review secondary while exposing the small Mercury mode control', () => {
     const html = renderLeadConnectorEmbed(connectedState(), {
       surface: 'overlay',
     });
     expect(html).not.toContain('Call transcript');
-    expect(html).not.toContain('Coaching');
+    expect(html).toContain('aria-label="Mercury mode"');
+    expect(html).toContain('Coaching off');
     expect(html).not.toContain('data-action="transfer"');
   });
 
@@ -384,7 +385,7 @@ describe('LeadConnector embed view', () => {
       surface: 'overlay',
     });
     expect(html).toContain('On a call');
-    expect(html).toContain('Speaking with');
+    expect(html).toContain('Test Contact');
     expect(html).toContain('2 other lines ended');
     expect(html).toContain('data-action="hang-up"');
     expect(html).not.toContain('data-action="start-single"');

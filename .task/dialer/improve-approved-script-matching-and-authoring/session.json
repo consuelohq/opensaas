@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_a088de3ce2a6",
+  "tmuxSession": "opensaas-dialer-improve-approved-script-matching-and-authoring-a088de3c",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/improve-approved-script-matching-and-authoring",
+  "branch": "task/dialer/improve-approved-script-matching-and-authoring",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-improve-approved-script-matching-and-authoring",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-improve-approved-script-matching-and-authoring",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2804,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2804",
+  "createdAt": "2026-11-14T04:04:50.414Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-improve-approved-script-matching-and-authoring/.task/dialer/improve-approved-script-matching-and-authoring/session.json"
+}

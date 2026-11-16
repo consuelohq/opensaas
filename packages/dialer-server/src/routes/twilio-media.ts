@@ -32,6 +32,11 @@ export const parseTwilioMediaFrame = (
 ): TwilioMediaFrame | null => {
   if (!isRecord(candidate)) return null;
   const event = candidate.event;
+  if (event === 'connected') {
+    return candidate.protocol === 'Call' && candidate.version === '1.0.0'
+      ? { event, protocol: 'Call', version: '1.0.0' }
+      : null;
+  }
   const sequenceNumber = candidate.sequenceNumber;
   const streamSid = candidate.streamSid;
   if (
@@ -48,6 +53,17 @@ export const parseTwilioMediaFrame = (
       !isRecord(start) ||
       !isString(start.streamSid) ||
       !isString(start.callSid) ||
+      !isString(start.accountSid) ||
+      start.streamSid !== streamSid ||
+      !Array.isArray(start.tracks) ||
+      start.tracks.length === 0 ||
+      start.tracks.some(
+        (track) => track !== 'inbound' && track !== 'outbound',
+      ) ||
+      !isRecord(start.mediaFormat) ||
+      start.mediaFormat.encoding !== 'audio/x-mulaw' ||
+      start.mediaFormat.sampleRate !== 8000 ||
+      start.mediaFormat.channels !== 1 ||
       !isRecord(start.customParameters)
     ) {
       return null;
@@ -64,6 +80,13 @@ export const parseTwilioMediaFrame = (
       start: {
         streamSid: start.streamSid,
         callSid: start.callSid,
+        accountSid: start.accountSid,
+        tracks: start.tracks as Array<'inbound' | 'outbound'>,
+        mediaFormat: {
+          encoding: 'audio/x-mulaw',
+          sampleRate: 8000,
+          channels: 1,
+        },
         customParameters,
       },
     };
@@ -101,14 +124,17 @@ export const parseTwilioMediaFrame = (
       event,
       sequenceNumber,
       streamSid,
-      stop: { callSid: stop.callSid },
+      stop: {
+        callSid: stop.callSid,
+        ...(isString(stop.accountSid) ? { accountSid: stop.accountSid } : {}),
+      },
     };
   }
   return null;
 };
 
 const runBoundaryEffect = async (effect: Effect.Effect<unknown, unknown>) => {
-  await Effect.runPromise(effect);
+  return Effect.runPromise(effect);
 };
 
 export const createTwilioMediaConnectionHandlers = (input: {
@@ -123,9 +149,23 @@ export const createTwilioMediaConnectionHandlers = (input: {
   >;
 }) => {
   let terminal = false;
+  let finished = false;
+  let failed = false;
+  let started = false;
+  let connected = false;
+  let queue = Promise.resolve();
+  let queuedBytes = 0;
+  let queuedFrames = 0;
+  let overloaded = false;
+  const serialize = (operation: () => Promise<void>) => {
+    const pending = queue.then(operation);
+    queue = pending.catch(() => undefined);
+    return pending;
+  };
 
   const fail = async (failureCode: string) => {
-    if (terminal) return;
+    if (failed || finished) return;
+    failed = true;
     terminal = true;
     await runBoundaryEffect(
       input.application.failTranscriptionSession({
@@ -136,77 +176,112 @@ export const createTwilioMediaConnectionHandlers = (input: {
   };
 
   return {
-    open: async () => {
-      await runBoundaryEffect(
-        input.application.beginTranscriptionSession({
-          connectionId: input.connectionId,
-        }),
-      );
-    },
-    message: async (rawMessage: string) => {
-      if (terminal) return;
-      if (rawMessage.length > 65_536) {
-        await fail('MEDIA_FRAME_TOO_LARGE');
-        return;
-      }
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(rawMessage);
-      } catch {
-        await fail('INVALID_MEDIA_FRAME');
-        return;
-      }
-      const frame = parseTwilioMediaFrame(parsed);
-      if (!frame) {
-        await fail('INVALID_MEDIA_FRAME');
-        return;
-      }
-      if (input.expectedCallSid && (
-        (frame.event === 'start' && (
-          frame.start.callSid !== input.expectedCallSid ||
-          (frame.start.customParameters.callId != null &&
-            frame.start.customParameters.callId !== input.expectedCallSid)
-        )) ||
-        (frame.event === 'stop' && frame.stop.callSid !== input.expectedCallSid)
-      )) {
-        await fail('MEDIA_START_CALL_MISMATCH');
-        return;
-      }
-      const isStop = frame.event === 'stop';
-      if (isStop) terminal = true;
-      try {
+    open: () =>
+      serialize(async () => {
         await runBoundaryEffect(
-          input.application.processTranscriptionFrame({
+          input.application.beginTranscriptionSession({
             connectionId: input.connectionId,
-            frame,
           }),
         );
-      } catch {
-        terminal = false;
-        await fail('MEDIA_FRAME_PROCESSING_FAILED');
+      }),
+    message: (rawMessage: string) => {
+      if (terminal || overloaded) return Promise.resolve();
+      if (rawMessage.length > 65_536) return fail('MEDIA_FRAME_TOO_LARGE');
+      queuedBytes += rawMessage.length;
+      queuedFrames += 1;
+      if (queuedBytes > 1_048_576 || queuedFrames > 256) {
+        queuedBytes -= rawMessage.length;
+        queuedFrames -= 1;
+        overloaded = true;
+        return fail('MEDIA_BACKPRESSURE_LIMIT');
       }
+      return serialize(async () => {
+        queuedBytes -= rawMessage.length;
+        queuedFrames -= 1;
+        if (terminal) return;
+        if (rawMessage.length > 65_536) {
+          await fail('MEDIA_FRAME_TOO_LARGE');
+          return;
+        }
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(rawMessage);
+        } catch {
+          await fail('INVALID_MEDIA_FRAME');
+          return;
+        }
+        const frame = parseTwilioMediaFrame(parsed);
+        if (!frame) {
+          await fail('INVALID_MEDIA_FRAME');
+          return;
+        }
+        if (frame.event === 'connected') {
+          if (connected || started) await fail('INVALID_MEDIA_PROTOCOL_ORDER');
+          connected = true;
+          return;
+        }
+        if (frame.event === 'start') {
+          if (started) {
+            await fail('DUPLICATE_MEDIA_START');
+            return;
+          }
+          started = true;
+        } else if (!started) {
+          await fail('MEDIA_BEFORE_START');
+          return;
+        }
+        if (
+          input.expectedCallSid &&
+          ((frame.event === 'start' &&
+            (frame.start.callSid !== input.expectedCallSid ||
+              (frame.start.customParameters.callId != null &&
+                frame.start.customParameters.callId !==
+                  input.expectedCallSid))) ||
+            (frame.event === 'stop' &&
+              frame.stop.callSid !== input.expectedCallSid))
+        ) {
+          await fail('MEDIA_START_CALL_MISMATCH');
+          return;
+        }
+        const isStop = frame.event === 'stop';
+        if (isStop) terminal = true;
+        try {
+          const result = await runBoundaryEffect(
+            input.application.processTranscriptionFrame({
+              connectionId: input.connectionId,
+              frame,
+            }),
+          );
+          if (isRecord(result) && result.accepted === false) {
+            await fail('MEDIA_FRAME_REJECTED');
+          }
+          if (isStop && !failed) finished = true;
+        } catch {
+          await fail('MEDIA_FRAME_PROCESSING_FAILED');
+        }
+      });
     },
-    close: () => {
-      if (terminal) return Promise.resolve();
-      terminal = true;
-      return runBoundaryEffect(
-        input.application.completeTranscriptionSession({
-          connectionId: input.connectionId,
-        }),
-      );
-    },
+    close: () =>
+      serialize(() => {
+        if (terminal) return Promise.resolve();
+        terminal = true;
+        return runBoundaryEffect(
+          input.application.completeTranscriptionSession({
+            connectionId: input.connectionId,
+          }),
+        ).then(() => {
+          finished = true;
+        });
+      }),
     error: () => fail('MEDIA_STREAM_ERROR'),
   };
 };
 
-const messageText = (data: string | Blob | ArrayBufferLike): Promise<string> => {
-  if (typeof data === 'string') return Promise.resolve(data);
-  if (data instanceof Blob) return data.text();
-  return Promise.resolve(new TextDecoder().decode(data));
-};
-
 export const createTwilioMediaRoutes = (
-  dependencies: DialerServerDependencies,
+  dependencies: Pick<
+    DialerServerDependencies,
+    'callOperations' | 'verifyTwilioSignature'
+  >,
 ) => {
   const routes = new Hono();
 
@@ -234,10 +309,12 @@ export const createTwilioMediaRoutes = (
     return upgradeWebSocket(context, {
       onOpen: () => void handlers.open().catch(() => handlers.error()),
       onMessage: (event) =>
-        void messageText(event.data)
-          .then((message) => handlers.message(message))
-          .catch(() => handlers.error()),
-      onClose: () => void handlers.close(),
+        void (
+          typeof event.data === 'string'
+            ? handlers.message(event.data)
+            : handlers.error()
+        ).catch(() => handlers.error()),
+      onClose: () => void handlers.close().catch(() => handlers.error()),
       onError: () => void handlers.error(),
     });
   };

@@ -14,6 +14,136 @@ const read = (...parts: string[]) =>
   readFileSync(join(repoRoot, ...parts), 'utf8');
 
 describe('dialer GitHub release workflow contract', () => {
+  it('executes the full release Worker upload, deployment and manifest capture with the intended argv', () => {
+    const release = read(
+      '.github',
+      'workflows',
+      'consuelo-production-release.yaml',
+    );
+    const scriptFor = (name: string) => {
+      const step = release
+        .split(`      - name: ${name}\n`)[1]
+        ?.split('\n      - name:')[0];
+      const script = step
+        ?.split('        run: |\n')[1]
+        ?.split('\n')
+        .map((line) => line.replace(/^ {10}/, ''))
+        .join('\n');
+      if (!script) throw new Error(`Missing executable step: ${name}`);
+      return script;
+    };
+    const temp = mkdtempSync(join(tmpdir(), 'dialer-worker-release-'));
+    try {
+      const bin = join(temp, 'bin');
+      mkdirSync(bin);
+      const log = join(temp, 'argv');
+      writeFileSync(
+        join(bin, 'bunx'),
+        `#!/bin/bash\nset -eu\nprintf '%s\\n' BEGIN "$@" END >> "$ARGV_LOG"\nfor arg in "$@"; do [ "$arg" != + ] || exit 42; done\nif [ "${'${2:-}'}" = deployments ]; then\n  printf '%s\\n' "$CF_FIXTURE"\nfi\n`,
+        { mode: 0o755 },
+      );
+      const validDeployment = [
+        {
+          annotations: { 'workers/message': 'Dialer source abc123' },
+          versions: [{ version_id: 'version-fixture', percentage: 100 }],
+        },
+      ];
+      const env = {
+        PATH: `${bin}:${process.env.PATH}`,
+        ARGV_LOG: log,
+        RUNNER_TEMP: temp,
+        GITHUB_SHA: 'abc123',
+        CF_FIXTURE: JSON.stringify(validDeployment),
+      };
+      for (const name of [
+        'Deploy LeadConnector worker',
+        'Capture LeadConnector worker version',
+      ]) {
+        const result = Bun.spawnSync(['bash', '-c', scriptFor(name)], { env });
+        expect(result.exitCode, result.stderr.toString()).toBe(0);
+      }
+      expect(readFileSync(log, 'utf8').trim().split('\n')).toEqual([
+        'BEGIN',
+        'wrangler@4.135.0',
+        'versions',
+        'upload',
+        '--config',
+        'packages/lead-connector/wrangler.jsonc',
+        '--keep-vars',
+        '--tag',
+        'dialer-abc123',
+        '--message',
+        'Dialer source abc123',
+        'END',
+        'BEGIN',
+        'wrangler@4.135.0',
+        'versions',
+        'deploy',
+        '--config',
+        'packages/lead-connector/wrangler.jsonc',
+        '--version-tag',
+        'dialer-abc123',
+        '--message',
+        'Dialer source abc123',
+        '--yes',
+        'END',
+        'BEGIN',
+        'wrangler@4.135.0',
+        'deployments',
+        'list',
+        '--config',
+        'packages/lead-connector/wrangler.jsonc',
+        '--json',
+        'END',
+      ]);
+      expect(
+        JSON.parse(
+          readFileSync(join(temp, 'cloudflare-deployment.json'), 'utf8'),
+        ),
+      ).toEqual({
+        workerName: 'consuelo-lead-connector-embed',
+        versionId: 'version-fixture',
+        targets: ['https://calls.consuelohq.com'],
+      });
+      for (const invalid of [
+        [
+          {
+            annotations: { 'workers/message': 'Dialer source stale' },
+            versions: [{ version_id: 'version-fixture', percentage: 100 }],
+          },
+        ],
+        [
+          {
+            annotations: { 'workers/message': 'Dialer source abc123' },
+            versions: [{ version_id: 'version-fixture', percentage: 50 }],
+          },
+        ],
+        [
+          {
+            annotations: { 'workers/message': 'Dialer source abc123' },
+            versions: [],
+          },
+        ],
+      ]) {
+        rmSync(join(temp, 'cloudflare-deployment.json'));
+        const result = Bun.spawnSync(
+          ['bash', '-c', scriptFor('Capture LeadConnector worker version')],
+          {
+            env: { ...env, CF_FIXTURE: JSON.stringify(invalid) },
+          },
+        );
+        expect(result.exitCode).not.toBe(0);
+        expect(() =>
+          readFileSync(join(temp, 'cloudflare-deployment.json')),
+        ).toThrow();
+        // Provide an empty placeholder for the next iteration; no stale manifest survives.
+        writeFileSync(join(temp, 'cloudflare-deployment.json'), '');
+      }
+    } finally {
+      rmSync(temp, { recursive: true, force: true });
+    }
+  });
+
   it('classifies the complete deployed dialer surface and validates all three packages', () => {
     const ci = read('.github', 'workflows', 'consuelo-ci.yaml');
     const planner = read('packages', 'os', 'scripts', 'ci-plan.ts');
@@ -60,6 +190,7 @@ describe('dialer GitHub release workflow contract', () => {
     }
     expect(railway).toContain('packages/logger/**');
     expect(railway).toContain('packages/contacts/**');
+    expect(railway).toContain('packages/conversation/**');
   });
 
   it('releases dialer changes from main in fail-closed provider order with deployment-only secrets', () => {
@@ -71,11 +202,27 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).toContain('- dialer');
     expect(release).toContain('environment: consuelo dialer / production');
     expect(release).toContain(
-      'packages/(dialer|dialer-server|lead-connector|logger|contacts)/',
+      'packages/(dialer|dialer-server|lead-connector|logger|contacts|conversation)/',
     );
     expect(release).toContain('bun run --cwd packages/logger build');
     expect(release.indexOf('bun run --cwd packages/logger build')).toBeLessThan(
       release.indexOf('bun run --cwd packages/dialer typecheck'),
+    );
+    const sourceValidation =
+      release
+        .split('      - name: Validate dialer release source\n')[1]
+        ?.split('\n      - name:')[0] ?? '';
+    const conversationBuild = sourceValidation.indexOf(
+      'bun run --cwd packages/conversation build',
+    );
+    expect(conversationBuild).toBeGreaterThan(-1);
+    expect(conversationBuild).toBeLessThan(
+      sourceValidation.indexOf('bun test packages/dialer-server/src'),
+    );
+    expect(conversationBuild).toBeLessThan(
+      sourceValidation.indexOf(
+        'bun run --cwd packages/dialer-server typecheck',
+      ),
     );
     const steps = [
       'Verify approved Marketplace bootstrap source',
@@ -254,7 +401,10 @@ describe('dialer GitHub release workflow contract', () => {
       git('init', '-q');
       git('config', 'user.email', 'release-test@consuelo.invalid');
       git('config', 'user.name', 'Release Test');
-      put('packages/lead-connector/src/embed/view.ts', 'export const title = "before";\n');
+      put(
+        'packages/lead-connector/src/embed/view.ts',
+        'export const title = "before";\n',
+      );
       put('packages/dialer-server/src/main.ts', 'export const live = true;\n');
       const packagePath = 'packages/dialer-server/package.json';
       const basePackage = {
@@ -265,9 +415,18 @@ describe('dialer GitHub release workflow contract', () => {
       put(packagePath, JSON.stringify(basePackage) + '\n');
       const base = commit('base');
 
-      put('packages/lead-connector/src/embed/view.ts', 'export const title = "after";\n');
-      put('packages/lead-connector/src/embed/compact-workspace-polish.test.ts', 'test();\n');
-      put('packages/lead-connector/src/deployment/release-workflow.contract.test.ts', 'test();\n');
+      put(
+        'packages/lead-connector/src/embed/view.ts',
+        'export const title = "after";\n',
+      );
+      put(
+        'packages/lead-connector/src/embed/compact-workspace-polish.test.ts',
+        'test();\n',
+      );
+      put(
+        'packages/lead-connector/src/deployment/release-workflow.contract.test.ts',
+        'test();\n',
+      );
       const ui = commit('scoped UI');
       expect(classify(base, ui)).toContain('release=false');
       expect(classify(base, ui)).toContain('frontend_only=true');
@@ -293,7 +452,9 @@ describe('dialer GitHub release workflow contract', () => {
       put(packagePath, JSON.stringify(labPackage) + '\n');
       const mixedQaUiAndLabScript = commit('QA script and UI');
       expect(classify(base, mixedQaUiAndLabScript)).toContain('release=false');
-      expect(classify(base, mixedQaUiAndLabScript)).toContain('frontend_only=true');
+      expect(classify(base, mixedQaUiAndLabScript)).toContain(
+        'frontend_only=true',
+      );
 
       put('packages/dialer-server/src/main.ts', 'export const live = false;\n');
       const backend = commit('runtime change');
@@ -316,13 +477,30 @@ describe('dialer GitHub release workflow contract', () => {
       const qa = commit('QA catalog');
       expect(classify(dependency, qa)).toContain('release=false');
       expect(classify(dependency, qa)).toContain('frontend_only=false');
+
+      put(
+        'packages/conversation/src/timeline.ts',
+        'export const version = 2;\n',
+      );
+      const sharedCore = commit('conversation core only');
+      expect(classify(qa, sharedCore)).toContain('release=true');
+      expect(classify(qa, sharedCore)).toContain('frontend_only=false');
+      put(
+        'packages/lead-connector/src/embed/view.ts',
+        'export const title = "later";\n',
+      );
+      const coreAndUi = commit('core and UI');
+      expect(classify(qa, coreAndUi)).toContain('release=true');
+      expect(classify(qa, coreAndUi)).toContain('frontend_only=false');
     } finally {
       rmSync(temp, { recursive: true, force: true });
     }
 
     const workerJob = release.split('\n  release-dialer-ui:\n')[1];
     expect(workerJob).toBeDefined();
-    expect(workerJob).toContain("needs.dialer-changes.outputs.frontend_only == 'true'");
+    expect(workerJob).toContain(
+      "needs.dialer-changes.outputs.frontend_only == 'true'",
+    );
     expect(workerJob).toContain('CLOUDFLARE_DIALER_WORKER_API_TOKEN');
     expect(workerJob).toContain('bun run --cwd packages/lead-connector build');
     expect(workerJob).toContain('wrangler versions upload');
@@ -334,6 +512,8 @@ describe('dialer GitHub release workflow contract', () => {
     expect(workerJob).not.toContain('release:deploy-worker');
     expect(workerJob).not.toContain('read-wrangler-deployment.ts');
     expect(workerJob).toContain('verify-production-edge.ts');
-    expect(workerJob).not.toMatch(/RAILWAY_TOKEN|RAILWAY_DIALER_PROJECT_ID|railway up|railway-deployment/);
+    expect(workerJob).not.toMatch(
+      /RAILWAY_TOKEN|RAILWAY_DIALER_PROJECT_ID|railway up|railway-deployment/,
+    );
   });
 });

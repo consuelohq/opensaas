@@ -88,7 +88,8 @@ export function classifyConsueloChanges(files: string[]): ConsueloCiPlan {
     }
 
     if (
-      file.startsWith('packages/dialer/')
+      file.startsWith('packages/conversation/')
+      || file.startsWith('packages/dialer/')
       || file.startsWith('packages/dialer-server/')
       || file.startsWith('packages/lead-connector/')
       || file.startsWith('packages/contacts/')

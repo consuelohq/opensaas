@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { createMercuryRoutes } from './mercury';
 import { bodyLimit } from 'hono/body-limit';
 import type { DialerVariables } from '../middleware/auth';
 import {
@@ -93,5 +94,6 @@ export const createCoachingRoutes = (scripts: CoachingScripts) => {
           );
     }
   });
+  if (scripts.mercury) app.route('/', createMercuryRoutes(scripts.mercury));
   return app;
 };

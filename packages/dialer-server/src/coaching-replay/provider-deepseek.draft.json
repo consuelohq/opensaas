@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "model": "deepseek/deepseek-v4.1-flash-1017",
+  "providerRevision": "openrouter-deepinfra-fp8-endpoint-2026-11-14",
+  "allowedRequestProviderTags": ["deepinfra/fp8"],
+  "allowedResponseProviderNames": ["DeepInfra"],
+  "allowedResponseModels": ["deepseek/deepseek-v4.1-flash-1017"],
+  "transportRevision": "closed-set-openrouter-v1",
+  "reasoningMode": "disabled",
+  "scenarioCount": 108,
+  "maxRequests": 108,
+  "maxReservedNanoUsd": 2000000000,
+  "contextWindowTokens": 1048576,
+  "inputNanoUsdPerMillion": 98000000,
+  "outputNanoUsdPerMillion": 294000000,
+  "maxPromptNanoUsdPerMillion": 98000000,
+  "maxCompletionNanoUsdPerMillion": 294000000,
+  "pricingSource": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-1017/endpoints",
+  "pricingAsOf": "2026-11-14"
+}

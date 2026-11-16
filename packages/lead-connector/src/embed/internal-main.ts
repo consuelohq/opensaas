@@ -9,7 +9,16 @@ import {
   canPersistWorkspacePreferences,
   selectScriptIdAfterReload,
 } from './workspace-recovery.js';
-import { scriptSteps } from './script-presentation.js';
+import { mercuryCallScope, observeMercuryCaller } from './mercury-call.js';
+import {
+  mercuryAction,
+  receiveMercuryView,
+  synchronizeMercuryScope,
+} from './mercury-workspace.js';
+import { createMercuryFeedApi } from './mercury-feed-api.js';
+import { createMercuryFeed } from './mercury-feed.js';
+import { createMercuryAuthoringApi } from './mercury-authoring.js';
+import { createMercuryAuthoringController } from './mercury-authoring-controller.js';
 import { createNativeWorkspaceLauncher } from './native-workspace.js';
 import { createLeadConnectorEmbedApi } from './api-client.js';
 import { createLeadConnectorInboundOperatorApi } from './inbound-operator.js';
@@ -64,6 +73,48 @@ const controller = createLeadConnectorEmbedController({
   onSessionExpired: () => sessionRenewal.request(),
 });
 let workspace: CallingWorkspace = createCallingWorkspace(surface);
+const mercuryAuthoring = createMercuryAuthoringApi({
+  baseUrl: window.location.origin,
+  getToken: () => controller.getState().sessionToken,
+});
+let publicationRequest = 0;
+const mercuryAuthoringController = createMercuryAuthoringController({
+  api: mercuryAuthoring,
+  getScript: (id) =>
+    workspace.coachingLibrary?.scripts.find((script) => script.id === id),
+  selectedScriptId: () => workspace.scriptId,
+  getPublication: () => workspace.mercuryPublication,
+  setPublication: (publication) => {
+    workspace.mercuryPublication = publication;
+  },
+  nextRequestKey: () => ++publicationRequest,
+  render: () => render(),
+  onPublished: () => loadScripts(),
+});
+const mercuryFeed = createMercuryFeed({
+  api: createMercuryFeedApi({
+    baseUrl: window.location.origin,
+    getToken: () => controller.getState().sessionToken,
+  }),
+  onView: (view) => {
+    if (view) {
+      if (receiveMercuryView(workspace, view, true))
+        workspace.mercuryRemote = true;
+    } else {
+      workspace.mercuryCard = undefined;
+      workspace.mercuryHistory = [];
+      workspace.mercuryManualIndex = undefined;
+      workspace.mercuryPinned = false;
+      workspace.mercuryRemote = false;
+    }
+    queueMicrotask(() => render());
+  },
+  onStatus: (status) => {
+    workspace.mercuryFeedStatus = status;
+    queueMicrotask(() => render());
+  },
+  onSessionExpired: () => sessionRenewal.request(),
+});
 try {
   const saved = localStorage.getItem('consuelo-calling-theme');
   if (saved === 'light' || saved === 'dark') workspace.theme = saved;
@@ -414,6 +465,25 @@ const paint = (): void => {
       ? workspace.locationId + ':' + state.inboundOperator.rep.repId
       : null;
   const callMode = activeCallingMode(state);
+  synchronizeMercuryScope(
+    workspace,
+    callMode ? mercuryCallScope(state, callMode) : null,
+  );
+  observeMercuryCaller(workspace, state);
+  mercuryFeed.configure({
+    scopeKey: workspace.mercuryScope ?? '',
+    scriptId: workspace.activeScriptId ?? '',
+    enabled:
+      surface === 'overlay' &&
+      Boolean(state.sessionToken) &&
+      Boolean(workspace.mercuryScope) &&
+      Boolean(workspace.activeScriptId) &&
+      workspace.coachingMode === 'script' &&
+      Boolean(callMode) &&
+      sessionPresentation(state, callMode ?? workspace.mode).status ===
+        'connected',
+    authEpoch: state.sessionExpiresAt ?? '',
+  });
   if (
     scope &&
     canRestoreWorkspacePreferences(scope, preferenceScope, Boolean(callMode))
@@ -603,18 +673,33 @@ root.addEventListener('click', (event) => {
     }
     return;
   }
-  if (action === 'script-next' || action === 'script-previous') {
-    const script = workspace.coachingLibrary?.scripts.find(
-      (s) => s.id === workspace.activeScriptId,
-    );
-    const count = script ? scriptSteps(script.content).length : 0;
-    workspace.scriptStep = Math.max(
-      0,
-      Math.min(
-        count - 1,
-        (workspace.scriptStep ?? 0) + (action === 'script-next' ? 1 : -1),
-      ),
-    );
+  if (
+    workspace.mercuryRemote &&
+    ['mercury-pin', 'mercury-auto', 'script-next', 'script-previous'].includes(
+      action,
+    )
+  ) {
+    const control =
+      action === 'mercury-pin'
+        ? workspace.mercuryPinned
+          ? 'auto'
+          : 'pin'
+        : action === 'mercury-auto'
+          ? 'auto'
+          : action === 'script-next'
+            ? 'next'
+            : 'previous';
+    const scope = workspace.mercuryScope;
+    void mercuryFeed.control(control).then((succeeded) => {
+      if (!succeeded || scope !== workspace.mercuryScope) return;
+      workspace.mercuryPinned = control === 'pin';
+      workspace.mercuryManualIndex =
+        control === 'next' || control === 'previous' ? 0 : undefined;
+      render();
+    });
+    return;
+  }
+  if (mercuryAction(workspace, action)) {
     render();
     return;
   }
@@ -771,7 +856,23 @@ root.addEventListener('click', (event) => {
     bridge.openWorkspace(launch);
     return;
   }
+  if (action === 'script-preview') {
+    if (!workspace.scriptSaving)
+      void mercuryAuthoringController.preview(
+        actionElement.dataset.scriptId ?? '',
+      );
+    return;
+  }
+  if (action === 'script-example-triggers') {
+    const form = actionElement.closest<HTMLFormElement>(
+      '[data-trigger-review]',
+    );
+    if (form && !workspace.scriptSaving)
+      void mercuryAuthoringController.example(form);
+    return;
+  }
   if (action === 'script-new') {
+    workspace.mercuryPublication = undefined;
     if (workspace.scriptSaving) return;
     workspace.scriptId = undefined;
     workspace.scriptDraft = {
@@ -784,6 +885,7 @@ root.addEventListener('click', (event) => {
     return;
   }
   if (action === 'script-open' || action === 'script-edit') {
+    workspace.mercuryPublication = undefined;
     if (workspace.scriptSaving) return;
     const script = workspace.coachingLibrary?.scripts.find(
       (s) => s.id === actionElement.dataset.scriptId,
@@ -1039,6 +1141,8 @@ root.addEventListener('click', (event) => {
 });
 
 root.addEventListener('change', (event) => {
+  if (event.target instanceof Element)
+    mercuryAuthoringController.input(event.target);
   const teamField = event.target as HTMLInputElement | HTMLSelectElement;
   if (teamField.dataset.field === 'team-member') {
     workspace.teamUserId = teamField.value;
@@ -1069,9 +1173,9 @@ root.addEventListener('change', (event) => {
   }
 
   const target = event.target;
-  if (
-    !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)
-  )
+  if (!(
+    target instanceof HTMLInputElement || target instanceof HTMLSelectElement
+  ))
     return;
   if (
     target instanceof HTMLInputElement &&
@@ -1174,6 +1278,7 @@ root.addEventListener('change', (event) => {
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 root.addEventListener('input', (event) => {
   const target = event.target;
+  if (target instanceof Element) mercuryAuthoringController.input(target);
   if (
     workspace.scriptDraft &&
     target instanceof HTMLInputElement &&
@@ -1314,6 +1419,14 @@ root.addEventListener('submit', (event) => {
   if (!(form instanceof HTMLFormElement)) return;
   event.preventDefault();
   const data = new FormData(form);
+  if (form.hasAttribute('data-trigger-review')) {
+    if (!workspace.scriptSaving) void mercuryAuthoringController.review(form);
+    return;
+  }
+  if (form.hasAttribute('data-publication')) {
+    if (!workspace.scriptSaving) void mercuryAuthoringController.publish(form);
+    return;
+  }
   if (form.dataset.form === 'team-access') {
     const userId = String(data.get('userId') ?? '');
     const member = controller
@@ -1368,9 +1481,7 @@ root.addEventListener('submit', (event) => {
     void controller.saveSeat({
       userId: String(data.get('userId') ?? '').trim(),
       planCode: String(data.get('planCode') ?? 'single') as
-        | 'single'
-        | 'standard'
-        | 'power',
+        'single' | 'standard' | 'power',
     });
     return;
   }
@@ -1476,6 +1587,7 @@ bridge.start();
 bootstrapTimer = setTimeout(failBootstrap, 5000);
 bridge.requestUserContext();
 window.addEventListener('beforeunload', () => {
+  mercuryFeed.dispose();
   completeBootstrap();
   stopRefresh();
   if (inboundRefreshTimer) clearInterval(inboundRefreshTimer);

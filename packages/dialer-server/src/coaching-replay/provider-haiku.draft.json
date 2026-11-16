@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "model": "anthropic/claude-haiku-4.5",
+  "providerRevision": "openrouter-anthropic-endpoint-2026-11-14",
+  "allowedRequestProviderTags": ["anthropic"],
+  "allowedResponseProviderNames": ["Anthropic"],
+  "allowedResponseModels": ["anthropic/claude-haiku-4.5"],
+  "transportRevision": "closed-set-openrouter-v1",
+  "scenarioCount": 108,
+  "maxRequests": 108,
+  "maxReservedNanoUsd": 2000000000,
+  "contextWindowTokens": 200000,
+  "inputNanoUsdPerMillion": 2000000000,
+  "outputNanoUsdPerMillion": 5000000000,
+  "maxPromptNanoUsdPerMillion": 1000000000,
+  "maxCompletionNanoUsdPerMillion": 5000000000,
+  "pricingSource": "https://openrouter.ai/api/v1/models/anthropic/claude-haiku-4.5/endpoints",
+  "pricingAsOf": "2026-11-14"
+}

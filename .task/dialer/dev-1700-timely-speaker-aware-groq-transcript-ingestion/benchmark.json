@@ -1,0 +1,59 @@
+{
+  "kind": "synthetic-policy-cost-model",
+  "providerCalls": 0,
+  "model": "whisper-large-v3-turbo",
+  "minimumBilledSecondsPerRequest": 10,
+  "format": "8kHz8bitmulaw",
+  "overlapMs": 200,
+  "continuousSpeechBothTracks": [
+    {
+      "targetMs": 1000,
+      "requestsPerConnectedMinute": 150,
+      "sourceSecondsBothTracks": 120,
+      "submittedSecondsBothTracks": 149.6,
+      "billedSecondsBothTracks": 1500,
+      "billingAmplificationVsSource": 12.5
+    },
+    {
+      "targetMs": 2000,
+      "requestsPerConnectedMinute": 68,
+      "sourceSecondsBothTracks": 120,
+      "submittedSecondsBothTracks": 133.2,
+      "billedSecondsBothTracks": 680,
+      "billingAmplificationVsSource": 5.667
+    },
+    {
+      "targetMs": 4000,
+      "requestsPerConnectedMinute": 32,
+      "sourceSecondsBothTracks": 120,
+      "submittedSecondsBothTracks": 126,
+      "billedSecondsBothTracks": 320,
+      "billingAmplificationVsSource": 2.667
+    },
+    {
+      "targetMs": 20000,
+      "requestsPerConnectedMinute": 8,
+      "sourceSecondsBothTracks": 120,
+      "submittedSecondsBothTracks": 121.2,
+      "billedSecondsBothTracks": 140,
+      "billingAmplificationVsSource": 1.167
+    }
+  ],
+  "intermittentFixture": {
+    "callSeconds": 10,
+    "speechSecondsEachTrack": 4,
+    "requestsPerCall": 4,
+    "billedSecondsPerCall": 40,
+    "capacities": [
+      1,
+      5,
+      20
+    ],
+    "concurrencyCeiling": 4
+  },
+  "limitations": [
+    "Not a quality evaluation or real Groq latency result",
+    "RMS silence gate is heuristic and needs paid/provider fixture quality calibration before production claims",
+    "Network capture delay, real provider429 distribution, persistence-to-browser latency and audio-origin calibration are not measured"
+  ]
+}

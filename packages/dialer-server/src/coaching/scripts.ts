@@ -5,7 +5,7 @@ export const CREATE_COACHING_SCRIPTS_SQL = `CREATE TABLE IF NOT EXISTS dialer_co
  workspace_id text NOT NULL, id uuid NOT NULL, created_by text NOT NULL,
  title text NOT NULL CHECK(length(title) BETWEEN 1 AND 120),
  content text NOT NULL CHECK(octet_length(content) BETWEEN 1 AND 100000),
- revision integer NOT NULL DEFAULT 1 CHECK(revision>0), updated_at timestamptz NOT NULL DEFAULT now(),
+ revision integer NOT NULL DEFAULT 1 CHECK(revision>0), updated_at timestamptz NOT NULL DEFAULT now(), archived_at timestamptz,
  PRIMARY KEY(workspace_id,id)
 )`;
 export type ScriptDraft = {
@@ -21,6 +21,7 @@ export type CoachingScript = {
   revision: number;
   updatedAt: string;
   canEdit: boolean;
+  canPublish?: boolean;
 };
 export class ScriptConflictError extends Error {}
 export const validateScriptDraft = (
@@ -48,6 +49,7 @@ export const validateScriptDraft = (
   return { title, content, expectedRevision: Number(expectedRevision) };
 };
 export type CoachingScripts = {
+  mercury?: { playbooks: import('./playbook-store').PlaybookStore; cues: import('./cue-service').CueService };
   list: (identity: DialerIdentity) => Promise<CoachingScript[]>;
   save: (
     identity: DialerIdentity,
@@ -70,6 +72,7 @@ const project = (row: ScriptRow, identity: DialerIdentity): CoachingScript => ({
   revision: row.revision,
   updatedAt: new Date(row.updated_at).toISOString(),
   canEdit: isAdmin(identity) || row.created_by === identity.userId,
+  canPublish: isAdmin(identity) || row.created_by === identity.userId,
 });
 export const createCoachingScripts = (
   database: LeadConnectorDatabase,
@@ -77,7 +80,7 @@ export const createCoachingScripts = (
   list: async (identity) => {
     try {
       const result = await database.query<ScriptRow>(
-        'SELECT id,title,content,revision,updated_at,created_by FROM dialer_coaching_scripts WHERE workspace_id=$1 ORDER BY updated_at DESC,id',
+        'SELECT id,title,content,revision,updated_at,created_by FROM dialer_coaching_scripts WHERE workspace_id=$1 AND archived_at IS NULL ORDER BY updated_at DESC,id',
         [identity.workspaceId],
       );
       return result.rows.map((row) => project(row, identity));
@@ -92,7 +95,7 @@ export const createCoachingScripts = (
       if (valid.expectedRevision > 0) {
         const updated = await database.query<ScriptRow>(
           `UPDATE dialer_coaching_scripts SET title=$4,content=$5,revision=revision+1,updated_at=now()
-    WHERE workspace_id=$1 AND id=$2::uuid AND revision=$6 AND (created_by=$3 OR $7::boolean)
+    WHERE workspace_id=$1 AND id=$2::uuid AND revision=$6 AND archived_at IS NULL AND (created_by=$3 OR $7::boolean)
     RETURNING id,title,content,revision,updated_at,created_by`,
           [
             identity.workspaceId,

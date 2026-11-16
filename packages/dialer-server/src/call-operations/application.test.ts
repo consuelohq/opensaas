@@ -10,11 +10,26 @@ import {
 
 const audioPayload = (value: string): string =>
   Buffer.from(value, 'utf8').toString('base64');
+const parentAccountSid = 'AC' + '1'.repeat(32);
+const childAccountSid = 'AC' + '2'.repeat(32);
+const foreignAccountSid = 'AC' + '3'.repeat(32);
 
 const createHarness = (
   input: {
     provider?: SpeechToTextProviderService;
     enabled?: boolean;
+    providerAccountId?: string | null;
+    trackRoles?: {
+      inbound?: 'customer' | 'representative';
+      outbound?: 'customer' | 'representative';
+    };
+    config?: {
+      parentAccountSid?: string;
+      maxConcurrentTranscriptions?: number;
+      chunkBytes?: number;
+      overlapBytes?: number;
+      maxBufferBytesPerTrack?: number;
+    };
   } = {},
 ) => {
   const statuses: string[] = [];
@@ -42,6 +57,8 @@ const createHarness = (
         enabled: input.enabled ?? true,
         language: null,
         retentionDays: 30,
+        providerAccountId: input.providerAccountId,
+        trackRoles: input.trackRoles,
       }),
     setTranscriptStatus: ({ status }) =>
       Effect.sync(() => {
@@ -86,11 +103,13 @@ const createHarness = (
     repository,
     speechToTextProvider: provider,
     config: {
+      parentAccountSid,
       model: 'whisper-large-v3-turbo',
       chunkBytes: 4,
       maxBufferBytesPerTrack: 8,
       providerTimeoutMs: 20,
       maxConcurrentTranscriptions: 2,
+      ...input.config,
     },
   });
   return { application, providerCalls, segments, statuses };
@@ -103,6 +122,7 @@ const startFrame = (streamSid = 'MZ-1') => ({
   sequenceNumber: '1',
   streamSid,
   start: {
+    accountSid: parentAccountSid,
     streamSid,
     callSid: 'CA-1',
     customParameters: { callId: 'CA-1', sessionId: 'session-1' },
@@ -126,17 +146,329 @@ const mediaFrame = (
 });
 
 describe('Effect call-operations transcription application', () => {
+  it.each([null, undefined])(
+    'binds a persisted parent account %s to the configured parent for start and stop',
+    async (providerAccountId) => {
+      const harness = createHarness({ providerAccountId });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const send = (
+        frame: Parameters<
+          typeof harness.application.processTranscriptionFrame
+        >[0]['frame'],
+      ) =>
+        Effect.runPromise(
+          harness.application.processTranscriptionFrame({
+            connectionId: 'connection-1',
+            frame,
+          }),
+        );
+      expect(
+        (
+          await send({
+            ...startFrame(),
+            start: { ...startFrame().start, accountSid: foreignAccountSid },
+          })
+        ).accepted,
+      ).toBe(false);
+      expect((await send(startFrame())).accepted).toBe(true);
+      for (const accountSid of [foreignAccountSid, undefined]) {
+        expect(
+          (
+            await send({
+              event: 'stop',
+              sequenceNumber: '2',
+              streamSid: 'MZ-1',
+              stop: {
+                callSid: 'CA-1',
+                ...(accountSid === undefined ? {} : { accountSid }),
+              },
+            })
+          ).accepted,
+        ).toBe(false);
+      }
+      expect(
+        (
+          await send({
+            event: 'stop',
+            sequenceNumber: '3',
+            streamSid: 'MZ-1',
+            stop: { callSid: 'CA-1', accountSid: parentAccountSid },
+          })
+        ).accepted,
+      ).toBe(true);
+      expect(harness.statuses).toEqual(['processing', 'ready']);
+      expect(harness.providerCalls).toHaveLength(0);
+    },
+  );
+  it.each([undefined, '', '  '])(
+    'denies a parent account when the configured parent is missing: %s',
+    async (configuredParent) => {
+      const harness = createHarness({
+        providerAccountId: null,
+        config: { parentAccountSid: configuredParent },
+      });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const result = await Effect.runPromise(
+        harness.application.processTranscriptionFrame({
+          connectionId: 'connection-1',
+          frame: startFrame(),
+        }),
+      );
+      expect(result.accepted).toBe(false);
+      expect(harness.statuses).toHaveLength(0);
+      expect(harness.providerCalls).toHaveLength(0);
+    },
+  );
+  it.each([null, childAccountSid])(
+    'requires an explicit frame account for parent or child account ownership: %s',
+    async (providerAccountId) => {
+      const harness = createHarness({ providerAccountId });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const { accountSid: _accountSid, ...missingAccount } = startFrame().start;
+      const result = await Effect.runPromise(
+        harness.application.processTranscriptionFrame({
+          connectionId: 'connection-1',
+          frame: { ...startFrame(), start: missingAccount },
+        }),
+      );
+      expect(result.accepted).toBe(false);
+      expect(harness.statuses).toHaveLength(0);
+    },
+  );
+  it.each([parentAccountSid, undefined])(
+    'keeps a child account exact independently of configured parent %s',
+    async (configuredParent) => {
+      const harness = createHarness({
+        providerAccountId: childAccountSid,
+        config: { parentAccountSid: configuredParent },
+      });
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
+      const send = (
+        frame: Parameters<
+          typeof harness.application.processTranscriptionFrame
+        >[0]['frame'],
+      ) =>
+        Effect.runPromise(
+          harness.application.processTranscriptionFrame({
+            connectionId: 'connection-1',
+            frame,
+          }),
+        );
+      for (const accountSid of [parentAccountSid, foreignAccountSid]) {
+        expect(
+          (
+            await send({
+              ...startFrame(),
+              start: { ...startFrame().start, accountSid },
+            })
+          ).accepted,
+        ).toBe(false);
+      }
+      expect(
+        (
+          await send({
+            ...startFrame(),
+            start: { ...startFrame().start, accountSid: childAccountSid },
+          })
+        ).accepted,
+      ).toBe(true);
+      for (const accountSid of [
+        parentAccountSid,
+        foreignAccountSid,
+        undefined,
+      ]) {
+        expect(
+          (
+            await send({
+              event: 'stop',
+              sequenceNumber: '2',
+              streamSid: 'MZ-1',
+              stop: {
+                callSid: 'CA-1',
+                ...(accountSid === undefined ? {} : { accountSid }),
+              },
+            })
+          ).accepted,
+        ).toBe(false);
+      }
+      expect(
+        (
+          await send({
+            event: 'stop',
+            sequenceNumber: '3',
+            streamSid: 'MZ-1',
+            stop: { callSid: 'CA-1', accountSid: childAccountSid },
+          })
+        ).accepted,
+      ).toBe(true);
+      expect(harness.statuses).toEqual(['processing', 'ready']);
+      expect(harness.providerCalls).toHaveLength(0);
+    },
+  );
+  it('aborts provider work and independently releases a failed media session', async () => {
+    let providerSignal: AbortSignal | undefined;
+    const harness = createHarness({
+      provider: {
+        transcribe: (request) => {
+          providerSignal = request.signal;
+          return Effect.never;
+        },
+      },
+    });
+    await Effect.runPromise(
+      harness.application.beginTranscriptionSession(begin()),
+    );
+    await Effect.runPromise(
+      harness.application.processTranscriptionFrame({
+        connectionId: 'connection-1',
+        frame: startFrame(),
+      }),
+    );
+    await Effect.runPromise(
+      harness.application.processTranscriptionFrame({
+        connectionId: 'connection-1',
+        frame: mediaFrame('inbound', '2', 'aaaa'),
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await Effect.runPromise(
+      harness.application.failTranscriptionSession({
+        connectionId: 'connection-1',
+        failureCode: 'MEDIA_STREAM_ERROR',
+      }),
+    );
+    expect(providerSignal?.aborted).toBe(true);
+    expect(harness.segments.size).toBe(0);
+    expect(harness.statuses).toEqual(['processing', 'failed']);
+    expect(
+      await Effect.runPromise(
+        harness.application.completeTranscriptionSession(begin()),
+      ),
+    ).toEqual({ status: 'failed' });
+  });
+
+  it('rechecks opt-out before queued requests and drops late results after revocation', async () => {
+    let allowed = true,
+      requests = 0;
+    let resolveProvider: (value: { text: string }) => void = () => {};
+    const harness = createHarness({
+      get enabled() {
+        return allowed;
+      },
+      config: { maxConcurrentTranscriptions: 1 },
+      provider: {
+        transcribe: () =>
+          Effect.promise(() => {
+            requests++;
+            return new Promise<{ text: string }>((resolve) => {
+              resolveProvider = resolve;
+            });
+          }),
+      },
+    });
+    for (const connectionId of ['one', 'two']) {
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession({ connectionId }),
+      );
+      await Effect.runPromise(
+        harness.application.processTranscriptionFrame({
+          connectionId,
+          frame: startFrame(),
+        }),
+      );
+      await Effect.runPromise(
+        harness.application.processTranscriptionFrame({
+          connectionId,
+          frame: mediaFrame('inbound', '2', 'aaaa'),
+        }),
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    allowed = false;
+    resolveProvider({ text: 'must not persist' });
+    await Promise.all(
+      ['one', 'two'].map((connectionId) =>
+        Effect.runPromise(
+          harness.application.completeTranscriptionSession({ connectionId }),
+        ),
+      ),
+    );
+    expect(requests).toBe(1);
+    expect(harness.segments.size).toBe(0);
+  });
+  it('binds AccountSid and stream to persisted call authority', async () => {
+    const harness = createHarness({
+      providerAccountId: 'AC-owner',
+      trackRoles: { inbound: 'customer' },
+    });
+    await Effect.runPromise(
+      harness.application.beginTranscriptionSession(begin()),
+    );
+    const rejected = await Effect.runPromise(
+      harness.application.processTranscriptionFrame({
+        connectionId: 'connection-1',
+        frame: {
+          ...startFrame(),
+          start: { ...startFrame().start, accountSid: 'AC-foreign' },
+        },
+      }),
+    );
+    expect(rejected.accepted).toBe(false);
+    await Effect.runPromise(
+      harness.application.processTranscriptionFrame({
+        connectionId: 'connection-1',
+        frame: {
+          ...startFrame(),
+          start: { ...startFrame().start, accountSid: 'AC-owner' },
+        },
+      }),
+    );
+    const foreign = await Effect.runPromise(
+      harness.application.processTranscriptionFrame({
+        connectionId: 'connection-1',
+        frame: {
+          ...mediaFrame('inbound', '2', 'aaaa'),
+          streamSid: 'MZ-foreign',
+        },
+      }),
+    );
+    expect(foreign.accepted).toBe(false);
+    await Effect.runPromise(
+      harness.application.processTranscriptionFrame({
+        connectionId: 'connection-1',
+        frame: mediaFrame('inbound', '2', 'aaaa'),
+      }),
+    );
+    await Effect.runPromise(
+      harness.application.completeTranscriptionSession(begin()),
+    );
+    expect(harness.providerCalls).toHaveLength(1);
+    expect([...harness.segments.values()][0]?.speaker).toBe('customer');
+  });
   it('refuses an untrusted stream frame that claims another session or CallSid', async () => {
     for (const parameters of [
       { callId: 'CA-1', sessionId: 'foreign-session' },
       { callId: 'CA-foreign', sessionId: 'session-1' },
     ]) {
       const harness = createHarness();
-      await Effect.runPromise(harness.application.beginTranscriptionSession(begin()));
+      await Effect.runPromise(
+        harness.application.beginTranscriptionSession(begin()),
+      );
       const result = await Effect.runPromise(
         harness.application.processTranscriptionFrame({
           connectionId: 'connection-1',
-          frame: { ...startFrame(), start: { ...startFrame().start, customParameters: parameters } },
+          frame: {
+            ...startFrame(),
+            start: { ...startFrame().start, customParameters: parameters },
+          },
         }),
       );
       expect(result.accepted).toBe(false);
@@ -197,7 +529,16 @@ describe('Effect call-operations transcription application', () => {
       [...harness.segments.values()].find(
         (segment) => segment.track === 'inbound',
       ),
-    ).toMatchObject({ startMs: 2, endMs: 502 });
+    ).toMatchObject({
+      startMs: null,
+      endMs: null,
+      speaker: 'unknown',
+      metadata: {
+        sourceAudioStartMs: 2,
+        sourceAudioEndMs: 3,
+        timingBasis: 'unavailable',
+      },
+    });
   });
 
   it('processes duplicate frames once and flushes a terminal remainder once', async () => {

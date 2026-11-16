@@ -59,6 +59,15 @@ describe('Consuelo CI plan', () => {
     });
   });
 
+  it.each(['src/index.ts', 'tests/conversation.test.ts', 'package.json'])(
+    'routes conversation %s through the dialer lane',
+    (path) => {
+      expect(classifyConsueloChanges(['packages/conversation/' + path])).toMatchObject({
+        verify: true, dialer: true,
+      });
+    },
+  );
+
   it('routes shared contacts changes through the dialer lane', () => {
     expect(classifyConsueloChanges(['packages/contacts/src/index.ts'])).toEqual({
       verify: true,
