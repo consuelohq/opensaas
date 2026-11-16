@@ -33,6 +33,7 @@ server price ceilings, no explicit cache directives or automatic retries. The
 provider can report automatic cache reads; their measured counts are distinct
 from a claim about future hit rates. A cap may stop
 the run early; all cases stay in the result and incomplete runs cannot pass.
+The v2 model wire selects an approved card plus evidence only; the SDK derives the complete approved point layout. Numeric per-request observations separate queue wait, request-plus-validation settlement, logical decision and typed rejection outcomes. Historical-only cases may abstain locally without inference; completeness reconciles actual sends against eligible requests while scoring every frozen case.
 Both virtual offsets and actual wall-time observations are reported; the
 original five-second visibility windows apply to wall time too. Local mocks
 prove mechanics only, and any later cached-decision replay at 1/5/20 scopes
@@ -124,8 +125,7 @@ transcript text, arbitrary customer identifiers or provider payloads to it.
 `writePrivateBenchmark` accepts an existing owner-only directory and uses
 exclusive creation with mode 0600 so a previous run is never overwritten.
 The scheduler records ingest, first cue callback and settle wall times; these
-are not UI or audio-to-cue timings. Source-fidelity, provider billing and
-full-path measurement remain unfinished. DEV-1698's
+are not UI or audio-to-cue timings. Provider billing is measured in the opt-in lane; source-fidelity and full audio-to-rendered-cue acceptance remain unfinished. DEV-1698's
 older evidence writer is separate and is not certified by this work.
 
 One seed-17 run of 72 provisional scenarios produced 1/60 positive hits and

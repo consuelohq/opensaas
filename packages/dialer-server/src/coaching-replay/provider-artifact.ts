@@ -1,3 +1,8 @@
+import {
+  SELECTOR_OUTCOMES,
+  type SelectorObservation,
+} from '../coaching/selector-observation';
+import { CONTEXT_LIMITS } from '../coaching/context-selector';
 import { lstatSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { serializeReport } from './observer';
@@ -211,6 +216,7 @@ export function serializeProviderReport(report: ProviderReport): string {
         'firstCueWallMs',
         'selectorRequests',
         'selectorMetrics',
+        ...(result.selectorTrace === undefined ? [] : ['selectorTrace']),
       ]) ||
       !result.wallOutcome ||
       result.scenarioId !== result.outcome.scenarioId ||
@@ -235,6 +241,48 @@ export function serializeProviderReport(report: ProviderReport): string {
       Object.values(metrics).some((n) => n !== null && !count(n))
     )
       throw new Error('invalid provider result');
+    if (result.selectorTrace !== undefined) {
+      const time = (n: unknown) =>
+        typeof n === 'number' &&
+        Number.isFinite(n) &&
+        n >= 0 &&
+        n <= Number.MAX_SAFE_INTEGER;
+      if (
+        !Array.isArray(result.selectorTrace) ||
+        result.selectorTrace.length > 20 ||
+        result.selectorTrace.length !== result.selectorRequests ||
+        result.selectorTrace.some(
+          (o: SelectorObservation, i: number) =>
+            !o ||
+            !keys(o, [
+              'request',
+              'queueMs',
+              'requestMs',
+              'decisionMs',
+              'cueAgeMs',
+              'outcome',
+              'cardIndex',
+              'evidenceTurnIndices',
+            ]) ||
+            o.request !== i + 1 ||
+            !time(o.queueMs) ||
+            (o.requestMs !== null && !time(o.requestMs)) ||
+            (o.decisionMs !== null && !time(o.decisionMs)) ||
+            (o.cueAgeMs !== null && !time(o.cueAgeMs)) ||
+            !SELECTOR_OUTCOMES.includes(o.outcome) ||
+            (o.cardIndex !== null &&
+              (!count(o.cardIndex) || o.cardIndex >= CONTEXT_LIMITS.cards)) ||
+            !Array.isArray(o.evidenceTurnIndices) ||
+            o.evidenceTurnIndices.length > CONTEXT_LIMITS.turns ||
+            new Set(o.evidenceTurnIndices).size !==
+              o.evidenceTurnIndices.length ||
+            o.evidenceTurnIndices.some(
+              (n: number) => !count(n) || n >= CONTEXT_LIMITS.turns,
+            ),
+        )
+      )
+        throw new Error('invalid selector observation');
+    }
   }
   return JSON.stringify(report, null, 2) + '\n';
 }

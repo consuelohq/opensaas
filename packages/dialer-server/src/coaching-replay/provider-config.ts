@@ -1,5 +1,8 @@
 import { SYNTHETIC_LIFE_INSURANCE } from '../coaching/playbooks';
-import { validResponseProviderName } from '../coaching/openrouter-selector';
+import {
+  validResponseProviderName,
+  OPENROUTER_SELECTOR_REVISION,
+} from '../coaching/openrouter-selector';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -65,7 +68,7 @@ export function parseProviderConfig(value: unknown): ProviderBenchmarkConfig {
     !uniqueNames(c.allowedRequestProviderTags) ||
     !uniqueNames(c.allowedResponseModels) ||
     !uniqueNames(c.allowedResponseProviderNames, validResponseProviderName) ||
-    !name(c.transportRevision) ||
+    c.transportRevision !== OPENROUTER_SELECTOR_REVISION ||
     !Number.isSafeInteger(c.scenarioCount) ||
     Number(c.scenarioCount) < 1 ||
     Number(c.scenarioCount) > 108 ||

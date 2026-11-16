@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import Ajv from 'ajv';
 import {
   createOpenRouterSelector,
   type ProviderAttempt,
@@ -96,7 +97,6 @@ const input = (): FixtureInput => ({
 });
 const selection = {
   cardId: 'price',
-  slotIds: ['price-1'],
   evidence: [{ segmentId: 'seg-1', segmentRevision: 1 }],
 };
 const result = (value: unknown, extra: Record<string, unknown> = {}) =>
@@ -107,7 +107,10 @@ const result = (value: unknown, extra: Record<string, unknown> = {}) =>
       choices: [
         {
           finish_reason: 'stop',
-          message: { role: 'assistant', content: JSON.stringify(value) },
+          message: {
+            role: 'assistant',
+            content: JSON.stringify({ selection: value }),
+          },
         },
       ],
       ...extra,
@@ -116,6 +119,154 @@ const result = (value: unknown, extra: Record<string, unknown> = {}) =>
   );
 
 describe('OpenRouter closed-set selector', () => {
+  test('derives the complete published layout locally instead of asking a model for slot IDs', async () => {
+    const request = input();
+    request.cards[1] = {
+      ...request.cards[1]!,
+      slotIds: ['family-1', 'family-2', 'family-3'],
+      slots: [1, 2, 3].map((n) => ({
+        ...request.cards[1]!.slots[0]!,
+        slotId: 'family-' + n,
+      })),
+    };
+    const evidence = [{ segmentId: 'seg-1', segmentRevision: 1 }];
+    const s = createOpenRouterSelector({
+      ...config(),
+      fetch: (async () =>
+        result({
+          cardId: 'family',
+          evidence,
+        })) as unknown as typeof globalThis.fetch,
+    });
+    expect(await s.select(request)).toEqual({
+      cardId: 'family',
+      slotIds: ['family-1', 'family-2', 'family-3'],
+      evidence,
+    });
+  });
+  test('reports only validated bounded selection indices and isolates observer mutations', async () => {
+    const request = input();
+    request.cards[1] = {
+      ...request.cards[1]!,
+      slotIds: ['family-1', 'family-2'],
+      slots: [
+        ...request.cards[1]!.slots,
+        { ...request.cards[1]!.slots[0]!, slotId: 'family-2' },
+      ],
+    };
+    request.turns.push({
+      id: 'seg-2',
+      revision: 2,
+      role: 'customer',
+      text: 'A current concern',
+    });
+    const value = {
+      cardId: 'family',
+      evidence: [{ segmentId: 'seg-2', segmentRevision: 2 }],
+    };
+    const attempts: ProviderAttempt[] = [];
+    const selector = createOpenRouterSelector({
+      ...config(),
+      onProviderAttempt: (attempt) => {
+        attempts.push(attempt);
+        throw Error(secret);
+      },
+      fetch: (async () => result(value)) as unknown as typeof globalThis.fetch,
+    });
+    expect(await selector.select(request)).toEqual({
+      ...value,
+      slotIds: ['family-1', 'family-2'],
+    });
+    expect(attempts).toMatchObject([
+      {
+        stage: 'accepted',
+        acceptedSelection: {
+          cardIndex: 1,
+          slotIndices: [0, 1],
+          evidenceTurnIndices: [1],
+        },
+      },
+    ]);
+    expect(JSON.stringify(attempts)).not.toContain('family');
+    expect(JSON.stringify(attempts)).not.toContain('seg-2');
+    const abstentions: ProviderAttempt[] = [];
+    await createOpenRouterSelector({
+      ...config(),
+      onProviderAttempt: (v) => abstentions.push(v),
+      fetch: (async () =>
+        result({
+          cardId: null,
+          evidence: [],
+        })) as unknown as typeof globalThis.fetch,
+    }).select(request);
+    expect(abstentions).toMatchObject([
+      {
+        stage: 'accepted',
+        acceptedSelection: {
+          cardIndex: null,
+          slotIndices: [],
+          evidenceTurnIndices: [],
+        },
+      },
+    ]);
+  });
+  test('submitted schema forbids cross-card slots and cross-revision evidence', async () => {
+    let schema: Record<string, unknown> = {};
+    const request = input();
+    request.turns.push({
+      id: 'seg-2',
+      revision: 2,
+      role: 'customer',
+      text: 'A current question',
+    });
+    const selector = createOpenRouterSelector({
+      ...config(),
+      fetch: (async (_url: unknown, init?: RequestInit) => {
+        schema = JSON.parse(String(init?.body)).response_format.json_schema
+          .schema;
+        return result(selection);
+      }) as unknown as typeof globalThis.fetch,
+    });
+    await selector.select(request);
+    const schemaAccepts = new Ajv({ strict: true }).compile(schema);
+    const wire = (value: unknown) => ({ selection: value });
+    expect(schemaAccepts(wire(selection))).toBe(true);
+    expect(schemaAccepts(wire({ ...selection, slotIds: ['family-1'] }))).toBe(
+      false,
+    );
+    expect(
+      schemaAccepts(
+        wire({
+          ...selection,
+          evidence: [{ segmentId: 'seg-1', segmentRevision: 2 }],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      schemaAccepts(wire({ cardId: null, slotIds: ['price-1'], evidence: [] })),
+    ).toBe(false);
+    expect(schemaAccepts(wire({ ...selection, slotIds: [] }))).toBe(false);
+    expect(schemaAccepts(wire({ ...selection, evidence: [] }))).toBe(false);
+    expect(schema.type).toBe('object');
+    expect(schema.anyOf).toBeUndefined();
+    expect(
+      (schema.properties as Record<string, unknown>).selection,
+    ).toBeDefined();
+    for (const card of request.cards)
+      for (const turn of request.turns) {
+        expect(
+          schemaAccepts(
+            wire({
+              cardId: card.cardId,
+              evidence: [
+                { segmentId: turn.id, segmentRevision: turn.revision },
+              ],
+            }),
+          ),
+        ).toBe(true);
+      }
+    expect(schemaAccepts(wire({ cardId: null, evidence: [] }))).toBe(true);
+  });
   test('matches spaced response provider display names exactly without relaxing routing names', async () => {
     const cfg = {
       ...config(),
@@ -128,7 +279,10 @@ describe('OpenRouter closed-set selector', () => {
           provider: 'Amazon Bedrock',
         })) as unknown as typeof globalThis.fetch,
     });
-    expect(await selector.select(input())).toEqual(selection);
+    expect(await selector.select(input())).toEqual({
+      ...selection,
+      slotIds: ['price-1'],
+    });
     const mismatch = createOpenRouterSelector({
       ...cfg,
       fetch: (async () =>
@@ -233,7 +387,10 @@ describe('OpenRouter closed-set selector', () => {
       fetch: (async () =>
         result(selection)) as unknown as typeof globalThis.fetch,
     });
-    expect(await success.select(input())).toEqual(selection);
+    expect(await success.select(input())).toEqual({
+      ...selection,
+      slotIds: ['price-1'],
+    });
   });
 
   test('never reports cost for non-success, identity mismatch or aborted body', async () => {
@@ -302,12 +459,12 @@ describe('OpenRouter closed-set selector', () => {
   test('identifies selection rejection boundaries without exposing identifiers', async () => {
     const cases = [
       [{ ...selection, cardId: secret }, 'card'],
-      [{ ...selection, slotIds: [secret] }, 'slots'],
+      [{ ...selection, slotIds: [secret] }, 'schema'],
       [
         { ...selection, evidence: [{ segmentId: secret, segmentRevision: 1 }] },
         'evidence',
       ],
-      [{ cardId: null, slotIds: [secret], evidence: [] }, 'abstention'],
+      [{ cardId: null, slotIds: [secret], evidence: [] }, 'schema'],
     ] as const;
     for (const [value, stage] of cases) {
       const attempts: unknown[] = [];
@@ -321,6 +478,9 @@ describe('OpenRouter closed-set selector', () => {
         code: 'RESPONSE',
       });
       expect(attempts).toMatchObject([{ stage }]);
+      expect(
+        (attempts[0] as ProviderAttempt).acceptedSelection,
+      ).toBeUndefined();
       expect(JSON.stringify(attempts)).not.toContain(secret);
     }
   });
@@ -390,7 +550,10 @@ describe('OpenRouter closed-set selector', () => {
         return result(selection, { provider: 'Anthropic' });
       }) as unknown as typeof globalThis.fetch,
     });
-    expect(await selector.select(input())).toEqual(selection);
+    expect(await selector.select(input())).toEqual({
+      ...selection,
+      slotIds: ['price-1'],
+    });
     expect(sent).toEqual(['anthropic']);
     const wrongName = createOpenRouterSelector({
       ...config(),
@@ -407,8 +570,7 @@ describe('OpenRouter closed-set selector', () => {
   });
   test('sends scoped data and a strict enum schema through approved routing', async () => {
     let request:
-      | { url: string; body: RequestBody; headers: Headers }
-      | undefined;
+      { url: string; body: RequestBody; headers: Headers } | undefined;
     const fetch = async (url: string | URL | Request, init?: RequestInit) => {
       request = {
         url: String(url),
@@ -421,7 +583,10 @@ describe('OpenRouter closed-set selector', () => {
       ...config(),
       fetch: fetch as unknown as typeof globalThis.fetch,
     });
-    expect(await selector.select(input())).toEqual(selection);
+    expect(await selector.select(input())).toEqual({
+      ...selection,
+      slotIds: ['price-1'],
+    });
     expect(request!.url).toBe('https://openrouter.ai/api/v1/chat/completions');
     expect(request!.headers.get('authorization')).toBe('Bearer ' + secret);
     expect(request!.body.provider).toEqual({
@@ -436,7 +601,8 @@ describe('OpenRouter closed-set selector', () => {
     expect(request!.body.response_format.json_schema.strict).toBe(true);
     const schema = request!.body.response_format.json_schema.schema;
     expect(schema.additionalProperties).toBe(false);
-    expect(JSON.stringify(schema)).toContain('price-1');
+    expect(JSON.stringify(schema)).toContain('price');
+    expect(JSON.stringify(schema)).not.toContain('slotIds');
     expect(JSON.stringify(schema)).toContain('seg-1');
     expect(JSON.stringify(request!.body.messages)).not.toContain('tenant-a');
     expect(JSON.stringify(request!.body.messages)).toContain(
@@ -446,12 +612,12 @@ describe('OpenRouter closed-set selector', () => {
   });
 
   test('accepts explicit abstention', async () => {
-    const value = { cardId: null, slotIds: [], evidence: [] };
+    const value = { cardId: null, evidence: [] };
     const selector = createOpenRouterSelector({
       ...config(),
       fetch: (async () => result(value)) as unknown as typeof globalThis.fetch,
     });
-    expect(await selector.select(input())).toEqual(value);
+    expect(await selector.select(input())).toEqual({ ...value, slotIds: [] });
   });
 
   test('rejects unsupported and malformed output with redacted errors', async () => {
@@ -577,15 +743,17 @@ describe('OpenRouter closed-set selector', () => {
     expect(calls).toBe(1);
   });
 
-  test.each([selection, { cardId: null, slotIds: [], evidence: [] }])(
+  test.each([selection, { cardId: null, evidence: [] }])(
     'never emits ordinary metadata or output after a final-read abort: %j',
     async (value) => {
       const observed: unknown[] = [];
+      const attempts: ProviderAttempt[] = [];
       const controller = new AbortController();
       const bytes = new TextEncoder().encode(await result(value).text());
       const selector = createOpenRouterSelector({
         ...config(),
         onProviderMetadata: (metadata) => observed.push(metadata),
+        onProviderAttempt: (attempt) => attempts.push(attempt),
         fetch: (async () =>
           new Response(
             new ReadableStream<Uint8Array>(
@@ -608,6 +776,8 @@ describe('OpenRouter closed-set selector', () => {
       await Promise.resolve();
       await Promise.resolve();
       expect(observed).toEqual([]);
+      expect(attempts).toMatchObject([{ stage: 'aborted' }]);
+      expect(attempts[0]!.acceptedSelection).toBeUndefined();
     },
   );
 
@@ -618,7 +788,7 @@ describe('OpenRouter closed-set selector', () => {
       ...cfg,
       fetch: (async (_url: string | URL | Request, init?: RequestInit) => {
         requests.push(JSON.parse(String(init!.body)));
-        return result({ cardId: null, slotIds: [], evidence: [] });
+        return result({ cardId: null, evidence: [] });
       }) as unknown as typeof globalThis.fetch,
     });
     cfg.allowedRequestProviderTags[0] = 'changed';
@@ -693,7 +863,7 @@ describe('OpenRouter closed-set selector', () => {
         model: 'vendor/model-v1',
         provider: 'approved-provider',
         providerRevision: 'router-config-v1',
-        selectorRevision: 'closed-set-openrouter-v1',
+        selectorRevision: 'closed-set-openrouter-v2',
         usage: {
           promptTokens: 10,
           completionTokens: 3,
@@ -717,7 +887,7 @@ describe('OpenRouter closed-set selector', () => {
         model: 'vendor/model-v1',
         provider: 'approved-provider',
         providerRevision: 'router-config-v1',
-        selectorRevision: 'closed-set-openrouter-v1',
+        selectorRevision: 'closed-set-openrouter-v2',
       },
     ]);
     expect(selector.sourceVersion).not.toBe(
@@ -849,7 +1019,10 @@ test('pins disabled reasoning in the request and source version without enabling
   };
   const selector = createOpenRouterSelector(cfg as never);
   cfg.reasoningMode = 'enabled';
-  expect(await selector.select(input())).toEqual(selection);
+  expect(await selector.select(input())).toEqual({
+    ...selection,
+    slotIds: ['price-1'],
+  });
   expect(captured[0]?.reasoning).toEqual({ enabled: false });
   expect(selector.sourceVersion).not.toBe(
     createOpenRouterSelector({ ...config(), fetch: globalThis.fetch })

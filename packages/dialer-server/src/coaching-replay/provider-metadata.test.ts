@@ -13,7 +13,7 @@ const config = parseProviderConfig({
   allowedRequestProviderTags: ['fixture'],
   allowedResponseProviderNames: ['Fixture'],
   allowedResponseModels: ['fixture/model'],
-  transportRevision: 'fixture-v1',
+  transportRevision: 'closed-set-openrouter-v2',
   scenarioCount: 2,
   maxRequests: 2,
   maxReservedNanoUsd: 2000000000,

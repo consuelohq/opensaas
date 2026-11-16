@@ -5,7 +5,7 @@
   "allowedRequestProviderTags": ["deepinfra/fp8"],
   "allowedResponseProviderNames": ["DeepInfra"],
   "allowedResponseModels": ["deepseek/deepseek-v4.1-flash-1017"],
-  "transportRevision": "closed-set-openrouter-v1",
+  "transportRevision": "closed-set-openrouter-v2",
   "reasoningMode": "disabled",
   "scenarioCount": 108,
   "maxRequests": 108,

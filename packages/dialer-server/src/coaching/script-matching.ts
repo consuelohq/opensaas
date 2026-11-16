@@ -1,5 +1,9 @@
 import type { TranscriptSegmentEvent } from '@consuelo/conversation';
 import type { CardRule, CompiledPlaybook } from './playbooks';
+import {
+  hasCurrentScriptEvidence,
+  unquotedScriptText,
+} from './current-evidence';
 
 // Grammar only: intent vocabulary comes exclusively from published CardRule phrases.
 const contractions: Readonly<Record<string, string>> = Object.freeze({
@@ -86,37 +90,6 @@ const occurrences = (
 };
 const contains = (haystack: readonly string[], needle: readonly string[]) =>
   occurrences(haystack, needle).length > 0;
-const wordCharacter = (character: string) => /[\p{L}\p{N}]/u.test(character);
-function unquoted(text: string): string {
-  let close: string | null = null;
-  let result = '';
-  for (let index = 0; index < text.length; index++) {
-    const character = text[index]!;
-    const withinWord =
-      wordCharacter(text[index - 1] ?? '') &&
-      wordCharacter(text[index + 1] ?? '');
-    if (close !== null) {
-      if (
-        character === close &&
-        !((close === "'" || close === '’') && withinWord)
-      ) {
-        close = null;
-        result += ' . ';
-      }
-      continue;
-    }
-    if (
-      character === '"' ||
-      character === '“' ||
-      ((character === "'" || character === '‘') &&
-        !wordCharacter(text[index - 1] ?? ''))
-    ) {
-      close = character === '“' ? '”' : character === '‘' ? '’' : character;
-      result += ' . ';
-    } else result += character;
-  }
-  return result;
-}
 type TurnText = {
   raw: readonly string[];
   clauses: readonly { tokens: readonly string[]; words: ReadonlySet<string> }[];
@@ -125,7 +98,7 @@ type TurnText = {
 const analyze = (text: string): TurnText => ({
   raw: tokens(text),
   evidence: new Map(),
-  clauses: unquoted(text.normalize('NFKC'))
+  clauses: unquotedScriptText(text.normalize('NFKC'))
     .toLowerCase()
     .split(
       /[.!?;:\n\r]|[—–]|\b(?:but|however|yet|nevertheless)\b|,(?=\s*(?:i|we|you|he|she|they|my|our)\b)/u,
@@ -364,13 +337,25 @@ export function ruleContextEligible(
     new Map(),
   );
   if (!text) return false;
+  return ruleEvidenceCurrent(rule, event, text);
+}
+/** Revalidate an evidence turn without rewinding the current context requirements. */
+export function ruleEvidenceCurrent(
+  rule: CardRule,
+  event: TranscriptSegmentEvent,
+  text = analyze(event.text),
+): boolean {
+  if (
+    !confirmed(event) ||
+    (rule.speaker !== 'either' && rule.speaker !== event.speaker.role)
+  )
+    return false;
   // A selector may evaluate unrecognized language, but cannot bypass an explicit
   // authored phrase that was present only as negated, historical or quoted text.
   const aliases = rulePhrases(rule).aliases;
-  return (
-    !aliases.some((alias) => contains(text.raw, alias)) ||
-    aliasState(text, aliases) === 'affirmed'
-  );
+  return aliases.some((alias) => contains(text.raw, alias))
+    ? aliasState(text, aliases) === 'affirmed'
+    : hasCurrentScriptEvidence(event.text);
 }
 export function selectScriptRule(
   compiled: CompiledPlaybook,

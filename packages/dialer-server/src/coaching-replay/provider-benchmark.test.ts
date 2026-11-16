@@ -20,7 +20,7 @@ const config = parseProviderConfig({
   allowedRequestProviderTags: ['fixture'],
   allowedResponseProviderNames: ['Fixture'],
   allowedResponseModels: ['fixture/model'],
-  transportRevision: 'closed-set-openrouter-v1',
+  transportRevision: 'closed-set-openrouter-v2',
   scenarioCount: 3,
   maxRequests: 3,
   maxReservedNanoUsd: 1000000,
@@ -67,9 +67,7 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
                   message: {
                     role: 'assistant',
                     content: JSON.stringify({
-                      cardId: null,
-                      slotIds: [],
-                      evidence: [],
+                      selection: { cardId: null, evidence: [] },
                     }),
                   },
                 },
@@ -222,9 +220,7 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
                   message: {
                     role: 'assistant',
                     content: JSON.stringify({
-                      cardId: null,
-                      slotIds: [],
-                      evidence: [],
+                      selection: { cardId: null, evidence: [] },
                     }),
                   },
                 },
@@ -296,9 +292,7 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
                   message: {
                     role: 'assistant',
                     content: JSON.stringify({
-                      cardId: null,
-                      slotIds: [],
-                      evidence: [],
+                      selection: { cardId: null, evidence: [] },
                     }),
                   },
                 },
@@ -313,10 +307,15 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
           );
         },
       });
-      expect(calls).toBe(20);
+      // Historical-only cases can abstain locally before inference.
+      expect(calls).toBeGreaterThan(0);
+      expect(calls).toBeLessThan(20);
+      expect(
+        report.results.filter((r) => r.selectorRequests === 0).length,
+      ).toBeGreaterThan(0);
       expect(peak).toBeLessThanOrEqual(4);
       expect(report.results).toHaveLength(20);
-      expect(report.settlements).toBe(20);
+      expect(report.settlements).toBe(calls);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -344,7 +343,10 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
       });
       expect(calls).toBe(2);
       expect(report.attempts).toBe(2);
-      expect(report.refused).toBe(18);
+      expect(report.refused).toBe(
+        report.results.reduce((n, r) => n + (r.selectorRequests ?? 0), 0) -
+          report.attempts,
+      );
       expect(report.reservedNanoUsd).toBe(3024);
       expect(report.unreconciledCharges).toBe(2);
       expect(report.results).toHaveLength(20);
@@ -360,8 +362,7 @@ describe('provider benchmark end-to-end mechanics, injected local fake only', ()
       release = resolve;
     });
     let schedulerRef:
-      | import('../coaching/context-scheduler').ContextScheduler
-      | undefined;
+      import('../coaching/context-scheduler').ContextScheduler | undefined;
     try {
       const report = await runProviderBenchmark({
         config: { ...config, scenarioCount: 1, maxRequests: 1 },
@@ -468,9 +469,7 @@ it('passes the fingerprinted disabled-reasoning mode to every synthetic request'
                 message: {
                   role: 'assistant',
                   content: JSON.stringify({
-                    cardId: null,
-                    slotIds: [],
-                    evidence: [],
+                    selection: { cardId: null, evidence: [] },
                   }),
                 },
               },

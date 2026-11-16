@@ -228,6 +228,108 @@ describe('authored phrase matching contract', () => {
   });
 });
 describe('bounded evidence for authored context', () => {
+  test.each([
+    'My previous employer covered me but I left.',
+    'My former landlord charged extra fees.',
+    'We ran into that limitation years ago.',
+    'The service failed last month.',
+    'I was struggling to keep up.',
+    'I had trouble making ends meet.',
+    'I used to worry about the monthly amount.',
+    'She told me the service was unreliable.',
+    'They said "the option will not fit".',
+    '"I am stretched too thin."',
+    'I am no longer worried about the monthly amount.',
+    'That concern has been resolved.',
+    'I do not need to discuss that anymore.',
+    'Never mind, disregard my earlier concern.',
+  ])(
+    'a contextual selector cannot use unsupported alias-free evidence: %s',
+    (text) => {
+      const current = event(text);
+      // Simulate a selector's candidate catalog: no authored alias occurs in this
+      // wording, so eligibility must assess current evidence before dispatch.
+      const candidates = [
+        rule({ aliases: ['approved alpha trigger'] }),
+        rule({ cardId: 'beta', aliases: ['approved beta trigger'] }),
+        rule({ cardId: 'gamma', aliases: ['approved gamma trigger'] }),
+      ];
+      expect(
+        candidates.filter((candidate) =>
+          ruleContextEligible(candidate, current, [current]),
+        ),
+      ).toEqual([]);
+    },
+  );
+  test.each([
+    'My employer takes care of it.',
+    'My landlord charges extra fees.',
+    'We keep running into that limitation.',
+    'The service keeps failing.',
+    'I struggle to keep up.',
+    'I have trouble making ends meet.',
+    'I worry about the monthly amount.',
+    'I cannot make ends meet.',
+    'I do not understand the paperwork.',
+    'I have not received my documents.',
+    'I am not comfortable making that choice alone.',
+    'I have previous records to discuss.',
+    'The monthly amount is higher than I expected.',
+    'Although I worked there before, I need help today.',
+    'When my old policy ended, I became worried and now I need another option.',
+    'Because the last payment failed, I need another way to pay.',
+    'I heard the explanation, but I still need clarification.',
+    'She said the plan was good, but I am still unsure.',
+    'My previous employer covered me, but I now pay everything myself.',
+    'I left the company and I now need a replacement.',
+    'I am trying to understand what happened.',
+    'I am worried about what she said.',
+    'I need to understand what they told me.',
+    'I pay for the service I used to receive for free.',
+    'The required paperwork is confusing.',
+    'My trusted adviser recommends another option.',
+    'A previous trusted concern',
+    'A new trusted concern after the boundary',
+    'That problem I had is still here.',
+  ])(
+    'unfamiliar current concerns remain available to a contextual selector: %s',
+    (text) => {
+      const current = event(text);
+      expect(
+        ruleContextEligible(
+          rule({ aliases: ['approved alpha trigger'] }),
+          current,
+          [current],
+        ),
+      ).toBe(true);
+    },
+  );
+  test('alias-free current eligibility still enforces authored context and speaker ownership', () => {
+    const current = event('I am stretched too thin.');
+    expect(
+      ruleContextEligible(rule({ required: ['approval code'] }), current, [
+        current,
+      ]),
+    ).toBe(false);
+    expect(
+      ruleContextEligible(
+        rule({ forbidden: ['stretched too thin'] }),
+        current,
+        [current],
+      ),
+    ).toBe(false);
+    expect(
+      ruleContextEligible(rule({ speaker: 'rep' }), current, [current]),
+    ).toBe(false);
+    const prior = event('I have an approval code', 1);
+    const next = event('I am stretched too thin.', 2);
+    expect(
+      ruleContextEligible(rule({ required: ['approval code'] }), next, [
+        prior,
+        next,
+      ]),
+    ).toBe(true);
+  });
   test('mutable rules do not retain stale cached phrases', () => {
     const aliases = ['unrelated'];
     const mutable = Object.freeze(rule({ aliases }));

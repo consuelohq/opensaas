@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost",
   "base": "origin/main",
-  "headSha": "de8c20c1dd7283eaeeaeabaada038027adcefb32",
-  "changeHash": "b5d51edd277ae355ae6be4a3befaeaa1a0369455b96e69938a875e0e2876c64d",
+  "headSha": "97b2e612c8dea9e34cd6f513e5b0f04ce03bf0b5",
+  "changeHash": "95f2c1a8ed4ab2aaa51db53d7af08d3509d2838f04e31f273958bfc605d8b93f",
   "changedFiles": [
     ".github/workflows/consuelo-ci.yaml",
     ".github/workflows/consuelo-production-release.yaml",
@@ -91,6 +91,8 @@
     "packages/dialer-server/src/coaching/context-scheduler.ts",
     "packages/dialer-server/src/coaching/context-selector.ts",
     "packages/dialer-server/src/coaching/cue-service.ts",
+    "packages/dialer-server/src/coaching/current-evidence.test.ts",
+    "packages/dialer-server/src/coaching/current-evidence.ts",
     "packages/dialer-server/src/coaching/openrouter-selector.test.ts",
     "packages/dialer-server/src/coaching/openrouter-selector.ts",
     "packages/dialer-server/src/coaching/playbook-authoring.test.ts",
@@ -100,10 +102,12 @@
     "packages/dialer-server/src/coaching/playbooks.ts",
     "packages/dialer-server/src/coaching/review-regressions.test.ts",
     "packages/dialer-server/src/coaching/script-context.test.ts",
+    "packages/dialer-server/src/coaching/script-deadline.test.ts",
     "packages/dialer-server/src/coaching/script-engine.ts",
     "packages/dialer-server/src/coaching/script-matching.test.ts",
     "packages/dialer-server/src/coaching/script-matching.ts",
     "packages/dialer-server/src/coaching/scripts.ts",
+    "packages/dialer-server/src/coaching/selector-observation.ts",
     "packages/dialer-server/src/database/migrations.postgres.integration.test.ts",
     "packages/dialer-server/src/database/migrations.test.ts",
     "packages/dialer-server/src/database/migrations.ts",
@@ -146,7 +150,7 @@
     "packages/workspace/scripts/ci/run-changed-os-native-tests.mjs",
     "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
   ],
-  "verifiedAt": "2026-11-16T19:06:58.534Z",
+  "verifiedAt": "2026-11-16T20:33:12.094Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -166,6 +170,7 @@
         ".task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost/evidence-log.json",
         ".task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost/read-log.json",
         ".task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost/session.json",
+        ".task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost/verify.json",
         ".task/dialer/benchmark-us-hosted-mercury-script-selection-and-cost/workpad.md",
         ".task/dialer/dev-1699-provider-neutral-conversation-core/verify.json",
         ".task/dialer/dev-1699-provider-neutral-conversation-core/workpad.md",
@@ -286,6 +291,8 @@
         "packages/dialer-server/src/coaching/context-scheduler.ts",
         "packages/dialer-server/src/coaching/context-selector.ts",
         "packages/dialer-server/src/coaching/cue-service.ts",
+        "packages/dialer-server/src/coaching/current-evidence.test.ts",
+        "packages/dialer-server/src/coaching/current-evidence.ts",
         "packages/dialer-server/src/coaching/openrouter-selector.test.ts",
         "packages/dialer-server/src/coaching/openrouter-selector.ts",
         "packages/dialer-server/src/coaching/playbook-authoring.test.ts",
@@ -295,10 +302,12 @@
         "packages/dialer-server/src/coaching/playbooks.ts",
         "packages/dialer-server/src/coaching/review-regressions.test.ts",
         "packages/dialer-server/src/coaching/script-context.test.ts",
+        "packages/dialer-server/src/coaching/script-deadline.test.ts",
         "packages/dialer-server/src/coaching/script-engine.ts",
         "packages/dialer-server/src/coaching/script-matching.test.ts",
         "packages/dialer-server/src/coaching/script-matching.ts",
         "packages/dialer-server/src/coaching/scripts.ts",
+        "packages/dialer-server/src/coaching/selector-observation.ts",
         "packages/dialer-server/src/database/migrations.postgres.integration.test.ts",
         "packages/dialer-server/src/database/migrations.test.ts",
         "packages/dialer-server/src/database/migrations.ts",
@@ -435,6 +444,8 @@
             "packages/dialer-server/src/coaching/context-scheduler.ts",
             "packages/dialer-server/src/coaching/context-selector.ts",
             "packages/dialer-server/src/coaching/cue-service.ts",
+            "packages/dialer-server/src/coaching/current-evidence.test.ts",
+            "packages/dialer-server/src/coaching/current-evidence.ts",
             "packages/dialer-server/src/coaching/openrouter-selector.test.ts",
             "packages/dialer-server/src/coaching/openrouter-selector.ts",
             "packages/dialer-server/src/coaching/playbook-authoring.test.ts",
@@ -444,10 +455,12 @@
             "packages/dialer-server/src/coaching/playbooks.ts",
             "packages/dialer-server/src/coaching/review-regressions.test.ts",
             "packages/dialer-server/src/coaching/script-context.test.ts",
+            "packages/dialer-server/src/coaching/script-deadline.test.ts",
             "packages/dialer-server/src/coaching/script-engine.ts",
             "packages/dialer-server/src/coaching/script-matching.test.ts",
             "packages/dialer-server/src/coaching/script-matching.ts",
             "packages/dialer-server/src/coaching/scripts.ts",
+            "packages/dialer-server/src/coaching/selector-observation.ts",
             "packages/dialer-server/src/database/migrations.postgres.integration.test.ts",
             "packages/dialer-server/src/database/migrations.test.ts",
             "packages/dialer-server/src/database/migrations.ts",
@@ -699,8 +712,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 599,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:06:25\n\u001b[2m   Duration \u001b[22m 247ms\u001b[2m (transform 54ms, setup 19ms, import 102ms, tests 33ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n(node:79522) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+          "durationMs": 498,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:32:43\n\u001b[2m   Duration \u001b[22m 221ms\u001b[2m (transform 55ms, setup 18ms, import 94ms, tests 34ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n(node:14194) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
         },
         {
           "name": "native OS selector tests",
@@ -716,8 +729,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1633,
-          "outputTail": "Running focused-artifact native OS test plan.\n✔ fetches the exact absent event base in a shallow merge checkout before selecting tests (468.491542ms)\n✔ also fetches an absent immutable head without changing the comparison base (367.888166ms)\n✔ fails closed when the exact missing base cannot be fetched (406.026458ms)\n✔ preserves a genuine diff failure for a symbolic head without fetching it (327.132166ms)\n✔ native selector reserves enough Git output for repository-scale deletion diffs (0.142292ms)\n✔ parseCliArguments resolves comparison SHAs (0.153083ms)\n✔ parseCliArguments uses event SHAs when nx-set-shas leaves the base empty (0.051916ms)\n✔ parseCliArguments ignores zero SHAs and falls back to fetched Git history (0.040375ms)\n✔ filterRelevantNativeFiles keeps only OS native-test ownership paths (0.080125ms)\n✔ selectNativeTestPlan uses the focused artifact contract for the exact metering cleanup (0.079375ms)\n✔ selectNativeTestPlan retains the full distribution suite for every broader change (0.034875ms)\n✔ runSelectedNativeTests executes the selected Bun test command (0.376584ms)\nℹ tests 12\nℹ suites 0\nℹ pass 12\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1605.136125\n"
+          "durationMs": 1433,
+          "outputTail": "Running focused-artifact native OS test plan.\n✔ fetches the exact absent event base in a shallow merge checkout before selecting tests (385.358875ms)\n✔ also fetches an absent immutable head without changing the comparison base (363.681ms)\n✔ fails closed when the exact missing base cannot be fetched (326.389667ms)\n✔ preserves a genuine diff failure for a symbolic head without fetching it (294.597125ms)\n✔ native selector reserves enough Git output for repository-scale deletion diffs (0.133583ms)\n✔ parseCliArguments resolves comparison SHAs (0.147167ms)\n✔ parseCliArguments uses event SHAs when nx-set-shas leaves the base empty (0.051708ms)\n✔ parseCliArguments ignores zero SHAs and falls back to fetched Git history (0.041042ms)\n✔ filterRelevantNativeFiles keeps only OS native-test ownership paths (0.078667ms)\n✔ selectNativeTestPlan uses the focused artifact contract for the exact metering cleanup (0.076834ms)\n✔ selectNativeTestPlan retains the full distribution suite for every broader change (0.034ms)\n✔ runSelectedNativeTests executes the selected Bun test command (0.371209ms)\nℹ tests 12\nℹ suites 0\nℹ pass 12\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1406.234542\n"
         },
         {
           "name": "native Windows workflow contracts",
@@ -736,8 +749,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1461,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/windows-bootstrap-source.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:06:27\n\u001b[2m   Duration \u001b[22m 543ms\u001b[2m (transform 830ms, setup 0ms, import 853ms, tests 19ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 428,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/windows-bootstrap-source.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:32:45\n\u001b[2m   Duration \u001b[22m 197ms\u001b[2m (transform 178ms, setup 0ms, import 196ms, tests 17ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "GitHub workflow policy tests",
@@ -753,8 +766,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 112,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > delegates Consuelo routing to the Bun-native CI planner [11.98ms]\n(pass) GitHub workflow policy > uses one Bun-owned Consuelo CI setup boundary [0.19ms]\n(pass) GitHub workflow policy > includes local composite actions in workflow security policy [0.22ms]\n(pass) GitHub workflow policy > keeps OS-only Consuelo lanes off the root Bun install [4.14ms]\n(pass) GitHub workflow policy > preserves OS security contract suites with a bounded hosted-runner subprocess timeout [2.71ms]\n(pass) GitHub workflow policy > does not deploy dialer for CI-only workflow edits while preserving runtime release triggers [25.61ms]\n(pass) GitHub workflow policy > uses shallow parent-aware checkouts for pull-request CI without removing verification jobs [1.84ms]\n(pass) GitHub workflow policy > keeps full Git ancestry for manual planner and both downstream diff consumers [1.69ms]\n(pass) GitHub workflow policy > runs focused package, container, and security-contract lanes without full Git history [1.91ms]\n(pass) GitHub workflow policy > keeps docs and website status contracts while removing irrelevant checkout work [2.20ms]\n(pass) GitHub workflow policy > runs real Swamp compatibility outside blocking pull-request CI [0.54ms]\n(pass) GitHub workflow policy > does not include retired automation or legacy Twenty workflows [0.09ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials [0.60ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [1.74ms]\n\n 15 pass\n 0 fail\n 140 expect() calls\nRan 15 tests across 1 file. [105.00ms]\n"
+          "durationMs": 94,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > delegates Consuelo routing to the Bun-native CI planner [8.69ms]\n(pass) GitHub workflow policy > uses one Bun-owned Consuelo CI setup boundary [0.16ms]\n(pass) GitHub workflow policy > includes local composite actions in workflow security policy [0.24ms]\n(pass) GitHub workflow policy > keeps OS-only Consuelo lanes off the root Bun install [2.28ms]\n(pass) GitHub workflow policy > preserves OS security contract suites with a bounded hosted-runner subprocess timeout [1.89ms]\n(pass) GitHub workflow policy > does not deploy dialer for CI-only workflow edits while preserving runtime release triggers [26.76ms]\n(pass) GitHub workflow policy > uses shallow parent-aware checkouts for pull-request CI without removing verification jobs [2.18ms]\n(pass) GitHub workflow policy > keeps full Git ancestry for manual planner and both downstream diff consumers [1.62ms]\n(pass) GitHub workflow policy > runs focused package, container, and security-contract lanes without full Git history [1.48ms]\n(pass) GitHub workflow policy > keeps docs and website status contracts while removing irrelevant checkout work [1.26ms]\n(pass) GitHub workflow policy > runs real Swamp compatibility outside blocking pull-request CI [0.72ms]\n(pass) GitHub workflow policy > does not include retired automation or legacy Twenty workflows [0.09ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials [0.66ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [1.25ms]\n\n 15 pass\n 0 fail\n 140 expect() calls\nRan 15 tests across 1 file. [87.00ms]\n"
         },
         {
           "name": "changed GitHub workflow security checks",
@@ -769,7 +782,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 40,
+          "durationMs": 37,
           "outputTail": "{\n  \"ok\": true,\n  \"baseRef\": \"origin/main\",\n  \"changedWorkflowFiles\": [\n    \".github/workflows/consuelo-ci.yaml\",\n    \".github/workflows/consuelo-production-release.yaml\"\n  ],\n  \"changedActionFiles\": [],\n  \"findings\": []\n}\n"
         },
         {
@@ -788,7 +801,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 916,
+          "durationMs": 833,
           "outputTail": "$ bun x tsc\n"
         },
         {
@@ -807,7 +820,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1577,
+          "durationMs": 841,
           "outputTail": "$ bun x tsc\n"
         },
         {
@@ -824,8 +837,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 16976,
-          "outputTail": "back while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) published playbooks and actual durable cue composition > author race, immutable call pin, actual outbox normalization and authorized delivery\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 562 pass\n 123 skip\n 0 fail\n 3121 expect() calls\nRan 685 tests across 106 files. [16.96s]\n"
+          "durationMs": 16684,
+          "outputTail": "back while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n(skip) published playbooks and actual durable cue composition > author race, immutable call pin, actual outbox normalization and authorized delivery\n(skip) durable workspace scripts with isolated PostgreSQL > persists across service recreation, fences edits and isolates tenants and authors\n\n 626 pass\n 123 skip\n 0 fail\n 3242 expect() calls\nRan 749 tests across 108 files. [16.67s]\n"
         },
         {
           "name": "Stripe native billing with disposable PostgreSQL",
@@ -840,8 +853,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 4603,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-server/src/native-billing.postgres.integration.test.ts:\n(pass) native billing with durable PostgreSQL and simulated carrier-independent Stripe > isolates native subscriptions, survives partial payment/retry and projects only paid owned edits [1542.70ms]\n\npackages/dialer-server/src/native-billing.acceptance.test.ts:\n(pass) Stripe-native billing packages > keeps one recurring base item, a separate number invoice and the approved combined price [0.11ms]\n(pass) Stripe-native billing packages > requires an explicit all-seat coaching bundle and preserves base prices [0.05ms]\n(pass) Stripe-native billing packages > normalizes only one owned recurring item of the expected role and bounded quantity [0.10ms]\n\npackages/dialer-server/src/public-checkout.postgres.integration.test.ts:\n(pass) public checkout with disposable PostgreSQL and simulated Stripe > survives unknown outcomes, binds once, fences stale facts and retains legacy billing [1512.06ms]\n\npackages/dialer-server/src/database/migrations.postgres.integration.test.ts:\n(pass) LeadConnector company credential upgrades with isolated PostgreSQL > preserves existing installations, old ledger timestamps and recovered credentials, and bootstraps signed context [917.35ms]\n\n 6 pass\n 0 fail\n 145 expect() calls\nRan 6 tests across 4 files. [4.59s]\n"
+          "durationMs": 3852,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-server/src/native-billing.postgres.integration.test.ts:\n(pass) native billing with durable PostgreSQL and simulated carrier-independent Stripe > isolates native subscriptions, survives partial payment/retry and projects only paid owned edits [1004.82ms]\n\npackages/dialer-server/src/native-billing.acceptance.test.ts:\n(pass) Stripe-native billing packages > keeps one recurring base item, a separate number invoice and the approved combined price [0.13ms]\n(pass) Stripe-native billing packages > requires an explicit all-seat coaching bundle and preserves base prices [0.06ms]\n(pass) Stripe-native billing packages > normalizes only one owned recurring item of the expected role and bounded quantity [0.11ms]\n\npackages/dialer-server/src/public-checkout.postgres.integration.test.ts:\n(pass) public checkout with disposable PostgreSQL and simulated Stripe > survives unknown outcomes, binds once, fences stale facts and retains legacy billing [1450.36ms]\n\npackages/dialer-server/src/database/migrations.postgres.integration.test.ts:\n(pass) LeadConnector company credential upgrades with isolated PostgreSQL > preserves existing installations, old ledger timestamps and recovered credentials, and bootstraps signed context [1067.05ms]\n\n 6 pass\n 0 fail\n 145 expect() calls\nRan 6 tests across 4 files. [3.83s]\n"
         },
         {
           "name": "LeadConnector provider contracts",
@@ -857,8 +870,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 2761,
-          "outputTail": "-state filler [2.37ms]\n(pass) compact Dialer workspace UX > calling options and queue details share a footer action group immediately above the primary action [3.90ms]\n(pass) compact Dialer workspace UX > settings and inner pages place the heading on the same row as a quiet back breadcrumb [24.38ms]\n(pass) compact Dialer workspace UX > phone-number purpose tabs use the same quiet inactive and bright active tab classes [4.33ms]\n(pass) CRM team access page > uses real staff names, CRM roles and inbound memberships without per-user pricing controls [2.27ms]\n(pass) CRM team access page > does not invent members while directory loading or allow saving a stale view [3.31ms]\n(pass) CRM team access page > protects eligible Starter owner but lets an admin revoke a stale owner [5.88ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.07ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.35ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.09ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.32ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.07ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.03ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.07ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.32ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > executes the full release Worker upload, deployment and manifest capture with the intended argv [291.18ms]\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.50ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.40ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.30ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [135.61ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.32ms]\n(pass) dialer GitHub release workflow contract > releases only the approved UI files to the Worker while fencing Railway and other changes [900.55ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.82ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.25ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.10ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [3.34ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [15.56ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [82.09ms]\n\n 317 pass\n 0 fail\n 2408 expect() calls\nRan 317 tests across 47 files. [2.75s]\n"
+          "durationMs": 2443,
+          "outputTail": "ty-state filler [2.85ms]\n(pass) compact Dialer workspace UX > calling options and queue details share a footer action group immediately above the primary action [4.70ms]\n(pass) compact Dialer workspace UX > settings and inner pages place the heading on the same row as a quiet back breadcrumb [22.09ms]\n(pass) compact Dialer workspace UX > phone-number purpose tabs use the same quiet inactive and bright active tab classes [4.16ms]\n(pass) CRM team access page > uses real staff names, CRM roles and inbound memberships without per-user pricing controls [2.17ms]\n(pass) CRM team access page > does not invent members while directory loading or allow saving a stale view [3.03ms]\n(pass) CRM team access page > protects eligible Starter owner but lets an admin revoke a stale owner [5.59ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.14ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.31ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.08ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.30ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.03ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.07ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.40ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > executes the full release Worker upload, deployment and manifest capture with the intended argv [376.43ms]\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.53ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.40ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.26ms]\n(pass) dialer GitHub release workflow contract > rejects short trimmed edge secrets before deployment without exposing them [130.41ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.87ms]\n(pass) dialer GitHub release workflow contract > releases only the approved UI files to the Worker while fencing Railway and other changes [711.15ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.43ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.09ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.06ms]\n(pass) commercial deployment artifacts > keeps a responsive modeless calling window and compact session dock with a stable native launcher [0.08ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [1.86ms]\n\n 317 pass\n 0 fail\n 2408 expect() calls\nRan 317 tests across 47 files. [2.43s]\n"
         },
         {
           "name": "Consuelo CI planner contracts",
@@ -876,8 +889,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1954,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/ci-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 235\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:06:56\n\u001b[2m   Duration \u001b[22m 492ms\u001b[2m (transform 151ms, setup 0ms, import 159ms, tests 235ms, environment 0ms)\u001b[22m\n\nSwitched to a new branch 'pr'\nSwitched to branch 'main'\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-ci-deletions-Kx1wTr/checkout'...\n"
+          "durationMs": 544,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/ci-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 195\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:33:10\n\u001b[2m   Duration \u001b[22m 340ms\u001b[2m (transform 68ms, setup 0ms, import 75ms, tests 195ms, environment 0ms)\u001b[22m\n\nSwitched to a new branch 'pr'\nSwitched to branch 'main'\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-ci-deletions-jzg0z5/checkout'...\n"
         },
         {
           "name": "Public production release isolation contracts",
@@ -898,8 +911,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 530,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/docs-production-release.test.js \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/production-release-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/github-workflow-policy.test.js \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 82\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 241\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:06:57\n\u001b[2m   Duration \u001b[22m 332ms\u001b[2m (transform 71ms, setup 0ms, import 124ms, tests 329ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 506,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.11 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/docs-production-release.test.js \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/production-release-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/github-workflow-policy.test.js \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 67\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 231\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:33:11\n\u001b[2m   Duration \u001b[22m 327ms\u001b[2m (transform 72ms, setup 0ms, import 140ms, tests 304ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "Preserved MCP production release security contracts",
@@ -917,8 +930,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 571,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:06:58\n\u001b[2m   Duration \u001b[22m 117ms\u001b[2m (transform 17ms, setup 21ms, import 5ms, tests 2ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/production-release-mcp-security.test.ts\n"
+          "durationMs": 352,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-benchmark-us-hosted-mercury-script-selection-and-cost/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:33:11\n\u001b[2m   Duration \u001b[22m 88ms\u001b[2m (transform 15ms, setup 17ms, import 5ms, tests 2ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/production-release-mcp-security.test.ts\n"
         }
       ],
       "failedSuites": []

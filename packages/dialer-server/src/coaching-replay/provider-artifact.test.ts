@@ -69,6 +69,34 @@ describe('provider result artifact', () => {
       expect(() =>
         serializeProviderReport({ ...report, unreconciledCharges: 0 }),
       ).toThrow();
+      const observation = {
+        request: 1,
+        queueMs: 4,
+        requestMs: 2,
+        decisionMs: 2,
+        cueAgeMs: 6,
+        outcome: 'applied' as const,
+        cardIndex: 0,
+        evidenceTurnIndices: [0],
+      };
+      const observed = {
+        ...report,
+        results: [{ ...report.results[0]!, selectorTrace: [observation] }],
+      };
+      expect(() => serializeProviderReport(observed)).not.toThrow();
+      for (const invalid of [
+        { ...observation, text: 'private' },
+        { ...observation, cardIndex: 32 },
+        { ...observation, queueMs: -1 },
+        { ...observation, evidenceTurnIndices: [0, 0] },
+        { ...observation, evidenceTurnIndices: [6] },
+      ])
+        expect(() =>
+          serializeProviderReport({
+            ...observed,
+            results: [{ ...observed.results[0]!, selectorTrace: [invalid] }],
+          } as ProviderReport),
+        ).toThrow();
       const diagnostics = {
         stages: { finish: 1 },
         statuses: { '200': 1 },

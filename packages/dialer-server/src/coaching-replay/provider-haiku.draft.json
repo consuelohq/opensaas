@@ -5,7 +5,7 @@
   "allowedRequestProviderTags": ["anthropic"],
   "allowedResponseProviderNames": ["Anthropic"],
   "allowedResponseModels": ["anthropic/claude-haiku-4.5"],
-  "transportRevision": "closed-set-openrouter-v1",
+  "transportRevision": "closed-set-openrouter-v2",
   "scenarioCount": 108,
   "maxRequests": 108,
   "maxReservedNanoUsd": 2000000000,

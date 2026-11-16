@@ -91,9 +91,7 @@ export async function measureSyntheticRequestBytes(
             message: {
               role: 'assistant',
               content: JSON.stringify({
-                cardId: null,
-                slotIds: [],
-                evidence: [],
+                selection: { cardId: null, evidence: [] },
               }),
             },
           },
@@ -114,16 +112,21 @@ export async function measureSyntheticRequestBytes(
     create: createProductionReplaySession('context-provider', selector),
   });
   if (
-    bytes.length !== cases.length ||
+    bytes.length !==
+      results.reduce((n, r) => n + (r.selectorRequests ?? NaN), 0) ||
     results.some(
-      (r) => r.selectorRequests !== 1 || r.selectorMetrics?.failures !== 0,
+      (r) =>
+        (r.selectorRequests !== 0 && r.selectorRequests !== 1) ||
+        r.selectorMetrics?.failures !== 0,
     )
   )
     throw new Error('synthetic dry-run incomplete');
   return {
+    scenarios: cases.length,
     requests: bytes.length,
-    minBytes: Math.min(...bytes),
-    maxBytes: Math.max(...bytes),
+    locallyAbstained: cases.length - bytes.length,
+    minBytes: bytes.length ? Math.min(...bytes) : 0,
+    maxBytes: bytes.length ? Math.max(...bytes) : 0,
     totalBytes: bytes.reduce((sum, n) => sum + n, 0),
   };
 }
