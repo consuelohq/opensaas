@@ -31,7 +31,9 @@ export function log(entry: Omit<LogEntry, 'ts'>): void {
 function containsComputerUse(tool: string, input: unknown): boolean {
   if (tool === 'computer.use') return true;
   if (tool !== 'batch' || !input || typeof input !== 'object' || !('steps' in input) || !Array.isArray(input.steps)) return false;
-  return input.steps.some(step => step && typeof step.tool === 'string' && containsComputerUse(step.tool, step.input ?? step.args));
+  return input.steps.some(step => step && typeof step.tool === 'string' && (
+    containsComputerUse(step.tool, step.input) || containsComputerUse(step.tool, step.args)
+  ));
 }
 
 export function logToolExecution(entry: {

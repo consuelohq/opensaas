@@ -5,12 +5,39 @@ import { describe, expect, it } from 'vitest';
 import { buildComputerCommand, computerEnvironment, executeComputerSteps, runComputerUse } from '../scripts/lib/computer-use';
 import { ComputerUseInput } from '../scripts/lib/facade/schemas';
 
-const host = { platform: 'darwin', diaInstalled: true, home: '/tmp/consuelo-test' } as const;
+const host = { platform: 'darwin', arch: 'arm64', diaInstalled: true, home: '/tmp/consuelo-test' } as const;
 
 describe('computer.use', () => {
   const result = (data: unknown, exitCode = 0) => ({
     stdout: JSON.stringify(data), stderr: '', exitCode, timedOut: false, cancelled: false,
     runtimeMissing: false, stdoutTruncated: false, stderrTruncated: false,
+  });
+
+  it.each(['--', '--headed', '', 'two words'])('sends literal browser fill text %j after a delimiter', text => {
+    const command = buildComputerCommand({ target: 'browser', browser: 'chromium', action: 'fill', ref: '@e2', text }, host);
+    expect(JSON.parse(command.stdin!)).toEqual([['fill', '@e2', '--', text]]);
+  });
+
+  it.each(['click', 'fill'] as const)('reports a pending browser %s approval without continuing', async action => {
+    const command = buildComputerCommand({ target: 'browser', browser: 'chromium', action, ref: '@e2', text: 'test' }, host);
+    const confirmation = { confirmation_required: true, confirmation_id: 'abc', action };
+    const payload = action === 'fill' ? [{ success: true, result: confirmation }] : { success: true, data: confirmation };
+    const outcome = await executeComputerSteps(command, action, () => 2000, async () => result(payload), op => op());
+    expect(outcome).toMatchObject({ ok: false, code: 'APPROVAL_REQUIRED', data: confirmation });
+  });
+
+  it('selects the distribution Chromium on Linux ARM64 and never calls the unsupported installer', async () => {
+    const linux = { ...host, platform: 'linux' as const, diaInstalled: false };
+    const input = { target: 'browser', action: 'open', url: 'https://example.com' } as const;
+    expect(() => buildComputerCommand(input, linux)).toThrow(/distribution Chromium/);
+    const command = buildComputerCommand(input, { ...linux, systemChromium: '/usr/bin/chromium' });
+    expect(command.args).toEqual(expect.arrayContaining(['--executable-path', '/usr/bin/chromium']));
+    let calls = 0;
+    await executeComputerSteps(command, 'open', () => 100, async () => {
+      calls++;
+      return result({ success: false, error: 'Auto-launch failed: Chrome not found. Checked:' }, 1);
+    }, op => op());
+    expect(calls).toBe(1);
   });
 
   it('uses the remaining deadline for viewport retry and navigation', async () => {

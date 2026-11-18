@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/address-computer-use-policy-and-privacy-review",
+  "events": [
+    {
+      "id": "1fca32d0-38cf-4e67-b6fd-339f88948a22",
+      "occurred_at": "2026-11-18T22:40:15.663Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/address-computer-use-policy-and-privacy-review",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/address-computer-use-policy-and-privacy-review"
+      }
+    },
+    {
+      "id": "c35e9aa7-3148-4472-a7ad-de1caff90353",
+      "occurred_at": "2026-11-18T22:42:00.874Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/address-computer-use-policy-and-privacy-review",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/address-computer-use-policy-and-privacy-review"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-18T22:42:01.029Z"
+}
