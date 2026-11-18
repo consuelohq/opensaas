@@ -1,6 +1,8 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import type { Readable } from 'node:stream';
+import { createCodexLogWriter } from './computer-use-log.ts';
 
 import {
   preserveFirstTerminationOutcome,
@@ -12,6 +14,7 @@ import {
 
 type LaunchSpec = {
   runId: string;
+  provider?: string;
   ownerToken: string;
   command: string[];
   cwd: string;
@@ -91,6 +94,25 @@ function cancellationRequested(): boolean {
   }
 }
 
+function persistCodexStream(stream: Readable, fd: number, child: ProviderChild): void {
+  const writer = createCodexLogWriter(text => fs.writeFileSync(fd, text));
+  let failed = false;
+  function handle(operation: () => void) {
+    if (failed) return;
+    try {
+      operation();
+    } catch (error: unknown) {
+      failed = true;
+      setupFailureMessage = error instanceof Error ? error.message : 'Failed to write the provider log';
+      signalProviderProcess(child, 'SIGTERM');
+      scheduleProviderProcessEscalation(child, 250);
+    }
+  }
+  stream.setEncoding('utf8');
+  stream.on('data', (chunk: string) => handle(() => writer.write(chunk)));
+  stream.once('end', () => handle(() => writer.end()));
+}
+
 process.on('SIGTERM', () => terminate('cancelled'));
 process.on('SIGINT', () => terminate('cancelled'));
 
@@ -98,12 +120,17 @@ try {
   const stdoutFd = fs.openSync(launch.stdoutLogPath, 'a', 0o600);
   const stderrFd = fs.openSync(launch.stderrLogPath, 'a', 0o600);
   try {
+    const codexLogs = launch.provider === 'codex' || (!launch.provider && /^codex(?:\\.exe)?$/i.test(path.basename(launch.command[0])));
     provider = spawn(launch.command[0], launch.command.slice(1), {
       cwd: launch.cwd,
       env: process.env,
       detached: process.platform !== 'win32',
-      stdio: ['pipe', stdoutFd, stderrFd],
+      stdio: codexLogs ? ['pipe', 'pipe', 'pipe'] : ['pipe', stdoutFd, stderrFd],
     }) as ProviderChild;
+    if (codexLogs && provider.stdout && provider.stderr) {
+      persistCodexStream(provider.stdout, stdoutFd, provider);
+      persistCodexStream(provider.stderr, stderrFd, provider);
+    }
     writeMarker(launch.ownerMarkerPath, {
       runId: launch.runId,
       ownerToken: launch.ownerToken,

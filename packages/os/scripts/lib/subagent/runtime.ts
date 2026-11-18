@@ -19,6 +19,7 @@ import {
   type DurableSubagentRun,
 } from './lifecycle';
 import { hasPrivateComputerUse } from '../redaction';
+import { redactCodexLog } from './computer-use-log';
 import {
   recordSubagentTraceEventsSafely,
   type SubagentTraceEvent,
@@ -1566,12 +1567,14 @@ function compactSubagentOutput(input: {
   taskSession?: string;
   branch?: string;
 }): Pick<SubagentData, 'stdout' | 'stderr' | 'finalMessage' | 'summary' | 'rawLogPath' | 'stdoutLogPath' | 'stderrLogPath' | 'stdoutChars' | 'stderrChars' | 'usage'> {
-  const parsed = parseSubagentOutput(input.provider, input.stdout);
-  const logs = persistSubagentLogs(input);
+  const stdout = input.provider === 'codex' ? redactCodexLog(input.stdout) : input.stdout;
+  const stderr = input.provider === 'codex' ? redactCodexLog(input.stderr) : input.stderr;
+  const parsed = parseSubagentOutput(input.provider, stdout);
+  const logs = persistSubagentLogs({ ...input, stdout, stderr });
   const finalMessage = parsed.finalMessage?.trim();
   const events = parseSubagentTraceEvents(input.provider, input.stdout);
-  const stderrSummary = compactText(input.stderr);
-  const summary = buildSubagentRunSummary({ traceId: input.traceId, events, finalMessage, stdout: input.stdout });
+  const stderrSummary = compactText(stderr);
+  const summary = buildSubagentRunSummary({ traceId: input.traceId, events, finalMessage, stdout });
   recordSubagentTraceEventsSafely({
     provider: input.provider,
     parentTraceId: input.traceId,
@@ -1943,8 +1946,8 @@ function persistSubagentLogs(input: {
   const stdoutLogPath = path.join(logDir, 'stdout.log');
   const stderrLogPath = path.join(logDir, 'stderr.log');
   const summaryPath = path.join(logDir, 'summary.json');
-  fs.writeFileSync(stdoutLogPath, input.stdout);
-  fs.writeFileSync(stderrLogPath, input.stderr);
+  fs.writeFileSync(stdoutLogPath, input.stdout, { mode: 0o600 });
+  fs.writeFileSync(stderrLogPath, input.stderr, { mode: 0o600 });
   fs.writeFileSync(summaryPath, JSON.stringify({
     provider: input.provider,
     traceId: input.traceId,

@@ -1279,6 +1279,10 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/streams/workpads.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
     },
+    "scripts/lib/subagent/computer-use-log.ts": {
+      "status": "os-only-intentional",
+      "reason": "Protects OS computer-use payloads in buffered and durable Codex provider logs."
+    },
     "scripts/lib/subagent/lifecycle.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/subagent/lifecycle.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
