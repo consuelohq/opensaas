@@ -28,6 +28,12 @@ export function log(entry: Omit<LogEntry, 'ts'>): void {
   process.stderr.write(`${line}\n`);
 }
 
+function containsComputerUse(tool: string, input: unknown): boolean {
+  if (tool === 'computer.use') return true;
+  if (tool !== 'batch' || !input || typeof input !== 'object' || !('steps' in input) || !Array.isArray(input.steps)) return false;
+  return input.steps.some(step => step && typeof step.tool === 'string' && containsComputerUse(step.tool, step.input ?? step.args));
+}
+
 export function logToolExecution(entry: {
   tool: string;
   branch?: string;
@@ -74,6 +80,7 @@ export function logToolExecution(entry: {
     });
   }
 
+  const privateContent = containsComputerUse(entry.tool, entry.input) || containsComputerUse(entry.tool, entry.resolvedInput);
   const usage = measureTracePayloadUsage(entry.input, entry.result, {
     inputTokens: entry.inputTokens, outputTokens: entry.outputTokens, totalTokens: entry.totalTokens,
   });
@@ -111,10 +118,10 @@ export function logToolExecution(entry: {
     code: entry.code,
     exitCode: entry.exitCode,
     durationMs: entry.durationMs,
-    input: entry.input,
-    resolvedInput: entry.resolvedInput,
-    result: entry.result,
-    stderr: entry.stderr,
+    input: privateContent ? undefined : entry.input,
+    resolvedInput: privateContent ? undefined : entry.resolvedInput,
+    result: privateContent ? undefined : entry.result,
+    stderr: privateContent ? undefined : entry.stderr,
     inputTokens: usage.input ?? undefined,
     outputTokens: usage.output ?? undefined,
     totalTokens: usage.total ?? undefined,

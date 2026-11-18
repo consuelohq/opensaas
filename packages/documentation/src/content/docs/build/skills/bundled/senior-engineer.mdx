@@ -58,6 +58,8 @@ A good worker agent is not just fast. A good worker agent leaves behind a worksp
 
 # Tooling principles
 
+Use `computer.use` for native app or browser UI work. Snapshot a named app and act on its refs. For web testing, use `target: "browser"` and open a URL. Dia is the default on Macs with Dia installed. Each named browser session has a persistent OS-owned profile. For sign-ins that must survive a restart, select `browser: "chromium"`, sign in headed, close, and reopen the same session headless. Dia supports background browsing; its web sign-in can be lost on restart. Use a dedicated session name for parallel work.
+
 Use the workspace tool surface as the source of truth.
 
 Preference order:
@@ -818,6 +820,5 @@ codex exec --cd "$PWD" --sandbox workspace-write --json - < /tmp/<task-name>-ins
 
 * Do not include `--ask-for-approval never` unless the local Codex CLI help confirms that flag is supported.
 * After a worker or direct Codex run, inspect stdout/stderr logs, task diff, and trace output before pushing.
-
 ````
 {/* skill-source:end */}

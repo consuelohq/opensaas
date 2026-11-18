@@ -232,6 +232,7 @@ describe('OS steering execution recording', () => {
     expect(steering).not.toContain('"capabilities":');
     expect(steering).not.toContain('body-only-marker-must-not-appear');
     expect(steering).toContain('## Core tools');
+    expect(steering).toContain('Use computer.use for background app actions');
     expect(steering).toContain('tools.search');
     expect(steering).toContain('code.call');
     const toolsSection = steering.slice(steering.indexOf('## Core tools'));

@@ -210,6 +210,7 @@ function buildSteeringSnapshot(input: SteeringSnapshotInput): SteeringSnapshotCa
     'Available core tool names (disabled tools excluded):',
     '',
     coreNames.join(', '),
+    ...(coreNames.includes('computer.use') ? ['Use computer.use for background app actions or headless browsing. Set headed:true for visible interaction.'] : []),
     '',
     '### Reliable tool transport',
     '',

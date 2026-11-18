@@ -119,6 +119,14 @@ The facade validates input before executing the backing command. It returns a `T
 
 The call envelope also supports a top-level `workSession` for work-session node routing. `taskSession` and `workSession` are mutually exclusive. Adding work-session routing does not by itself grant a tool new filesystem mutation authority: a tool must explicitly support work-session execution before it can use that session for work.
 
+## Computer use
+
+Call `computer.use` with `{ "action": "status" }` to check Agent Desktop and the node's accessibility permissions. Use `windows` to select an app window, `snapshot` to get refs, then `click` or `fill` and snapshot again. Add `headed: true` when an operation needs the physical pointer or foreground.
+
+For a web page, use `{ "target": "browser", "action": "open", "url": "https://example.com", "session": "qa" }`. Repeat the session name on subsequent calls. Browser sessions launch headless and use a dedicated profile on the selected node. Macs with Dia installed use Dia by default. Set `browser: "chromium"` to select Chromium. Close the named session before changing its launch mode. For sign-in across restarts, use Chromium and the same session name in both modes. Dia can lose web sign-in when its instance closes. A running Dia session retains its current page state.
+
+The OS package installs the pinned Agent Desktop and Agent Browser runtimes as platform-specific optional dependencies. Agent Desktop needs Accessibility permission for native actions on macOS and Screen Recording for screenshots.
+
 ## Starting sessions
 
 `session.start` is the canonical session constructor. `kind: "task"` delegates to the existing task lifecycle and returns `sessionKind: "task"`, `taskSession`, `taskBranch`, and `worktreePath`; `task.start` remains available as a compatibility alias. `kind: "work"` creates metadata only for an existing directory and returns `sessionKind: "work"`, `workSession`, `ownerNodeId`, and `path`. It does not create a branch, worktree, PR, or copied directory.

@@ -75,6 +75,7 @@ const oldContextToolNames = [
 ] as const;
 
 const retainedCoreToolNames = [
+  'computer.use',
   'batch',
   'code.call',
   'memory',

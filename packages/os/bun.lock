@@ -26,12 +26,30 @@
         "vitest": "^4.1.5",
         "wrangler": "^4.27.0",
       },
+      "optionalDependencies": {
+        "agent-browser": "0.43.0",
+        "agent-desktop": "1.3.1",
+      },
     },
   },
   "overrides": {
     "tar": "7.5.22",
   },
   "packages": {
+    "@agent-browser/cli-darwin-arm64": ["@agent-browser/cli-darwin-arm64@0.43.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-HV6GP59IjNnowlrXR/5rVM8msPWwQDEONt/tWC8STzUfKZQHKZI/Iv9sf2h2ZhwK8xwoqLhxpf+KxcFgJ0sExQ=="],
+
+    "@agent-browser/cli-darwin-x64": ["@agent-browser/cli-darwin-x64@0.43.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-3NKnKFOWLYDYTz4bJxo4jt+GwjM4VtcW5FDrQY35eUrytig65FEDdXmXKuRbZGq9jEEWxh6rmpS4R6xS53XCaw=="],
+
+    "@agent-browser/cli-linux-arm64-gnu": ["@agent-browser/cli-linux-arm64-gnu@0.43.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-8DC234LGlXCn8A2YXGk6woy1uTjyexvtHd/TOQHLrV2sfUMZD647HTHEJyF+2z1J1oR34LaB5jqHJ9d0REC+Cw=="],
+
+    "@agent-browser/cli-linux-arm64-musl": ["@agent-browser/cli-linux-arm64-musl@0.43.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-/dYeGX2E1lWZ25q1IZSVs6PaPmr0GmhHU8z/LtCh0anHN4ND50i5fOPbysRBaE8iQCBY74h+1R2kePfEqD7X4Q=="],
+
+    "@agent-browser/cli-linux-x64-gnu": ["@agent-browser/cli-linux-x64-gnu@0.43.0", "", { "os": "linux", "cpu": "x64" }, "sha512-WY8vy2Saa3oRt6XEmz4Sae1W5qS9TjYcbX6IE+dxb8s2APfL9XyQjMHC6jBZrhwqDBIvUeTMCT/P2cq3XLPSBw=="],
+
+    "@agent-browser/cli-linux-x64-musl": ["@agent-browser/cli-linux-x64-musl@0.43.0", "", { "os": "linux", "cpu": "x64" }, "sha512-WpCI0cIaVIVj4trdduDmW90h51BAP5Nhx6lALOqHjUhOOae/TkLL4bK8gJfjPb/nOp2FRjsF1l77f6rVwkpsug=="],
+
+    "@agent-browser/cli-win32-x64-msvc": ["@agent-browser/cli-win32-x64-msvc@0.43.0", "", { "os": "win32", "cpu": [ "x64", "arm64", ] }, "sha512-xhk8wnHk3aiBFSR0pd1Ye3ay2jKjgRardgBJLiB9nXJv0ZkbeP/wh3X7jMiKUfUGE1qqJrKdaM5szQ6iz8/8+w=="],
+
     "@apm-js-collab/code-transformer": ["@apm-js-collab/code-transformer@0.18.1", "", { "dependencies": { "@types/estree": "^1.0.8", "astring": "^1.9.0", "esquery": "^1.7.0", "meriyah": "^6.1.4", "semifies": "^1.0.0", "source-map": "^0.6.0" }, "bin": { "code-transformer": "cli.js" } }, "sha512-u1Hb6bHjWtkSpiprwVP6YaHC1DTN4RAU3zYkUDUe7WMnJwdyU1pwTL9dFKiSJB9IiLue/EQovmyx6xhU7FFtAQ=="],
 
     "@apm-js-collab/code-transformer-bundler-plugins": ["@apm-js-collab/code-transformer-bundler-plugins@0.7.4", "", { "dependencies": { "@apm-js-collab/code-transformer": "^0.18.1", "es-module-lexer": "^2.1.0", "magic-string": "^0.30.21", "module-details-from-path": "^1.0.4" } }, "sha512-nAfOeZPSUAQvJa1iFT/5oCrTm5YQhMMrfCNthNnaXHZiOQhu1KGuLoIx7HtbAi3wfwaBYLaICPIeenIaEwcXIg=="],
@@ -355,6 +373,10 @@
     "@vitest/spy": ["@vitest/spy@4.1.5", "", {}, "sha512-2lNOsh6+R2Idnf1TCZqSwYlKN2E/iDlD8sgU59kYVl+OMDmvldO1VDk39smRfpUNwYpNRVn3w4YfuC7KfbBnkQ=="],
 
     "@vitest/utils": ["@vitest/utils@4.1.5", "", { "dependencies": { "@vitest/pretty-format": "4.1.5", "convert-source-map": "^2.0.0", "tinyrainbow": "^3.1.0" } }, "sha512-76wdkrmfXfqGjueGgnb45ITPyUi1ycZ4IHgC2bhPDUfWHklY/q3MdLOAB+TF1e6xfl8NxNY0ZYaPCFNWSsw3Ug=="],
+
+    "agent-browser": ["agent-browser@0.43.0", "", { "optionalDependencies": { "@agent-browser/cli-darwin-arm64": "0.43.0", "@agent-browser/cli-darwin-x64": "0.43.0", "@agent-browser/cli-linux-arm64-gnu": "0.43.0", "@agent-browser/cli-linux-arm64-musl": "0.43.0", "@agent-browser/cli-linux-x64-gnu": "0.43.0", "@agent-browser/cli-linux-x64-musl": "0.43.0", "@agent-browser/cli-win32-x64-msvc": "0.43.0" }, "bin": { "agent-browser": "./bin/agent-browser.js" } }, "sha512-TExwnZAW39fUBDJhUPrw8KKGmcjzBo7FxNqoP2/usHG1ODsjGI2jAWq3+Q6I5JYyBMjePFEsj8KGB68mALtglA=="],
+
+    "agent-desktop": ["agent-desktop@1.3.1", "", { "os": [ "linux", "win32", "darwin", ], "cpu": [ "x64", "arm64", ], "bin": { "agent-desktop": "bin/agent-desktop" } }, "sha512-5pBKkFkdB/VIAWRfqoA8lYp5/fenfxUHI15Pc4k8Nn2LmLxxo1PkAb0WLypknyOCczuIwuzFp/rZHGGawEV+hw=="],
 
     "ansi-escapes": ["ansi-escapes@6.2.1", "", {}, "sha512-4nJ3yixlEthEJ9Rk4vPcdBRkZvQZlYyu8j4/Mqz5sgIkddmEnH2Yj2ZrnP9S3tQOvSNRUIgVNF/1yPpRAGNRig=="],
 
