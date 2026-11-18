@@ -26,6 +26,35 @@ describe('computer.use', () => {
     expect(outcome).toMatchObject({ ok: false, code: 'APPROVAL_REQUIRED', data: confirmation });
   });
 
+  it.each([
+    'Auto-launch failed: Chrome not found. Checked:',
+    'Auto-launch failed: Chrome exited early (exit code: 127) without writing DevToolsActivePort\nerror while loading shared libraries: libnss3.so: cannot open shared object file',
+  ])('provisions Linux x64 browser libraries before navigating again', async error => {
+    const command = buildComputerCommand({ target: 'browser', action: 'open', url: 'https://example.com' },
+      { ...host, platform: 'linux', arch: 'x64', diaInstalled: false });
+    const calls: string[][] = [];
+    const outcome = await executeComputerSteps(command, 'open', () => 2000, async args => {
+      calls.push(args);
+      return calls.length === 1 ? result({ success: false, error }, 1) : result({ success: true });
+    }, op => op());
+    expect(outcome.ok).toBe(true);
+    expect(calls).toEqual([command.args, ['install', '--with-deps'], command.args]);
+  });
+
+  it('reports required Linux package-manager access before retrying a launch', async () => {
+    const command = buildComputerCommand({ target: 'browser', action: 'open', url: 'https://example.com' },
+      { ...host, platform: 'linux', arch: 'x64', diaInstalled: false });
+    const calls: string[][] = [];
+    const outcome = await executeComputerSteps(command, 'open', () => 2000, async args => {
+      calls.push(args);
+      if (args[0] === 'install') return { ...result(null, 1), stderr: 'root privileges are required for the system package manager' };
+      return result({ success: false, error: 'Auto-launch failed: Chrome not found. Checked:' }, 1);
+    }, op => op());
+    expect(calls).toHaveLength(2);
+    expect(outcome).toMatchObject({ ok: false, code: 'APPROVAL_REQUIRED' });
+    expect(outcome.message).toContain('agent-browser install --with-deps');
+  });
+
   it('selects the distribution Chromium on Linux ARM64 and never calls the unsupported installer', async () => {
     const linux = { ...host, platform: 'linux' as const, diaInstalled: false };
     const input = { target: 'browser', action: 'open', url: 'https://example.com' } as const;

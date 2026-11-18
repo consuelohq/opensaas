@@ -23,7 +23,7 @@ type Command = {
   profile?: string;
   browser?: 'dia' | 'chromium';
   screenshot?: string;
-  allowChromiumInstall?: boolean;
+  chromiumInstallArgs?: string[];
 };
 type Outcome = { ok: boolean; code: ErrorCode; message: string; data: unknown };
 
@@ -137,7 +137,11 @@ export function buildComputerCommand(input: Input, host: Host): Command {
     case 'close': args.push('close'); break;
     default: throw new Error(input.action + ' requires target:"desktop"');
   }
-  return { command: 'agent-browser', args, setupArgs, stdin, browser, profile, screenshot, allowChromiumInstall: browser === 'chromium' && !needsSystemChromium };
+  let chromiumInstallArgs: string[] | undefined;
+  if (browser === 'chromium' && !needsSystemChromium) {
+    chromiumInstallArgs = host.platform === 'linux' ? ['install', '--with-deps'] : ['install'];
+  }
+  return { command: 'agent-browser', args, setupArgs, stdin, browser, profile, screenshot, chromiumInstallArgs };
 }
 
 function failure(code: ErrorCode, message: string, data: unknown = null): Outcome {
@@ -198,9 +202,12 @@ export async function executeComputerSteps(
     if (left <= 0) return Promise.resolve(failure('TIMEOUT', 'The computer use deadline elapsed.'));
     return run(args, left, stdin).then(result => {
       if (args[0] === 'install' && !result.runtimeMissing && !result.timedOut && !result.cancelled) {
-        return result.exitCode === 0
-          ? { ok: true, code: 'OK', message: 'Chromium is available', data: null }
-          : failure('COMMAND_FAILED', result.stderr || result.stdout || 'Chromium installation failed.');
+        if (result.exitCode === 0) return { ok: true, code: 'OK', message: 'Chromium is available', data: null };
+        const detail = [result.stderr, result.stdout].filter(Boolean).join('\n');
+        if (args.includes('--with-deps') && /root privileges|permission denied|not in the sudoers|sudo:.*(?:password|terminal|not allowed)|must be.*root/i.test(detail)) {
+          return failure('APPROVAL_REQUIRED', 'A node administrator must run agent-browser install --with-deps with package-manager access, then retry.');
+        }
+        return failure('COMMAND_FAILED', detail || 'Chromium installation failed.');
       }
       return readResult(command, result, action);
     });
@@ -216,9 +223,12 @@ export async function executeComputerSteps(
     }
     const outcome = await execute(command.args, command.stdin);
     // The pinned CLI emits this diagnostic before it can launch a browser or navigate.
-    if (command.allowChromiumInstall && action === 'open' && outcome.code === 'COMMAND_FAILED'
-      && /^(?:Auto-launch failed: )?Chrome not found\. Checked:/.test(outcome.message)) {
-      const installed = await withInstallLock(() => execute(['install']));
+    const installArgs = command.chromiumInstallArgs;
+    const missingBinary = /^(?:Auto-launch failed: )?Chrome not found\. Checked:/.test(outcome.message);
+    const missingLibraries = installArgs?.includes('--with-deps') && /^Auto-launch failed: (?:Chrome exited|Failed to launch Chrome)/.test(outcome.message)
+      && /error while loading shared libraries: [^:\n]+: cannot open shared object file/.test(outcome.message);
+    if (installArgs && action === 'open' && outcome.code === 'COMMAND_FAILED' && (missingBinary || missingLibraries)) {
+      const installed = await withInstallLock(() => execute(installArgs));
       if (!installed.ok) return installed;
       return execute(command.args, command.stdin);
     }

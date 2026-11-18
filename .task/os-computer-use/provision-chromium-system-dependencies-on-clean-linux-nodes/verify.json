@@ -1,0 +1,98 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes",
+  "base": "origin/task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes",
+  "headSha": "3ee5ddc7b65288ba89a15d65ab365539e877aab0",
+  "changeHash": "efe71f92ced740e4b60b17f8c2db0f872a45b2fe6be0afce8b5c29d05bc30c9a",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/scripts/lib/computer-use.ts",
+    "packages/os/tests/computer-use.test.ts"
+  ],
+  "verifiedAt": "2026-11-18T22:51:39.994Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes/evidence-log.json",
+        ".task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes/read-log.json",
+        ".task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes/workpad.md",
+        ".task/tasks/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes.json",
+        "packages/documentation/src/content/docs/reference/tools.mdx",
+        "packages/os/scripts/lib/computer-use.ts",
+        "packages/os/tests/computer-use.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/computer-use.ts",
+            "packages/os/tests/computer-use.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 55735,
+          "outputTail": "nings ...` to show where the warning was created)\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"39fb58ce-d3e0-4c9b-a5e3-2e228192406f\",\"route\":\"/mcp\",\"method\":\"[REDACTED_SECRET]\",\"jsonRpcId\":\"[REDACTED_SECRET]\"},\"ts\":\"2026-11-18T22:51:35.050Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_response_ready\",\"message\":\"local_os.mcp_response_ready\",\"context\":{\"requestId\":\"39fb58ce-d3e0-4c9b-a5e3-2e228192406f\",\"route\":\"/mcp\",\"method\":\"[REDACTED_SECRET]\",\"status\":400,\"durationMs\":1,\"jsonRpcId\":\"[REDACTED_SECRET]\"},\"ts\":\"2026-11-18T22:51:35.050Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"fe452eb7-1d48-477f-af87-0f9e645a99fe\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"jsonRpcId\":\"receipt-500\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-11-18T22:51:35.055Z\"}\n{\"level\":\"error\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.internal_error\",\"message\":\"local_os.internal_error\",\"error\":{\"name\":\"Error\",\"message\":\"synthetic facade failure\",\"stack\":\"Error: synthetic facade failure\\n    at Object.<anonymous> (/Users/kokayi/.[REDACTED_SECRET].test.ts:155:52)\\n    at Object.Mock [as executeFacadeTool] (file:///Users/kokayi/.[REDACTED_SECRET]/@vitest/spy/dist/index.js:332:34)\\n    at execute (/Users/kokayi/.[REDACTED_SECRET].ts:414:28)\\n    at Object.executeFacadeTool (/Users/kokayi/.[REDACTED_SECRET].ts:416:42)\\n    at handleMcpGatewayJsonRpc (/Users/kokayi/.[REDACTED_SECRET].ts:434:21)\\n    at /Users/kokayi/.[REDACTED_SECRET].ts:402:28\\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\\n    at dispatch (file:///Users/kokayi/.[REDACTED_SECRET].js:22:17)\\n    at /Users/kokayi/.[REDACTED_SECRET].ts:247:7\\n    at dispatch (file:///Users/kokayi/.[REDACTED_SECRET].js:22:17)\"},\"context\":{\"code\":\"INTERNAL_SERVER_ERROR\",\"status\":500},\"ts\":\"2026-11-18T22:51:35.065Z\"}\n{\"level\":\"warn\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_failed\",\"message\":\"local_os.mcp_request_failed\",\"context\":{\"requestId\":\"fe452eb7-1d48-477f-af87-0f9e645a99fe\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":500,\"durationMs\":10,\"jsonRpcId\":\"receipt-500\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-11-18T22:51:35.065Z\"}\n(node:6542) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T22:51:35.997Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T22:51:36.018Z\"}\n(node:6764) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:6848) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:6942) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:7024) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
