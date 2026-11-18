@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -127,15 +127,31 @@ describe('computer.use', () => {
     }
   });
 
+  it('reports incompatible persistent profiles before creating files or starting a browser', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'computer-use-policy-'));
+    try {
+      const input = ComputerUseInput.parse({ target: 'browser', browser: 'chromium', action: 'open', url: 'http://127.0.0.1:9' });
+      const outcome = await runComputerUse(input, { CONSUELO_HOME: home, AGENT_BROWSER_ALLOWED_DOMAINS: '127.0.0.1' }, 100);
+      expect(outcome).toMatchObject({ ok: false, code: 'INVALID_INPUT' });
+      expect(outcome.message).toMatch(/allowed.domains.*persistent profile/i);
+      expect(readdirSync(home)).toEqual([]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('retains operator policies while isolating profile, routing and physical-input settings', () => {
     const env = computerEnvironment({
       AGENT_BROWSER_ALLOWED_DOMAINS: 'example.com',
       AGENT_BROWSER_ACTION_POLICY: '/policies/browser.json',
+      AGENT_BROWSER_CONFIRM_INTERACTIVE: 'true',
+      AGENT_BROWSER_CONFIRM_ACTIONS: 'click,fill',
       AGENT_BROWSER_AUTO_CONNECT: 'true',
       AGENT_DESKTOP_HEADED: 'true',
       PATH: '/bin',
     });
     expect(env).toEqual({
+      AGENT_BROWSER_CONFIRM_ACTIONS: 'click,fill',
       AGENT_BROWSER_ALLOWED_DOMAINS: 'example.com',
       AGENT_BROWSER_ACTION_POLICY: '/policies/browser.json',
       PATH: '/bin',
@@ -168,6 +184,7 @@ describe('computer.use', () => {
     expect(command.args).toContain('false');
     expect(command.setupArgs?.slice(-4)).toEqual(['set', 'viewport', '1280', '800']);
     const close = buildComputerCommand(ComputerUseInput.parse({ target: 'browser', action: 'close' }), host);
+    expect(close.args).not.toContain('--profile');
     expect(close.args).toContain('--session');
     expect(close.args).not.toContain('--all');
   });

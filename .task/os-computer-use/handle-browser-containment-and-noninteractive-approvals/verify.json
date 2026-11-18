@@ -1,0 +1,96 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-computer-use/handle-browser-containment-and-noninteractive-approvals",
+  "base": "origin/task/os-computer-use/handle-browser-containment-and-noninteractive-approvals",
+  "headSha": "8f585e71e5975980663f87309f3cf42105ebad86",
+  "changeHash": "7baa2e3b492c275e9ba781f6d2391a4107c7bf54dce4e16f64c01b25f17ae5fb",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/scripts/lib/computer-use.ts",
+    "packages/os/tests/computer-use.test.ts"
+  ],
+  "verifiedAt": "2026-11-18T23:00:25.291Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-computer-use/handle-browser-containment-and-noninteractive-approvals/workpad.md",
+        ".task/tasks/os-computer-use/handle-browser-containment-and-noninteractive-approvals.json",
+        "packages/documentation/src/content/docs/reference/tools.mdx",
+        "packages/os/scripts/lib/computer-use.ts",
+        "packages/os/tests/computer-use.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/computer-use.ts",
+            "packages/os/tests/computer-use.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 52906,
+          "outputTail": "entationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:18.598Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:18.615Z\"}\n(node:65913) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:19.362Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:19.379Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:19.385Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:19.392Z\"}\n(node:67024) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:68898) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:24.283Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:24.302Z\"}\n(node:69052) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"error\",\"tool\":\"browser.login.profile\",\"command\":\"workspace browser.login.profile\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_unknowntoolr\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:00:25.209Z\"}\n(node:69354) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
