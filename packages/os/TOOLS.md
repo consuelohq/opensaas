@@ -1679,7 +1679,7 @@ Operate apps by accessibility ref or browse with target:"browser". Start with st
 | Field | Value |
 | --- | --- |
 | Category | computer |
-| Signature | `workspace.computer.use({ action: "status" &#124; "apps" &#124; "windows" &#124; "launch" &#124; "open" &#124; "snapshot" &#124; "screenshot" &#124; "click" &#124; "fill" &#124; "press" &#124; "scroll" &#124; "close"; target?: "desktop" &#124; "browser"; app?: string; windowId?: string; surface?: "window" &#124; "menubar" &#124; "menu" &#124; "sheet" &#124; "alert" &#124; "focused"; browser?: "dia" &#124; "chromium"; session?: string; headed?: boolean; url?: string; ref?: string; text?: string; key?: string; direction?: "up" &#124; "down" &#124; "left" &#124; "right"; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.computer.use({ action: "status" &#124; "apps" &#124; "windows" &#124; "launch" &#124; "open" &#124; "snapshot" &#124; "screenshot" &#124; "click" &#124; "fill" &#124; "press" &#124; "scroll" &#124; "close"; target?: "desktop" &#124; "browser"; timeout?: number; app?: string; windowId?: string; surface?: "window" &#124; "menubar" &#124; "menu" &#124; "sheet" &#124; "alert" &#124; "focused"; browser?: "dia" &#124; "chromium"; session?: string; headed?: boolean; url?: string; ref?: string; text?: string; key?: string; direction?: "up" &#124; "down" &#124; "left" &#124; "right"; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `agent-desktop / agent-browser` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 45000ms |
