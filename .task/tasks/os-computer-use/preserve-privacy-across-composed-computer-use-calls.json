@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/preserve-privacy-across-composed-computer-use-calls",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2818,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2818",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-preserve-privacy-across-composed-computer-use-calls",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ab2b34fbee57",
+  "tmuxSession": "opensaas-os-computer-use-preserve-privacy-across-composed-computer-use-ca-ab2b34fb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-preserve-privacy-across-composed-computer-use-calls/.task/session.json",
+  "createdAt": "2026-11-18T23:07:16.826Z"
+}

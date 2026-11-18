@@ -131,7 +131,7 @@ async function main(): Promise<void> {
       printHelp();
       return;
     }
-    const state = { operations: [], blockedTools: [], changedFiles: new Set<string>() };
+    const state = { privateComputerUse: false, operations: [], blockedTools: [], changedFiles: new Set<string>() };
     const tools = buildToolRegistry(process.cwd(), { taskSession: input.taskSession, mode: input.mode || 'read', state });
     const maxResultChars = input.maxResultChars ?? DEFAULT_MAX_RESULT_CHARS;
     const execution = await execute(input.code, tools, {
@@ -162,6 +162,7 @@ async function main(): Promise<void> {
         result: resultValue.value,
         console: consoleValue,
         operations,
+        privateComputerUse: state.privateComputerUse,
         blockedTools,
         notes,
         nextSteps,

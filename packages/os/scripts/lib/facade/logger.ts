@@ -1,4 +1,4 @@
-import { redactJson } from '../redaction';
+import { hasPrivateComputerUse, redactJson } from '../redaction';
 import { measureTracePayloadUsage } from '../trace-token-usage';
 import { currentTraceRoutingContext } from '../trace-routing-context';
 import { loadNodeYamlConfig, resolveConsueloHomeLayout } from '../consuelo-home';
@@ -26,14 +26,6 @@ export type LogEntry = {
 export function log(entry: Omit<LogEntry, 'ts'>): void {
   const line = JSON.stringify(redactJson({ ...entry, ts: new Date().toISOString() }));
   process.stderr.write(`${line}\n`);
-}
-
-function containsComputerUse(tool: string, input: unknown): boolean {
-  if (tool === 'computer.use') return true;
-  if (tool !== 'batch' || !input || typeof input !== 'object' || !('steps' in input) || !Array.isArray(input.steps)) return false;
-  return input.steps.some(step => step && typeof step.tool === 'string' && (
-    containsComputerUse(step.tool, step.input) || containsComputerUse(step.tool, step.args)
-  ));
 }
 
 export function logToolExecution(entry: {
@@ -82,7 +74,8 @@ export function logToolExecution(entry: {
     });
   }
 
-  const privateContent = containsComputerUse(entry.tool, entry.input) || containsComputerUse(entry.tool, entry.resolvedInput);
+  const privateContent = hasPrivateComputerUse(entry.tool, entry.input, entry.result)
+    || hasPrivateComputerUse(entry.tool, entry.resolvedInput, entry.result);
   const usage = measureTracePayloadUsage(entry.input, entry.result, {
     inputTokens: entry.inputTokens, outputTokens: entry.outputTokens, totalTokens: entry.totalTokens,
   });

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/preserve-privacy-across-composed-computer-use-calls",
+  "events": [
+    {
+      "id": "7818b35b-00af-469e-9f03-cf59b9dd0564",
+      "occurred_at": "2026-11-18T23:13:44.109Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/preserve-privacy-across-composed-computer-use-calls",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/preserve-privacy-across-composed-computer-use-calls"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-18T23:13:44.389Z"
+}

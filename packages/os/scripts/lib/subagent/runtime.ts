@@ -18,6 +18,7 @@ import {
   waitForDurableSubagentRun,
   type DurableSubagentRun,
 } from './lifecycle';
+import { hasPrivateComputerUse } from '../redaction';
 import {
   recordSubagentTraceEventsSafely,
   type SubagentTraceEvent,
@@ -1632,6 +1633,7 @@ function parseCodexTraceEvents(stdout: string): SubagentTraceEvent[] {
             : `codex.${server}.${mcpTool}`;
         const error = item.error;
         const result = item.result;
+        const privateContent = facadeTool ? hasPrivateComputerUse(facadeTool, args?.input, result) : false;
         const inputTokens = estimateTokens(args || item.arguments || {});
         const outputTokens = estimateTokens(result || error || {});
         events.push({
@@ -1642,8 +1644,8 @@ function parseCodexTraceEvents(stdout: string): SubagentTraceEvent[] {
           status: error ? 'error' : 'ok',
           ok: !error,
           code: error ? 'COMMAND_FAILED' : 'OK',
-          input: { server, tool: mcpTool, arguments: args || item.arguments },
-          result: error || result,
+          input: privateContent ? undefined : { server, tool: mcpTool, arguments: args || item.arguments },
+          result: privateContent ? undefined : error || result,
           inputTokens,
           outputTokens,
           totalTokens: inputTokens + outputTokens,
