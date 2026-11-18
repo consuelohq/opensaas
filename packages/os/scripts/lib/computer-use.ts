@@ -160,7 +160,54 @@ export function computerEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   ));
 }
 
+export async function executeComputerSteps(
+  command: Command,
+  action: Input['action'],
+  remainingMs: () => number,
+  run: (args: string[], timeoutMs: number, stdin?: string) => Promise<ProviderProcessResult>,
+  withInstallLock: (operation: () => Promise<Outcome>) => Promise<Outcome>,
+): Promise<Outcome> {
+  const execute = (args: string[], stdin?: string): Promise<Outcome> => {
+    const left = remainingMs();
+    if (left <= 0) return Promise.resolve(failure('TIMEOUT', 'The computer use deadline elapsed.'));
+    return run(args, left, stdin).then(result => {
+      if (args[0] === 'install' && !result.runtimeMissing && !result.timedOut && !result.cancelled) {
+        return result.exitCode === 0
+          ? { ok: true, code: 'OK', message: 'Chromium is available', data: null }
+          : failure('COMMAND_FAILED', result.stderr || result.stdout || 'Chromium installation failed.');
+      }
+      return readResult(command, result, action);
+    });
+  };
+  try {
+    if (command.setupArgs) {
+      let setup = await execute(command.setupArgs);
+      // Dia may replace its initial tab. Only repeat the idempotent viewport operation.
+      if (!setup.ok && /Auto-launch failed: CDP error .*Target closed/.test(setup.message)) {
+        setup = await execute(command.setupArgs);
+      }
+      if (!setup.ok) return setup;
+    }
+    const outcome = await execute(command.args, command.stdin);
+    // The pinned CLI emits this diagnostic before it can launch a browser or navigate.
+    if (command.browser === 'chromium' && action === 'open' && outcome.code === 'COMMAND_FAILED'
+      && /^(?:Auto-launch failed: )?Chrome not found\. Checked:/.test(outcome.message)) {
+      const installed = await withInstallLock(() => execute(['install']));
+      if (!installed.ok) return installed;
+      return execute(command.args, command.stdin);
+    }
+    return outcome;
+  } catch (error: unknown) {
+    if (error instanceof NodeResourceLockError && error.code === 'LOCK_TIMEOUT') {
+      return failure('TIMEOUT', 'The browser installation is busy.');
+    }
+    return failure('COMMAND_FAILED', error instanceof Error ? error.message : 'Computer use failed');
+  }
+}
+
 export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<Outcome> {
+  const deadline = performance.now() + timeoutMs;
+  const remainingMs = () => Math.max(0, Math.ceil(deadline - performance.now()));
   const host = { home: resolveOsHome(env.CONSUELO_HOME ?? env.CONSUELO_OS_HOME), platform: process.platform, diaInstalled: existsSync(diaExecutable) };
   let command: Command;
   try {
@@ -188,18 +235,14 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
       }
       if (command.screenshot) mkdirSync(dirname(command.screenshot), { recursive: true, mode: 0o700 });
       const provider = createNodeProviderProcess({ maxOutputBytes: 1024 * 1024 });
-      const request = { command: providerExecutable(command.command, childEnv), cwd: dirname(browserConfig), env: childEnv, timeoutMs };
-      if (command.setupArgs) {
-        const setViewport = () => Effect.runPromise(provider.run({ ...request, args: command.setupArgs! }));
-        let setup = readResult(command, await setViewport(), input.action);
-        // Dia replaces its startup tab while initializing. Only repeat the idempotent viewport setup.
-        if (!setup.ok && /Auto-launch failed: CDP error .*Target closed/.test(setup.message)) {
-          setup = readResult(command, await setViewport(), input.action);
-        }
-        if (!setup.ok) return setup;
-      }
-      const result = await Effect.runPromise(provider.run({ ...request, args: command.args, stdin: command.stdin }));
-      const outcome = readResult(command, result, input.action);
+      const request = { command: providerExecutable(command.command, childEnv), cwd: dirname(browserConfig), env: childEnv };
+      const outcome = await executeComputerSteps(command, input.action, remainingMs,
+        (args, left, stdin) => Effect.runPromise(provider.run({ ...request, args, stdin, timeoutMs: left })),
+        operation => withNodeResourceLock({
+          lockPath: nodeResourceLockPath(join(host.home, 'node', 'computer-use', 'chromium-install')),
+          operationId: 'computer.use:install', waitTimeoutMs: remainingMs(),
+        }, operation),
+      );
       if (outcome.ok && input.action === 'close' && modeFile) rmSync(modeFile, { force: true });
       return outcome;
     } catch (error: unknown) {
@@ -211,7 +254,7 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
   };
   try {
     return await (command.profile ? withNodeResourceLock({
-      lockPath: nodeResourceLockPath(command.profile), operationId: 'computer.use', waitTimeoutMs: timeoutMs,
+      lockPath: nodeResourceLockPath(command.profile), operationId: 'computer.use', waitTimeoutMs: remainingMs(),
     }, run) : run());
   } catch (error: unknown) {
     if (error instanceof NodeResourceLockError && error.code === 'LOCK_TIMEOUT') {

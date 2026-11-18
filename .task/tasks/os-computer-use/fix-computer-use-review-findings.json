@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/fix-computer-use-review-findings",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2814,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2814",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-fix-computer-use-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a4983bb05584",
+  "tmuxSession": "opensaas-os-computer-use-fix-computer-use-review-findings-a4983bb0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-fix-computer-use-review-findings/.task/session.json",
+  "createdAt": "2026-11-18T22:27:37.291Z"
+}

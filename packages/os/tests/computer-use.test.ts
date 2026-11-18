@@ -2,12 +2,62 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildComputerCommand, computerEnvironment, runComputerUse } from '../scripts/lib/computer-use';
+import { buildComputerCommand, computerEnvironment, executeComputerSteps, runComputerUse } from '../scripts/lib/computer-use';
 import { ComputerUseInput } from '../scripts/lib/facade/schemas';
 
 const host = { platform: 'darwin', diaInstalled: true, home: '/tmp/consuelo-test' } as const;
 
 describe('computer.use', () => {
+  const result = (data: unknown, exitCode = 0) => ({
+    stdout: JSON.stringify(data), stderr: '', exitCode, timedOut: false, cancelled: false,
+    runtimeMissing: false, stdoutTruncated: false, stderrTruncated: false,
+  });
+
+  it('uses the remaining deadline for viewport retry and navigation', async () => {
+    const command = buildComputerCommand({ target: 'browser', browser: 'dia', action: 'open', url: 'https://example.com' }, host);
+    let now = 100;
+    const budgets: number[] = [];
+    const outcome = await executeComputerSteps(command, 'open', () => 200 - now, async (_args, timeout) => {
+      budgets.push(timeout);
+      now += 40;
+      return budgets.length === 1 ? result({ success: false, error: 'Auto-launch failed: CDP error 1 Target closed' }, 1)
+        : result({ success: true });
+    }, op => op());
+    expect(outcome.ok).toBe(true);
+    expect(budgets).toEqual([100, 60, 20]);
+  });
+
+  it('installs Chromium only for an explicit prelaunch missing-browser result', async () => {
+    const command = buildComputerCommand({ target: 'browser', browser: 'chromium', action: 'open', url: 'https://example.com' }, host);
+    const calls: string[] = [];
+    const outcome = await executeComputerSteps(command, 'open', () => 2000, async args => {
+      calls.push(args[0] === 'install' ? 'install' : 'open');
+      if (calls.length === 1) return result({ success: false, error: 'Auto-launch failed: Chrome not found. Checked:\\n  - System Chrome installations' }, 1);
+      return result({ success: true });
+    }, op => op());
+    expect(outcome.ok).toBe(true);
+    expect(calls).toEqual(['open', 'install', 'open']);
+    let attempts = 0;
+    await executeComputerSteps(command, 'open', () => 2000, async () => {
+      attempts++;
+      return result({ success: false, error: 'Navigation failed' }, 1);
+    }, op => op());
+    expect(attempts).toBe(1);
+  });
+
+  it('does not dispatch another process after the shared deadline expires', async () => {
+    const command = buildComputerCommand({ target: 'browser', browser: 'dia', action: 'open', url: 'https://example.com' }, host);
+    let remaining = 25;
+    let calls = 0;
+    const outcome = await executeComputerSteps(command, 'open', () => remaining, async () => {
+      calls++;
+      remaining = 0;
+      return result({ success: true });
+    }, op => op());
+    expect(outcome.code).toBe('TIMEOUT');
+    expect(calls).toBe(1);
+  });
+
   it('returns a typed failure when the profile lock cannot be created', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'computer-use-lock-'));
     try {
