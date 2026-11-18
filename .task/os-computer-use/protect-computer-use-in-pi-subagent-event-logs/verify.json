@@ -1,0 +1,173 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-computer-use/protect-computer-use-in-pi-subagent-event-logs",
+  "base": "origin/task/os-computer-use/protect-computer-use-in-pi-subagent-event-logs",
+  "headSha": "585cc5438946c1b21067e4295fd3c5abc44c26cb",
+  "changeHash": "870a1b2625725da47bd2300e524ab77dc72b5e43adfba214c1a1ad83599bbe2c",
+  "changedFiles": [
+    "packages/os/scripts/lib/subagent/computer-use-log.ts",
+    "packages/os/scripts/lib/subagent/runner.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/tests/computer-use-log.test.ts"
+  ],
+  "verifiedAt": "2026-11-18T23:54:26.290Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-computer-use/protect-computer-use-in-pi-subagent-event-logs/workpad.md",
+        ".task/tasks/os-computer-use/protect-computer-use-in-pi-subagent-event-logs.json",
+        "packages/os/scripts/lib/subagent/computer-use-log.ts",
+        "packages/os/scripts/lib/subagent/runner.ts",
+        "packages/os/scripts/lib/subagent/runtime.ts",
+        "packages/os/tests/computer-use-log.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-subagent-runtime",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable subagent orchestration, provider capabilities, active-run status, idempotency, deadline behavior, and provider stdin termination must prove the focused subagent contracts without selecting the unrelated whole-OS package baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/subagent/computer-use-log.ts",
+            "packages/os/scripts/lib/subagent/runner.ts",
+            "packages/os/scripts/lib/subagent/runtime.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/tests/computer-use-log.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
+          ],
+          "ruleId": "os-subagent-runtime",
+          "critical": true
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-subagent-runtime",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 16161,
+          "outputTail": ".\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":246,\"exitCode\":1,\"traceId\":\"trc_efde8673653b\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:53:34.500Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET]/.grok/bin/grok --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":217,\"exitCode\":0,\"traceId\":\"trc_8f5011c38756\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:53:34.723Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET]/.local/bin/agent --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":271,\"exitCode\":0,\"traceId\":\"trc_c1453be3c1d6\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:53:35.000Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":264,\"exitCode\":0,\"traceId\":\"trc_f02104ef11bf\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:53:35.273Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] -p\",\"durationMs\":26,\"exitCode\":127,\"traceId\":\"trc_c6f498fbfd3a\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:53:35.305Z\"}\n"
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1774,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 48568,
+          "outputTail": "entationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:19.357Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:19.362Z\"}\n(node:63371) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:19.978Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:19.993Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:20.000Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:20.007Z\"}\n(node:64314) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:66267) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:24.946Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:24.969Z\"}\n(node:66485) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"error\",\"tool\":\"browser.login.profile\",\"command\":\"workspace browser.login.profile\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_unknowntoolr\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-18T23:54:25.823Z\"}\n(node:66915) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

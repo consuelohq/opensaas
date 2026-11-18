@@ -2,7 +2,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Readable } from 'node:stream';
-import { createCodexLogWriter } from './computer-use-log.ts';
+import { createProviderLogWriter } from './computer-use-log.ts';
 
 import {
   preserveFirstTerminationOutcome,
@@ -94,8 +94,8 @@ function cancellationRequested(): boolean {
   }
 }
 
-function persistCodexStream(stream: Readable, fd: number, child: ProviderChild): void {
-  const writer = createCodexLogWriter(text => fs.writeFileSync(fd, text));
+function persistProviderStream(stream: Readable, fd: number, child: ProviderChild): void {
+  const writer = createProviderLogWriter(text => fs.writeFileSync(fd, text), undefined, launch.provider === 'grok');
   let failed = false;
   function handle(operation: () => void) {
     if (failed) return;
@@ -120,16 +120,15 @@ try {
   const stdoutFd = fs.openSync(launch.stdoutLogPath, 'a', 0o600);
   const stderrFd = fs.openSync(launch.stderrLogPath, 'a', 0o600);
   try {
-    const codexLogs = launch.provider === 'codex' || (!launch.provider && /^codex(?:\.exe)?$/i.test(path.basename(launch.command[0])));
     provider = spawn(launch.command[0], launch.command.slice(1), {
       cwd: launch.cwd,
       env: process.env,
       detached: process.platform !== 'win32',
-      stdio: codexLogs ? ['pipe', 'pipe', 'pipe'] : ['pipe', stdoutFd, stderrFd],
+      stdio: ['pipe', 'pipe', 'pipe'],
     }) as ProviderChild;
-    if (codexLogs && provider.stdout && provider.stderr) {
-      persistCodexStream(provider.stdout, stdoutFd, provider);
-      persistCodexStream(provider.stderr, stderrFd, provider);
+    if (provider.stdout && provider.stderr) {
+      persistProviderStream(provider.stdout, stdoutFd, provider);
+      persistProviderStream(provider.stderr, stderrFd, provider);
     }
     writeMarker(launch.ownerMarkerPath, {
       runId: launch.runId,

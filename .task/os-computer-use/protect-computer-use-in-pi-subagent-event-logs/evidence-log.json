@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/protect-computer-use-in-pi-subagent-event-logs",
+  "events": [
+    {
+      "id": "f16c50ed-4a0f-4255-b0e9-37cd0883c331",
+      "occurred_at": "2026-11-18T23:53:55.177Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/protect-computer-use-in-pi-subagent-event-logs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/protect-computer-use-in-pi-subagent-event-logs"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-18T23:53:55.519Z"
+}
