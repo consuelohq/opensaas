@@ -191,6 +191,60 @@
       }
     },
     {
+      "name": "computer.use",
+      "kind": "facade-tool",
+      "source": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "category": "computer",
+      "description": "Operate apps by accessibility ref or browse with target:\"browser\". Start with status or snapshot. Browser open defaults to headless Dia when installed. Use headed:true for human interaction. Close before changing modes. Use chromium for sign-in across restarts.",
+      "core": true,
+      "definition": {
+        "name": "computer.use",
+        "methodPath": [
+          "computer",
+          "use"
+        ],
+        "description": "Operate apps by accessibility ref or browse with target:\"browser\". Start with status or snapshot. Browser open defaults to headless Dia when installed. Use headed:true for human interaction. Close before changing modes. Use chromium for sign-in across restarts.",
+        "category": "computer",
+        "underlying": "agent-desktop / agent-browser",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 45000,
+        "inputSchema": "ComputerUseInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "computer use",
+            "desktop",
+            "browser",
+            "Dia"
+          ],
+          "keywords": [
+            "window",
+            "snapshot",
+            "click",
+            "headless",
+            "accessibility"
+          ]
+        },
+        "command": {
+          "script": "computer-use",
+          "internal": "computer.use",
+          "branchMode": "none",
+          "executionScope": "runtime",
+          "arguments": []
+        },
+        "exampleInput": {
+          "action": "status"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "explore",
       "kind": "facade-tool",
       "source": "decision-engine",

@@ -3,6 +3,8 @@ Use built-in web search for discovery. Use OS browser tools for known URLs, rend
 
 Browser output is runtime evidence. Built-in web output is citation evidence.
 
+For background computer use, start with `computer.use`. Use `target: "browser"` for a headless Dia or Chromium session. Use `app` and `action: "snapshot"` for a running native app. The browser tools below cover existing browser evidence workflows and advanced DOM inspection.
+
 Tool surface
 All browser operations must go through the workspace facade:
 

@@ -9,6 +9,7 @@ export const manifestConfig = {
     "includeNames": [
       "batch",
       "code.call",
+      "computer.use",
       "memory",
       "explore",
       "github",
