@@ -2,7 +2,7 @@ import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildComputerCommand, computerEnvironment, executeComputerSteps, runComputerUse } from '../scripts/lib/computer-use';
+import { buildComputerCommand, computerEnvironment, executeComputerSteps, runComputerUse, withBrowserDecision } from '../scripts/lib/computer-use';
 import { ComputerUseInput } from '../scripts/lib/facade/schemas';
 
 const host = { platform: 'darwin', arch: 'arm64', diaInstalled: true, home: '/tmp/consuelo-test' } as const;
@@ -11,6 +11,66 @@ describe('computer.use', () => {
   const result = (data: unknown, exitCode = 0) => ({
     stdout: JSON.stringify(data), stderr: '', exitCode, timedOut: false, cancelled: false,
     runtimeMissing: false, stdoutTruncated: false, stderrTruncated: false,
+  });
+
+  it('binds each browser decision to a named session and requires explicit approval to confirm', () => {
+    const browser = { target: 'browser', browser: 'dia', session: 'example' };
+    const confirmationId = '94f75b78-adca-4108-83f9-c295e489f4a1';
+    for (const action of ['confirm', 'deny']) {
+      const input = { ...browser, action, confirmationId, ...(action === 'confirm' ? { approved: true } : {}) };
+      const decision = buildComputerCommand(ComputerUseInput.parse(input), host);
+      const origin = buildComputerCommand(ComputerUseInput.parse({ ...browser, action: 'click', ref: '@e1' }), host);
+      expect(decision.args.slice(0, 2)).toEqual(origin.args.slice(0, 2));
+      expect(decision.args).toContain(action);
+      expect(decision.args).not.toContain('--profile');
+      expect(decision.profile).toBe(origin.profile);
+    }
+    for (const invalid of [
+      { ...browser, action: 'confirm', confirmationId },
+      { ...browser, action: 'deny' },
+      { action: 'confirm', confirmationId, approved: true },
+      { ...browser, action: 'click', ref: '@e1', approved: true },
+    ]) expect(ComputerUseInput.safeParse(invalid).success).toBe(false);
+  });
+
+  it('consumes a browser decision once and rejects stale or foreign IDs before provider dispatch', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'computer-use-confirm-'));
+    const browser = { target: 'browser', browser: 'chromium', session: 'origin' } as const;
+    let executions = 0;
+    const request = ComputerUseInput.parse({ ...browser, action: 'click', ref: '@e1' });
+    const command = (input: typeof request) => buildComputerCommand(input, { ...host, home });
+    try {
+      const parked = await withBrowserDecision(request, command(request), false, async () => ({
+        ok: false, code: 'APPROVAL_REQUIRED', message: 'pending', data: { confirmation_id: 'native-1', action: 'click' },
+      }));
+      const confirmationId = (parked.data as { confirmation_id: string }).confirmation_id;
+      const blocked = await withBrowserDecision(request, command(request), false, async () => { throw Error('unexpected dispatch'); });
+      expect(blocked).toMatchObject({ code: 'APPROVAL_REQUIRED', data: null });
+      const decide = (session: string, policy = false) => {
+        const input = ComputerUseInput.parse({ ...browser, session, action: 'confirm', confirmationId, approved: true });
+        const decision = command(input);
+        return withBrowserDecision(input, decision, policy, async () => {
+          executions++;
+          expect(decision.args.slice(-2)).toEqual(['confirm', 'native-1']);
+          return { ok: true, code: 'OK', message: 'confirmed', data: {} };
+        });
+      };
+      expect((await decide('another')).code).toBe('INVALID_INPUT');
+      expect((await decide('origin', true)).code).toBe('INVALID_INPUT');
+      expect(executions).toBe(0);
+      expect((await decide('origin')).ok).toBe(true);
+      expect((await decide('origin')).code).toBe('INVALID_INPUT');
+      expect(executions).toBe(1);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('surfaces a failed provider replay as a failed browser decision', async () => {
+    const command = buildComputerCommand({ target: 'browser', action: 'confirm' }, host);
+    const replay = { success: true, data: { confirmed: true, result: { success: false, error: 'Element detached' } } };
+    const outcome = await executeComputerSteps(command, 'confirm', () => 1000, async () => result(replay), op => op());
+    expect(outcome).toMatchObject({ ok: false, code: 'COMMAND_FAILED', message: 'Element detached' });
   });
 
   it.each(['--', '--headed', '', 'two words'])('sends literal browser fill text %j after a delimiter', text => {

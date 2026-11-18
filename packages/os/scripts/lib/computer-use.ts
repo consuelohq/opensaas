@@ -113,11 +113,14 @@ export function buildComputerCommand(input: Input, host: Host): Command {
   const args = ['--session', 'consuelo-cu-' + sessionId, '--config', browserConfig, '--json'];
   let stdin: string | undefined;
   const needsSystemChromium = host.platform === 'linux' && host.arch === 'arm64';
-  if (needsSystemChromium && !host.systemChromium && input.action !== 'close') {
+  if (input.action === 'status') return { command: 'agent-browser', args: ['--version'], browser };
+  if (input.action === 'confirm' || input.action === 'deny') {
+    return { command: 'agent-browser', args: [...args, input.action], browser, profile };
+  }
+  if (input.action === 'close') return { command: 'agent-browser', args: [...args, 'close'], browser, profile };
+  if (needsSystemChromium && !host.systemChromium) {
     throw new BrowserUnavailableError('Install distribution Chromium on this Linux ARM64 node (chromium or chromium-browser) and retry.');
   }
-  if (input.action === 'status') return { command: 'agent-browser', args: ['--version'], browser };
-  if (input.action === 'close') return { command: 'agent-browser', args: [...args, 'close'], browser, profile };
   args.push('--profile', profilePath, '--headed', String(input.headed ?? false));
   if (browser === 'dia') args.push('--executable-path', launcher);
   if (needsSystemChromium && host.systemChromium) args.push('--executable-path', host.systemChromium);
@@ -164,6 +167,10 @@ function readResult(command: Command, result: ProviderProcessResult, action: Inp
     const batch = Array.isArray(raw);
     output = batch ? raw[0] : raw;
     data = batch ? output?.result : output?.data;
+    if (action === 'confirm' && output?.success && data?.confirmed) {
+      output = data.result;
+      data = output?.data;
+    }
   } catch {
     return failure('COMMAND_FAILED', result.stderr.trim() || 'Computer use returned no JSON result');
   }
@@ -244,10 +251,64 @@ export async function executeComputerSteps(
   }
 }
 
+type BrowserDecision = { id: string; providerId: string; action: string };
+
+function pendingOutcome(pending: BrowserDecision): Outcome {
+  return failure('APPROVAL_REQUIRED', 'Ask the operator about the pending browser action. Use confirm or deny with this ID in the same session.', {
+    confirmation_required: true, confirmation_id: pending.id, action: pending.action,
+  });
+}
+
+// Agent Browser 0.43.0 replays the session's latest parked action regardless of the ID it receives.
+// Under the profile lock, bind a one-time OS decision to that action before dispatching any replay.
+export async function withBrowserDecision(
+  input: Input, command: Command, hasDomainPolicy: boolean, dispatch: () => Promise<Outcome>,
+): Promise<Outcome> {
+  if (!command.profile) return dispatch();
+  const file = join(command.profile, 'consuelo-browser-confirmation');
+  const decision = input.action === 'confirm' || input.action === 'deny';
+  let pending: BrowserDecision | undefined;
+  if (input.action !== 'close' && existsSync(file)) {
+    try {
+      const stored = JSON.parse(readFileSync(file, 'utf8'));
+      if (typeof stored?.id !== 'string' || typeof stored.providerId !== 'string' || typeof stored.action !== 'string') {
+        throw new Error('Invalid pending decision');
+      }
+      pending = stored;
+    } catch {
+      return failure('COMMAND_FAILED', 'Cannot read the pending browser decision. Close the session to clear it.');
+    }
+  }
+  if (decision) {
+    if (!pending || pending.id !== input.confirmationId || (input.action === 'confirm' && input.approved !== true)) {
+      return failure('INVALID_INPUT', 'This decision does not match a pending action in this browser session.');
+    }
+    if (input.action === 'confirm' && hasDomainPolicy && pending.action !== 'close') {
+      return failure('INVALID_INPUT', 'The allowed-domains policy is incompatible with this pending action.');
+    }
+    command.args.push(pending.providerId);
+  } else if (pending) {
+    return failure('APPROVAL_REQUIRED', 'A previous operation awaits a decision. Use its original confirmation ID or close this session. The new operation has not run.');
+  }
+  if (decision || input.action === 'close') rmSync(file, { force: true });
+  const outcome = await dispatch();
+  const data = outcome.data as { confirmation_id?: unknown; action?: unknown } | null;
+  if (outcome.code === 'APPROVAL_REQUIRED' && typeof data?.confirmation_id === 'string' && typeof data.action === 'string') {
+    const next = { id: randomUUID(), providerId: data.confirmation_id, action: data.action };
+    mkdirSync(command.profile, { recursive: true, mode: 0o700 });
+    writeFileSync(file, JSON.stringify(next), { mode: 0o600 });
+    return pendingOutcome(next);
+  }
+  if (outcome.ok && (input.action === 'close' || (input.action === 'confirm' && pending?.action === 'close'))) {
+    rmSync(join(command.profile, 'consuelo-browser-mode'), { force: true });
+  }
+  return outcome;
+}
+
 export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<Outcome> {
   const childEnv = computerEnvironment(env);
   if (input.target === 'browser' && childEnv.AGENT_BROWSER_ALLOWED_DOMAINS
-    && input.action !== 'status' && input.action !== 'close') {
+    && !['status', 'close', 'confirm', 'deny'].includes(input.action)) {
     return failure('INVALID_INPUT', 'The allowed-domains policy requires a fresh context and is incompatible with persistent profiles used by computer.use.');
   }
   const deadline = performance.now() + timeoutMs;
@@ -272,26 +333,26 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
     const profile = command.profile;
     const modeFile = profile && join(profile, 'consuelo-browser-mode');
     try {
-      if (profile && modeFile && input.action !== 'close') {
-        mkdirSync(profile, { recursive: true, mode: 0o700 });
-        const mode = input.headed ? 'headed' : 'headless';
-        if (existsSync(modeFile) && readFileSync(modeFile, 'utf8') !== mode) {
-          return failure('INVALID_INPUT', 'Close this browser session before switching headed mode. Its profile is retained.');
+      return await withBrowserDecision(input, command, Boolean(childEnv.AGENT_BROWSER_ALLOWED_DOMAINS), async () => {
+        if (profile && modeFile && !['close', 'confirm', 'deny'].includes(input.action)) {
+          mkdirSync(profile, { recursive: true, mode: 0o700 });
+          const mode = input.headed ? 'headed' : 'headless';
+          if (existsSync(modeFile) && readFileSync(modeFile, 'utf8') !== mode) {
+            return failure('INVALID_INPUT', 'Close this browser session before switching headed mode. Its profile is retained.');
+          }
+          writeFileSync(modeFile, mode, { mode: 0o600 });
         }
-        writeFileSync(modeFile, mode, { mode: 0o600 });
-      }
-      if (command.screenshot) mkdirSync(dirname(command.screenshot), { recursive: true, mode: 0o700 });
-      const provider = createNodeProviderProcess({ maxOutputBytes: 1024 * 1024 });
-      const request = { command: providerExecutable(command.command, childEnv), cwd: dirname(browserConfig), env: childEnv };
-      const outcome = await executeComputerSteps(command, input.action, remainingMs,
-        (args, left, stdin) => Effect.runPromise(provider.run({ ...request, args, stdin, timeoutMs: left })),
-        operation => withNodeResourceLock({
-          lockPath: nodeResourceLockPath(join(host.home, 'node', 'computer-use', 'chromium-install')),
-          operationId: 'computer.use:install', waitTimeoutMs: remainingMs(),
-        }, operation),
-      );
-      if (outcome.ok && input.action === 'close' && modeFile) rmSync(modeFile, { force: true });
-      return outcome;
+        if (command.screenshot) mkdirSync(dirname(command.screenshot), { recursive: true, mode: 0o700 });
+        const provider = createNodeProviderProcess({ maxOutputBytes: 1024 * 1024 });
+        const request = { command: providerExecutable(command.command, childEnv), cwd: dirname(browserConfig), env: childEnv };
+        return executeComputerSteps(command, input.action, remainingMs,
+          (args, left, stdin) => Effect.runPromise(provider.run({ ...request, args, stdin, timeoutMs: left })),
+          operation => withNodeResourceLock({
+            lockPath: nodeResourceLockPath(join(host.home, 'node', 'computer-use', 'chromium-install')),
+            operationId: 'computer.use:install', waitTimeoutMs: remainingMs(),
+          }, operation),
+        );
+      });
     } catch (error: unknown) {
       if (error instanceof Error && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
         return failure('CLI_MISSING', 'Reinstall the OS runtime with optional dependencies enabled on this node.');

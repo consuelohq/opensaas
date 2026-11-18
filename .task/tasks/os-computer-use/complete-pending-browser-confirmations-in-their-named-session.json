@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/complete-pending-browser-confirmations-in-their-named-session",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2821,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2821",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-complete-pending-browser-confirmations-in-their-named-session",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_34f7e42f0905",
+  "tmuxSession": "opensaas-os-computer-use-complete-pending-browser-confirmations-in-their--34f7e42f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-complete-pending-browser-confirmations-in-their-named-session/.task/session.json",
+  "createdAt": "2026-11-18T23:38:32.833Z"
+}
