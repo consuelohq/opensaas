@@ -175,6 +175,7 @@ function buildSteeringSnapshot(input: SteeringSnapshotInput): SteeringSnapshotCa
     'Call tools through os.call. Use tools.search with an exact tool name to retrieve its current input signature before an unfamiliar call; use tools.search to discover additional tools by domain.',
     '',
     coreNames.join(', '),
+    ...(coreNames.includes('computer.use') ? ['Use computer.use for background app actions or headless browsing. Set headed:true for visible interaction.'] : []),
   );
 
   return {

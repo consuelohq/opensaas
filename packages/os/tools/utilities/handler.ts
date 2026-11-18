@@ -1,6 +1,9 @@
 import type { ToolHandlerContribution } from '../package';
 
+import { computerUseHandler } from './computer-use';
+
 export const toolHandlers = [
+  computerUseHandler,
   {
     "name": "browser",
     "command": {
