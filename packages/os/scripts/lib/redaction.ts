@@ -41,15 +41,24 @@ function traceRecord(value: unknown): Record<string, unknown> | undefined {
   return isPlainObject(value) ? value as Record<string, unknown> : undefined;
 }
 
+// These bundled script names are also public executor aliases. Keep this check independent of
+// the active node manifest so it can redact rejected calls and historical provider events.
+function privateCompositionName(tool: unknown): unknown {
+  if (tool === 'computer-use') return 'computer.use';
+  if (tool === 'code-run') return 'code.run';
+  return tool;
+}
+
 /** Follow trusted facade composition metadata, including rejected and legacy batches. */
 export function hasPrivateComputerUse(tool: string, input: unknown, result?: unknown, depth = 0): boolean {
-  if (tool === 'computer.use' || depth > 64) return true;
-  if (tool !== 'code.run' && tool !== 'batch') return false;
+  const name = privateCompositionName(tool);
+  if (name === 'computer.use' || depth > 64) return true;
+  if (name !== 'code.run' && name !== 'batch') return false;
   const data = traceRecord(traceRecord(result)?.data);
-  if (tool === 'code.run') {
+  if (name === 'code.run') {
     if (data?.privateComputerUse === true || !Array.isArray(data?.operations)) return true;
     return data.operations.some(item => {
-      const operation = traceRecord(item)?.tool;
+      const operation = privateCompositionName(traceRecord(item)?.tool);
       return operation === 'computer.use' || (operation === 'batch' && data.privateComputerUse !== false);
     });
   }

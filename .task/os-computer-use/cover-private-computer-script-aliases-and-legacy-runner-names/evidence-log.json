@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/cover-private-computer-script-aliases-and-legacy-runner-names",
+  "events": [
+    {
+      "id": "39cb67e9-72ba-4663-849c-32bd2ddeaa0b",
+      "occurred_at": "2026-11-18T23:47:29.145Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/cover-private-computer-script-aliases-and-legacy-runner-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/cover-private-computer-script-aliases-and-legacy-runner-names"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-18T23:47:29.354Z"
+}

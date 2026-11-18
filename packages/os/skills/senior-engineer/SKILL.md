@@ -22,7 +22,7 @@ A good worker agent is not just fast. A good worker agent leaves behind a worksp
 
 # Tooling principles
 
-Use `computer.use` for native app or browser UI work. Snapshot a named app and act on its refs. For web testing, use `target: "browser"` and open a URL. Dia is the default on Macs with Dia installed. Each named browser session has a persistent OS-owned profile. On a fresh Chromium node, the first open provisions the browser. Use `timeout: 300000` for a slow download. For sign-ins that must survive a restart, select `browser: "chromium"`, sign in headed, close, and reopen the same session headless. Dia supports background browsing; its web sign-in can be lost on restart. Repeat the browser and session on each call, including `headed: true` throughout a headed session. Use a dedicated session name for parallel work.
+Use `computer.use` for native app or browser UI work. Snapshot a named app and act on its refs. For web testing, use `target: "browser"` and open a URL. Dia is the default on Macs with Dia installed. Each named browser session has a persistent OS-owned profile. On Linux ARM64, install distribution Chromium first. On other platforms, the first Chromium open provisions a missing browser. Use `timeout: 300000` for a slow download. For sign-ins that must survive a restart, select `browser: "chromium"`, sign in headed, close, and reopen the same session headless. Dia supports background browsing; its web sign-in can be lost on restart. Repeat the browser and session on each call, including `headed: true` throughout a headed session. Use a dedicated session name for parallel work.
 
 Use the workspace tool surface as the source of truth.
 
