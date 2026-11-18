@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +14,7 @@ import type { ComputerUseInput } from './facade/schemas';
 import type { ErrorCode } from './facade/types';
 
 type Input = z.infer<typeof ComputerUseInput>;
-type Host = { home: string; platform: NodeJS.Platform; diaInstalled: boolean };
+type Host = { home: string; platform: NodeJS.Platform; arch: string; diaInstalled: boolean; systemChromium?: string };
 type Command = {
   command: string;
   args: string[];
@@ -23,6 +23,7 @@ type Command = {
   profile?: string;
   browser?: 'dia' | 'chromium';
   screenshot?: string;
+  allowChromiumInstall?: boolean;
 };
 type Outcome = { ok: boolean; code: ErrorCode; message: string; data: unknown };
 
@@ -43,6 +44,20 @@ function providerExecutable(command: string, env: NodeJS.ProcessEnv): string {
   if (!target) throw new Error('Agent Desktop does not support this platform');
   if (process.platform === 'darwin') env.AGENT_DESKTOP_MACOS_HELPER_PATH = join(root, 'bin', 'agent-desktop-macos-helper-darwin-' + process.arch);
   return join(root, 'bin', target.binaryName);
+}
+
+class BrowserUnavailableError extends Error {}
+
+function linuxArm64Chromium(): string | undefined {
+  // Chrome for Testing does not publish Linux ARM64 builds.
+  return ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/snap/bin/chromium', '/usr/lib/chromium/chromium'].find(path => {
+    try {
+      accessSync(path, constants.X_OK);
+      return statSync(path).isFile();
+    } catch {
+      return false;
+    }
+  });
 }
 
 const diaExecutable = '/Applications/Dia.app/Contents/MacOS/Dia';
@@ -97,9 +112,14 @@ export function buildComputerCommand(input: Input, host: Host): Command {
   const sessionId = createHash('sha256').update(profile).digest('hex').slice(0, 20);
   const args = ['--session', 'consuelo-cu-' + sessionId, '--config', browserConfig, '--json'];
   let stdin: string | undefined;
+  const needsSystemChromium = host.platform === 'linux' && host.arch === 'arm64';
+  if (needsSystemChromium && !host.systemChromium && input.action !== 'close') {
+    throw new BrowserUnavailableError('Install distribution Chromium on this Linux ARM64 node (chromium or chromium-browser) and retry.');
+  }
   if (input.action === 'status') return { command: 'agent-browser', args: ['--version'], browser };
   args.push('--profile', profilePath, '--headed', String(input.headed ?? false));
   if (browser === 'dia') args.push('--executable-path', launcher);
+  if (needsSystemChromium && host.systemChromium) args.push('--executable-path', host.systemChromium);
   // Dia can open a page without a layout viewport, even in a headed process.
   const setupArgs = browser === 'dia' && input.action === 'open'
     ? [...args, 'set', 'viewport', '1280', '800'] : undefined;
@@ -108,8 +128,8 @@ export function buildComputerCommand(input: Input, host: Host): Command {
     case 'snapshot': args.push('snapshot', '-i', '-c'); break;
     case 'click': args.push('click', element(input, browserRef)); break;
     case 'fill':
-      args.push('batch', '--bail');
-      stdin = JSON.stringify([['fill', element(input, browserRef), required(input.text, 'text')]]);
+      args.push('batch', '--bail', '--omit-command');
+      stdin = JSON.stringify([['fill', element(input, browserRef), '--', required(input.text, 'text')]]);
       break;
     case 'press': args.push('press', required(input.key, 'key')); break;
     case 'scroll': args.push('scroll', input.direction ?? 'down'); break;
@@ -117,7 +137,7 @@ export function buildComputerCommand(input: Input, host: Host): Command {
     case 'close': args.push('close'); break;
     default: throw new Error(input.action + ' requires target:"desktop"');
   }
-  return { command: 'agent-browser', args, setupArgs, stdin, browser, profile, screenshot };
+  return { command: 'agent-browser', args, setupArgs, stdin, browser, profile, screenshot, allowChromiumInstall: browser === 'chromium' && !needsSystemChromium };
 }
 
 function failure(code: ErrorCode, message: string, data: unknown = null): Outcome {
@@ -134,9 +154,12 @@ function readResult(command: Command, result: ProviderProcessResult, action: Inp
     return { ok: true, code: 'OK', message: 'Browser runtime available', data: { browser: command.browser, version: result.stdout } };
   }
   let output;
+  let data;
   try {
-    output = JSON.parse(result.stdout);
-    if (Array.isArray(output)) output = output[0];
+    const raw = JSON.parse(result.stdout);
+    const batch = Array.isArray(raw);
+    output = batch ? raw[0] : raw;
+    data = batch ? output?.result : output?.data;
   } catch {
     return failure('COMMAND_FAILED', result.stderr.trim() || 'Computer use returned no JSON result');
   }
@@ -144,7 +167,10 @@ function readResult(command: Command, result: ProviderProcessResult, action: Inp
     const error = output?.error;
     return failure('COMMAND_FAILED', typeof error === 'string' ? error : error?.message ?? 'Computer use failed', error ?? null);
   }
-  return { ok: true, code: 'OK', message: 'Computer use completed', data: output.data ?? null };
+  if (command.browser && data?.confirmation_required === true) {
+    return failure('APPROVAL_REQUIRED', 'The browser policy requires approval before this action can run.', data);
+  }
+  return { ok: true, code: 'OK', message: 'Computer use completed', data: data ?? null };
 }
 
 const browserPolicyVariables = new Set([
@@ -190,7 +216,7 @@ export async function executeComputerSteps(
     }
     const outcome = await execute(command.args, command.stdin);
     // The pinned CLI emits this diagnostic before it can launch a browser or navigate.
-    if (command.browser === 'chromium' && action === 'open' && outcome.code === 'COMMAND_FAILED'
+    if (command.allowChromiumInstall && action === 'open' && outcome.code === 'COMMAND_FAILED'
       && /^(?:Auto-launch failed: )?Chrome not found\. Checked:/.test(outcome.message)) {
       const installed = await withInstallLock(() => execute(['install']));
       if (!installed.ok) return installed;
@@ -208,11 +234,17 @@ export async function executeComputerSteps(
 export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<Outcome> {
   const deadline = performance.now() + timeoutMs;
   const remainingMs = () => Math.max(0, Math.ceil(deadline - performance.now()));
-  const host = { home: resolveOsHome(env.CONSUELO_HOME ?? env.CONSUELO_OS_HOME), platform: process.platform, diaInstalled: existsSync(diaExecutable) };
+  const host: Host = {
+    home: resolveOsHome(env.CONSUELO_HOME ?? env.CONSUELO_OS_HOME), platform: process.platform, arch: process.arch,
+    diaInstalled: existsSync(diaExecutable),
+    systemChromium: input.target === 'browser' && process.platform === 'linux' && process.arch === 'arm64'
+      ? linuxArm64Chromium() : undefined,
+  };
   let command: Command;
   try {
     command = buildComputerCommand(input, host);
   } catch (error: unknown) {
+    if (error instanceof BrowserUnavailableError) return failure('CLI_MISSING', error.message);
     return failure('VALIDATION_ERROR', error instanceof Error ? error.message : 'Invalid computer use input');
   }
   const childEnv = computerEnvironment(env);

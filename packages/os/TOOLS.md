@@ -3071,7 +3071,7 @@ inspect task or working-tree diffs as bounded structured JSON for agents
 | Field | Value |
 | --- | --- |
 | Category | git |
-| Signature | `workspace.git.diff({ branch?: string; base?: string; head?: string; task?: boolean; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.git.diff({ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace git:diff` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
@@ -7523,7 +7523,7 @@ show recent stream context
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace stream.context` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
@@ -7699,7 +7699,7 @@ sync a stream branch with main
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.sync({ area: string; stream?: string; repo?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.stream.sync({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace stream.sync` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
