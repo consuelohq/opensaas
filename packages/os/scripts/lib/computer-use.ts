@@ -180,7 +180,7 @@ function readResult(command: Command, result: ProviderProcessResult, action: Inp
 const browserPolicyVariables = new Set([
   'AGENT_BROWSER_ACTION_POLICY', 'AGENT_BROWSER_ALLOWED_DOMAINS',
   'AGENT_BROWSER_CONFIRM_ACTIONS',
-  'AGENT_BROWSER_CONTENT_BOUNDARIES', 'AGENT_BROWSER_NO_AUTO_DIALOG',
+  'AGENT_BROWSER_CONTENT_BOUNDARIES', 'AGENT_BROWSER_MAX_OUTPUT', 'AGENT_BROWSER_NO_AUTO_DIALOG',
 ]);
 
 export function computerEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {

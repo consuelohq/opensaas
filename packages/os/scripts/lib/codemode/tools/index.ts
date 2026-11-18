@@ -1,3 +1,4 @@
+import { hasPrivateComputerUse } from '../../redaction';
 import { executeTool, manifestEntries } from '../../facade/executor';
 import type { ToolInput, ToolManifestEntry, ToolResult } from '../../facade/types';
 import type { ToolFunction, ToolNamespace, ToolRegistry } from '../types';
@@ -5,7 +6,7 @@ import type { ToolFunction, ToolNamespace, ToolRegistry } from '../types';
 export type CodeRunMode = 'read' | 'edit' | 'verify';
 export type CodeRunOperation = { tool: string; helper: string; ok: boolean; code: string; message: string; traceId: string; durationMs: number; inputTokens: number; outputTokens: number; totalTokens: number; detail?: string; changed?: boolean };
 export type BlockedCodeRunTool = { tool: string; helper: string; reason: string; nextStep: string };
-export type CodeRunRegistryState = { operations: CodeRunOperation[]; blockedTools: BlockedCodeRunTool[]; changedFiles: Set<string> };
+export type CodeRunRegistryState = { privateComputerUse?: boolean; operations: CodeRunOperation[]; blockedTools: BlockedCodeRunTool[]; changedFiles: Set<string> };
 
 type BuildToolRegistryOptions = { taskSession?: string; mode?: CodeRunMode; state?: CodeRunRegistryState };
 
@@ -118,6 +119,8 @@ async function runWorkspaceTool(
   try {
     if (entry.name === 'code.run') return blockedResult(entry.name, helper, state);
     const toolInput = withTaskSession(asToolInput(rawInput), options.taskSession);
+    // Mark before dispatch so failed or timed-out compositions retain the boundary.
+    if (hasPrivateComputerUse(entry.name, toolInput)) state.privateComputerUse = true;
     const result = await executeTool(entry.name, toolInput, { logMode: 'errors' });
     state.operations.push({
       tool: entry.name,

@@ -144,6 +144,7 @@ describe('computer.use', () => {
     const env = computerEnvironment({
       AGENT_BROWSER_ALLOWED_DOMAINS: 'example.com',
       AGENT_BROWSER_ACTION_POLICY: '/policies/browser.json',
+      AGENT_BROWSER_MAX_OUTPUT: '2048',
       AGENT_BROWSER_CONFIRM_INTERACTIVE: 'true',
       AGENT_BROWSER_CONFIRM_ACTIONS: 'click,fill',
       AGENT_BROWSER_AUTO_CONNECT: 'true',
@@ -151,6 +152,7 @@ describe('computer.use', () => {
       PATH: '/bin',
     });
     expect(env).toEqual({
+      AGENT_BROWSER_MAX_OUTPUT: '2048',
       AGENT_BROWSER_CONFIRM_ACTIONS: 'click,fill',
       AGENT_BROWSER_ALLOWED_DOMAINS: 'example.com',
       AGENT_BROWSER_ACTION_POLICY: '/policies/browser.json',
