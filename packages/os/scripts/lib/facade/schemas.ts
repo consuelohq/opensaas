@@ -734,7 +734,9 @@ export const ComputerUseInput = z.object({
   ...dryRunField,
   target: z.enum(['desktop', 'browser']).optional(),
   timeout: z.number().int().min(1).max(600_000).optional(),
-  action: z.enum(['status', 'apps', 'windows', 'launch', 'open', 'snapshot', 'screenshot', 'click', 'fill', 'press', 'scroll', 'close']),
+  action: z.enum(['status', 'apps', 'windows', 'launch', 'open', 'snapshot', 'screenshot', 'click', 'fill', 'press', 'scroll', 'close', 'confirm', 'deny']),
+  confirmationId: z.uuid().optional(),
+  approved: z.literal(true).optional(),
   app: z.string().trim().min(1).max(200).regex(/^[^\s-][^\x00-\x1f/\\]*$/).optional(),
   windowId: z.string().regex(/^[\w.-]{1,80}$/).refine(value => !value.startsWith('-')).optional(),
   surface: z.enum(['window', 'menubar', 'menu', 'sheet', 'alert', 'focused']).optional(),
@@ -748,11 +750,15 @@ export const ComputerUseInput = z.object({
   direction: z.enum(['up', 'down', 'left', 'right']).optional(),
 }).superRefine((input, ctx) => {
   const browser = input.target === 'browser';
+  const decision = input.action === 'confirm' || input.action === 'deny';
+  if (decision && (!browser || !input.confirmationId || (input.action === 'confirm' && !input.approved))) {
+    ctx.addIssue({ code: 'custom', message: 'Browser decisions need the pending confirmationId. Confirm only with explicit operator approval (approved:true).' });
+  }
   const allows: Record<string, boolean> = {
     app: !browser && ['windows', 'launch', 'snapshot', 'screenshot', 'press'].includes(input.action),
     windowId: !browser && ['snapshot', 'screenshot', 'press'].includes(input.action),
     surface: !browser && input.action === 'snapshot',
-    browser, session: browser,
+    browser, session: browser, confirmationId: browser && decision, approved: browser && input.action === 'confirm',
     url: browser && input.action === 'open',
     ref: ['click', 'fill'].includes(input.action) || (!browser && input.action === 'scroll'),
     text: input.action === 'fill', key: input.action === 'press', direction: input.action === 'scroll',
@@ -1707,7 +1713,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ComputerUseInput: '{ action: "status" | "apps" | "windows" | "launch" | "open" | "snapshot" | "screenshot" | "click" | "fill" | "press" | "scroll" | "close"; target?: "desktop" | "browser"; timeout?: number; app?: string; windowId?: string; surface?: "window" | "menubar" | "menu" | "sheet" | "alert" | "focused"; browser?: "dia" | "chromium"; session?: string; headed?: boolean; url?: string; ref?: string; text?: string; key?: string; direction?: "up" | "down" | "left" | "right"; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ComputerUseInput: '{ action: "status" | "apps" | "windows" | "launch" | "open" | "snapshot" | "screenshot" | "click" | "fill" | "press" | "scroll" | "close" | "confirm" | "deny"; confirmationId?: string; approved?: true; target?: "desktop" | "browser"; timeout?: number; app?: string; windowId?: string; surface?: "window" | "menubar" | "menu" | "sheet" | "alert" | "focused"; browser?: "dia" | "chromium"; session?: string; headed?: boolean; url?: string; ref?: string; text?: string; key?: string; direction?: "up" | "down" | "left" | "right"; requestId?: string; taskSession?: string; dryRun?: boolean }',
   GoogleInput: '{ action: "status" | "connect" | "run"; args?: string[]; account?: string; mode?: "read" | "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; requestId?: string; taskSession?: string }',
   GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
