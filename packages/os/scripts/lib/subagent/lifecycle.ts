@@ -227,6 +227,7 @@ export function startDurableSubagentRun(
     writeJsonFile(path.join(runDir, 'launch.json'), {
       runId,
       ownerToken,
+      provider: input.provider,
       command: input.command,
       cwd: input.cwd,
       stdinPath: path.join(runDir, 'stdin.txt'),

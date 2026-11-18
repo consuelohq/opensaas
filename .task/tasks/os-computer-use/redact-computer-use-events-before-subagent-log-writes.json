@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/redact-computer-use-events-before-subagent-log-writes",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2819,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2819",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-redact-computer-use-events-before-subagent-log-writes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_96065a9cf4e1",
+  "tmuxSession": "opensaas-os-computer-use-redact-computer-use-events-before-subagent-log-w-96065a9c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-redact-computer-use-events-before-subagent-log-writes/.task/session.json",
+  "createdAt": "2026-11-18T23:20:42.281Z"
+}
