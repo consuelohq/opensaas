@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/protect-computer-use-in-pi-subagent-event-logs",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2823,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2823",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-protect-computer-use-in-pi-subagent-event-logs",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b26da0a47f1c",
+  "tmuxSession": "opensaas-os-computer-use-protect-computer-use-in-pi-subagent-event-logs-b26da0a4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-protect-computer-use-in-pi-subagent-event-logs/.task/session.json",
+  "createdAt": "2026-11-18T23:49:35.904Z"
+}

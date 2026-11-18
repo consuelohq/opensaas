@@ -19,7 +19,7 @@ import {
   type DurableSubagentRun,
 } from './lifecycle';
 import { hasPrivateComputerUse } from '../redaction';
-import { redactCodexLog } from './computer-use-log';
+import { redactProviderLog } from './computer-use-log';
 import {
   recordSubagentTraceEventsSafely,
   type SubagentTraceEvent,
@@ -1567,8 +1567,8 @@ function compactSubagentOutput(input: {
   taskSession?: string;
   branch?: string;
 }): Pick<SubagentData, 'stdout' | 'stderr' | 'finalMessage' | 'summary' | 'rawLogPath' | 'stdoutLogPath' | 'stderrLogPath' | 'stdoutChars' | 'stderrChars' | 'usage'> {
-  const stdout = input.provider === 'codex' ? redactCodexLog(input.stdout) : input.stdout;
-  const stderr = input.provider === 'codex' ? redactCodexLog(input.stderr) : input.stderr;
+  const stdout = redactProviderLog(input.stdout);
+  const stderr = redactProviderLog(input.stderr);
   const parsed = parseSubagentOutput(input.provider, stdout);
   const logs = persistSubagentLogs({ ...input, stdout, stderr });
   const finalMessage = parsed.finalMessage?.trim();
