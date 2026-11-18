@@ -83,6 +83,10 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/computer-browser.json": {
+      "status": "os-only-intentional",
+      "reason": "Computer use launches isolated browsers with a dedicated configuration on OS nodes."
+    },
     "scripts/confidence-score.js": {
       "status": "changed-needs-review",
       "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
@@ -769,6 +773,10 @@
     "scripts/lib/managed-components.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned deterministic provenance, update planning, merge classification, and bounded component resolution engine has no workspace counterpart."
+    },
+    "scripts/lib/computer-use.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS owns the computer.use runtime, native provider resolution and browser profile lifecycle."
     },
     "scripts/lib/managed-gog.ts": {
       "status": "os-only-intentional",

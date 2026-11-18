@@ -1,6 +1,9 @@
 import type { ToolSchemaContribution } from '../package';
 
+import { computerUseSchema } from './computer-use';
+
 export const toolSchemas = [
+  computerUseSchema,
   {
     "name": "browser",
     "order": [

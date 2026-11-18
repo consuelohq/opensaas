@@ -21,6 +21,8 @@ import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToo
 import { logToolExecution } from './logger';
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
+import { runComputerUse } from '../computer-use';
+import { ComputerUseInput } from './schemas';
 import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
 import { readEffectiveBundledFullManifest, readEffectiveFullManifest } from '../manifest';
@@ -1098,6 +1100,18 @@ async function executeInternalTool<TData>(
       input: context.rawInput,
       resolvedInput: input,
       env: context.env,
+    });
+    return result as ToolResult<TData>;
+  }
+
+  if (internal === 'computer.use') {
+    const outcome = await runComputerUse(ComputerUseInput.parse(input), context.env, getTimeoutMs(entry, input, context.options));
+    const result = createToolResult({
+      ...outcome, durationMs: elapsedMs(context.startedAt, context.options.now),
+      traceId: context.traceId, requestId: context.requestId, now: context.options.now,
+    });
+    logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode, {
+      input: context.rawInput, resolvedInput: input, env: context.env,
     });
     return result as ToolResult<TData>;
   }
