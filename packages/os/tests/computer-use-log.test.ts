@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +30,7 @@ describe('Codex computer-use logs', () => {
     expect(JSON.parse(out.split('\n')[1]).item.arguments.tool).toBe('batch');
   });
 
-  it('persists sanitized stdout and stderr from a real durable runner', () => {
+  it.each([true, false])('sanitizes durable logs with explicit provider metadata=%s', explicitProvider => {
     const dir = mkdtempSync(join(tmpdir(), 'cu-provider-log-'));
     try {
       const stdoutLogPath = join(dir, 'stdout.log');
@@ -41,10 +41,12 @@ describe('Codex computer-use logs', () => {
       writeFileSync(stdinPath, '');
       const print = "const line=process.env.CU_FIXTURE_EVENT;process.stdout.write(line.slice(0,40));"
         + "setTimeout(()=>{process.stdout.write(line.slice(40)+'\\n'+process.env.CU_FIXTURE_FINAL+'\\n');process.stderr.write(line+'\\n')},20)";
+      const executable = explicitProvider ? process.execPath : join(dir, 'codex.exe');
+      if (!explicitProvider) copyFileSync(process.execPath, executable);
       writeFileSync(join(dir, 'launch.json'), JSON.stringify({
-        runId: 'fixture', ownerToken: 'fixture', provider: 'codex', cwd: dir, stdinPath, stdoutLogPath, stderrLogPath,
+        runId: 'fixture', ownerToken: 'fixture', provider: explicitProvider ? 'codex' : undefined, cwd: dir, stdinPath, stdoutLogPath, stderrLogPath,
         ownerMarkerPath: join(dir, 'owner.json'), exitMarkerPath: join(dir, 'exit.json'),
-        deadlineAt: Date.now() + 10_000, timeoutMs: 10_000, command: [process.execPath, '-e', print],
+        deadlineAt: Date.now() + 10_000, timeoutMs: 10_000, command: [executable, '-e', print],
       }));
       const runner = fileURLToPath(new URL('../scripts/lib/subagent/runner.ts', import.meta.url));
       const child = spawnSync('bun', [runner, dir], {

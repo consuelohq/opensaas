@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/cover-private-computer-script-aliases-and-legacy-runner-names",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2822,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2822",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-cover-private-computer-script-aliases-and-legacy-runner-names",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c32ba08494c0",
+  "tmuxSession": "opensaas-os-computer-use-cover-private-computer-script-aliases-and-legacy-c32ba084",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-cover-private-computer-script-aliases-and-legacy-runner-names/.task/session.json",
+  "createdAt": "2026-11-18T23:44:48.031Z"
+}

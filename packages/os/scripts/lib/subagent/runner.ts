@@ -120,7 +120,7 @@ try {
   const stdoutFd = fs.openSync(launch.stdoutLogPath, 'a', 0o600);
   const stderrFd = fs.openSync(launch.stderrLogPath, 'a', 0o600);
   try {
-    const codexLogs = launch.provider === 'codex' || (!launch.provider && /^codex(?:\\.exe)?$/i.test(path.basename(launch.command[0])));
+    const codexLogs = launch.provider === 'codex' || (!launch.provider && /^codex(?:\.exe)?$/i.test(path.basename(launch.command[0])));
     provider = spawn(launch.command[0], launch.command.slice(1), {
       cwd: launch.cwd,
       env: process.env,

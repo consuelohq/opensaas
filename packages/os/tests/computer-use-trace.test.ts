@@ -43,6 +43,9 @@ describe('computer use trace privacy', () => {
 
   it.each([
     { tool: 'computer.use', input: { action: 'fill', text: 'private sample' } },
+    { tool: 'computer-use', input: { action: 'fill', text: 'private sample' } },
+    { tool: 'batch', input: { steps: [{ tool: 'batch', input: { steps: [{ tool: 'computer-use', args: { text: 'private sample' } }] } }] } },
+    { tool: 'batch', input: { steps: [{ tool: 'code-run', input: { code: 'private sample' } }] } },
     { tool: 'batch', input: { steps: [{ tool: 'batch', input: {}, args: { steps: [{ tool: 'computer.use', args: { text: 'private sample' } }] } }] } },
     { tool: 'batch', input: { steps: [{ tool: 'batch', args: { steps: [{ tool: 'computer.use' }] } }] } },
   ])('retains execution metadata without recording private UI content for $tool', ({ tool, input }) => {
