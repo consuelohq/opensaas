@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/honor-empty-browser-domain-policy-configuration",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2820,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2820",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-honor-empty-browser-domain-policy-configuration",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8694607fe5b5",
+  "tmuxSession": "opensaas-os-computer-use-honor-empty-browser-domain-policy-configuration-8694607f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-honor-empty-browser-domain-policy-configuration/.task/session.json",
+  "createdAt": "2026-11-18T23:30:14.321Z"
+}
