@@ -114,13 +114,13 @@ describe('computer.use', () => {
     expect(calls).toBe(1);
   });
 
-  it('returns a typed failure when the profile lock cannot be created', async () => {
+  it.each([undefined, '', '   ', ' , , '])('reports a profile lock failure with an empty domain policy (%j)', async policy => {
     const dir = mkdtempSync(join(tmpdir(), 'computer-use-lock-'));
     try {
       const home = join(dir, 'not-a-directory');
       writeFileSync(home, '');
       const input = ComputerUseInput.parse({ target: 'browser', browser: 'chromium', action: 'snapshot' });
-      await expect(runComputerUse(input, { CONSUELO_HOME: home }, 500))
+      await expect(runComputerUse(input, { CONSUELO_HOME: home, AGENT_BROWSER_ALLOWED_DOMAINS: policy }, 500))
         .resolves.toMatchObject({ ok: false, code: 'COMMAND_FAILED' });
     } finally {
       rmSync(dir, { recursive: true, force: true });
