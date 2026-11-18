@@ -117,6 +117,7 @@ export function buildComputerCommand(input: Input, host: Host): Command {
     throw new BrowserUnavailableError('Install distribution Chromium on this Linux ARM64 node (chromium or chromium-browser) and retry.');
   }
   if (input.action === 'status') return { command: 'agent-browser', args: ['--version'], browser };
+  if (input.action === 'close') return { command: 'agent-browser', args: [...args, 'close'], browser, profile };
   args.push('--profile', profilePath, '--headed', String(input.headed ?? false));
   if (browser === 'dia') args.push('--executable-path', launcher);
   if (needsSystemChromium && host.systemChromium) args.push('--executable-path', host.systemChromium);
@@ -134,7 +135,6 @@ export function buildComputerCommand(input: Input, host: Host): Command {
     case 'press': args.push('press', required(input.key, 'key')); break;
     case 'scroll': args.push('scroll', input.direction ?? 'down'); break;
     case 'screenshot': args.push('screenshot', required(screenshot, 'screenshot path')); break;
-    case 'close': args.push('close'); break;
     default: throw new Error(input.action + ' requires target:"desktop"');
   }
   let chromiumInstallArgs: string[] | undefined;
@@ -179,12 +179,12 @@ function readResult(command: Command, result: ProviderProcessResult, action: Inp
 
 const browserPolicyVariables = new Set([
   'AGENT_BROWSER_ACTION_POLICY', 'AGENT_BROWSER_ALLOWED_DOMAINS',
-  'AGENT_BROWSER_CONFIRM_ACTIONS', 'AGENT_BROWSER_CONFIRM_INTERACTIVE',
+  'AGENT_BROWSER_CONFIRM_ACTIONS',
   'AGENT_BROWSER_CONTENT_BOUNDARIES', 'AGENT_BROWSER_NO_AUTO_DIALOG',
 ]);
 
 export function computerEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  // Keep operator policies. This tool owns the provider, profile, and headed mode.
+  // Keep action policies. The piped transport surfaces confirmation IDs instead of TTY prompts.
   return Object.fromEntries(Object.entries(env).filter(([key]) =>
     browserPolicyVariables.has(key) || (!key.startsWith('AGENT_BROWSER_') && !key.startsWith('AGENT_DESKTOP_')),
   ));
@@ -242,6 +242,10 @@ export async function executeComputerSteps(
 }
 
 export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<Outcome> {
+  if (input.target === 'browser' && env.AGENT_BROWSER_ALLOWED_DOMAINS !== undefined
+    && input.action !== 'status' && input.action !== 'close') {
+    return failure('INVALID_INPUT', 'The allowed-domains policy requires a fresh context and is incompatible with persistent profiles used by computer.use.');
+  }
   const deadline = performance.now() + timeoutMs;
   const remainingMs = () => Math.max(0, Math.ceil(deadline - performance.now()));
   const host: Host = {
@@ -265,15 +269,13 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
     const profile = command.profile;
     const modeFile = profile && join(profile, 'consuelo-browser-mode');
     try {
-      if (profile && modeFile) {
+      if (profile && modeFile && input.action !== 'close') {
         mkdirSync(profile, { recursive: true, mode: 0o700 });
-        if (input.action !== 'close') {
-          const mode = input.headed ? 'headed' : 'headless';
-          if (existsSync(modeFile) && readFileSync(modeFile, 'utf8') !== mode) {
-            return failure('INVALID_INPUT', 'Close this browser session before switching headed mode. Its profile is retained.');
-          }
-          writeFileSync(modeFile, mode, { mode: 0o600 });
+        const mode = input.headed ? 'headed' : 'headless';
+        if (existsSync(modeFile) && readFileSync(modeFile, 'utf8') !== mode) {
+          return failure('INVALID_INPUT', 'Close this browser session before switching headed mode. Its profile is retained.');
         }
+        writeFileSync(modeFile, mode, { mode: 0o600 });
       }
       if (command.screenshot) mkdirSync(dirname(command.screenshot), { recursive: true, mode: 0o700 });
       const provider = createNodeProviderProcess({ maxOutputBytes: 1024 * 1024 });
