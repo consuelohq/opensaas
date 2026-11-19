@@ -134,7 +134,9 @@ export function createProviderLogWriter(emit: (text: string) => void, maxRecordC
 
 export function redactProviderLog(text: string): string {
   const parts: string[] = [];
-  const writer = createProviderLogWriter(part => parts.push(part));
+  // Grok can emit whole pretty-printed JSON documents. A line-only scrubber
+  // would discard the opening brace and persist the private inner fields.
+  const writer = createProviderLogWriter(part => parts.push(part), MAX_RECORD_CHARS, true);
   writer.write(text);
   writer.end();
   return parts.join('');

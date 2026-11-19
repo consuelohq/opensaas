@@ -101,6 +101,8 @@ describe('provider computer-use logs', () => {
     expect(redactProviderLog(openCode)).not.toContain(secret);
     const normal = JSON.stringify({ message: 'finished', stopReason: 'completed' }, null, 2);
     const grok = JSON.stringify({ messages: [part] }, null, 2);
+    expect(redactProviderLog(grok)).not.toContain(secret);
+    expect(redactProviderLog(normal)).toBe(normal);
     const emitted: string[] = [];
     const writer = createProviderLogWriter(chunk => emitted.push(chunk), 8192, true);
     const stream = grok + '\n' + normal + '\n[ready] waiting\n';

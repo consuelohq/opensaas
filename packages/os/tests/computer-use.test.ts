@@ -2,7 +2,7 @@ import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildComputerCommand, computerEnvironment, executeComputerSteps, runComputerUse, withBrowserDecision } from '../scripts/lib/computer-use';
+import { buildComputerCommand, computerEnvironment, computerUseFailure, executeComputerSteps, runComputerUse, withBrowserDecision } from '../scripts/lib/computer-use';
 import { ComputerUseInput } from '../scripts/lib/facade/schemas';
 
 const host = { platform: 'darwin', arch: 'arm64', diaInstalled: true, home: '/tmp/consuelo-test' } as const;
@@ -11,6 +11,135 @@ describe('computer.use', () => {
   const result = (data: unknown, exitCode = 0) => ({
     stdout: JSON.stringify(data), stderr: '', exitCode, timedOut: false, cancelled: false,
     runtimeMissing: false, stdoutTruncated: false, stderrTruncated: false,
+  });
+
+  it('classifies unavailable native computer providers without losing unexpected errors', () => {
+    const bunMissing = {
+      name: 'ResolveMessage',
+      message: "Cannot find module 'agent-browser/package.json' from '/task/computer-use.ts'",
+      specifier: 'agent-browser/package.json',
+    };
+    const nodeMissing = Object.assign(new Error("Cannot find module 'agent-desktop/package.json'"), {
+      code: 'MODULE_NOT_FOUND',
+    });
+    for (const error of [bunMissing, nodeMissing]) {
+      expect(computerUseFailure(error, 'COMMAND_FAILED')).toMatchObject({
+        ok: false, code: 'CLI_MISSING', message: expect.stringMatching(/reinstall.*optional dependencies/i),
+      });
+    }
+    expect(computerUseFailure(new Error('Website refused connection'), 'COMMAND_FAILED')).toMatchObject({
+      code: 'COMMAND_FAILED', message: 'Website refused connection',
+    });
+    expect(computerUseFailure({ name: 'ResolveMessage', specifier: 'unrelated/package.json' }, 'COMMAND_FAILED'))
+      .toMatchObject({ code: 'COMMAND_FAILED', message: 'Computer use failed' });
+  });
+
+  it('preserves Linux ARM64 recovery instructions for an unavailable distribution Chromium', () => {
+    let missing: unknown;
+    try {
+      buildComputerCommand({ target: 'browser', action: 'open', url: 'https://example.com' },
+        { ...host, platform: 'linux', arch: 'arm64', diaInstalled: false });
+    } catch (error: unknown) {
+      missing = error;
+    }
+    expect(computerUseFailure(missing, 'VALIDATION_ERROR')).toMatchObject({
+      code: 'CLI_MISSING', message: expect.stringMatching(/distribution Chromium.*Linux ARM64/i),
+    });
+  });
+
+  it('marks a pending Dia viewport setup separately from browser navigation', async () => {
+    const command = buildComputerCommand({ target: 'browser', browser: 'dia', action: 'open', url: 'https://example.com' }, host);
+    let calls = 0;
+    const outcome = await executeComputerSteps(command, 'open', () => 1000, async () => {
+      calls++;
+      return result({ success: true, data: { confirmation_required: true, confirmation_id: 'viewport-1', action: 'viewport' } });
+    }, op => op());
+    expect(calls).toBe(1);
+    expect(outcome).toMatchObject({ code: 'APPROVAL_REQUIRED', data: { setupPending: true, action: 'viewport' } });
+  });
+
+  it('resumes Dia navigation after its parked viewport is confirmed and honors further approval', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'computer-use-resume-'));
+    const browser = { target: 'browser', browser: 'dia', session: 'viewport' } as const;
+    const open = ComputerUseInput.parse({ ...browser, action: 'open', url: 'https://example.com/destination', headed: true });
+    const command = (input: typeof open) => buildComputerCommand(input, { ...host, home });
+    try {
+      const parked = await withBrowserDecision(open, command(open), false, async () => ({
+        ok: false, code: 'APPROVAL_REQUIRED', message: 'viewport pending',
+        data: { confirmation_id: 'viewport-native', action: 'viewport', setupPending: true },
+      }));
+      const firstId = (parked.data as { confirmation_id: string }).confirmation_id;
+      const confirm = ComputerUseInput.parse({ ...browser, action: 'confirm', confirmationId: firstId, approved: true });
+      const calls: Array<unknown> = [];
+      const resumed = await withBrowserDecision(confirm, command(confirm), false, async continuation => {
+        calls.push(continuation ?? 'confirm');
+        if (!continuation) return { ok: true, code: 'OK', message: 'viewport confirmed', data: {} };
+        return { ok: false, code: 'APPROVAL_REQUIRED', message: 'navigation pending',
+          data: { confirmation_id: 'navigate-native', action: 'navigate' } };
+      });
+      expect(calls).toEqual(['confirm', { action: 'open', url: open.url, headed: true }]);
+      expect(resumed).toMatchObject({ code: 'APPROVAL_REQUIRED', data: { action: 'navigate' } });
+      const secondId = (resumed.data as { confirmation_id: string }).confirmation_id;
+      expect(secondId).not.toBe(firstId);
+      expect((await withBrowserDecision(confirm, command(confirm), false, async () => {
+        throw new Error('Must not re-confirm old viewport');
+      })).code).toBe('INVALID_INPUT');
+      const deny = ComputerUseInput.parse({ ...browser, action: 'deny', confirmationId: secondId });
+      expect((await withBrowserDecision(deny, command(deny), false, async () => ({
+        ok: true, code: 'OK', message: 'navigation denied', data: {},
+      }))).ok).toBe(true);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects a corrupted saved Dia continuation before provider confirmation', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'computer-use-corrupt-resume-'));
+    const browser = { target: 'browser', browser: 'dia', session: 'corrupted' } as const;
+    const open = ComputerUseInput.parse({ ...browser, action: 'open', url: 'https://example.com' });
+    const command = buildComputerCommand(open, { ...host, home });
+    try {
+      const parked = await withBrowserDecision(open, command, false, async () => ({
+        ok: false, code: 'APPROVAL_REQUIRED', message: 'viewport pending',
+        data: { confirmation_id: 'viewport-native', action: 'viewport', setupPending: true },
+      }));
+      const id = (parked.data as { confirmation_id: string }).confirmation_id;
+      writeFileSync(join(command.profile!, 'consuelo-browser-confirmation'), JSON.stringify({
+        id, providerId: 'viewport-native', action: 'viewport',
+        resume: { action: 'open', url: open.url },
+      }));
+      const confirm = ComputerUseInput.parse({ ...browser, action: 'confirm', confirmationId: id, approved: true });
+      const outcome = await withBrowserDecision(confirm, buildComputerCommand(confirm, { ...host, home }), false,
+        async () => { throw new Error('Corrupted decision must never reach provider'); });
+      expect(outcome).toMatchObject({ code: 'COMMAND_FAILED', message: expect.stringMatching(/pending browser decision/i) });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('does not resume navigation when viewport confirmation failed', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'computer-use-failed-resume-'));
+    const browser = { target: 'browser', browser: 'dia', session: 'failed' } as const;
+    const open = ComputerUseInput.parse({ ...browser, action: 'open', url: 'https://example.com' });
+    const command = (input: typeof open) => buildComputerCommand(input, { ...host, home });
+    try {
+      const parked = await withBrowserDecision(open, command(open), false, async () => ({
+        ok: false, code: 'APPROVAL_REQUIRED', message: 'pending',
+        data: { confirmation_id: 'viewport-native', action: 'viewport', setupPending: true },
+      }));
+      const id = (parked.data as { confirmation_id: string }).confirmation_id;
+      const confirm = ComputerUseInput.parse({ ...browser, action: 'confirm', confirmationId: id, approved: true });
+      let calls = 0;
+      const outcome = await withBrowserDecision(confirm, command(confirm), false, async continuation => {
+        expect(continuation).toBeUndefined();
+        calls++;
+        return { ok: false, code: 'COMMAND_FAILED', message: 'Viewport did not complete', data: null };
+      });
+      expect(calls).toBe(1);
+      expect(outcome.code).toBe('COMMAND_FAILED');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 
   it('binds each browser decision to a named session and requires explicit approval to confirm', () => {
