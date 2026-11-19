@@ -1,0 +1,175 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-computer-use/round-2-independent-computer-use-quality-audit-and-hardening",
+  "base": "origin/task/os-computer-use/round-2-independent-computer-use-quality-audit-and-hardening",
+  "headSha": "32666c7871c9227923949e616350010bd030df08",
+  "changeHash": "fe9c44740ba6f82b7bcf5e0f04a572ddfef9063618810444c1d6790ba09124c8",
+  "changedFiles": [
+    "packages/os/scripts/lib/computer-use.ts",
+    "packages/os/scripts/lib/subagent/computer-use-log.ts",
+    "packages/os/tests/computer-use-log.test.ts",
+    "packages/os/tests/computer-use.test.ts"
+  ],
+  "verifiedAt": "2026-11-19T05:41:45.040Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-computer-use/round-2-independent-computer-use-quality-audit-and-hardening/evidence-log.json",
+        ".task/os-computer-use/round-2-independent-computer-use-quality-audit-and-hardening/read-log.json",
+        ".task/os-computer-use/round-2-independent-computer-use-quality-audit-and-hardening/workpad.md",
+        ".task/tasks/os-computer-use/round-2-independent-computer-use-quality-audit-and-hardening.json",
+        "packages/os/scripts/lib/computer-use.ts",
+        "packages/os/scripts/lib/subagent/computer-use-log.ts",
+        "packages/os/tests/computer-use-log.test.ts",
+        "packages/os/tests/computer-use.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-subagent-runtime",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable subagent orchestration, provider capabilities, active-run status, idempotency, deadline behavior, and provider stdin termination must prove the focused subagent contracts without selecting the unrelated whole-OS package baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/subagent/computer-use-log.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/computer-use.ts",
+            "packages/os/tests/computer-use-log.test.ts",
+            "packages/os/tests/computer-use.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
+          ],
+          "ruleId": "os-subagent-runtime",
+          "critical": true
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-subagent-runtime",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 16475,
+          "outputTail": ".\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":238,\"exitCode\":1,\"traceId\":\"trc_4dbac5453e91\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:40:54.080Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET]/.grok/bin/grok --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":315,\"exitCode\":0,\"traceId\":\"trc_53efc5bc7f8a\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:40:54.400Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET]/.local/bin/agent --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":215,\"exitCode\":0,\"traceId\":\"trc_4417b045f73d\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:40:54.619Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":209,\"exitCode\":0,\"traceId\":\"trc_e2e702585980\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:40:54.834Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] -p\",\"durationMs\":26,\"exitCode\":127,\"traceId\":\"trc_c39d6b09ecc3\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:40:54.864Z\"}\n"
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1832,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 47603,
+          "outputTail": "entationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:38.123Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:38.129Z\"}\n(node:34884) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:38.800Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:38.818Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:38.825Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:38.833Z\"}\n(node:35960) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:37983) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:43.421Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:43.449Z\"}\n(node:38143) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"error\",\"tool\":\"browser.login.profile\",\"command\":\"workspace browser.login.profile\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_unknowntoolr\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:41:44.360Z\"}\n(node:38603) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

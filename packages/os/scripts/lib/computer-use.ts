@@ -10,7 +10,7 @@ import { createNodeProviderProcess } from '../../tools/deployment-provider/proce
 import type { ProviderProcessResult } from '../../tools/deployment-provider/types';
 import { resolveOsHome } from './install-state';
 import { NodeResourceLockError, withNodeResourceLock, nodeResourceLockPath } from './node-resource-lock';
-import type { ComputerUseInput } from './facade/schemas';
+import { ComputerUseInput } from './facade/schemas';
 import type { ErrorCode } from './facade/types';
 
 type Input = z.infer<typeof ComputerUseInput>;
@@ -35,7 +35,7 @@ function providerExecutable(command: string, env: NodeJS.ProcessEnv): string {
     const { nativeTarget, findNativeBinary } = requirePackage('agent-browser/scripts/native.js');
     const target = nativeTarget();
     const binary = target && findNativeBinary(root, target);
-    if (!binary) throw new Error('Install the OS runtime with optional dependencies for this platform');
+    if (!binary) throw new BrowserUnavailableError('The native Agent Browser binary is unavailable. Reinstall Consuelo OS with optional dependencies for this platform.');
     return binary;
   }
   const root = dirname(requirePackage.resolve('agent-desktop/package.json'));
@@ -151,6 +151,24 @@ function failure(code: ErrorCode, message: string, data: unknown = null): Outcom
   return { ok: false, code, message, data };
 }
 
+export function computerUseFailure(error: unknown, defaultCode: ErrorCode): Outcome {
+  const details = error !== null && typeof error === 'object'
+    ? error as { code?: unknown; name?: unknown; specifier?: unknown; message?: unknown }
+    : {};
+  const message = typeof details.message === 'string' ? details.message : '';
+  const missingModule = details.code === 'MODULE_NOT_FOUND' || details.code === 'ERR_MODULE_NOT_FOUND'
+    || details.name === 'ResolveMessage';
+  const optionalProvider = typeof details.specifier === 'string'
+    && /^agent-(?:browser|desktop)(?:\/|$)/.test(details.specifier);
+  const missingProvider = missingModule && (optionalProvider
+    || /Cannot find module ['"]agent-(?:browser|desktop)(?:\/|['"])/.test(message));
+  if (error instanceof BrowserUnavailableError) return failure('CLI_MISSING', error.message);
+  if (missingProvider) {
+    return failure('CLI_MISSING', 'Reinstall Consuelo OS with optional dependencies enabled on this node.');
+  }
+  return failure(defaultCode, error instanceof Error ? error.message : 'Computer use failed');
+}
+
 function readResult(command: Command, result: ProviderProcessResult, action: Input['action']): Outcome {
   if (result.runtimeMissing) {
     return failure('CLI_MISSING', 'Reinstall the OS runtime with optional dependencies enabled on this node.');
@@ -244,7 +262,8 @@ export async function executeComputerSteps(
       if (!setup.ok && /Auto-launch failed: CDP error .*Target closed/.test(setup.message)) {
         setup = await execute(command.setupArgs);
       }
-      if (!setup.ok) return setup;
+      if (!setup.ok) return setup.code === 'APPROVAL_REQUIRED'
+        ? { ...setup, data: { ...(setup.data as object), setupPending: true } } : setup;
     }
     const outcome = await execute(command.args, command.stdin);
     // The pinned CLI emits this diagnostic before it can launch a browser or navigate.
@@ -262,11 +281,12 @@ export async function executeComputerSteps(
     if (error instanceof NodeResourceLockError && error.code === 'LOCK_TIMEOUT') {
       return failure('TIMEOUT', 'The browser installation is busy.');
     }
-    return failure('COMMAND_FAILED', error instanceof Error ? error.message : 'Computer use failed');
+    return computerUseFailure(error, 'COMMAND_FAILED');
   }
 }
 
-type BrowserDecision = { id: string; providerId: string; action: string };
+type BrowserContinuation = { action: 'open'; url: string; headed: boolean };
+type BrowserDecision = { id: string; providerId: string; action: string; resume?: BrowserContinuation };
 
 function pendingOutcome(pending: BrowserDecision): Outcome {
   return failure('APPROVAL_REQUIRED', 'Ask the operator about the pending browser action. Use confirm or deny with this ID in the same session.', {
@@ -277,7 +297,8 @@ function pendingOutcome(pending: BrowserDecision): Outcome {
 // Agent Browser 0.43.0 replays the session's latest parked action regardless of the ID it receives.
 // Under the profile lock, bind a one-time OS decision to that action before dispatching any replay.
 export async function withBrowserDecision(
-  input: Input, command: Command, hasDomainPolicy: boolean, dispatch: () => Promise<Outcome>,
+  input: Input, command: Command, hasDomainPolicy: boolean,
+  dispatch: (continuation?: BrowserContinuation) => Promise<Outcome>,
 ): Promise<Outcome> {
   if (!command.profile) return dispatch();
   const file = join(command.profile, 'consuelo-browser-confirmation');
@@ -288,6 +309,12 @@ export async function withBrowserDecision(
       const stored = JSON.parse(readFileSync(file, 'utf8'));
       if (typeof stored?.id !== 'string' || typeof stored.providerId !== 'string' || typeof stored.action !== 'string') {
         throw new Error('Invalid pending decision');
+      }
+      if (stored.resume !== undefined && (stored.resume?.action !== 'open'
+        || typeof stored.resume.headed !== 'boolean' || typeof stored.resume.url !== 'string'
+        || !ComputerUseInput.safeParse({ target: 'browser', action: 'open', browser: command.browser,
+          session: input.session, headed: stored.resume.headed, url: stored.resume.url }).success)) {
+        throw new Error('Invalid pending browser continuation');
       }
       pending = stored;
     } catch {
@@ -309,10 +336,19 @@ export async function withBrowserDecision(
   // prevent retries from replaying it. Failed deny/close must not lose the
   // parked decision: the provider may still have the action awaiting approval.
   if (input.action === 'confirm') rmSync(file, { force: true });
-  const outcome = await dispatch();
-  const data = outcome.data as { confirmation_id?: unknown; action?: unknown } | null;
+  let outcome = await dispatch();
+  // A confirmation replays only the provider's parked viewport command.
+  // Resume the original navigation under the same session lock, so its own
+  // navigation confirmation policy still runs and can create a new decision.
+  if (input.action === 'confirm' && outcome.ok && pending?.resume) {
+    outcome = await dispatch(pending.resume);
+  }
+  const data = outcome.data as { confirmation_id?: unknown; action?: unknown; setupPending?: unknown } | null;
   if (outcome.code === 'APPROVAL_REQUIRED' && typeof data?.confirmation_id === 'string' && typeof data.action === 'string') {
-    const next = { id: randomUUID(), providerId: data.confirmation_id, action: data.action };
+    const next: BrowserDecision = { id: randomUUID(), providerId: data.confirmation_id, action: data.action,
+      ...(input.action === 'open' && command.setupArgs && data.setupPending === true
+        ? { resume: { action: 'open' as const, url: required(input.url, 'url'), headed: input.headed ?? false } } : {}),
+    };
     mkdirSync(command.profile, { recursive: true, mode: 0o700 });
     writeFileSync(file, JSON.stringify(next), { mode: 0o600 });
     return pendingOutcome(next);
@@ -342,8 +378,7 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
   try {
     command = buildComputerCommand(input, host);
   } catch (error: unknown) {
-    if (error instanceof BrowserUnavailableError) return failure('CLI_MISSING', error.message);
-    return failure('VALIDATION_ERROR', error instanceof Error ? error.message : 'Invalid computer use input');
+    return computerUseFailure(error, 'VALIDATION_ERROR');
   }
   if (command.browser === 'dia' && command.profile) {
     childEnv.CONSUELO_BROWSER_DIA_PROFILE = command.profile;
@@ -352,19 +387,22 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
     const profile = command.profile;
     const modeFile = profile && join(profile, 'consuelo-browser-mode');
     try {
-      return await withBrowserDecision(input, command, Boolean(childEnv.AGENT_BROWSER_ALLOWED_DOMAINS), async () => {
-        if (profile && modeFile && !['close', 'confirm', 'deny'].includes(input.action)) {
+      return await withBrowserDecision(input, command, Boolean(childEnv.AGENT_BROWSER_ALLOWED_DOMAINS), async continuation => {
+        const activeInput: Input = continuation
+          ? ComputerUseInput.parse({ ...input, ...continuation, confirmationId: undefined, approved: undefined }) : input;
+        const activeCommand = continuation ? { ...buildComputerCommand(activeInput, host), setupArgs: undefined } : command;
+        if (profile && modeFile && !['close', 'confirm', 'deny'].includes(activeInput.action)) {
           mkdirSync(profile, { recursive: true, mode: 0o700 });
-          const mode = input.headed ? 'headed' : 'headless';
+          const mode = activeInput.headed ? 'headed' : 'headless';
           if (existsSync(modeFile) && readFileSync(modeFile, 'utf8') !== mode) {
             return failure('INVALID_INPUT', 'Close this browser session before switching headed mode. Its profile is retained.');
           }
           writeFileSync(modeFile, mode, { mode: 0o600 });
         }
-        if (command.screenshot) mkdirSync(dirname(command.screenshot), { recursive: true, mode: 0o700 });
+        if (activeCommand.screenshot) mkdirSync(dirname(activeCommand.screenshot), { recursive: true, mode: 0o700 });
         const provider = createNodeProviderProcess({ maxOutputBytes: 1024 * 1024 });
-        const request = { command: providerExecutable(command.command, childEnv), cwd: dirname(browserConfig), env: childEnv };
-        return executeComputerSteps(command, input.action, remainingMs,
+        const request = { command: providerExecutable(activeCommand.command, childEnv), cwd: dirname(browserConfig), env: childEnv };
+        return executeComputerSteps(activeCommand, activeInput.action, remainingMs,
           (args, left, stdin) => Effect.runPromise(provider.run({ ...request, args, stdin, timeoutMs: left })),
           operation => withNodeResourceLock({
             lockPath: nodeResourceLockPath(join(host.home, 'node', 'computer-use', 'chromium-install')),
@@ -373,10 +411,7 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
         );
       });
     } catch (error: unknown) {
-      if (error instanceof Error && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
-        return failure('CLI_MISSING', 'Reinstall the OS runtime with optional dependencies enabled on this node.');
-      }
-      return failure('COMMAND_FAILED', error instanceof Error ? error.message : 'Computer use failed');
+      return computerUseFailure(error, 'COMMAND_FAILED');
     }
   };
   try {
@@ -387,6 +422,6 @@ export async function runComputerUse(input: Input, env: NodeJS.ProcessEnv, timeo
     if (error instanceof NodeResourceLockError && error.code === 'LOCK_TIMEOUT') {
       return failure('TIMEOUT', 'Another operation is using this browser session.');
     }
-    return failure('COMMAND_FAILED', error instanceof Error ? error.message : 'Computer use failed');
+    return computerUseFailure(error, 'COMMAND_FAILED');
   }
 }
