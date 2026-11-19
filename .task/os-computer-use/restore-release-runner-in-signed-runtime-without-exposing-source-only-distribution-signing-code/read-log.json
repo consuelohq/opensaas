@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code/workpad.md",
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/distribution/release-channels.ts",
+    "packages/os/scripts/lib/release-immutable.ts",
+    "packages/os/scripts/release.ts",
+    "packages/os/tests/audit/script-parity-audit.test.ts"
+  ],
+  "updatedAt": "2026-11-19T05:55:55.537Z"
+}

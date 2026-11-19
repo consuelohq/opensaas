@@ -2,10 +2,17 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { canonicalReleaseJson } from '../scripts/lib/distribution/release-channels';
+import { canonicalReleaseJson as runtimeCanonicalReleaseJson } from '../scripts/lib/release-canonical-json';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 describe('release script security boundary', () => {
+  it('shares canonical signature serialization between source signing and the runtime release CLI', () => {
+    const payload = { z: [2, { d: 4, a: 1, omitted: undefined }], a: { y: 'test', b: 0 }, ignored: undefined };
+    expect(runtimeCanonicalReleaseJson(payload)).toBe(canonicalReleaseJson(payload));
+    expect(runtimeCanonicalReleaseJson(payload)).toBe('{"a":{"b":0,"y":"test"},"z":[2,{"a":1,"d":4}]}');
+  });
   it('uses GitHub credential-store auth without reading or printing token secrets', () => {
     const release = readFileSync(resolve(root, 'scripts/release.ts'), 'utf8');
     const githubCli = readFileSync(resolve(root, 'scripts/lib/github-cli.ts'), 'utf8');
