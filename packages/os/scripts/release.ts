@@ -36,11 +36,8 @@ import {
   createReleaseOperationManager,
   type ReleaseOperationRequest,
 } from './lib/release-operation';
-import {
-  canonicalBundleSignatureJson,
-  type BundleSignaturePayload,
-  type DetachedReleaseSignature,
-} from './lib/distribution/release-channels';
+import { canonicalReleaseJson as canonicalBundleSignatureJson } from './lib/release-canonical-json';
+import type { BundleSignaturePayload, DetachedReleaseSignature } from './lib/distribution/release-channels';
 import {
   RELEASE_PROMOTION_LOCK_BRANCH,
   RELEASE_PROMOTION_LOCK_PATH,

@@ -1042,6 +1042,14 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/release-canonical-json.ts": {
+      "status": "os-only-intentional",
+      "reason": "Pure OS runtime-safe canonical JSON encoding keeps immutable release verification compatible with source-only signing without exposing distribution tooling."
+    },
+    "scripts/lib/release-identity.ts": {
+      "status": "os-only-intentional",
+      "reason": "Pure OS runtime-safe release-set identity and platform definitions allow signed runtime release CLI operation without source-only distribution code."
+    },
     "scripts/lib/release-immutable.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned immutable release-evidence resolver pins release operations to exact merged source and publication state; no workspace counterpart is intended."

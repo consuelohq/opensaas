@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2826,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2826",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_286d4d99211e",
+  "tmuxSession": "opensaas-os-computer-use-restore-release-runner-in-signed-runtime-without-286d4d99",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code/.task/session.json",
+  "createdAt": "2026-11-19T05:48:56.065Z"
+}

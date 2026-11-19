@@ -1001,6 +1001,14 @@ describe('runtime bundle contract', () => {
     );
     expect(dependencyInstall.status, dependencyInstall.stderr).toBe(0);
     expect(existsSync(join(runtimeRoot, 'node_modules', 'zod'))).toBe(true);
+    expect(existsSync(join(runtimeRoot, 'scripts/release.ts'))).toBe(true);
+    expect(existsSync(join(runtimeRoot, 'scripts/lib/distribution/release-channels.ts'))).toBe(false);
+    const bundledReleaseHelp = spawnSync('bun', [join(runtimeRoot, 'scripts/release.ts'), '--help'], {
+      cwd: runtimeRoot,
+      encoding: 'utf8',
+    });
+    expect(bundledReleaseHelp.status, bundledReleaseHelp.stderr).toBe(0);
+    expect(bundledReleaseHelp.stdout).toContain('--channel dev|canary|beta|stable');
     const lifecycleStatus = spawnSync(
       'bun',
       [

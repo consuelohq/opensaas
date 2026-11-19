@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+  "events": [
+    {
+      "id": "4d7bf864-b227-4806-9eba-6b8c98b9f617",
+      "occurred_at": "2026-11-19T05:49:05.205Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/release-channels.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "d19c7bf4-2f9f-4e79-8a1e-b87dbdf5ba71",
+      "occurred_at": "2026-11-19T05:50:02.752Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/release-immutable.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "31299617-508c-46ec-93a0-c4d63b898a6d",
+      "occurred_at": "2026-11-19T05:50:14.348Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/release-channels.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "1a055ba9-1c27-4180-b69c-ea4e5ded71db",
+      "occurred_at": "2026-11-19T05:51:22.827Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "be1d8a99-56cd-477b-b338-2703d2cdd38b",
+      "occurred_at": "2026-11-19T05:51:53.332Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "49e4d8d0-064d-43dc-8be1-ded07a1e1c01",
+      "occurred_at": "2026-11-19T05:53:12.262Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "8b6c564c-9d9d-4015-ad14-abe2cea3cc15",
+      "occurred_at": "2026-11-19T05:53:49.219Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "ae2eb3bc-a255-43af-87df-f5fd75622dee",
+      "occurred_at": "2026-11-19T05:55:07.250Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    },
+    {
+      "id": "0e3dd9b5-a881-4a48-8546-e903014a8f8f",
+      "occurred_at": "2026-11-19T05:55:55.632Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/restore-release-runner-in-signed-runtime-without-exposing-source-only-distribution-signing-code"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-19T05:55:55.728Z"
+}
