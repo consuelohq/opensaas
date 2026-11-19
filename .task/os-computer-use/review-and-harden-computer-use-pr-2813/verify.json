@@ -1,0 +1,97 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-computer-use/review-and-harden-computer-use-pr-2813",
+  "base": "origin/task/os-computer-use/review-and-harden-computer-use-pr-2813",
+  "headSha": "3a4d74b0cd2a15f68870b376966ace96ba4955bb",
+  "changeHash": "9d306f934876aaf188e9a3f78ee3edf4f6bcf69cc9c2f9a2fc8f462d989b0110",
+  "changedFiles": [
+    "packages/os/scripts/lib/computer-use.ts",
+    "packages/os/tests/computer-use.test.ts"
+  ],
+  "verifiedAt": "2026-11-19T05:24:27.444Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-computer-use/review-and-harden-computer-use-pr-2813/evidence-log.json",
+        ".task/os-computer-use/review-and-harden-computer-use-pr-2813/read-log.json",
+        ".task/os-computer-use/review-and-harden-computer-use-pr-2813/verify.json",
+        ".task/os-computer-use/review-and-harden-computer-use-pr-2813/workpad.md",
+        ".task/tasks/os-computer-use/review-and-harden-computer-use-pr-2813.json",
+        "packages/os/scripts/lib/computer-use.ts",
+        "packages/os/tests/computer-use.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/computer-use.ts",
+            "packages/os/tests/computer-use.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 51525,
+          "outputTail": "\"ts\":\"2026-11-19T05:24:21.568Z\"}\n{\"level\":\"error\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.internal_error\",\"message\":\"local_os.internal_error\",\"error\":{\"name\":\"Error\",\"message\":\"synthetic facade failure\",\"stack\":\"Error: synthetic facade failure\\n    at Object.<anonymous> (/Users/kokayi/.[REDACTED_SECRET].test.ts:155:52)\\n    at Object.Mock [as executeFacadeTool] (file:///Users/kokayi/.[REDACTED_SECRET]/@vitest/spy/dist/index.js:332:34)\\n    at execute (/Users/kokayi/.[REDACTED_SECRET].ts:414:28)\\n    at Object.executeFacadeTool (/Users/kokayi/.[REDACTED_SECRET].ts:416:42)\\n    at handleMcpGatewayJsonRpc (/Users/kokayi/.[REDACTED_SECRET].ts:434:21)\\n    at /Users/kokayi/.[REDACTED_SECRET].ts:402:28\\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\\n    at dispatch (file:///Users/kokayi/.[REDACTED_SECRET].js:22:17)\\n    at /Users/kokayi/.[REDACTED_SECRET].ts:247:7\\n    at dispatch (file:///Users/kokayi/.[REDACTED_SECRET].js:22:17)\"},\"context\":{\"code\":\"INTERNAL_SERVER_ERROR\",\"status\":500},\"ts\":\"2026-11-19T05:24:21.575Z\"}\n{\"level\":\"warn\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_failed\",\"message\":\"local_os.mcp_request_failed\",\"context\":{\"requestId\":\"99327f4e-684c-46b0-8d48-e59dc9b00804\",\"route\":\"/mcp\",\"method\":\"tools/call\",\"status\":500,\"durationMs\":7,\"jsonRpcId\":\"receipt-500\",\"publicTool\":\"call\",\"facadeTool\":\"explore\"},\"ts\":\"2026-11-19T05:24:21.575Z\"}\n(node:67317) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:67586) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:67590) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"error\",\"tool\":\"browser.login.profile\",\"command\":\"workspace browser.login.profile\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_unknowntoolr\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:24:22.354Z\"}\n(node:67583) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:67552) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:24:23.056Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-11-19T05:24:23.077Z\"}\n(node:67696) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:67801) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:67900) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:68003) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
