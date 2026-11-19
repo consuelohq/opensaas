@@ -190,13 +190,28 @@ const browserPolicyVariables = new Set([
   'AGENT_BROWSER_CONTENT_BOUNDARIES', 'AGENT_BROWSER_MAX_OUTPUT', 'AGENT_BROWSER_NO_AUTO_DIALOG',
 ]);
 
+// Native browser/desktop providers need a small host environment, not the node's
+// API credentials, runtime configuration, or executable injection settings.
+const providerHostVariables = new Set([
+  'HOME', 'USER', 'LOGNAME', 'PATH', 'SHELL', 'TMPDIR', 'TMP', 'TEMP',
+  'LANG', 'LANGUAGE', 'TERM',
+  'DISPLAY', 'WAYLAND_DISPLAY', 'XAUTHORITY', 'XDG_RUNTIME_DIR',
+  'XDG_SESSION_TYPE', 'XDG_CURRENT_DESKTOP', 'XDG_CONFIG_HOME',
+  'XDG_CACHE_HOME', 'XDG_DATA_HOME', 'DBUS_SESSION_BUS_ADDRESS',
+  'SSL_CERT_FILE', 'SSL_CERT_DIR', 'NODE_EXTRA_CA_CERTS',
+  'SYSTEMROOT', 'WINDIR', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA',
+  'PROGRAMFILES', 'PROGRAMFILES(X86)', 'PATHEXT', 'COMSPEC',
+]);
+
 export function computerEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  // Keep action policies. The piped transport surfaces confirmation IDs instead of TTY prompts.
+  // Keep explicit action policies. The piped transport surfaces confirmation IDs
+  // instead of TTY prompts. Do not inherit unrelated variables by default.
   return Object.fromEntries(Object.entries(env).filter(([key, value]) => {
     if (key === 'AGENT_BROWSER_ALLOWED_DOMAINS') {
       return value?.split(',').some(domain => domain.trim().length > 0);
     }
-    return browserPolicyVariables.has(key) || (!key.startsWith('AGENT_BROWSER_') && !key.startsWith('AGENT_DESKTOP_'));
+    return browserPolicyVariables.has(key) || providerHostVariables.has(key.toUpperCase())
+      || /^LC_(?:ALL|CTYPE|MESSAGES|COLLATE|NUMERIC|TIME|MONETARY|PAPER|NAME|ADDRESS|TELEPHONE|MEASUREMENT|IDENTIFICATION)$/i.test(key);
   }));
 }
 
@@ -290,7 +305,10 @@ export async function withBrowserDecision(
   } else if (pending) {
     return failure('APPROVAL_REQUIRED', 'A previous operation awaits a decision. Use its original confirmation ID or close this session. The new operation has not run.');
   }
-  if (decision || input.action === 'close') rmSync(file, { force: true });
+  // Confirmation can execute a side effect, so consume it before dispatch to
+  // prevent retries from replaying it. Failed deny/close must not lose the
+  // parked decision: the provider may still have the action awaiting approval.
+  if (input.action === 'confirm') rmSync(file, { force: true });
   const outcome = await dispatch();
   const data = outcome.data as { confirmation_id?: unknown; action?: unknown } | null;
   if (outcome.code === 'APPROVAL_REQUIRED' && typeof data?.confirmation_id === 'string' && typeof data.action === 'string') {
@@ -299,6 +317,7 @@ export async function withBrowserDecision(
     writeFileSync(file, JSON.stringify(next), { mode: 0o600 });
     return pendingOutcome(next);
   }
+  if (outcome.ok && (input.action === 'deny' || input.action === 'close')) rmSync(file, { force: true });
   if (outcome.ok && (input.action === 'close' || (input.action === 'confirm' && pending?.action === 'close'))) {
     rmSync(join(command.profile, 'consuelo-browser-mode'), { force: true });
   }

@@ -66,6 +66,53 @@ describe('computer.use', () => {
     }
   });
 
+  it('preserves pending browser decisions until a deny or close succeeds', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'computer-use-decision-recovery-'));
+    const browser = { target: 'browser', browser: 'chromium', session: 'recovery' } as const;
+    const request = ComputerUseInput.parse({ ...browser, action: 'click', ref: '@e1' });
+    const command = (input: typeof request) => buildComputerCommand(input, { ...host, home });
+    const success = { ok: true, code: 'OK', message: 'completed', data: {} } as const;
+    try {
+      const parked = await withBrowserDecision(request, command(request), false, async () => ({
+        ok: false, code: 'APPROVAL_REQUIRED', message: 'pending',
+        data: { confirmation_id: 'provider-1', action: 'click' },
+      }));
+      const confirmationId = (parked.data as { confirmation_id: string }).confirmation_id;
+      const close = ComputerUseInput.parse({ ...browser, action: 'close' });
+      let dispatched = 0;
+      const failedClose = await withBrowserDecision(close, command(close), false, async () => {
+        dispatched++;
+        return { ok: false, code: 'COMMAND_FAILED', message: 'close failed', data: null };
+      });
+      expect(failedClose.code).toBe('COMMAND_FAILED');
+      expect(dispatched).toBe(1);
+
+      const deny = ComputerUseInput.parse({ ...browser, action: 'deny', confirmationId });
+      const failedDeny = await withBrowserDecision(deny, command(deny), false, async () => ({
+        ok: false, code: 'COMMAND_FAILED', message: 'deny failed', data: null,
+      }));
+      expect(failedDeny.code).toBe('COMMAND_FAILED');
+      const blocked = await withBrowserDecision(request, command(request), false, async () => {
+        dispatched++;
+        return success;
+      });
+      expect(blocked.code).toBe('APPROVAL_REQUIRED');
+      expect(dispatched).toBe(1);
+
+      expect((await withBrowserDecision(deny, command(deny), false, async () => success)).ok).toBe(true);
+      expect((await withBrowserDecision(request, command(request), false, async () => success)).ok).toBe(true);
+
+      await withBrowserDecision(request, command(request), false, async () => ({
+        ok: false, code: 'APPROVAL_REQUIRED', message: 'pending',
+        data: { confirmation_id: 'provider-2', action: 'click' },
+      }));
+      expect((await withBrowserDecision(close, command(close), false, async () => success)).ok).toBe(true);
+      expect((await withBrowserDecision(request, command(request), false, async () => success)).ok).toBe(true);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('surfaces a failed provider replay as a failed browser decision', async () => {
     const command = buildComputerCommand({ target: 'browser', action: 'confirm' }, host);
     const replay = { success: true, data: { confirmed: true, result: { success: false, error: 'Element detached' } } };
@@ -217,6 +264,37 @@ describe('computer.use', () => {
       AGENT_BROWSER_ALLOWED_DOMAINS: 'example.com',
       AGENT_BROWSER_ACTION_POLICY: '/policies/browser.json',
       PATH: '/bin',
+    });
+  });
+
+  it('does not export runtime secrets to computer-use provider', () => {
+    const env = computerEnvironment({
+      HOME: '/home/operator',
+      PATH: '/usr/bin',
+      TMPDIR: '/tmp',
+      LANG: 'en_US.UTF-8',
+      DISPLAY: ':0',
+      XDG_RUNTIME_DIR: '/run/user/1000',
+      DBUS_SESSION_BUS_ADDRESS: 'unix:path=/run/user/1000/bus',
+      AGENT_BROWSER_CONFIRM_ACTIONS: 'click,fill',
+      AGENT_BROWSER_ALLOWED_DOMAINS: 'example.com',
+      AGENT_BROWSER_AUTO_CONNECT: 'true',
+      GITHUB_TOKEN: 'synthetic-github-token',
+      OPENAI_API_KEY: 'synthetic-openai-key',
+      AWS_SECRET_ACCESS_KEY: 'synthetic-aws-key',
+      CONSUELO_OS_KEY: 'synthetic-os-key',
+      NODE_OPTIONS: '--require=/tmp/untrusted-preload.js',
+    });
+    expect(env).toEqual({
+      HOME: '/home/operator',
+      PATH: '/usr/bin',
+      TMPDIR: '/tmp',
+      LANG: 'en_US.UTF-8',
+      DISPLAY: ':0',
+      XDG_RUNTIME_DIR: '/run/user/1000',
+      DBUS_SESSION_BUS_ADDRESS: 'unix:path=/run/user/1000/bus',
+      AGENT_BROWSER_CONFIRM_ACTIONS: 'click,fill',
+      AGENT_BROWSER_ALLOWED_DOMAINS: 'example.com',
     });
   });
 
