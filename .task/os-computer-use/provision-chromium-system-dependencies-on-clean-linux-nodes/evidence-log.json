@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes",
+  "events": [
+    {
+      "id": "f469f13a-fc2b-434c-9ea4-c3f1a92b901b",
+      "occurred_at": "2026-11-18T22:49:29.690Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes"
+      }
+    },
+    {
+      "id": "166c5000-e4ef-4191-ac7a-06737c26b18c",
+      "occurred_at": "2026-11-18T22:51:03.639Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/provision-chromium-system-dependencies-on-clean-linux-nodes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-18T22:51:03.881Z"
+}

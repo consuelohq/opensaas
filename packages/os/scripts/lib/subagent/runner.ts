@@ -1,6 +1,8 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import type { Readable } from 'node:stream';
+import { createProviderLogWriter } from './computer-use-log.ts';
 
 import {
   preserveFirstTerminationOutcome,
@@ -12,6 +14,7 @@ import {
 
 type LaunchSpec = {
   runId: string;
+  provider?: string;
   ownerToken: string;
   command: string[];
   cwd: string;
@@ -91,6 +94,25 @@ function cancellationRequested(): boolean {
   }
 }
 
+function persistProviderStream(stream: Readable, fd: number, child: ProviderChild): void {
+  const writer = createProviderLogWriter(text => fs.writeFileSync(fd, text), undefined, launch.provider === 'grok');
+  let failed = false;
+  function handle(operation: () => void) {
+    if (failed) return;
+    try {
+      operation();
+    } catch (error: unknown) {
+      failed = true;
+      setupFailureMessage = error instanceof Error ? error.message : 'Failed to write the provider log';
+      signalProviderProcess(child, 'SIGTERM');
+      scheduleProviderProcessEscalation(child, 250);
+    }
+  }
+  stream.setEncoding('utf8');
+  stream.on('data', (chunk: string) => handle(() => writer.write(chunk)));
+  stream.once('end', () => handle(() => writer.end()));
+}
+
 process.on('SIGTERM', () => terminate('cancelled'));
 process.on('SIGINT', () => terminate('cancelled'));
 
@@ -102,8 +124,12 @@ try {
       cwd: launch.cwd,
       env: process.env,
       detached: process.platform !== 'win32',
-      stdio: ['pipe', stdoutFd, stderrFd],
+      stdio: ['pipe', 'pipe', 'pipe'],
     }) as ProviderChild;
+    if (provider.stdout && provider.stderr) {
+      persistProviderStream(provider.stdout, stdoutFd, provider);
+      persistProviderStream(provider.stderr, stderrFd, provider);
+    }
     writeMarker(launch.ownerMarkerPath, {
       runId: launch.runId,
       ownerToken: launch.ownerToken,

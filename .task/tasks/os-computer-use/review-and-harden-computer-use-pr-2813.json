@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/review-and-harden-computer-use-pr-2813",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2824,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2824",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-review-and-harden-computer-use-pr-2813",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_94c0cc28fa12",
+  "tmuxSession": "opensaas-os-computer-use-review-and-harden-computer-use-pr-2813-94c0cc28",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-review-and-harden-computer-use-pr-2813/.task/session.json",
+  "createdAt": "2026-11-19T05:16:16.990Z"
+}

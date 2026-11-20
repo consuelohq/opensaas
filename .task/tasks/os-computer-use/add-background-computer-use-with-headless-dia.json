@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/add-background-computer-use-with-headless-dia",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2812,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2812",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-add-background-computer-use-with-headless-dia",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6998487b3392",
+  "tmuxSession": "opensaas-os-computer-use-add-background-computer-use-with-headless-dia-6998487b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-add-background-computer-use-with-headless-dia/.task/session.json",
+  "createdAt": "2026-11-18T22:15:53.209Z"
+}

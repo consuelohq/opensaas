@@ -1,9 +1,8 @@
 import {
-  DEFAULT_REQUIRED_RELEASE_PLATFORMS,
-  releaseSetIdForBundles,
   type BundleSignaturePayload,
   type PlatformBundlePublication,
 } from './distribution/release-channels';
+import { DEFAULT_REQUIRED_RELEASE_PLATFORMS, releaseSetIdForBundles } from './release-identity';
 import type { ReleaseIdentity } from './release-orchestrator';
 
 export type ImmutableReleaseTag = {

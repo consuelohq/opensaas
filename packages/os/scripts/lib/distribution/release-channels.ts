@@ -10,17 +10,16 @@ import {
   missingRequiredRuntimeRecoveryCapabilities,
   type RuntimeRecoveryCapability,
 } from './runtime-bundle';
+import { canonicalReleaseJson } from '../release-canonical-json';
+import { DEFAULT_REQUIRED_RELEASE_PLATFORMS, releaseSetIdForBundles } from '../release-identity';
+
+export { canonicalReleaseJson } from '../release-canonical-json';
+export { DEFAULT_REQUIRED_RELEASE_PLATFORMS, releaseSetIdForBundles } from '../release-identity';
 
 export const RELEASE_STATE_SCHEMA_VERSION = 1 as const;
 export const CHANNEL_MANIFEST_SCHEMA_VERSION = 1 as const;
 export const RELEASE_TAG_PREFIX = 'consuelo-os-v' as const;
 export const RELEASE_CHANNELS = ['dev', 'canary', 'beta', 'stable'] as const;
-export const DEFAULT_REQUIRED_RELEASE_PLATFORMS = [
-  'darwin-arm64',
-  'darwin-x64',
-  'linux-x64',
-  'windows-x64',
-] as const;
 
 export type ReleaseChannel = typeof RELEASE_CHANNELS[number];
 export type ReleaseIntent = 'major' | 'minor' | 'patch';
@@ -263,23 +262,6 @@ export class StaleReleaseStateError extends Error {
   }
 }
 
-function canonicalize(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value && typeof value === 'object') {
-    const output: Record<string, unknown> = {};
-    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
-      const item = (value as Record<string, unknown>)[key];
-      if (item !== undefined) output[key] = canonicalize(item);
-    }
-    return output;
-  }
-  return value;
-}
-
-export function canonicalReleaseJson(value: unknown): string {
-  return JSON.stringify(canonicalize(value));
-}
-
 export function canonicalBundleSignatureJson(payload: BundleSignaturePayload): string {
   return canonicalReleaseJson(payload);
 }
@@ -511,19 +493,6 @@ export function planDevPublication(
     retry: Boolean(existingVersion),
     version,
   };
-}
-
-export function releaseSetIdForBundles(bundles: PlatformBundlePublication[]): string {
-  if (bundles.length === 0) throw new Error('release requires at least one runtime bundle');
-  const identities = bundles
-    .map((bundle) => ({
-      architecture: bundle.architecture,
-      archiveDigest: bundle.archiveDigest,
-      bundleId: bundle.bundleId,
-      platform: bundle.platform,
-    }))
-    .sort((left, right) => platformKey(left).localeCompare(platformKey(right)));
-  return sha256(canonicalReleaseJson(identities));
 }
 
 function channelPlatforms(release: ReleaseRecord): ChannelManifestPayload['platforms'] {

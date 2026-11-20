@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/handle-browser-containment-and-noninteractive-approvals",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2817,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2817",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-handle-browser-containment-and-noninteractive-approvals",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d126e62df2c6",
+  "tmuxSession": "opensaas-os-computer-use-handle-browser-containment-and-noninteractive-ap-d126e62d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-handle-browser-containment-and-noninteractive-approvals/.task/session.json",
+  "createdAt": "2026-11-18T22:57:42.753Z"
+}

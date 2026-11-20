@@ -90,6 +90,9 @@ declare const workspace: {
     call: (input: { language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" | "edit" | "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     run: (input: { code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  computer: {
+    use: (input: { action: "status" | "apps" | "windows" | "launch" | "open" | "snapshot" | "screenshot" | "click" | "fill" | "press" | "scroll" | "close" | "confirm" | "deny"; confirmationId?: string; approved?: true; target?: "desktop" | "browser"; timeout?: number; app?: string; windowId?: string; surface?: "window" | "menubar" | "menu" | "sheet" | "alert" | "focused"; browser?: "dia" | "chromium"; session?: string; headed?: boolean; url?: string; ref?: string; text?: string; key?: string; direction?: "up" | "down" | "left" | "right"; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   dailySchedules: {
     publish: (input: { kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };

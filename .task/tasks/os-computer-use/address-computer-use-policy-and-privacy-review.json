@@ -1,0 +1,16 @@
+{
+  "area": "os-computer-use",
+  "stream": "stream/os-computer-use",
+  "taskBranch": "task/os-computer-use/address-computer-use-policy-and-privacy-review",
+  "baseBranch": "stream/os-computer-use",
+  "sourceBranch": "stream/os-computer-use",
+  "startFrom": "stream",
+  "prNumber": 2815,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2815",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-address-computer-use-policy-and-privacy-review",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9bcabe5603fc",
+  "tmuxSession": "opensaas-os-computer-use-address-computer-use-policy-and-privacy-review-9bcabe56",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-computer-use-address-computer-use-policy-and-privacy-review/.task/session.json",
+  "createdAt": "2026-11-18T22:36:28.194Z"
+}

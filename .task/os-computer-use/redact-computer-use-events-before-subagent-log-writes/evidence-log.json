@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/redact-computer-use-events-before-subagent-log-writes",
+  "events": [
+    {
+      "id": "d3b528f5-b760-4088-bbf7-9df4956300dd",
+      "occurred_at": "2026-11-18T23:25:36.908Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/redact-computer-use-events-before-subagent-log-writes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/redact-computer-use-events-before-subagent-log-writes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-18T23:25:37.136Z"
+}

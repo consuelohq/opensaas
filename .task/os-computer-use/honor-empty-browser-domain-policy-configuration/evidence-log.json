@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-computer-use/honor-empty-browser-domain-policy-configuration",
+  "events": [
+    {
+      "id": "2fb8077c-d5b0-473c-a872-1988134b1ec5",
+      "occurred_at": "2026-11-18T23:31:42.292Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-computer-use/honor-empty-browser-domain-policy-configuration/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/honor-empty-browser-domain-policy-configuration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/honor-empty-browser-domain-policy-configuration"
+      }
+    },
+    {
+      "id": "bec67bb1-8392-4db1-adac-59bd2dc402bf",
+      "occurred_at": "2026-11-18T23:32:27.034Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-computer-use/honor-empty-browser-domain-policy-configuration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-computer-use/honor-empty-browser-domain-policy-configuration"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-11-18T23:32:27.295Z"
+}

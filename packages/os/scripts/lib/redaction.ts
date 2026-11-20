@@ -37,6 +37,41 @@ function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function traceRecord(value: unknown): Record<string, unknown> | undefined {
+  return isPlainObject(value) ? value as Record<string, unknown> : undefined;
+}
+
+// These bundled script names are also public executor aliases. Keep this check independent of
+// the active node manifest so it can redact rejected calls and historical provider events.
+function privateCompositionName(tool: unknown): unknown {
+  if (tool === 'computer-use') return 'computer.use';
+  if (tool === 'code-run') return 'code.run';
+  return tool;
+}
+
+/** Follow trusted facade composition metadata, including rejected and legacy batches. */
+export function hasPrivateComputerUse(tool: string, input: unknown, result?: unknown, depth = 0): boolean {
+  const name = privateCompositionName(tool);
+  if (name === 'computer.use' || depth > 64) return true;
+  if (name !== 'code.run' && name !== 'batch') return false;
+  const data = traceRecord(traceRecord(result)?.data);
+  if (name === 'code.run') {
+    if (data?.privateComputerUse === true || !Array.isArray(data?.operations)) return true;
+    return data.operations.some(item => {
+      const operation = privateCompositionName(traceRecord(item)?.tool);
+      return operation === 'computer.use' || (operation === 'batch' && data.privateComputerUse !== false);
+    });
+  }
+  const steps = traceRecord(input)?.steps;
+  const results = Array.isArray(data?.results) ? data.results : [];
+  return Array.isArray(steps) && steps.some((item, index) => {
+    const step = traceRecord(item);
+    if (!step || typeof step.tool !== 'string') return false;
+    return hasPrivateComputerUse(step.tool, step.input, results[index], depth + 1)
+      || (step.args !== step.input && hasPrivateComputerUse(step.tool, step.args, results[index], depth + 1));
+  });
+}
+
 function approximateBytes(value) {
   try {
     return Buffer.byteLength(typeof value === 'string' ? value : JSON.stringify(value));

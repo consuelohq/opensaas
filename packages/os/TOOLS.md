@@ -30,6 +30,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | artifacts | 22 |
 | codemode | 2 |
 | composed | 3 |
+| computer | 1 |
 | decision engine | 6 |
 | deployment | 8 |
 | filesystem | 6 |
@@ -1629,6 +1630,67 @@ await workspace.call({
     "to": 1,
     "contentFile": "/tmp/new.ts",
     "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## computer
+
+### workspace.computer.use
+
+Operate apps by accessibility ref or browse with target:"browser". Start with status or snapshot. Browser open defaults to headless Dia when installed. Use headed:true for human interaction. Close before changing modes. Use chromium for sign-in across restarts.
+
+| Field | Value |
+| --- | --- |
+| Category | computer |
+| Signature | `workspace.computer.use({ action: "status" &#124; "apps" &#124; "windows" &#124; "launch" &#124; "open" &#124; "snapshot" &#124; "screenshot" &#124; "click" &#124; "fill" &#124; "press" &#124; "scroll" &#124; "close" &#124; "confirm" &#124; "deny"; confirmationId?: string; approved?: true; target?: "desktop" &#124; "browser"; timeout?: number; app?: string; windowId?: string; surface?: "window" &#124; "menubar" &#124; "menu" &#124; "sheet" &#124; "alert" &#124; "focused"; browser?: "dia" &#124; "chromium"; session?: string; headed?: boolean; url?: string; ref?: string; text?: string; key?: string; direction?: "up" &#124; "down" &#124; "left" &#124; "right"; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `agent-desktop / agent-browser` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 45000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "computer.use",
+  "input": {
+    "action": "status"
   }
 });
 ```

@@ -1,4 +1,4 @@
-import { redactJson } from '../redaction';
+import { hasPrivateComputerUse, redactJson } from '../redaction';
 import { measureTracePayloadUsage } from '../trace-token-usage';
 import { currentTraceRoutingContext } from '../trace-routing-context';
 import { loadNodeYamlConfig, resolveConsueloHomeLayout } from '../consuelo-home';
@@ -74,6 +74,8 @@ export function logToolExecution(entry: {
     });
   }
 
+  const privateContent = hasPrivateComputerUse(entry.tool, entry.input, entry.result)
+    || hasPrivateComputerUse(entry.tool, entry.resolvedInput, entry.result);
   const usage = measureTracePayloadUsage(entry.input, entry.result, {
     inputTokens: entry.inputTokens, outputTokens: entry.outputTokens, totalTokens: entry.totalTokens,
   });
@@ -111,10 +113,10 @@ export function logToolExecution(entry: {
     code: entry.code,
     exitCode: entry.exitCode,
     durationMs: entry.durationMs,
-    input: entry.input,
-    resolvedInput: entry.resolvedInput,
-    result: entry.result,
-    stderr: entry.stderr,
+    input: privateContent ? undefined : entry.input,
+    resolvedInput: privateContent ? undefined : entry.resolvedInput,
+    result: privateContent ? undefined : entry.result,
+    stderr: privateContent ? undefined : entry.stderr,
     inputTokens: usage.input ?? undefined,
     outputTokens: usage.output ?? undefined,
     totalTokens: usage.total ?? undefined,

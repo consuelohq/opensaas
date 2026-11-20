@@ -18,6 +18,8 @@ import {
   waitForDurableSubagentRun,
   type DurableSubagentRun,
 } from './lifecycle';
+import { hasPrivateComputerUse } from '../redaction';
+import { redactProviderLog } from './computer-use-log';
 import {
   recordSubagentTraceEventsSafely,
   type SubagentTraceEvent,
@@ -1565,12 +1567,14 @@ function compactSubagentOutput(input: {
   taskSession?: string;
   branch?: string;
 }): Pick<SubagentData, 'stdout' | 'stderr' | 'finalMessage' | 'summary' | 'rawLogPath' | 'stdoutLogPath' | 'stderrLogPath' | 'stdoutChars' | 'stderrChars' | 'usage'> {
-  const parsed = parseSubagentOutput(input.provider, input.stdout);
-  const logs = persistSubagentLogs(input);
+  const stdout = redactProviderLog(input.stdout);
+  const stderr = redactProviderLog(input.stderr);
+  const parsed = parseSubagentOutput(input.provider, stdout);
+  const logs = persistSubagentLogs({ ...input, stdout, stderr });
   const finalMessage = parsed.finalMessage?.trim();
   const events = parseSubagentTraceEvents(input.provider, input.stdout);
-  const stderrSummary = compactText(input.stderr);
-  const summary = buildSubagentRunSummary({ traceId: input.traceId, events, finalMessage, stdout: input.stdout });
+  const stderrSummary = compactText(stderr);
+  const summary = buildSubagentRunSummary({ traceId: input.traceId, events, finalMessage, stdout });
   recordSubagentTraceEventsSafely({
     provider: input.provider,
     parentTraceId: input.traceId,
@@ -1632,6 +1636,7 @@ function parseCodexTraceEvents(stdout: string): SubagentTraceEvent[] {
             : `codex.${server}.${mcpTool}`;
         const error = item.error;
         const result = item.result;
+        const privateContent = facadeTool ? hasPrivateComputerUse(facadeTool, args?.input, result) : false;
         const inputTokens = estimateTokens(args || item.arguments || {});
         const outputTokens = estimateTokens(result || error || {});
         events.push({
@@ -1642,8 +1647,8 @@ function parseCodexTraceEvents(stdout: string): SubagentTraceEvent[] {
           status: error ? 'error' : 'ok',
           ok: !error,
           code: error ? 'COMMAND_FAILED' : 'OK',
-          input: { server, tool: mcpTool, arguments: args || item.arguments },
-          result: error || result,
+          input: privateContent ? undefined : { server, tool: mcpTool, arguments: args || item.arguments },
+          result: privateContent ? undefined : error || result,
           inputTokens,
           outputTokens,
           totalTokens: inputTokens + outputTokens,
@@ -1941,8 +1946,8 @@ function persistSubagentLogs(input: {
   const stdoutLogPath = path.join(logDir, 'stdout.log');
   const stderrLogPath = path.join(logDir, 'stderr.log');
   const summaryPath = path.join(logDir, 'summary.json');
-  fs.writeFileSync(stdoutLogPath, input.stdout);
-  fs.writeFileSync(stderrLogPath, input.stderr);
+  fs.writeFileSync(stdoutLogPath, input.stdout, { mode: 0o600 });
+  fs.writeFileSync(stderrLogPath, input.stderr, { mode: 0o600 });
   fs.writeFileSync(summaryPath, JSON.stringify({
     provider: input.provider,
     traceId: input.traceId,
